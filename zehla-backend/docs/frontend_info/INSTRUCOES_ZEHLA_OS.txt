@@ -1,0 +1,103 @@
+================================================================================
+  ZEHLA / ZAOS — COGNITIVE HOSPITALITY OPERATING SYSTEM
+  Projeto Completo para Download
+================================================================================
+
+TAMANHO DO ZIP: 640 KB (compactado)
+ARQUIVO: ZEHLA_OS_Projeto_Completo.zip
+
+--------------------------------------------------------------------------------
+COMO RODAR O PROJETO LOCALMENTE
+--------------------------------------------------------------------------------
+
+REQUISITOS:
+  - Node.js 18+ (recomendado: 20 LTS)
+  - npm 9+ (ou yarn/pnpm)
+
+PASSO A PASSO:
+
+  1. Extraia o arquivo ZIP:
+     $ unzip ZEHLA_OS_Projeto_Completo.zip -d zehla-os
+
+  2. Entre no diretório:
+     $ cd zehla-os
+
+  3. Instale as dependências:
+     $ npm install
+
+  4. Execute em modo desenvolvimento:
+     $ npm run dev
+
+  5. Acesse no navegador:
+     http://localhost:3000
+
+PARA BUILD DE PRODUCAO:
+  $ npm run build
+  $ npm start
+  (Acesse http://localhost:3000)
+
+--------------------------------------------------------------------------------
+ESTRUTURA DO PROJETO
+--------------------------------------------------------------------------------
+
+LEAD SIDE (Cliente):
+  /                      -> Landing Page (pagina principal de vendas)
+  /teste-gratis          -> Wizard de registro 6 passos (trial gratuito)
+  /login                 -> Login do cliente
+  /dashboard             -> Dashboard do cliente (8 abas)
+  /ajuda                 -> Central de ajuda
+  /termos                -> Termos de uso
+  /privacidade           -> Politica de privacidade
+
+COMPANY SIDE (Administrativo):
+  /zcc-login             -> Login administrativo (ZCC)
+  /zcc                   -> ZEHLA Control Center (painel admin completo)
+
+COMPONENTES PRINCIPAIS:
+  src/components/landing/   -> Secoes da landing page
+  src/components/dashboard/ -> Dashboard do cliente
+  src/components/zcc/       -> Componentes do ZCC
+  src/components/client/    -> Componentes cliente
+  src/components/onboarding/-> Wizard de onboarding
+  src/components/ui/        -> UI base (shadcn/ui)
+  src/lib/ai-hub/           -> AI Hub (17 arquivos - multi-provider)
+  src/lib/security/         -> Guardian Agent v2.1
+  src/lib/pms/              -> Integracoes PMS (Mews, Cloudbeds, Oracle)
+  src/lib/learning/         -> Motor de aprendizado cognitivo
+
+BACKEND / INFRAESTRUTURA:
+  brain/                    -> Motor cognitivo (agentes, memoria, orquestracao)
+  core/                     -> Nucleo (decisao, resiliencia, self-healing)
+  edge/                     -> Edge computing e IoT
+  infra/                    -> Redis, Supabase, filas, observabilidade
+  ops/                      -> Operacoes (analytics, stress, auditoria)
+  security/                 -> Criptografia, credenciais, validacao
+  tools/                    -> Ferramentas (pricing, visao, WhatsApp)
+  database/                 -> Schema e migrations
+  gateway/                  -> Gateway de voz e filas
+
+APIs (Next.js App Router):
+  src/app/api/              -> 30+ endpoints REST
+
+--------------------------------------------------------------------------------
+TECNOLOGIAS
+--------------------------------------------------------------------------------
+  - Next.js 16 (App Router)
+  - React 19
+  - TypeScript
+  - Tailwind CSS 4
+  - shadcn/ui
+  - Prisma ORM
+  - z-ai-web-dev-sdk
+
+--------------------------------------------------------------------------------
+NOTAS
+--------------------------------------------------------------------------------
+- O arquivo nao inclui node_modules (instale com npm install)
+- O arquivo nao inclui .next (build cache - gere com npm run build)
+- Variaveis de ambiente (.env) devem ser configuradas conforme necessario
+- Para deploy em producao, use o Dockerfile incluido ou docker-compose.yml
+
+================================================================================
+  ZEHLA Cognitive Hospitality OS — Copyright 2025
+================================================================================

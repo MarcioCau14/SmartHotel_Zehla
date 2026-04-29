@@ -1,0 +1,11 @@
+import { NextResponse } from 'next/server';
+import { getRevenueKPIs } from '@/lib/store';
+
+export async function GET() {
+  try {
+    const kpis = getRevenueKPIs();
+    return NextResponse.json(kpis);
+  } catch (error) {
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
