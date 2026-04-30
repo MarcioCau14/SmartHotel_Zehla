@@ -255,6 +255,9 @@ function SecretariaPanel() {
   const [groups, setGroups] = useState<any[]>([]);
   const [selectedGroup, setSelectedGroup] = useState('');
   const [extractionType, setExtractionType] = useState<'CONTACTS' | 'GROUP'>('CONTACTS');
+  const [isSearchingGroups, setIsSearchingGroups] = useState(false);
+  const [foundGroups, setFoundGroups] = useState<any[]>([]);
+  const [searchLocation, setSearchLocation] = useState('Litoral de Santa Catarina');
 
   useEffect(() => {
     refreshData();
@@ -316,6 +319,20 @@ function SecretariaPanel() {
       console.error('Extraction failed:', err);
     } finally {
       setIsExtracting(false);
+    }
+  };
+
+  const handleSearchGroups = async () => {
+    setIsSearchingGroups(true);
+    try {
+      // Simulação de busca via IA / Scraper usando a localidade escolhida
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setFoundGroups([
+        { title: `Proprietários Pousadas - ${searchLocation}`, url: 'https://chat.whatsapp.com/...' },
+        { title: `Turismo ${searchLocation} Networking`, url: 'https://chat.whatsapp.com/...' }
+      ]);
+    } finally {
+      setIsSearchingGroups(false);
     }
   };
 
@@ -494,6 +511,45 @@ function SecretariaPanel() {
                 </>
               )}
             </button>
+
+            <div className="pt-4 border-t border-[#2e2e2e]">
+              <p className="text-[10px] text-[#4d4d4d] mb-3 uppercase font-bold">Faltam grupos? Procure novos na rede:</p>
+              
+              <div className="relative mb-3">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#4d4d4d]" />
+                <input 
+                  type="text"
+                  value={searchLocation}
+                  onChange={(e) => setSearchLocation(e.target.value)}
+                  placeholder="Ex: Itacaré, BA ou Praia do Rosa"
+                  className="w-full bg-[#1a1a1a] border border-[#363636] rounded-xl pl-9 pr-4 py-2 text-xs text-[#efefef] focus:border-[#FF5500]/50 outline-none transition-all placeholder:text-[#363636]"
+                />
+              </div>
+
+              <button 
+                onClick={handleSearchGroups}
+                disabled={isSearchingGroups || !searchLocation}
+                className="w-full border border-[#363636] hover:border-[#FF5500]/30 hover:bg-[#FF5500]/5 text-[#efefef] text-[10px] font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2"
+              >
+                {isSearchingGroups ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <Search className="w-3 h-3" />
+                )}
+                Buscar Grupos ({searchLocation})
+              </button>
+              
+              {foundGroups.length > 0 && (
+                <div className="mt-3 space-y-2 animate-in fade-in slide-in-from-bottom-2">
+                  {foundGroups.map((g, idx) => (
+                    <div key={idx} className="p-2 rounded-lg bg-white/[0.02] border border-white/5 flex items-center justify-between">
+                      <span className="text-[10px] text-[#b4b4b4] truncate max-w-[150px]">{g.title}</span>
+                      <a href={g.url} target="_blank" className="text-[9px] text-[#FF5500] font-bold">Entrar no Grupo</a>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
