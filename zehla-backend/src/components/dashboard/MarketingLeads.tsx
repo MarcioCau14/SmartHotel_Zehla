@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { 
   Search, Star, MapPin, Building2, Phone, Mail, TrendingUp, 
   Sparkles, Loader2, RefreshCw, Brain, Megaphone, CheckCircle, 
-  Zap, ChevronDown, ChevronRight, Upload, FolderOpen, List, Plus
+  Zap, ChevronDown, ChevronRight, Upload, FolderOpen, List, Plus, Eye, Download
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -321,7 +321,7 @@ function SecretariaPanel() {
 
   const stats = [
     { label: 'Total Leads (SC)', value: statsData?.total || 0, icon: Building2, color: 'blue' },
-    { label: 'Qualificados', value: statsData?.qualified || 0, icon: CheckCircle, color: 'orange' },
+    { label: 'Total Aberturas', value: statsData?.totalOpens || 0, icon: Eye, color: 'green' },
     { label: 'Extraídos (WA)', value: leads.filter(l => l.source === 'WHATSAPP_EXTRACT').length, icon: List, color: 'purple' },
     { label: 'Convertidos', value: statsData?.converted || 0, icon: Zap, color: 'amber' },
   ];
@@ -539,7 +539,15 @@ function SecretariaPanel() {
               {leads.filter(l => l.source === 'WHATSAPP_EXTRACT').map(lead => (
                 <div key={lead.id} className="px-5 py-3 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
                   <div>
-                    <div className="text-xs font-bold text-[#efefef]">{lead.name}</div>
+                    <div className="text-xs font-bold text-[#efefef] flex items-center gap-2">
+                      {lead.name}
+                      {lead._count?.emailTracking > 0 && (
+                        <span className="flex items-center gap-1 text-[9px] text-green-400 bg-green-400/10 px-1.5 py-0.5 rounded-full">
+                          <Eye className="w-2.5 h-2.5" />
+                          {lead._count.emailTracking} aberturas
+                        </span>
+                      )}
+                    </div>
                     <div className="text-[10px] text-[#4d4d4d]">{lead.whatsapp || lead.phone}</div>
                   </div>
                   <Badge variant="outline" className="text-[9px] bg-[#FF5500]/10 text-[#FF5500] border-[#FF5500]/30">

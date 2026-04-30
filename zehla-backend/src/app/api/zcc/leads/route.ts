@@ -14,17 +14,23 @@ export async function GET(request: Request) {
     const leads = await prisma.lead.findMany({
       where,
       orderBy: { createdAt: 'desc' },
-      take: 200
+      take: 200,
+      include: {
+        _count: {
+          select: { emailTracking: true }
+        }
+      }
     });
     
     const total = await prisma.lead.count({ where });
     const qualified = await prisma.lead.count({ where: { ...where, status: 'QUALIFIED' } });
     const converted = await prisma.lead.count({ where: { ...where, status: 'CONVERTED' } });
     const inCampaign = await prisma.lead.count({ where: { ...where, status: 'PROSPECT' } });
+    const totalOpens = await prisma.emailTracking.count();
 
     return NextResponse.json({
       leads,
-      stats: { total, qualified, converted, inCampaign }
+      stats: { total, qualified, converted, inCampaign, totalOpens }
     });
   } catch (error) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

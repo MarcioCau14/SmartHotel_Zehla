@@ -428,8 +428,25 @@ model Lead {
 
   propertyId    String?
   propertyRef   Property? @relation("PropertyLeads", fields: [propertyId], references: [id])
+  
+  emailTracking EmailTracking[]
 
   @@map("leads")
+}
+
+model EmailTracking {
+  id          String   @id @default(cuid())
+  leadId      String
+  campaignId  String?
+  openedAt    DateTime @default(now())
+  ip          String?
+  userAgent   String?
+  
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([campaignId])
+  @@map("email_tracking")
 }
 
 enum LeadStatus {
