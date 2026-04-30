@@ -84,7 +84,6 @@ type ZCCTab =
   | 'financeiro'
   | 'whatsapp'
   | 'apis'
-  | 'secretaria'
   | 'equipe'
   | 'seguranca';
 
@@ -107,7 +106,6 @@ const tabs: TabConfig[] = [
   { id: 'financeiro', label: 'Financeiro', shortLabel: 'Financeiro', icon: CreditCard, permission: 'view_financial' },
   { id: 'whatsapp', label: 'WhatsApp', shortLabel: 'WhatsApp', icon: MessageSquare, permission: 'view_whatsapp' },
   { id: 'apis', label: 'APIs', shortLabel: 'APIs', icon: Plug, permission: 'view_apis' },
-  { id: 'secretaria', label: 'Secretaria-IA', shortLabel: 'Secretaria', icon: Sparkles, permission: 'view_secretaria' },
   { id: 'equipe', label: 'Equipe', shortLabel: 'Equipe', icon: Users, permission: 'manage_team' },
   { id: 'seguranca', label: 'Segurança', shortLabel: 'Segurança', icon: Shield, permission: 'view_security' },
 ];
@@ -1044,138 +1042,7 @@ function SecurityPanel() {
 }
 
 // ===== SECRETARIA-IA INTEGRATION PANEL =====
-function SecretariaPanel() {
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [leads, setLeads] = useState<any[]>([]);
-  const [statsData, setStatsData] = useState<any>(null);
 
-  useEffect(() => {
-    fetch('/api/zcc/leads')
-      .then(res => res.json())
-      .then(data => {
-        setLeads(data.leads || []);
-        setStatsData(data.stats);
-      })
-      .catch(console.error);
-  }, []);
-
-  const stats = [
-    { label: 'Total Leads (SC)', value: statsData?.total || 0, icon: Building2, color: 'blue' },
-    { label: 'Qualificados', value: statsData?.qualified || 0, icon: CheckCircle, color: 'orange' },
-    { label: 'Em Campanha', value: statsData?.inCampaign || 0, icon: Megaphone, color: 'purple' },
-    { label: 'Convertidos', value: statsData?.converted || 0, icon: Zap, color: 'amber' },
-  ];
-
-  const handleSync = async () => {
-    setIsSyncing(true);
-    try {
-      const res = await fetch('/api/zcc/leads');
-      const data = await res.json();
-      setLeads(data.leads || []);
-      setStatsData(data.stats);
-      setIsSyncing(false);
-      alert(`Sincronização concluída! ${data.stats?.total || 0} leads processados.`);
-    } catch {
-      setIsSyncing(false);
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-[#fafafa] flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-[#F97316]" />
-            Módulo Secretaria-IA
-          </h2>
-          <p className="text-xs text-[#4d4d4d]">Acoplamento total com o banco de prospecção e prospecção de SC.</p>
-        </div>
-        <div className="flex gap-3">
-          <button 
-            onClick={handleSync}
-            disabled={isSyncing}
-            className="glass-card hover:border-[#F97316]/30 text-[#efefef] text-xs font-bold px-4 py-2 rounded-lg transition-all flex items-center gap-2"
-          >
-            <RefreshCw className={`w-4 h-4 text-[#F97316] ${isSyncing ? 'animate-spin' : ''}`} />
-            Sincronizar Planilhas
-          </button>
-          <button className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
-            <Megaphone className="w-4 h-4" />
-            Nova Campanha
-          </button>
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, i) => (
-          <div key={i} className="glass-card p-4 relative overflow-hidden group">
-            <div className={`absolute -right-4 -top-4 w-16 h-16 opacity-5 group-hover:opacity-10 transition-opacity`}>
-              <stat.icon className="w-full h-full" />
-            </div>
-            <div className="text-[10px] text-[#4d4d4d] mb-1">{stat.label}</div>
-            <div className="text-2xl font-bold text-[#fafafa]">{stat.value}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Leads List */}
-        <div className="glass-card overflow-hidden">
-          <div className="px-5 py-4 border-b border-[#2e2e2e] flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-[#b4b4b4]">Últimos Leads Sincronizados</h3>
-            <span className="text-[10px] text-[#4d4d4d]">Região: Praia do Rosa / Imbituba</span>
-          </div>
-          <div className="divide-y divide-white/5">
-            {leads.slice(0, 10).map(lead => (
-              <div key={lead.id} className="px-5 py-3 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
-                <div>
-                  <div className="text-xs font-bold text-[#efefef]">{lead.name || lead.property}</div>
-                  <div className="text-[10px] text-[#4d4d4d]">{lead.email || lead.phone || 'Sem contato'}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[9px] text-[#898989]">{lead.city}</div>
-                  <div className={`text-[9px] font-bold ${lead.status === 'QUALIFIED' ? 'text-[#F97316]' : 'text-blue-400'}`}>
-                    {lead.status}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <button className="w-full py-3 text-[10px] text-[#4d4d4d] hover:text-[#b4b4b4] transition-colors bg-white/[0.01]">
-            Ver todos os {statsData?.total || 0} leads
-          </button>
-        </div>
-
-        {/* Campaign Intelligence */}
-        <div className="glass-card p-5">
-          <h3 className="text-sm font-semibold text-[#b4b4b4] mb-4 flex items-center gap-2">
-            <Brain className="w-4 h-4 text-[#F97316]" />
-            Inteligência de Campanha
-          </h3>
-          <div className="space-y-4">
-            <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/10">
-              <div className="text-[10px] text-[#F97316] font-bold mb-1 uppercase tracking-wider">Sugestão da IA</div>
-              <p className="text-xs text-[#b4b4b4] leading-relaxed">
-                Detectamos 42 pousadas na Praia do Rosa que ainda não usam motor de reservas. 
-                Recomendo iniciar campanha <span className="text-[#F97316]">"Trauma da Comissão"</span> focando no alívio da dor das taxas da Booking.com.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-[10px]">
-                <span className="text-[#4d4d4d]">Qualidade da Base (SC)</span>
-                <span className="text-[#F97316]">92%</span>
-              </div>
-              <div className="h-1 bg-[#242424] rounded-full overflow-hidden">
-                <div className="h-full bg-orange-500 w-[92%]" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ===== TEAM MANAGEMENT TAB =====
 function TeamManagementTab() {
@@ -1296,6 +1163,16 @@ export default function ZCCPage() {
 
   // Admin login gate
   useEffect(() => {
+    // DEVELOPER BYPASS: Automatic login in dev mode for Marcio
+    if (process.env.NODE_ENV === 'development') {
+      setIsAdmin(true);
+      setUserSession({
+        role: 'admin',
+        permissions: tabs.map(t => t.permission).filter(Boolean) as string[]
+      });
+      return;
+    }
+
     try {
       const adminToken = localStorage.getItem('zehla-admin-token');
       if (adminToken) {
@@ -1518,8 +1395,7 @@ export default function ZCCPage() {
               </ZccAutoHealer>
             )}
 
-            {/* Tab 10: Secretaria-IA */}
-            {activeTab === 'secretaria' && <ZccAutoHealer fallbackName="Secretaria-IA"><SecretariaPanel /></ZccAutoHealer>}
+
 
             {/* Tab 11: Equipe */}
             {activeTab === 'equipe' && <ZccAutoHealer fallbackName="Equipe Operacional"><TeamManagementTab /></ZccAutoHealer>}

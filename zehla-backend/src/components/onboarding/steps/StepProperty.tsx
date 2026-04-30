@@ -15,6 +15,7 @@ export interface PropertyData {
   cep: string;
   tipo: string;
   site: string;
+  instagram: string;
   descricao: string;
 }
 
@@ -34,6 +35,11 @@ const tiposPropriedade = [
   { value: 'hotel', label: 'Hotel' },
   { value: 'hostel', label: 'Hostel' },
   { value: 'chale', label: 'Chalé' },
+];
+
+const paymentMethods = [
+  { id: 'pix', label: 'PIX', icon: QrCode, description: 'Pagamento instantâneo' },
+  { id: 'cartao', label: 'Cartão de Crédito', icon: CreditCard, description: 'Visa, Master, Elo' },
 ];
 
 export function StepProperty({ data, onChange }: StepPropertyProps) {
@@ -211,19 +217,36 @@ export function StepProperty({ data, onChange }: StepPropertyProps) {
           </div>
         </div>
 
-        {/* Site + Descrição */}
-        <div>
-          <label className="block text-sm font-medium text-[#b4b4b4] mb-2">
-            <Globe className="w-4 h-4 inline mr-1" />
-            Site <span className="text-[#363636]">(opcional)</span>
-          </label>
-          <input
-            type="url"
-            value={data.site}
-            onChange={(e) => updateField('site', e.target.value)}
-            placeholder="https://www.suapousada.com.br"
-            className="w-full px-4 py-3 bg-[#242424] border border-[#363636] rounded-xl text-sm text-[#fafafa] placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-all"
-          />
+        {/* Site e Redes Sociais */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-[#b4b4b4] mb-2">
+              <Globe className="w-4 h-4 inline mr-1" />
+              Site <span className="text-[#363636]">(opcional)</span>
+            </label>
+            <input
+              type="url"
+              value={data.site}
+              onChange={(e) => updateField('site', e.target.value)}
+              placeholder="https://www.suapousada.com.br"
+              className="w-full px-4 py-3 bg-[#242424] border border-[#363636] rounded-xl text-sm text-[#fafafa] placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#b4b4b4] mb-2">
+              Instagram <span className="text-[#363636]">(opcional)</span>
+            </label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs text-[#4d4d4d]">instagram.com/</span>
+              <input
+                type="text"
+                value={data.instagram}
+                onChange={(e) => updateField('instagram', e.target.value.replace('instagram.com/', ''))}
+                placeholder="sua_pousada"
+                className="w-full pl-28 pr-4 py-3 bg-[#242424] border border-[#363636] rounded-xl text-sm text-[#fafafa] placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-all"
+              />
+            </div>
+          </div>
         </div>
 
         <div>

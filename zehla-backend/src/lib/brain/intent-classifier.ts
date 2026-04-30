@@ -15,6 +15,7 @@ export const INTENTS = [
   'CANCELATION_POLICY',
   'GREETING',
   'FAREWELL',
+  'SUPPLIER_INQUIRY',
   'UNKNOWN'
 ] as const
 
@@ -44,6 +45,7 @@ Classifique a mensagem do hóspede em uma das seguintes categorias:
 - CANCELATION_POLICY: Pergunta sobre política de cancelamento
 - GREETING: Saudação simples
 - FAREWELL: Despedida simples
+- SUPPLIER_INQUIRY: Mensagem de fornecedor, vendedor, representante ou oferta de serviços (B2B)
 - UNKNOWN: Não se encaixa em nenhuma categoria
 
 Responda APENAS em JSON no formato:

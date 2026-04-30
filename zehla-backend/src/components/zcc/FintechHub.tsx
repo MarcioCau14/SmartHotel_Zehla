@@ -1,6 +1,7 @@
 'use client';
 
-import { QrCode, CreditCard, CheckCircle, ArrowDownUp, TrendingUp, Shield, Building } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { QrCode, CreditCard, CheckCircle, ArrowDownUp, TrendingUp, Shield, Building, ArrowUpRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface PaymentOption {

@@ -23,8 +23,6 @@ interface StepPaymentProps {
 const paymentMethods = [
   { id: 'pix', label: 'PIX', icon: QrCode, description: 'Pagamento instantâneo' },
   { id: 'cartao', label: 'Cartão de Crédito', icon: CreditCard, description: 'Visa, Master, Elo' },
-  { id: 'dinheiro', label: 'Dinheiro', icon: Banknote, description: 'Em espécie' },
-  { id: 'transferencia', label: 'Transferência', icon: Building, description: 'TED / DOC' },
 ];
 
 const pixKeyTypes = [
@@ -88,7 +86,7 @@ export function StepPayment({ data, onChange }: StepPaymentProps) {
           <span className="gradient-text">receber?</span>
         </h2>
         <p className="text-[#898989] text-sm sm:text-base">
-          Escolha os métodos de pagamento aceitos na sua propriedade.
+          Escolha os métodos de pagamento que seus hóspedes usarão para pagar <b>diretamente</b> para você. O ZEHLA apenas valida e arquiva os dados.
         </p>
       </div>
 
@@ -136,8 +134,11 @@ export function StepPayment({ data, onChange }: StepPaymentProps) {
         >
           <h3 className="text-sm font-semibold text-[#efefef] mb-4 flex items-center gap-2">
             <QrCode className="w-4 h-4 text-[#FF5500]" />
-            Dados do PIX
+            Dados do SEU PIX (Recebimento Direto)
           </h3>
+          <p className="text-[10px] text-[#4d4d4d] mb-4">
+            Importante: O hóspede pagará diretamente para esta chave. O ZEHLA detectará o comprovante no WhatsApp e arquivará os dados para seu controle financeiro.
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-[#4d4d4d] mb-1">Tipo de Chave</label>
@@ -170,65 +171,7 @@ export function StepPayment({ data, onChange }: StepPaymentProps) {
         </motion.div>
       )}
 
-      {/* Transfer details */}
-      {hasTransfer && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          className="glass-card p-5"
-        >
-          <h3 className="text-sm font-semibold text-[#efefef] mb-4 flex items-center gap-2">
-            <Building className="w-4 h-4 text-[#FF5500]" />
-            Dados Bancários
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-[#4d4d4d] mb-1">Banco</label>
-              <input
-                type="text"
-                value={data.bankName}
-                onChange={(e) => updateField('bankName', e.target.value)}
-                placeholder="Ex: Banco do Brasil"
-                className={`w-full px-3 py-2.5 bg-[#242424] border rounded-lg text-sm text-[#fafafa] placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-all ${
-                  errors.bankName ? 'border-red-500/50' : 'border-[#363636] focus:border-orange-500/50'
-                }`}
-              />
-              {errors.bankName && <p className="text-xs text-red-400 mt-1">{errors.bankName}</p>}
-            </div>
-            <div>
-              <label className="block text-xs text-[#4d4d4d] mb-1">Agência</label>
-              <input
-                type="text"
-                value={data.bankAgency}
-                onChange={(e) => updateField('bankAgency', e.target.value)}
-                placeholder="0001"
-                className="w-full px-3 py-2.5 bg-[#242424] border border-[#363636] rounded-lg text-sm text-[#fafafa] placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-[#4d4d4d] mb-1">Conta</label>
-              <input
-                type="text"
-                value={data.bankAccount}
-                onChange={(e) => updateField('bankAccount', e.target.value)}
-                placeholder="12345-6"
-                className="w-full px-3 py-2.5 bg-[#242424] border border-[#363636] rounded-lg text-sm text-[#fafafa] placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-[#4d4d4d] mb-1">CPF do Titular</label>
-              <input
-                type="text"
-                value={data.bankCpf}
-                onChange={(e) => updateField('bankCpf', e.target.value)}
-                placeholder="000.000.000-00"
-                className="w-full px-3 py-2.5 bg-[#242424] border border-[#363636] rounded-lg text-sm text-[#fafafa] placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-all"
-              />
-            </div>
-          </div>
-        </motion.div>
-      )}
-
+    
       {/* No method selected */}
       {data.methods.length === 0 && (
         <div className="text-center py-8">

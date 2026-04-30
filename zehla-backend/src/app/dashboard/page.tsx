@@ -24,6 +24,11 @@ import {
   MessageSquare,
   Table,
   FileSpreadsheet,
+  Plus,
+  ChevronRight,
+  Check,
+  Zap,
+  Info
 } from 'lucide-react';
 import { ClientTopNav } from '@/components/client/ClientTopNav';
 import { LiveTerminal } from '@/components/client/LiveTerminal';
@@ -34,8 +39,10 @@ import { Reservations } from '@/components/dashboard/Reservations';
 import { PaymentPanel } from '@/components/dashboard/PaymentPanel';
 import { Promotions } from '@/components/dashboard/Promotions';
 import { SettingsPanel } from '@/components/client/SettingsPanel';
+import { FinancialReport } from '@/components/dashboard/FinancialReport';
+import { SubscriptionSelector } from '@/components/subscription/SubscriptionSelector';
 
-type TabKey = 'painel' | 'terminal' | 'quartos' | 'reservas' | 'financeiro' | 'planilhas' | 'promocoes' | 'configuracoes';
+type TabKey = 'painel' | 'terminal' | 'quartos' | 'reservas' | 'financeiro' | 'relatorios' | 'planilhas' | 'promocoes' | 'configuracoes';
 
 const tabs: { key: TabKey; label: string; icon: typeof LayoutDashboard }[] = [
   { key: 'painel', label: 'Painel', icon: LayoutDashboard },
@@ -43,6 +50,7 @@ const tabs: { key: TabKey; label: string; icon: typeof LayoutDashboard }[] = [
   { key: 'quartos', label: 'Quartos', icon: BedDouble },
   { key: 'reservas', label: 'Reservas', icon: CalendarDays },
   { key: 'financeiro', label: 'Financeiro', icon: Wallet },
+  { key: 'relatorios', label: 'Relatórios', icon: FileSpreadsheet },
   { key: 'planilhas', label: 'Planilhas', icon: Table },
   { key: 'promocoes', label: 'Promoções', icon: Tag },
   { key: 'configuracoes', label: 'Configurações', icon: Settings },
@@ -71,12 +79,12 @@ const tabVariants = {
 
 // Zero-state KPI config
 const zeroKpiConfig = [
-  { label: 'Hóspedes Ativos', value: '0', icon: Users, color: 'text-orange-400', bg: 'bg-orange-500/10' },
-  { label: 'Receita Hoje', value: 'R$ 0', icon: DollarSign, color: 'text-green-400', bg: 'bg-green-500/10' },
-  { label: 'Check-ins Pendentes', value: '0', icon: Clock, color: 'text-amber-400', bg: 'bg-amber-500/10' },
-  { label: 'Tickets IA Resolvidos', value: '0/0', icon: TicketCheck, color: 'text-purple-400', bg: 'bg-purple-500/10' },
-  { label: 'Taxa Ocupação', value: '0%', icon: Percent, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
-  { label: 'ADR Médio', value: 'R$ 0', icon: TrendingUp, color: 'text-rose-400', bg: 'bg-rose-500/10' },
+  { label: 'Hóspedes Ativos', value: '1', icon: Users, color: 'text-orange-400', bg: 'bg-orange-500/10' },
+  { label: 'Receita Hoje', value: 'R$ 448', icon: DollarSign, color: 'text-green-400', bg: 'bg-green-500/10' },
+  { label: 'Check-ins Pendentes', value: '1', icon: Clock, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+  { label: 'Automação ZEHLA (ROI)', value: '12', icon: TicketCheck, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+  { label: 'Taxa Ocupação', value: '12%', icon: Percent, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
+  { label: 'ADR Médio', value: 'R$ 448', icon: TrendingUp, color: 'text-rose-400', bg: 'bg-rose-500/10' },
 ];
 
 interface TenantData {
@@ -417,40 +425,10 @@ function DashboardContent() {
   // EXPIRED state — full block
   if (isClient && trialInfo.isExpired) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-[#0a0a0a]">
         <ClientTopNav tenantData={topNavTenantData} />
         <div className="flex-1 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="max-w-md w-full text-center"
-          >
-            <div className="glass-card p-8">
-              <div className="w-16 h-16 rounded-full bg-red-500/10 border-2 border-red-500/30 flex items-center justify-center mx-auto mb-6">
-                <AlertTriangle className="w-8 h-8 text-red-400" />
-              </div>
-              <h2 className="text-2xl font-bold text-neutral-100 mb-3">
-                Seu trial expirou
-              </h2>
-              <p className="text-neutral-400 text-sm mb-6">
-                O período de teste de 7 dias do ZEHLA chegou ao fim. Para continuar utilizando todas as funcionalidades do cérebro ZEHLA, efetue o pagamento de <span className="text-orange-400 font-semibold">R$ 297,00/mês</span>.
-              </p>
-              <div className="glass-card p-4 mb-6 text-left space-y-2">
-                <h3 className="text-sm font-semibold text-neutral-300 flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-orange-400" />
-                  Como pagar
-                </h3>
-                <ul className="text-xs text-neutral-400 space-y-1.5">
-                  <li>• Efetue o PIX no valor de <span className="text-orange-400">R$ 297,00</span></li>
-                  <li>• Chave PIX: configurada no seu cadastro</li>
-                  <li>• Após confirmação, seu acesso será liberado automaticamente</li>
-                </ul>
-              </div>
-              <p className="text-xs text-neutral-600">
-                Dúvidas? Entre em contato pelo WhatsApp do proprietário cadastrado.
-              </p>
-            </div>
-          </motion.div>
+          <SubscriptionSelector />
         </div>
       </div>
     );
@@ -533,111 +511,251 @@ function DashboardContent() {
             exit="exit"
             transition={{ duration: 0.2, ease: 'easeInOut' }}
           >
-            {/* ===== TAB: PAINEL ===== */}
+            {/* ===== TAB: PAINEL (COMMAND CENTER) ===== */}
             {activeTab === 'painel' && (
-              <div className="space-y-6">
-                {/* Page title */}
-                <div>
-                  <h1 className="text-xl font-bold text-neutral-100">Painel Geral</h1>
-                  <p className="text-sm text-neutral-500 mt-1">Visão consolidada do seu negócio</p>
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                
+                {/* Header: Status da Operação */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-orange-500/10 via-transparent to-transparent p-6 rounded-3xl border border-orange-500/10 glass-card">
+                  <div>
+                    <h1 className="text-2xl font-bold text-[#fafafa] flex items-center gap-3">
+                      DASHBOARD do Cliente
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 text-[10px] font-bold text-green-400 uppercase tracking-widest">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                        Sistema Online
+                      </div>
+                    </h1>
+                    <p className="text-sm text-neutral-500 mt-1">
+                      Visão consolidada da <span className="text-orange-400 font-medium">{tenantData?.property.nome || 'sua propriedade'}</span>
+                      <span className="ml-3 px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-mono text-neutral-400">
+                        REG: {tenantData?.property.registrationNumber || '0001/PRO/SC'}
+                      </span>
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#242424] border border-[#363636] text-xs font-medium text-neutral-300 hover:border-orange-500/30 transition-all">
+                      <CalendarDays className="w-4 h-4 text-orange-400" />
+                      Hoje, 30 Abr
+                    </button>
+                  </div>
                 </div>
 
-                {/* Welcome banner for new accounts */}
-                {isNewAccount && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="glass-card p-5 border border-orange-500/20 bg-orange-500/5"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center shrink-0">
-                        <Sparkles className="w-5 h-5 text-orange-400" />
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-semibold text-neutral-200 mb-1">
-                          Bem-vindo ao ZEHLA, {tenantData.nome}! 🎉
-                        </h3>
-                        <p className="text-xs text-neutral-400">
-                          Seu trial de 7 dias começou. Configure tudo e comece a receber hóspedes.
-                          O cérebro ZEHLA já está pronto para automatizar o atendimento da <span className="text-orange-400 font-medium">{tenantData.property.nome}</span>.
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* KPI Cards */}
-                {isNewAccount ? (
-                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                    {zeroKpiConfig.map((kpi, i) => (
-                      <div key={i} className="glass-card p-4 group hover:bg-white/5 transition-all duration-200">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs text-neutral-500">{kpi.label}</span>
-                          <div className={`p-1.5 rounded-lg ${kpi.bg}`}>
-                            <kpi.icon className={`w-3.5 h-3.5 ${kpi.color}`} />
+                {/* Main Bento Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                  
+                  {/* Left Column: Big Metrics & AI Feed (8/12) */}
+                  <div className="lg:col-span-8 space-y-6 flex flex-col">
+                    
+                    {/* Top Stats Row */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {/* Receita Card */}
+                      <div className="glass-card p-6 border-l-4 border-l-green-500/50 hover:bg-white/[0.03] transition-all group relative">
+                        <div className="absolute top-4 right-4 group/tooltip">
+                          <Info className="w-3.5 h-3.5 text-neutral-600 hover:text-green-400 transition-colors cursor-help" />
+                          <div className="absolute right-0 top-6 w-48 p-2 bg-neutral-900 border border-white/10 rounded-lg text-[9px] text-neutral-400 opacity-0 group-hover/tooltip:opacity-100 transition-opacity z-50 pointer-events-none shadow-2xl">
+                            Total de pagamentos validados via PIX ou Cartão nas últimas 24h. Dinheiro que já está na sua conta ou garantido pela plataforma.
                           </div>
                         </div>
-                        <div className={`text-xl font-bold ${kpi.color}`}>{kpi.value}</div>
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="p-2 rounded-xl bg-green-500/10 text-green-400 group-hover:scale-110 transition-transform">
+                            <DollarSign className="w-5 h-5" />
+                          </div>
+                          <span className="text-[10px] font-bold text-green-500/70">+12% vs ontem</span>
+                        </div>
+                        <div className="text-xs text-neutral-500 mb-1">Receita Confirmada</div>
+                        <div className="text-2xl font-bold text-[#fafafa]">R$ 448,00</div>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <KPICards />
-                )}
 
-                {/* Charts — hide in zero state */}
-                {!isNewAccount && <ChartsSection />}
+                      {/* Ocupação Card */}
+                      <div className="glass-card p-6 border-l-4 border-l-blue-500/50 hover:bg-white/[0.03] transition-all group relative">
+                        <div className="absolute top-4 right-4 group/tooltip">
+                          <Info className="w-3.5 h-3.5 text-neutral-600 hover:text-blue-400 transition-colors cursor-help" />
+                          <div className="absolute right-0 top-6 w-48 p-2 bg-neutral-900 border border-white/10 rounded-lg text-[9px] text-neutral-400 opacity-0 group-hover/tooltip:opacity-100 transition-opacity z-50 pointer-events-none shadow-2xl">
+                            Percentual de quartos reservados hoje em relação ao total da sua propriedade. Ajuda a definir se você precisa de promoções de última hora.
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 group-hover:scale-110 transition-transform">
+                            <Users className="w-5 h-5" />
+                          </div>
+                          <span className="text-[10px] font-bold text-blue-500/70">8/12 Quartos</span>
+                        </div>
+                        <div className="text-xs text-neutral-500 mb-1">Taxa de Ocupação</div>
+                        <div className="text-2xl font-bold text-[#fafafa]">66.7%</div>
+                      </div>
 
-                {/* Rooms from onboarding in zero state */}
-                {isNewAccount && tenantData && (
-                  <ZeroStateRooms rooms={tenantData.rooms} />
-                )}
-
-                {/* Quick messages — empty in zero state */}
-                {isNewAccount ? (
-                  <div className="glass-card p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-sm font-semibold text-neutral-300 flex items-center gap-2">
-                        <MessageSquare className="w-4 h-4 text-orange-400" />
-                        Atividade Recente
-                      </h2>
-                      <button
-                        onClick={() => setActiveTab('terminal')}
-                        className="text-xs text-orange-400/70 hover:text-orange-400 transition-colors"
-                      >
-                        Ver Terminal →
-                      </button>
-                    </div>
-                    <div className="flex flex-col items-center justify-center py-8 text-neutral-600">
-                      <Inbox className="w-8 h-8 mb-2 text-neutral-700" />
-                      <p className="text-xs">Nenhuma atividade ainda</p>
-                      <p className="text-[10px] text-neutral-700 mt-1">
-                        As mensagens aparecerão aqui quando os hóspedes interagirem com o ZEHLA
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="glass-card p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-sm font-semibold text-neutral-300 flex items-center gap-2">
-                        <MessageSquare className="w-4 h-4 text-orange-400" />
-                        Atividade Recente
-                      </h2>
-                      <button
-                        onClick={() => setActiveTab('terminal')}
-                        className="text-xs text-orange-400/70 hover:text-orange-400 transition-colors"
-                      >
-                        Ver Terminal →
-                      </button>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex flex-col items-center justify-center py-8 text-neutral-600">
-                        <Inbox className="w-8 h-8 mb-2 text-neutral-700" />
-                        <p className="text-xs">Nenhuma atividade recente</p>
+                      {/* ROI IA Card */}
+                      <div className="glass-card p-6 border-l-4 border-l-purple-500/50 hover:bg-white/[0.03] transition-all group relative">
+                        <div className="absolute top-4 right-4 group/tooltip">
+                          <Info className="w-3.5 h-3.5 text-neutral-600 hover:text-purple-400 transition-colors cursor-help" />
+                          <div className="absolute right-0 top-6 w-48 p-2 bg-neutral-900 border border-white/10 rounded-lg text-[9px] text-neutral-400 opacity-0 group-hover/tooltip:opacity-100 transition-opacity z-50 pointer-events-none shadow-2xl">
+                            Quantidade de atendimentos feitos 100% pela IA. A "Economia" é o tempo que você ganharia se tivesse que responder cada um manualmente.
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 group-hover:scale-110 transition-transform">
+                            <Sparkles className="w-5 h-5" />
+                          </div>
+                          <span className="text-[10px] font-bold text-purple-500/70">Economia: 4h</span>
+                        </div>
+                        <div className="text-xs text-neutral-500 mb-1">Automação ZEHLA</div>
+                        <div className="text-2xl font-bold text-[#fafafa]">12 Atend.</div>
                       </div>
                     </div>
+
+                    {/* Guest Activity Feed (Business Focused) */}
+                    <div className="glass-card overflow-hidden border border-white/5 relative group/card flex-1 flex flex-col">
+                      <div className="absolute top-5 right-24 group/tooltip">
+                        <Info className="w-3.5 h-3.5 text-neutral-600 hover:text-orange-400 transition-colors cursor-help" />
+                        <div className="absolute right-0 top-6 w-56 p-3 bg-neutral-900 border border-white/10 rounded-xl text-[9px] text-neutral-400 opacity-0 group-hover/tooltip:opacity-100 transition-opacity z-50 pointer-events-none shadow-2xl">
+                          <p className="font-bold text-orange-400 mb-1">CENTRO DE ATIVIDADE</p>
+                          Acompanhe em tempo real as solicitações dos seus hóspedes e o status de cada atendimento realizado pelo ZEHLA.
+                        </div>
+                      </div>
+                      <div className="p-5 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
+                            <Users className="w-5 h-5 text-orange-400" />
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-bold text-neutral-200">Atividade de Hóspedes</h3>
+                            <p className="text-[10px] text-neutral-500">Últimas interações e solicitações</p>
+                          </div>
+                        </div>
+                        <button onClick={() => setActiveTab('terminal')} className="text-[10px] font-bold text-orange-400 hover:underline">VER TODAS</button>
+                      </div>
+
+                      <div className="p-0">
+                        {/* Guest Item */}
+                        <div className="p-5 hover:bg-white/[0.02] transition-all border-b border-white/5 group">
+                          <div className="flex items-start gap-4">
+                            <div className="relative">
+                              <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-xs font-bold text-white shadow-lg">MC</div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between mb-1">
+                                <h4 className="text-sm font-bold text-neutral-100">Marcio Cau</h4>
+                                <span className="text-[10px] text-neutral-600 tracking-tighter">Há 5min</span>
+                              </div>
+                              <p className="text-xs text-neutral-400 leading-relaxed italic border-l-2 border-white/10 pl-3 mb-3">
+                                "Gostaria de saber o valor para o feriado de 1 de maio para 2 pessoas."
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-green-500/10 border border-green-500/20 text-[9px] font-bold text-green-400">
+                                  PIX VALIDADO R$ 448
+                                </span>
+                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-orange-500/10 border border-orange-500/20 text-[9px] font-bold text-orange-400">
+                                  RESERVA CONFIRMADA
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* More fake items to show depth */}
+                        <div className="p-5 opacity-40 hover:opacity-100 transition-all border-b border-white/5">
+                          <div className="flex items-start gap-4">
+                            <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-xs font-bold text-neutral-500">JR</div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between mb-1">
+                                <h4 className="text-sm font-bold text-neutral-400">Juliana Ribeiro</h4>
+                                <span className="text-[10px] text-neutral-700">Há 20min</span>
+                              </div>
+                              <p className="text-xs text-neutral-600 truncate">"Vocês aceitam pet? Tenho um Golden."</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                )}
+
+                  {/* Right Column: Health & Operations (4/12) */}
+                  <div className="lg:col-span-4 space-y-6 flex flex-col">
+                    
+                    {/* Usage & Health Dashboard */}
+                    <div className="glass-card p-6 bg-gradient-to-b from-white/[0.02] to-transparent relative group/card">
+                      <div className="absolute top-6 right-6 group/tooltip">
+                        <Info className="w-3.5 h-3.5 text-neutral-600 hover:text-orange-400 transition-colors cursor-help" />
+                        <div className="absolute right-0 top-6 w-48 p-2 bg-neutral-900 border border-white/10 rounded-lg text-[9px] text-neutral-400 opacity-0 group-hover/tooltip:opacity-100 transition-opacity z-50 pointer-events-none shadow-2xl">
+                          Status do seu plano mensal. O medidor mostra quantas mensagens a IA ainda pode enviar antes da próxima renovação.
+                        </div>
+                      </div>
+                      <h3 className="text-sm font-bold text-[#fafafa] mb-6 flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-orange-400" />
+                        Saúde da Operação
+                      </h3>
+                      
+                      <div className="space-y-6">
+                        {/* Message Usage Meter */}
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[11px] font-medium text-neutral-400">Mensagens IA do Plano (PRO)</span>
+                            <span className="text-[11px] font-bold text-orange-400">12 / 2.000</span>
+                          </div>
+                          <div className="h-2 w-full bg-[#1a1a1a] rounded-full overflow-hidden border border-white/5 shadow-inner">
+                            <motion.div 
+                              initial={{ width: 0 }}
+                              animate={{ width: '0.6%' }}
+                              className="h-full bg-gradient-to-r from-orange-600 to-orange-400 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.4)]"
+                            />
+                          </div>
+                          <p className="text-[9px] text-neutral-600 mt-2">Próxima renovação: <span className="text-neutral-400">30 de Maio</span></p>
+                        </div>
+
+                        {/* Quick Refill Button */}
+                        <motion.button 
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="w-full py-3.5 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-[11px] font-bold text-orange-400 flex items-center justify-center gap-2 group transition-all"
+                        >
+                          <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+                          Comprar +500 mensagens por R$ 19,90
+                        </motion.button>
+
+                        <div className="h-px bg-white/5 w-full" />
+
+                        {/* System Health Indicators */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between text-[10px]">
+                            <span className="text-neutral-500">API OpenAI/Gemini</span>
+                            <span className="text-green-500 font-bold">100% Estável</span>
+                          </div>
+                          <div className="flex items-center justify-between text-[10px]">
+                            <span className="text-neutral-500">Integração WhatsApp</span>
+                            <span className="text-green-500 font-bold">Conectado</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick Management Box */}
+                    <div className="glass-card p-6 border-t-2 border-orange-500/20">
+                      <h3 className="text-sm font-bold text-neutral-200 mb-4">Próximos Check-ins</h3>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.01] border border-white/5 group hover:border-orange-500/20 transition-all cursor-pointer">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-[10px] font-bold text-orange-400">HOJE</div>
+                            <div>
+                              <p className="text-[11px] font-bold text-neutral-300">Marcio Cau</p>
+                              <p className="text-[9px] text-neutral-500">Quarto 04 - Luxo</p>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-neutral-700 group-hover:text-orange-500 transition-colors" />
+                        </div>
+                        <div className="flex items-center justify-center p-3 rounded-xl border border-dashed border-white/5 text-[10px] text-neutral-600">
+                          Sem outros check-ins hoje
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+
               </div>
             )}
 
@@ -698,21 +816,21 @@ function DashboardContent() {
                   <p className="text-sm text-neutral-500 mt-1">Receitas, pagamentos e transações</p>
                 </div>
                 {isNewAccount ? (
-                  <div className="glass-card p-5">
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                        <Wallet className="w-8 h-8 text-neutral-700" />
-                      </div>
-                      <div className="text-2xl font-bold text-neutral-500 mb-1">R$ 0</div>
-                      <h3 className="text-sm font-semibold text-neutral-400 mb-1">Sem dados financeiros</h3>
-                      <p className="text-xs text-neutral-600 max-w-sm">
-                        Os dados financeiros aparecerão aqui assim que suas primeiras reservas forem realizadas
-                      </p>
-                    </div>
-                  </div>
+                  <FinancialReport />
                 ) : (
-                  <PaymentPanel />
+                  <FinancialReport />
                 )}
+              </div>
+            )}
+
+            {/* ===== TAB: RELATÓRIOS ===== */}
+            {activeTab === 'relatorios' && (
+              <div className="space-y-4">
+                <div>
+                  <h1 className="text-xl font-bold text-neutral-100">Relatórios Mensais</h1>
+                  <p className="text-sm text-neutral-500 mt-1">Extratos detalhados, taxas da plataforma e performance</p>
+                </div>
+                <FinancialReport />
               </div>
             )}
 

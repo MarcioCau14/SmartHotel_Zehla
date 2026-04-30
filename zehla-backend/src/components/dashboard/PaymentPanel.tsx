@@ -11,10 +11,8 @@ const pixTransactions = [
 ];
 
 const splitConfig = [
-  { label: 'ZEHLA Plataforma', percent: 5, color: 'text-[#FF5500]' },
-  { label: 'Pousada', percent: 85, color: 'text-[#FF5500]' },
-  { label: 'Gateway (Pagar.me)', percent: 2.99, color: 'text-[#FF5500]' },
-  { label: 'IA Processing', percent: 3.01, color: 'text-[#FF5500]' },
+  { label: 'Plataforma ZEHLA', percent: 'Conforme Plano', color: 'text-[#FF5500]' },
+  { label: 'Pousada', percent: 'Líquido Total', color: 'text-[#FF5500]' },
 ];
 
 export function PaymentPanel() {

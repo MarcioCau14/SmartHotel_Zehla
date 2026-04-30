@@ -45,7 +45,7 @@ services:
       AUTHENTICATION_API_KEY: zehla-evolution-key
       DATABASE_ENABLED: "true"
       DATABASE_PROVIDER: "postgresql"
-      DATABASE_CONNECTION_URI: postgresql://zehla:zehla_secret_2026@postgres:5432/zehla_db?schema=public
+      DATABASE_CONNECTION_URI: postgresql://zehla:zehla_secret_2026@postgres:5432/zehla_db?schema=evolution
       CACHE_REDIS_ENABLED: "true"
       CACHE_REDIS_URI: redis://redis:6379/0
       DATABASE_SAVE_DATA_INSTANCE: "true"

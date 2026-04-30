@@ -72,8 +72,9 @@ model VerificationToken {
 }
 
 model Property {
-  id          String   @id @default(cuid())
-  name        String
+  id                 String   @id @default(cuid())
+  registrationNumber String?  @unique // Format: 0001/PRO/SC
+  name               String
   slug        String   @unique
   description String?  @db.Text
   address     String
@@ -96,6 +97,8 @@ model Property {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   isCanary    Boolean  @default(false)
+  whatsappChannelType WhatsappChannelType @default(GUESTS_ONLY)
+  supplierContact     String?
 
   userId      String
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -106,6 +109,8 @@ model Property {
   agentLogs   AgentLog[]
   messages    Message[]
   pricingRules PricingRule[]
+  invoices    Invoice[]
+  leads       Lead[] @relation("PropertyLeads")
 
   @@map("properties")
 }
@@ -115,6 +120,7 @@ model Room {
   number      String
   name        String?
   type        RoomType   @default(STANDARD)
+  pricingType PricingType @default(PER_ROOM)
   capacity    Int        @default(2)
   basePrice   Float      @default(150.00)
   description String?    @db.Text
@@ -329,6 +335,11 @@ enum Plan {
   MAX
 }
 
+enum WhatsappChannelType {
+  GUESTS_ONLY
+  GUESTS_AND_SUPPLIERS
+}
+
 enum PixKeyType {
   CPF
   CNPJ
@@ -396,18 +407,27 @@ model TrialBlacklist {
 }
 
 model Lead {
-  id          String   @id @default(cuid())
-  name        String
-  email       String?  @unique
-  phone       String?  @unique
-  property    String?
-  city        String?
-  state       String?  @default("SC")
-  source      String   @default("SECRETARIA_AI")
-  status      LeadStatus @default(PROSPECT)
-  metadata    String?  @db.Text // Dados brutos da planilha
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String
+  email         String?  @unique
+  phone         String?  @unique
+  whatsapp      String?  @unique
+  property      String?
+  category      String?  @default("pousada")
+  city          String?
+  state         String?  @default("SC")
+  region        String?  // Sul, Sudeste, Norte, Nordeste, Centro-Oeste
+  googleRating  Float?
+  score         Int?
+  painPoints    String?  @db.Text
+  source        String   @default("SECRETARIA_AI")
+  status        LeadStatus @default(PROSPECT)
+  metadata      String?  @db.Text // Dados brutos da planilha
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  propertyId    String?
+  propertyRef   Property? @relation("PropertyLeads", fields: [propertyId], references: [id])
 
   @@map("leads")
 }
@@ -429,5 +449,48 @@ model SecurityIncident {
   createdAt   DateTime  @default(now())
 
   @@map("security_incidents")
+}
+
+model Invoice {
+  id          String   @id @default(cuid())
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  month       Int
+  year        Int
+  status      InvoiceStatus @default(PENDING)
+  totalAmount Float
+  items       InvoiceItem[]
+  createdAt   DateTime @default(now())
+
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  type        InvoiceItemType
+  description String
+  amount      Float
+  metadata    String?  @db.Text // reservationId, timestamp, etc
+  createdAt   DateTime @default(now())
+
+  @@map("invoice_items")
+}
+
+enum PricingType {
+  PER_ROOM
+  PER_PERSON
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum InvoiceItemType {
+  PACKAGE_FEE
+  BOOKING_COMMISSION
 }
 

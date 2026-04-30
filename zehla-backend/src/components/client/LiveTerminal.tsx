@@ -11,11 +11,11 @@ const categoryConfig = {
   guest: {
     label: 'HÓSPEDES',
     emoji: '🟢',
-    color: 'text-[#FF5500]',
-    bg: 'bg-[#FF5500]/10',
-    border: 'border-[#FF5500]/30',
-    badgeBg: 'bg-[#FF5500]/10',
-    dotBg: 'bg-[#FF5500]',
+    color: 'text-green-400',
+    bg: 'bg-green-500/10',
+    border: 'border-green-500/30',
+    badgeBg: 'bg-green-500/20',
+    dotBg: 'bg-green-400',
     icon: Users,
   },
   employee: {
@@ -31,11 +31,11 @@ const categoryConfig = {
   supplier: {
     label: 'FORNECEDORES',
     emoji: '🟡',
-    color: 'text-[#FF5500]',
-    bg: 'bg-[#FF5500]/10',
-    border: 'border-[#FF5500]/30',
-    badgeBg: 'bg-[#FF5500]/10',
-    dotBg: 'bg-amber-400',
+    color: 'text-yellow-400',
+    bg: 'bg-yellow-500/10',
+    border: 'border-yellow-500/30',
+    badgeBg: 'bg-yellow-500/20',
+    dotBg: 'bg-yellow-400',
     icon: Truck,
   },
   alert: {
@@ -129,7 +129,7 @@ export function LiveTerminal() {
 
         {/* Terminal title */}
         <span className="text-xs font-mono text-[#4d4d4d] ml-2 hidden sm:inline">
-          zehla-ops — terminal de operações
+          zehla-ops [REG: 0001/PRO/SC] — terminal de operações
         </span>
 
         {/* LIVE indicator */}

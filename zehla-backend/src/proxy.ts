@@ -42,6 +42,18 @@ export async function proxy(request: NextRequest) {
 
   // 0.1 Proteção Estrita ZCC (SUPER_ADMIN)
   if (ZCC_PATHS.some(p => pathname.startsWith(p)) && pathname !== '/zcc-login') {
+    // DEVELOPER BYPASS: Allow ZCC access in development mode
+    if (process.env.NODE_ENV === 'development') {
+      const requestHeaders = new Headers(request.headers);
+      requestHeaders.set('x-zcc-user-id', 'dev-marcio-id');
+      requestHeaders.set('x-zcc-role', 'SUPER_ADMIN');
+      requestHeaders.set('x-zcc-tenant-id', 'global');
+
+      return NextResponse.next({
+        request: { headers: requestHeaders },
+      });
+    }
+
     const token = request.cookies.get('__session')?.value 
       ?? request.cookies.get('zehla-token')?.value
       ?? request.headers.get('Authorization')?.replace('Bearer ', '');

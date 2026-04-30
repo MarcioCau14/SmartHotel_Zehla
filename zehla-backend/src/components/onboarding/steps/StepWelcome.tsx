@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Brain, Zap, User, Mail, Phone, Lock, Eye, EyeOff, MessageCircle, CopyCheck } from 'lucide-react';
+import { Brain, Zap, User, Mail, Phone, Lock, Eye, EyeOff, MessageCircle, CopyCheck, Check } from 'lucide-react';
+
 
 export interface WelcomeData {
   nome: string;

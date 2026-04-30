@@ -1,9 +1,6 @@
-import { AgentRequest, AgentResponse } from '@/types'
-import { classifyIntent, Intent } from './intent-classifier'
-import { llmRouter } from '@/lib/ai/llm-router'
-import { prisma } from '@/lib/prisma'
-import { WhatsappPersonaLearner } from './whatsapp-persona-learner'
-import { scanAndMaskPII, sanitizePrompt } from '@/lib/security/pii-scanner'
+import { hasFeature } from './feature-guard'
+import { ReceiptExtractor } from './receipt-extractor'
+import { calculateFees } from '@/lib/finance/fee-calculator'
 
 export class AgentOrchestrator {
   async process(request: AgentRequest): Promise<AgentResponse> {
@@ -48,7 +45,7 @@ export class AgentOrchestrator {
     const intent = classified.intent
 
 
-    // 2. Buscar contexto da propriedade
+    // 2. Buscar contexto da propriedade e validar Trial
     const property = await prisma.property.findUnique({
       where: { id: propertyId },
       include: { rooms: true, reservations: { where: { status: { in: ['CONFIRMED', 'CHECKED_IN'] } } } }
@@ -58,9 +55,31 @@ export class AgentOrchestrator {
       return this.buildError('Property not found', startTime)
     }
 
-    // 3. Aprendizado de Tom de Voz (Machine Learning) para planos PRO e MAX
+    // TRAVA DE SEGURANÇA: Validação de Trial de 7 Dias
+    const isTrialExpired = property.isTrial && property.trialEndsAt && property.trialEndsAt < new Date();
+    if (isTrialExpired || property.status === 'TRIAL_EXPIRED') {
+      if (property.status !== 'TRIAL_EXPIRED') {
+        await prisma.property.update({
+          where: { id: propertyId },
+          data: { status: 'TRIAL_EXPIRED' }
+        });
+      }
+
+      return {
+        success: false,
+        agent: 'SYSTEM',
+        intent: 'UNKNOWN',
+        confidence: 0,
+        response: '[ZEHLA OFFLINE]: O período de teste da pousada expirou. O atendimento automático está suspenso até a ativação do plano pelo proprietário.',
+        tokensUsed: 0,
+        cost: 0,
+        duration: Date.now() - startTime
+      };
+    }
+
+    // 3. Aprendizado de Tom de Voz (Machine Learning) para planos compatíveis
     let learnedPersonaPrompt = ''
-    if (property.plan === 'PRO' || property.plan === 'MAX') {
+    if (hasFeature(property.plan, 'WHATSAPP_LEARNING')) {
       const persona = await WhatsappPersonaLearner.getPersona(propertyId)
       learnedPersonaPrompt = `\n\n[ESTILO DE ATENDIMENTO APRENDIDO POR MACHINE LEARNING]:
 - Tom de Voz: ${persona.tone}
@@ -69,9 +88,63 @@ export class AgentOrchestrator {
 ${persona.rules.map(r => `  * ${r}`).join('\n')}
 
 IMPORTANTE: Você DEVE adotar esse estilo de atendimento rigorosamente para preservar o padrão do hotel.`
+    } else {
+      learnedPersonaPrompt = `\n\n[ATENDIMENTO BÁSICO]: Utilize um tom de voz neutro, educado e profissional. Não utilize gírias ou expressões personalizadas.`
     }
 
-    // 4. Gerar resposta contextualizada
+    // 4. Tratamento de Fornecedores (Regra de Negócio Crítica)
+    if (intent === 'SUPPLIER_INQUIRY' && property.whatsappChannelType === 'GUESTS_ONLY') {
+      const supplierMessage = property.supplierContact 
+        ? `Olá! Este canal de WhatsApp é exclusivo para atendimento a hóspedes e reservas da ${property.name}. Para assuntos comerciais ou fornecedores, por favor entre em contato pelo número: ${property.supplierContact}. Obrigado pela compreensão!`
+        : `Olá! Este canal de WhatsApp é exclusivo para atendimento a hóspedes e reservas da ${property.name}. No momento, não tratamos de assuntos de fornecedores por este canal. Obrigado pela compreensão!`;
+
+      return {
+        success: true,
+        agent: 'SYSTEM',
+        intent: 'SUPPLIER_INQUIRY',
+        confidence: classified.confidence,
+        response: supplierMessage,
+        tokensUsed: 0,
+        cost: 0,
+        duration: Date.now() - startTime
+      };
+    }
+
+    // 5. Motor de Extração de Comprovantes (O Pulo do Gato)
+    const receiptData = await ReceiptExtractor.extract(message);
+    if (receiptData) {
+      // REGRA ZEHLA: Hóspede pagou Valor Bruto via PIX direto para o Dono.
+      // DÉBITO IMEDIATO: Processamos a comissão agora mesmo no cartão do dono.
+      const fees = calculateFees(receiptData.amount, property.plan);
+
+      await prisma.payment.create({
+        data: {
+          amount: receiptData.amount, // Valor Total Bruto (PIX Direto)
+          status: 'PAID',
+          externalId: receiptData.transactionId,
+          propertyId,
+          reservationId: context.reservationId || 'UNKNOWN',
+          metadata: JSON.stringify({
+            ...receiptData,
+            immediatePlatformDebit: fees.platformFee, // Débito automático processado agora
+            plan: property.plan
+          })
+        }
+      });
+
+      return {
+        success: true,
+        agent: 'FINANCIAL',
+        intent: 'PAYMENT_CONFIRMATION',
+        confidence: 1.0,
+        response: `Recebi seu comprovante no valor total de R$ ${receiptData.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}! 🎉 Já registrei o recebimento integral para a ${property.name}. Tudo certo com sua reserva!`,
+        tokensUsed: 0,
+        cost: 0,
+        duration: Date.now() - startTime
+      };
+    }
+
+    // 6. Gerar resposta contextualizada
     let systemPrompt = this.buildSystemPrompt(property, intent)
     if (learnedPersonaPrompt) {
       systemPrompt += learnedPersonaPrompt
@@ -133,14 +206,20 @@ INFORMAÇÕES DA POUSADA:
 - WhatsApp: ${property.whatsapp || 'Não informado'}
 
 QUARTOS DISPONÍVEIS:
-${property.rooms.map((r: any) => `- ${r.name || r.number}: ${r.type}, ${r.capacity} hóspedes, R$ ${r.basePrice}/noite`).join('\n')}
+${property.rooms.map((r: any) => `- ${r.name || r.number}: ${r.type}, ${r.capacity} hóspedes, R$ ${r.basePrice}/${r.pricingType === 'PER_PERSON' ? 'pessoa' : 'quarto'}`).join('\n')}
+
+LÓGICA DE PREÇO:
+- Se o quarto for "Por Quarto": O valor é fixo por noite, independente de quantas pessoas (dentro da capacidade).
+- Se o quarto for "Por Pessoa": Você DEVE multiplicar o valor base pelo número de hóspedes. Ex: Se são 3 hóspedes em um quarto de R$ 100/pessoa, o total é R$ 300.
 
 REGRAS:
 - Sempre seja gentil e acolhedor
 - Use emojis com moderação
-- Se não souber algo, ofereça transferir para atendimento humano
-- Para reservas, sempre confirme datas e número de hóspedes
-- Para preços, mencione que podem variar conforme sazonalidade`
+- [REGRA DE OURO]: Você NÃO tem poder para negociar preços, dar descontos ou fazer acordos financeiros.
+- [REGRA DE OURO]: Você NÃO pode realizar transferências de dinheiro ou estornos.
+- Se o hóspede pedir desconto, negociação ou algo fora da tabela, diga: "Apenas o proprietário tem autonomia para negociações especiais. Vou deixar seu pedido registrado para que ele entre em contato com você."
+- Para reservas, utilize APENAS os valores catalogados abaixo (considerando a sazonalidade se aplicável).
+- Para pagamentos, sua função é APENAS confirmar o recebimento via sistema e notificar o financeiro.`
 
     const intentSpecific: Record<string, string> = {
       RESERVATION_CREATE: '\n\nVocê está ajudando o hóspede a FAZER uma reserva. Colete: datas, número de hóspedes, tipo de quarto preferido.',
@@ -180,6 +259,7 @@ Responda como o assistente virtual da pousada.`
       CANCELATION_POLICY: 'FINANCIAL',
       GREETING: 'RECEPTIONIST',
       FAREWELL: 'RECEPTIONIST',
+      SUPPLIER_INQUIRY: 'SYSTEM',
       UNKNOWN: 'RECEPTIONIST'
     }
     return map[intent] || 'RECEPTIONIST'

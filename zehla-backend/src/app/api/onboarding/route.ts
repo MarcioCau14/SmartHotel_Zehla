@@ -25,9 +25,17 @@ export async function POST(request: NextRequest) {
       .replace(/[\s_-]+/g, '-')
       .replace(/^-+|-+$/g, '') + '-' + userId.slice(-4);
 
+    // Gerar Número de Registro Sequencial: 0001/PRO/SC
+    const propertyCount = await prisma.property.count();
+    const nextNumber = (propertyCount + 1).toString().padStart(4, '0');
+    const plan = 'PRO'; // Default para onboarding conforme linha 45
+    const uf = property?.estado || 'SC';
+    const registrationNumber = `${nextNumber}/${plan}/${uf}`;
+
     const prop = await prisma.property.create({
       data: {
         userId,
+        registrationNumber,
         name: property?.nome || user.name,
         slug,
         description: property?.descricao || '',
@@ -55,6 +63,7 @@ export async function POST(request: NextRequest) {
           propertyId: prop.id,
           number: String(room.nome || room.number || '101'),
           type: (room.tipo?.toUpperCase() as any) || 'STANDARD',
+          pricingType: (room.pricingType?.toUpperCase() as any) || 'PER_ROOM',
           capacity: Number(room.capacidade || room.capacity || 2),
           basePrice: Number(room.preco || room.price || 150),
           status: 'AVAILABLE',

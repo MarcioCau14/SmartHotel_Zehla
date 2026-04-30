@@ -161,6 +161,9 @@ interface WhatsAppConfig {
   checkinInstructions: string;
   wifiInfo: string;
   hoursInfo: string;
+  whatsappType: 'GUESTS_ONLY' | 'GUESTS_AND_SUPPLIERS';
+  supplierContact: string;
+  ignoreSuppliers: boolean;
 }
 
 const initialWhatsApp: WhatsAppConfig = {
@@ -170,6 +173,9 @@ const initialWhatsApp: WhatsAppConfig = {
   checkinInstructions: '🏨 Seu check-in é às 14h. Apresente seu documento e comprovante de reserva na recepção. A chave do quarto será entregue após a confirmação.',
   wifiInfo: '📶 Rede: PousadaMaravilha_Guest | Senha: maravilha2024',
   hoursInfo: '🏊 Piscina: 07h–22h | 🍽️ Restaurante: 07h–10h (café) e 12h–22h (almoço/jantar) | 🧹 Limpeza diária: 09h–15h',
+  whatsappType: 'GUESTS_ONLY',
+  supplierContact: '',
+  ignoreSuppliers: true,
 };
 
 // Section 5 — Dynamic Pricing
@@ -826,7 +832,6 @@ export function SettingsPanel() {
                 </div>
               </div>
 
-              {/* Auto-reply toggle */}
               <div className="flex items-center justify-between bg-white/[0.03] border border-[#2e2e2e] rounded-xl p-4">
                 <div>
                   <div className="text-sm font-medium text-[#efefef]">Atendimento automático pelo ZEHLA</div>
@@ -836,6 +841,46 @@ export function SettingsPanel() {
                   checked={whatsapp.autoReply}
                   onCheckedChange={checked => setWhatsapp({ ...whatsapp, autoReply: checked })}
                 />
+              </div>
+
+              {/* Channel Config */}
+              <div className="bg-white/[0.03] border border-[#2e2e2e] rounded-xl p-4 space-y-4">
+                <div>
+                  <label className="text-xs text-[#4d4d4d] mb-1.5 block">Configuração de Canal</label>
+                  <Select
+                    value={whatsapp.whatsappType}
+                    onValueChange={v => setWhatsapp({ ...whatsapp, whatsappType: v as any })}
+                  >
+                    <SelectTrigger className={darkSelectTrigger}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-neutral-900 border-[#363636]">
+                      <SelectItem value="GUESTS_ONLY">Apenas Hóspedes (Recusar Fornecedores)</SelectItem>
+                      <SelectItem value="GUESTS_AND_SUPPLIERS">Hóspedes e Fornecedores (Misto)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[10px] text-[#363636] mt-1.5">
+                    Se definido como "Apenas Hóspedes", o ZEHLA informará fornecedores que este canal é exclusivo para reservas.
+                  </p>
+                </div>
+
+                {whatsapp.whatsappType === 'GUESTS_ONLY' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-3 pt-3 border-t border-[#2e2e2e]"
+                  >
+                    <div>
+                      <label className="text-xs text-[#4d4d4d] mb-1.5 block">Número Alternativo para Fornecedores</label>
+                      <Input
+                        placeholder="Ex: (81) 99999-9999"
+                        value={whatsapp.supplierContact}
+                        onChange={e => setWhatsapp({ ...whatsapp, supplierContact: e.target.value })}
+                        className={darkInput}
+                      />
+                    </div>
+                  </motion.div>
+                )}
               </div>
 
               {/* Templates */}

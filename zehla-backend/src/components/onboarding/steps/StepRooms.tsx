@@ -8,6 +8,7 @@ export interface RoomData {
   id: string;
   nome: string;
   tipo: string;
+  pricingType: 'PER_ROOM' | 'PER_PERSON';
   capacidade: number;
   preco: number;
 }
@@ -42,6 +43,7 @@ export function StepRooms({ data, onChange }: StepRoomsProps) {
       id: generateId(),
       nome: `${data.length + 1}`,
       tipo: 'standard',
+      pricingType: 'PER_ROOM',
       capacidade: 2,
       preco: 150,
     };
@@ -138,6 +140,18 @@ export function StepRooms({ data, onChange }: StepRoomsProps) {
                         {t.label}
                       </option>
                     ))}
+                  </select>
+                </div>
+                {/* Tipo de Cobrança */}
+                <div>
+                  <label className="block text-xs text-[#4d4d4d] mb-1">Cobrança</label>
+                  <select
+                    value={room.pricingType}
+                    onChange={(e) => updateRoom(room.id, 'pricingType', e.target.value as any)}
+                    className="w-full px-3 py-2.5 bg-[#242424] border border-[#363636] rounded-lg text-sm text-[#fafafa] focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="PER_ROOM" className="bg-neutral-900">Por Quarto</option>
+                    <option value="PER_PERSON" className="bg-neutral-900">Por Pessoa</option>
                   </select>
                 </div>
 

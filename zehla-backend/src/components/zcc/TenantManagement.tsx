@@ -203,7 +203,12 @@ export function TenantManagement() {
                   <Building2 className="w-4 h-4 text-[#898989]" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-[#efefef] text-sm">{prop.name}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-[#efefef] text-sm">{prop.name}</h3>
+                    <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-neutral-500 font-mono">
+                      {prop.registrationNumber || '0000/OFF/SC'}
+                    </span>
+                  </div>
                   <div className="flex items-center gap-1 text-[10px] text-[#4d4d4d] mt-0.5">
                     <MapPin className="w-3 h-3" />
                     {prop.city}, {prop.state}
@@ -311,7 +316,7 @@ export function TenantManagement() {
             <div>
               <div className="text-[10px] text-[#363636] mb-2 font-medium">Atividade Recente</div>
               <div className="space-y-1.5">
-                {prop.activities.map((activity) => (
+                {(prop.activities || []).map((activity: any) => (
                   <div key={activity.id} className="flex items-center gap-2">
                     <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
                       activity.type === 'success' ? 'bg-[#FF5500]'
