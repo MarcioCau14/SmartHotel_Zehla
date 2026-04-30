@@ -322,9 +322,34 @@ function SecretariaPanel() {
   const stats = [
     { label: 'Total Leads (SC)', value: statsData?.total || 0, icon: Building2, color: 'blue' },
     { label: 'Qualificados', value: statsData?.qualified || 0, icon: CheckCircle, color: 'orange' },
-    { label: 'Em Campanha', value: statsData?.inCampaign || 0, icon: Megaphone, color: 'purple' },
+    { label: 'Extraídos (WA)', value: leads.filter(l => l.source === 'WHATSAPP_EXTRACT').length, icon: List, color: 'purple' },
     { label: 'Convertidos', value: statsData?.converted || 0, icon: Zap, color: 'amber' },
   ];
+
+  const handleDownloadVCard = () => {
+    const waLeads = leads.filter(l => l.source === 'WHATSAPP_EXTRACT');
+    if (waLeads.length === 0) return alert('Nenhum lead de WhatsApp para exportar.');
+
+    const vCardContent = waLeads.map(l => {
+      return [
+        'BEGIN:VCARD',
+        'VERSION:3.0',
+        `FN:${l.name}`,
+        `TEL;TYPE=CELL;TYPE=VOICE;TYPE=pref:+${l.whatsapp || l.phone}`,
+        `NOTE:Lead Extraído via Secretaria-IA - Score: ${l.score}`,
+        'END:VCARD'
+      ].join('\n');
+    }).join('\n');
+
+    const blob = new Blob([vCardContent], { type: 'text/vcard' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `leads_zehla_${new Date().toISOString().split('T')[0]}.vcf`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const handleSync = async () => {
     setIsSyncing(true);
@@ -502,6 +527,13 @@ function SecretariaPanel() {
           <div className="glass-card overflow-hidden">
             <div className="px-5 py-4 border-b border-[#2e2e2e] flex items-center justify-between bg-white/[0.01]">
               <h3 className="text-sm font-semibold text-[#b4b4b4]">Leads Extraídos Hoje</h3>
+              <button 
+                onClick={handleDownloadVCard}
+                className="text-[10px] text-[#FF5500] hover:underline flex items-center gap-1"
+              >
+                <Download className="w-3 h-3" />
+                Baixar vCard
+              </button>
             </div>
             <div className="divide-y divide-white/5 max-h-[300px] overflow-y-auto zehla-scroll">
               {leads.filter(l => l.source === 'WHATSAPP_EXTRACT').map(lead => (

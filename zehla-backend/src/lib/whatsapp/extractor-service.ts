@@ -49,6 +49,15 @@ export class WhatsappExtractorService {
     }
   }
 
+  static async fetchContactAbout(instanceName: string, number: string): Promise<string> {
+    try {
+      const res = await axios.get(`${EVOLUTION_API_URL}/contact/about/${instanceName}?number=${number}`, { headers: this.headers })
+      return res.data.about || ''
+    } catch {
+      return ''
+    }
+  }
+
   static async fetchGroups(instanceName: string): Promise<WAGroup[]> {
     try {
       const res = await axios.get(`${EVOLUTION_API_URL}/group/fetchAllGroups/${instanceName}`, { headers: this.headers })
@@ -75,5 +84,17 @@ export class WhatsappExtractorService {
       console.error(`❌ Error fetching participants for group ${groupJid}:`, error)
       return []
     }
+  }
+
+  static generateVCard(contacts: WAContact[]): string {
+    return contacts.map(c => {
+      return [
+        'BEGIN:VCARD',
+        'VERSION:3.0',
+        `FN:${c.name || c.number}`,
+        `TEL;TYPE=CELL;TYPE=VOICE;TYPE=pref:+${c.number}`,
+        'END:VCARD'
+      ].join('\n')
+    }).join('\n')
   }
 }

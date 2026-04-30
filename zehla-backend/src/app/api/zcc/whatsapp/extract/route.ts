@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { WhatsappExtractorService } from '@/lib/whatsapp/extractor-service'
 import { prisma } from '@/lib/prisma'
 import { WhatsappPersonaLearner } from '@/lib/brain/whatsapp-persona-learner'
+import { LeadScorer } from '@/lib/brain/lead-scorer'
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,31 +25,42 @@ export async function POST(req: NextRequest) {
     // Integrando Inteligência de Tom de Voz (conforme documento técnico)
     const persona = await WhatsappPersonaLearner.getPersona(propertyId)
 
-    // Salvar como Leads no banco de dados
+    // Salvar como Leads no banco de dados com Inteligência de Scoring
     const savedLeads = []
     for (const contact of rawContacts) {
       try {
         // Verifica se já existe
         const existing = await prisma.lead.findFirst({
           where: { 
-            whatsapp: contact.number,
-            propertyId
+            whatsapp: contact.number
           }
         })
 
         if (!existing) {
+          // Busca o "About" para o Lead Scoring (IA Comportamental: jitter gaussiano simulado)
+          const about = await WhatsappExtractorService.fetchContactAbout(instanceName, contact.number)
+          
+          // Qualificação Inteligente via IA
+          const analysis = await LeadScorer.scoreLead(contact.name || '', about)
+
           const lead = await prisma.lead.create({
             data: {
               name: contact.name || 'Extraído via WA',
               whatsapp: contact.number,
-              propertyId,
-              status: 'NEW',
+              phone: contact.number,
+              propertyId: propertyId !== 'cm1...' ? propertyId : undefined,
+              status: analysis.score > 70 ? 'QUALIFIED' : 'PROSPECT',
               source: 'WHATSAPP_EXTRACT',
-              notes: `Extraído via Secretaria-IA. Estilo detectado: ${persona.tone}`,
-              score: 50 // Score inicial neutro
+              category: analysis.category,
+              score: analysis.score,
+              painPoints: analysis.painPoints.join(', '),
+              notes: `Extraído via Secretaria-IA. Perfil: ${about}. Analise: ${analysis.reasoning}. Estilo Tom de Voz: ${persona.tone}`,
             }
           })
           savedLeads.push(lead)
+          
+          // Jitter para evitar ban (Documento Técnico)
+          await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000))
         }
       } catch (err) {
         console.error(`❌ Erro ao salvar lead ${contact.number}:`, err)
