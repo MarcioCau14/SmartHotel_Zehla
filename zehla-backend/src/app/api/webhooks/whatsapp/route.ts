@@ -1,10 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { orchestrator } from '@/lib/brain/agent-orchestrator'
+import { Queue } from 'bullmq'
+import { redisWorker } from '@/lib/redis'
+import { verifyWhatsAppSignature, checkWhatsAppRateLimit } from '@/lib/security/whatsapp-shield'
+
+// Inicialização da Fila Inbound utilizando o Redis Isolado (DB 1)
+const inboundQueue = new Queue('whatsapp-inbound', { 
+  connection: redisWorker,
+  defaultJobOptions: {
+    removeOnComplete: true,
+    attempts: 3,
+    backoff: { type: 'exponential', delay: 1000 }
+  }
+});
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const rawBody = await request.text()
+    const signature = request.headers.get('X-Hub-Signature-256') || ''
+    const webhookSecret = process.env.WHATSAPP_WEBHOOK_SECRET || ''
+
+    // Blindagem de Segurança
+    if (process.env.NODE_ENV === 'production' && !verifyWhatsAppSignature(rawBody, signature, webhookSecret)) {
+      console.error('🚨 [WHATSAPP SHIELD] Assinatura inválida!')
+      return NextResponse.json({ success: false, error: 'Invalid signature' }, { status: 401 })
+    }
+
+    const body = JSON.parse(rawBody)
 
     // Extrair dados do webhook Evolution API
     const remoteJid = body.data?.key?.remoteJid
@@ -19,18 +41,23 @@ export async function POST(request: NextRequest) {
     // Extrair número de telefone
     const phone = remoteJid.split('@')[0]
 
+    // Rate Limiting
+    const isAllowed = await checkWhatsAppRateLimit(phone)
+    if (!isAllowed) {
+      return NextResponse.json({ success: false, error: 'Too many messages' }, { status: 429 })
+    }
+
     // Buscar propriedade pelo número de WhatsApp
     const property = await prisma.property.findFirst({
       where: { whatsapp: phone }
     })
 
     if (!property) {
-      console.log('⚠️ Propriedade não encontrada para:', phone)
       return NextResponse.json({ success: false, error: 'Property not found' }, { status: 404 })
     }
 
-    // Salvar mensagem recebida
-    await prisma.message.create({
+    // 1. Salvar mensagem recebida com status PENDING
+    const savedMessage = await prisma.message.create({
       data: {
         propertyId: property.id,
         phone,
@@ -38,41 +65,30 @@ export async function POST(request: NextRequest) {
         content: messageText,
         direction: 'INBOUND',
         type: 'TEXT',
-        status: 'READ'
+        status: 'PENDING'
       }
     })
 
-    // Processar com o orquestrador
-    const response = await orchestrator.process({
+    // 2. Enfileirar processamento no BullMQ (Redis DB 1)
+    await inboundQueue.add('process-message', {
+      messageId: savedMessage.id,
       propertyId: property.id,
-      message: messageText,
-      context: { phone, name: pushName }
-    })
+      phone,
+      content: messageText,
+      pushName
+    });
 
-    // Salvar resposta
-    await prisma.message.create({
-      data: {
-        propertyId: property.id,
-        phone,
-        content: response.response,
-        direction: 'OUTBOUND',
-        type: 'TEXT',
-        status: 'SENT',
-        agentHandled: response.agent
-      }
-    })
+    console.log(`📥 [QUEUED] Mensagem ${savedMessage.id} de ${phone} enviada para fila.`);
 
-    // Enviar resposta de volta (em produção, chamar Evolution API)
-    console.log('📤 Resposta para', phone, ':', response.response.substring(0, 100) + '...')
-
+    // 3. Retorno rápido (Non-blocking)
     return NextResponse.json({
       success: true,
-      response: response.response,
-      agent: response.agent,
-      intent: response.intent
+      status: 'queued',
+      messageId: savedMessage.id
     })
+
   } catch (error) {
-    console.error('❌ Erro no webhook WhatsApp:', error)
+    console.error('❌ Erro no webhook WhatsApp assíncrono:', error)
     return NextResponse.json({ success: false, error: 'Webhook error' }, { status: 500 })
   }
 }
