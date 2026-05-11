@@ -49,6 +49,8 @@ export async function POST(request: NextRequest) {
     }
 
     const phone = remoteJid.split('@')[0]
+    const evolutionMessageId = data?.key?.id; // ID original da Evolution API
+
     const isAllowed = await checkWhatsAppRateLimit(phone)
     if (!isAllowed) return NextResponse.json({ success: false, error: 'Rate limit' }, { status: 429 })
 
@@ -68,9 +70,10 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // 2. Enfileirar com dados para o Vision (Base64 ou URL se disponível)
+    // 2. Enfileirar com dados para o Vision
     await inboundQueue.add('process-message', {
       messageId: savedMessage.id,
+      evolutionMessageId, // Necessário para a limpeza posterior
       propertyId: property.id,
       phone,
       content: messageText,
@@ -78,8 +81,7 @@ export async function POST(request: NextRequest) {
       mediaData: hasMedia ? {
         type: imageMessage ? 'imageMessage' : 'documentMessage',
         mimetype: imageMessage?.mimetype || documentMessage?.mimetype,
-        // Em produção, o buffer viria do download da Evolution API
-        base64: imageMessage?.url || documentMessage?.url // Placeholder para URL da mídia
+        base64: imageMessage?.url || documentMessage?.url
       } : null
     });
 
