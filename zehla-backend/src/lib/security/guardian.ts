@@ -35,24 +35,35 @@ export class Guardian {
   }
 
   /**
-   * Detecta enumeração de IDs (IDOR Attempt)
+   * Detecta enumeração de IDs (IDOR Attempt) e Spam.
+   * Utiliza o Redis DB 0 para contagem persistente e global.
    */
-  private static requestCounts = new Map<string, { count: number, last: number }>();
+  static async checkRateLimit(ip: string, action: string): Promise<boolean> {
+    const { redisSession } = await import('@/lib/redis');
+    const key = `rate-limit:${action}:${ip}`;
+    const limit = 50;
+    const windowSeconds = 60;
 
-  static checkRateLimit(ip: string, action: string): boolean {
-    const now = Date.now();
-    const key = `${ip}:${action}`;
-    const data = this.requestCounts.get(key) || { count: 0, last: now };
+    try {
+      // Incremento atômico no Redis
+      const current = await redisSession.incr(key);
+      
+      // Se for o primeiro acesso, define o TTL de 1 minuto
+      if (current === 1) {
+        await redisSession.expire(key, windowSeconds);
+      }
 
-    if (now - data.last > 60000) { // Reset a cada minuto
-      data.count = 0;
-      data.last = now;
+      const isAllowed = current <= limit;
+
+      if (!isAllowed) {
+        console.warn(`🛡️ [GUARDIAN] Rate Limit atingido para ${ip} em ${action}`);
+      }
+
+      return isAllowed;
+    } catch (error) {
+      console.error('❌ [GUARDIAN REDIS ERROR]:', error);
+      return true; // Graceful degradation: se o Redis falhar, permite a ação por segurança operacional
     }
-
-    data.count++;
-    this.requestCounts.set(key, data);
-
-    return data.count <= 50; // Limite de 50 acoes/min
   }
 
   /**
