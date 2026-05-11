@@ -116,20 +116,19 @@ async function sendWhatsAppMessage(propertyId: string, number: string, text: str
   const evolutionUrl = process.env.EVOLUTION_API_URL;
   const evolutionKey = process.env.EVOLUTION_API_KEY;
 
-  if (evolutionUrl && evolutionKey) {
-    try {
-      await axios.post(`${evolutionUrl}/message/sendText/${propertyId}`, {
-        number,
-        options: { delay: 1200, presence: "composing" },
-        textMessage: { text }
-      }, {
-        headers: { 'apikey': evolutionKey }
-      });
-      console.log(`📤 [SMS] Resposta enviada para ${number}`);
-    } catch (err) {
-      console.error(`❌ [EVOLUTION ERROR] Falha ao enviar para ${number}:`, err);
-    }
-  } else {
+  if (!evolutionUrl || !evolutionKey) {
     console.warn('⚠️ [EVOLUTION] API não configurada para envio real.');
+    return;
   }
+
+  // Se falhar aqui, o erro sobe e o BullMQ faz o Retry Exponencial (5 tentativas)
+  await axios.post(`${evolutionUrl}/message/sendText/${propertyId}`, {
+    number,
+    options: { delay: 1200, presence: "composing" },
+    textMessage: { text }
+  }, {
+    headers: { 'apikey': evolutionKey }
+  });
+  
+  console.log(`📤 [SENT] Resposta enviada para ${number}`);
 }

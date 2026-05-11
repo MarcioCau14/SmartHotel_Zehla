@@ -9,8 +9,8 @@ const inboundQueue = new Queue('whatsapp-inbound', {
   connection: redisWorker,
   defaultJobOptions: {
     removeOnComplete: true,
-    attempts: 3,
-    backoff: { type: 'exponential', delay: 1000 }
+    attempts: 5, // Aumentado para 5 tentativas de sobrevivência
+    backoff: { type: 'exponential', delay: 1000 } // Tenta em 1s, 2s, 4s, 8s, 16s...
   }
 });
 
