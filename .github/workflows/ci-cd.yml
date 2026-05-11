@@ -7,6 +7,9 @@ on:
 jobs:
   build-and-validate:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./zehla-backend
 
     steps:
       - name: 📦 Checkout Repository
@@ -17,6 +20,7 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
+          cache-dependency-path: zehla-backend/package-lock.json
 
       - name: 🛠️ Install Dependencies
         run: npm install
