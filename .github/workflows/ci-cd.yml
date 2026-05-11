@@ -44,17 +44,25 @@ jobs:
 
       - name: 🏗️ Production Build (Next.js & Turbopack)
         env:
+          # Hardware Optimization
           NODE_OPTIONS: "--max-old-space-size=4096"
+          # Database & Infrastructure Secrets
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
+          # AI & Integration Secrets
+          KIMI_API_KEY: ${{ secrets.KIMI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          PAGARME_API_KEY: ${{ secrets.PAGARME_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EVOLUTION_API_URL: ${{ secrets.EVOLUTION_API_URL }}
+          EVOLUTION_API_KEY: ${{ secrets.EVOLUTION_API_KEY }}
+          # App Config
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NODE_ENV: production
         run: pnpm run build
 
-      # TODO: Implementar Docker Build & Push
-      # Este step será ativado assim que configurarmos o Container Registry (AWS ECR / Docker Hub)
-      # - name: 🐳 Docker Build & Push (Simulado)
-      #   run: |
-      #     echo "Iniciando build da imagem Docker..."
-      #     # docker build -t zehla-backend:latest -f INFRA/Dockerfile .
-      #     # docker tag zehla-backend:latest ${{ secrets.DOCKER_REGISTRY }}/zehla-backend:latest
-      #     # docker push ${{ secrets.DOCKER_REGISTRY }}/zehla-backend:latest
-      
       - name: ✅ Validation Success
         run: echo "Build concluído com sucesso e validado pelo CI!"
