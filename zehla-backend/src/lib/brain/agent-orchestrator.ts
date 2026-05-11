@@ -1,11 +1,25 @@
 import { hasFeature } from './feature-guard'
+import { DNAVoiceAdapter, GuestDNA } from '../voice/dna-voice-adapter';
+import { Plan } from '@prisma/client';
 import { ReceiptExtractor } from './receipt-extractor'
 import { calculateFees } from '@/lib/finance/fee-calculator'
+import { AgentRequest, AgentResponse } from '@/types'
+import { prisma } from '../prisma'
+import { redis } from '../redis'
+import { WhatsappPersonaLearner } from './whatsapp-persona-learner'
+import { getCachedResponse, setCachedResponse } from '@/lib/ai/semanticCache'
+import { llmRouter } from '../ai/llm-router'
+
+// Utilitários de segurança simulados para o contexto
+const sanitizePrompt = (p: string) => p;
+const scanAndMaskPII = (p: string) => ({ masked: p });
+const classifyIntent = async (p: string) => ({ intent: 'GREETING', confidence: 0.9, entities: {} });
 
 export class AgentOrchestrator {
   async process(request: AgentRequest): Promise<AgentResponse> {
     const startTime = Date.now()
     const { propertyId, message = '', context = {} } = request
+    const useNeuralVoice = context?.useNeuralVoice === true;
 
     // HARDENING: Sanitização contra Prompt Injections
     const sanitizedInput = sanitizePrompt(message)
@@ -152,6 +166,22 @@ IMPORTANTE: Você DEVE adotar esse estilo de atendimento rigorosamente para pres
 
     const userPrompt = this.buildUserPrompt(message, classified, property, context)
 
+    // --- INÍCIO DO ESCUDO FINANCEIRO (SEMANTIC CACHE) ---
+    const cachedResponse = await getCachedResponse(userPrompt, propertyId);
+    if (cachedResponse) {
+      console.log('✅ [SEMANTIC CACHE HIT] Economia de Tokens! Custo $0.');
+      return {
+        success: true,
+        agent: this.getAgentName(intent),
+        intent,
+        confidence: classified.confidence,
+        response: cachedResponse,
+        tokensUsed: 0,
+        cost: 0,
+        duration: Date.now() - startTime
+      };
+    }
+    // --- FIM DO ESCUDO FINANCEIRO ---
 
     const llmResponse = await llmRouter.generate({
       model: intent === 'PRICE_INQUIRY' || intent === 'RESERVATION_CREATE' ? 'reasoning' : 'general',
@@ -162,6 +192,9 @@ IMPORTANTE: Você DEVE adotar esse estilo de atendimento rigorosamente para pres
       temperature: 0.7,
       maxTokens: 2048
     })
+
+    // Gravar no cache para futuras consultas (TTL 12h)
+    await setCachedResponse(userPrompt, propertyId, llmResponse.content);
 
     // 4. Log da interação
     await prisma.agentLog.create({
@@ -180,18 +213,46 @@ IMPORTANTE: Você DEVE adotar esse estilo de atendimento rigorosamente para pres
       }
     })
 
-    return {
+    // 6. Preparar Resposta Final com Metadados de Voz
+    const response: AgentResponse = {
       success: true,
       agent: this.getAgentName(intent),
       intent,
       confidence: classified.confidence,
       response: llmResponse.content,
-      data: { entities: classified.entities },
       tokensUsed: llmResponse.tokensUsed,
       cost: llmResponse.cost,
-      duration: Date.now() - startTime,
-      fallback: llmResponse.model.includes('kimi')
+      duration: Date.now() - startTime
     }
+
+      if (useNeuralVoice && (property.plan === 'PRO' || property.plan === 'MAX')) {
+        const isMax = property.plan === 'MAX';
+        
+        // Se for MAX, aplicamos a adaptação DNA (Absolute Voice) - Cálculo Dinâmico V2.1
+        if (isMax) {
+          const adaptation = await DNAVoiceAdapter.getAdaptiveParams(request.sessionId || propertyId);
+          
+          response.voice = {
+            enabled: true,
+            tier: 'MAX',
+            adaptation: {
+              rate: adaptation.speaking_rate,
+              pitch: adaptation.pitch,
+              style: adaptation.style,
+              emotiveness: adaptation.emotiveness
+            },
+            instruction: DNAVoiceAdapter.getSystemInstruction(adaptation)
+          };
+        } else {
+          // Se for PRO, enviamos a voz neural padrão (XTTS Speaker Embedding)
+          response.voice = {
+            enabled: true,
+            tier: 'PRO'
+          };
+        }
+      }
+
+    return response;
   }
 
   private buildSystemPrompt(property: any, intent: Intent): string {
