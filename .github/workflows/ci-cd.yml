@@ -1,0 +1,39 @@
+name: ZEHLA CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📦 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 🛠️ Install Dependencies
+        run: npm install
+
+      - name: 🏗️ Production Build (Next.js & Turbopack)
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+        run: npm run build
+
+      # TODO: Implementar Docker Build & Push
+      # Este step será ativado assim que configurarmos o Container Registry (AWS ECR / Docker Hub)
+      # - name: 🐳 Docker Build & Push (Simulado)
+      #   run: |
+      #     echo "Iniciando build da imagem Docker..."
+      #     # docker build -t zehla-backend:latest -f INFRA/Dockerfile .
+      #     # docker tag zehla-backend:latest ${{ secrets.DOCKER_REGISTRY }}/zehla-backend:latest
+      #     # docker push ${{ secrets.DOCKER_REGISTRY }}/zehla-backend:latest
+      
+      - name: ✅ Validation Success
+        run: echo "Build concluído com sucesso e validado pelo CI!"
