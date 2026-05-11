@@ -1,4 +1,4 @@
-import { LLMRequest, LLMResponse } from '@/types'
+import { LLMRequest, LLMResponse } from '../../types'
 
 // Interfaces para o Zehla ML Brain (RAG / Fine-Tuning)
 export interface MLInteractionLog {
@@ -34,12 +34,17 @@ export class LLMRouter {
     const startTime = Date.now()
 
     // Tenta modelo local primeiro
-    if (this.useLocal) {
+    if (this.useLocal || request.forceLocal) {
       try {
         const response = await this.callOllama(request)
         this.localFailureCount = 0
         return { ...response, duration: Date.now() - startTime }
       } catch (error) {
+        if (request.forceLocal) {
+          console.error('❌ [FINOPS BLOCK] Modelo local falhou e forceLocal está ativo. Abortando para evitar custos.')
+          throw new Error('LLM_LOCAL_UNAVAILABLE: O motor local falhou e o custo zero é obrigatório.')
+        }
+
         this.localFailureCount++
         console.warn(`⚠️ Ollama falhou (${this.localFailureCount}/${this.MAX_LOCAL_FAILURES})`)
 

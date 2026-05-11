@@ -21,6 +21,17 @@ export interface AgentResponse {
   cost: number
   duration: number
   fallback?: boolean
+  voice?: {
+    enabled: boolean
+    tier: 'PRO' | 'MAX'
+    adaptation?: {
+      rate: number
+      pitch: number
+      style: string
+      emotiveness: number
+    }
+    instruction?: string
+  }
 }
 
 export interface LLMRequest {
@@ -29,6 +40,7 @@ export interface LLMRequest {
   temperature?: number
   maxTokens?: number
   tools?: unknown[]
+  forceLocal?: boolean // Força uso do motor local (Custo Zero)
 }
 
 export interface LLMResponse {
