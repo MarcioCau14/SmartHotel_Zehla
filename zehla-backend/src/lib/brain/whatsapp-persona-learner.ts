@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { llmRouter } from '@/lib/ai/llm-router'
-import { Redis } from 'ioredis'
+import { redis } from '@/lib/redis'
 import { assertSanitized } from '@/lib/security/pii-sanitizer'
 import { validateLearnedPersona } from '@/lib/security/prompt-guard'
 import { signCache, verifyCache } from '@/lib/security/cache-signer'
@@ -13,7 +13,8 @@ import {
   DEFAULT_LIMITS 
 } from '@/lib/security/resource-guard'
 
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379')
+// Resilient redis instance from @/lib/redis
+
 
 export interface PersonaProfile {
   tone: string
@@ -94,19 +95,19 @@ Extraia os seguintes dados para treinar um modelo de Machine Learning (responda 
 Histórico de Mensagens:
 ${messageHistoryText}`
 
-      // DEFESA 4 (DoS): Chamada com Timeout de 15 segundos
+      // DEFESA 4 (DoS): Chamada com Timeout de 15 segundos e Custo Zero (Prioridade Local)
       const llmResponse = await Promise.race([
         llmRouter.generate({
-          model: 'general',
+          model: 'general', // qwen2.5-coder local
           messages: [
-            { role: 'system', content: 'Você é um engenheiro de prompts e analista de tom de voz avançado.' },
+            { role: 'system', content: 'Você é um engenheiro de prompts e analista de tom de voz avançado. Extraia o DNA da marca.' },
             { role: 'user', content: prompt }
           ],
-          temperature: 0.3,
+          temperature: 0.1, // Mais determinístico para mineração
           maxTokens: 1024
         }),
         new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new ResourceExhaustionError('LLM_TIMEOUT', { timeout: 15000 })), 15000)
+          setTimeout(() => reject(new ResourceExhaustionError('LLM_TIMEOUT', { timeout: 30000 })), 30000)
         )
       ])
 
