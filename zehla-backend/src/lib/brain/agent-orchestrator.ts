@@ -8,6 +8,7 @@ import { prisma } from '../prisma'
 import { redis } from '../redis'
 import { WhatsappPersonaLearner } from './whatsapp-persona-learner'
 import { getCachedResponse, setCachedResponse } from '@/lib/ai/semanticCache'
+import { FinOpsBreaker } from '../security/finops-breaker'
 import { llmRouter } from '../ai/llm-router'
 
 // Utilitários de segurança simulados para o contexto
