@@ -473,11 +473,12 @@ function DashboardContent() {
   const isNewAccount = tenantData && (tenantData._count?.reservations === 0);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Client Top Nav */}
+    <div className="flex flex-col h-screen bg-[#0a0a0a] text-[#fafafa] overflow-hidden">
+      {/* Top Navigation (A Bancada de Inox) */}
       <ClientTopNav 
-        tenantData={topNavTenantData} 
-        onOpenZCC={() => setActiveTab('sala-de-guerra')}
+        tenantData={tenantData} 
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
       />
 
       {/* Trial warning banner (day 6) */}
@@ -501,48 +502,8 @@ function DashboardContent() {
         </motion.div>
       )}
 
-      {/* Tab navigation */}
-      <nav className="glass-strong border-b border-white/5 px-4 overflow-x-auto zehla-scroll-x shrink-0">
-        <div className="flex items-center gap-1 min-w-max">
-          {tabs.map(tab => {
-            const isActive = activeTab === tab.key;
-            return (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`relative flex items-center gap-2 px-4 py-3 text-xs font-medium transition-all whitespace-nowrap ${
-                  isActive
-                    ? 'text-orange-400'
-                    : 'text-neutral-500 hover:text-neutral-300'
-                }`}
-              >
-                <tab.icon className={`w-4 h-4 transition-colors ${isActive ? 'text-orange-400' : ''}`} />
-                {tab.label}
-                {/* Active indicator */}
-                {isActive && (
-                  <motion.div
-                    layoutId="tab-indicator"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-400 rounded-full"
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  />
-                )}
-                {/* Terminal pulse badge */}
-                {tab.key === 'terminal' && (
-                  <span className="flex items-center gap-1">
-                    <span className="relative flex h-1.5 w-1.5">
-                      <span className="animate-zehla-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-400" />
-                    </span>
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </nav>
-
-      {/* Main content */}
-      <main className="flex-1 p-4 lg:p-6 overflow-y-auto zehla-scroll">
+      {/* Main workspace */}
+      <main className="flex-1 overflow-y-auto zehla-scroll p-4 lg:p-6">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
