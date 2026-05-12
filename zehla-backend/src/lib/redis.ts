@@ -1,0 +1,127 @@
+import Redis from 'ioredis';
+import * as dotenv from 'dotenv';
+import path from 'path';
+
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+
+const BASE_REDIS_URL = process.env.REDIS_URL;
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const isDev = NODE_ENV === 'development';
+
+/**
+ * Helper para construir a URL com o banco lógico específico.
+ */
+function getRedisUrlForDb(base: string | undefined, dbIndex: number): string | undefined {
+  if (!base) return undefined;
+  const cleanBase = base.replace(/\/$/, '');
+  const baseWithoutDb = cleanBase.replace(/\/\d+$/, '');
+  return `${baseWithoutDb}/${dbIndex}`;
+}
+
+function createRedisInstance(name: string, dbIndex: number) {
+  const url = getRedisUrlForDb(BASE_REDIS_URL, dbIndex);
+
+  if (!url) {
+    if (isDev) {
+      console.warn(`⚠️ [${name}] REDIS_URL não definida. Usando MOCK em modo dev.`);
+      return createMockRedis();
+    }
+    throw new Error(`❌ [CRITICAL] REDIS_URL não definida para ${name} em produção.`);
+  }
+
+  try {
+    const redisOptions = {
+      maxRetriesPerRequest: null,
+      lazyConnect: true,
+      enableOfflineQueue: !isDev,
+      retryStrategy: (times: number) => {
+        if (isDev && times > 3) return null;
+        return Math.min(times * 50, 2000);
+      },
+    };
+
+    const client = new Redis(url, redisOptions);
+
+    // Sensor de Latência (Missão Crítica - Apenas DB 0 / Sessões)
+    if (dbIndex === 0) {
+      const originalGet = client.get.bind(client);
+      client.get = async (key: string) => {
+        const start = Date.now();
+        const result = await originalGet(key);
+        const duration = Date.now() - start;
+        if (duration > 500 && !isDev) {
+          console.error(`🚨 [REDIS:LATENCY] Latência crítica detectada no DB 0: ${duration}ms`);
+        }
+        return result;
+      };
+    }
+
+    client.on('connect', () => console.log(`✅ [${name}] UP (DB ${dbIndex})`));
+    client.on('error', (err: any) => {
+      if (!isDev) {
+        console.error(`❌ [${name}] Fail-Fast Triggered:`, err.message);
+      }
+    });
+
+    if (isDev) {
+      return new Proxy(client, {
+        get: (target: any, prop: string) => {
+          const value = target[prop];
+          if (typeof value === 'function') {
+            return (...args: any[]) => {
+              const result = value.apply(target, args);
+              return result && typeof result.catch === 'function' 
+                ? result.catch((err: any) => {
+                    const degradedCodes = ['ECONNREFUSED', 'ETIMEDOUT', 'ECONNRESET'];
+                    if (degradedCodes.includes(err.code)) {
+                      const cmd = prop.toLowerCase();
+                      if (['lrange', 'smembers', 'hgetall'].includes(cmd)) return [];
+                      if (['get', 'hget'].includes(cmd)) return null;
+                      if (['incr', 'decr', 'exists'].includes(cmd)) return 0;
+                      return null;
+                    }
+                    throw err;
+                  }) 
+                : result;
+            };
+          }
+          return value;
+        }
+      });
+    }
+
+    return client;
+  } catch (e) {
+    if (isDev) {
+      console.error(`⚠️ [${name}] Falha na construção. Usando MOCK.`);
+      return createMockRedis();
+    }
+    throw e;
+  }
+}
+
+function createMockRedis() {
+  return {
+    get: async () => null,
+    set: async () => 'OK',
+    setex: async () => 'OK',
+    incr: async () => 1,
+    expire: async () => 1,
+    xadd: async () => 'OK',
+    xread: async () => null,
+    keys: async () => [],
+    del: async () => 1,
+    hget: async () => null,
+    hset: async () => 1,
+    hgetall: async () => ({}),
+    on: () => {},
+    disconnect: () => {},
+    quit: async () => 'OK',
+  };
+}
+
+export const redisSession = createRedisInstance('REDIS-SESSION', 0);
+export const redisWorker  = createRedisInstance('REDIS-WORKER', 1);
+export const redisAI      = createRedisInstance('REDIS-AI', 2);
+
+export const redis = redisSession;

@@ -3,6 +3,7 @@ import { redisWorker } from '@/lib/redis';
 import { prisma } from '@/lib/prisma';
 import { orchestrator } from '@/lib/brain/agent-orchestrator';
 import { ReceiptExtractor } from '@/lib/brain/receipt-extractor';
+import { EmailService } from '@/lib/email/email-service';
 import axios from 'axios';
 
 /**
@@ -79,12 +80,22 @@ export const whatsappWorker = new Worker('whatsapp-inbound', async (job: Job) =>
     }
 
     // --- FALLBACK: FLUXO DE CHAT CONVERSACIONAL ---
-    // Se não for mídia ou se o extrator falhar, cai na IA generativa
+    // Gerar resposta da IA primeiro
     const result = await orchestrator.process({
       propertyId,
       message: content,
       context: { phone, name: pushName }
     });
+
+    const isEmailFallback = await redisWorker.get('config:global:force_email_fallback');
+
+    if (isEmailFallback) {
+      console.log(`✉️ [HEALED] Fallback ativo. Enviando resposta via E-mail para ${phone}`);
+      const lead = await prisma.lead.findFirst({ where: { phone } });
+      if (lead) {
+        await EmailService.sendSwipeEmail(lead, { content: result.response, tier: 'RECOVERY' });
+      }
+    }
 
     // Persistir a resposta
     await prisma.message.create({
@@ -119,6 +130,25 @@ export const whatsappWorker = new Worker('whatsapp-inbound', async (job: Job) =>
 /**
  * Envia mensagem de texto via Evolution API
  */
+async function sendWhatsAppMessage(propertyId: string, number: string, text: string) {
+  const evolutionUrl = process.env.EVOLUTION_API_URL;
+  const evolutionKey = process.env.EVOLUTION_API_KEY;
+
+  if (!evolutionUrl || !evolutionKey) {
+    console.warn('⚠️ [EVOLUTION] API não configurada para envio real.');
+    return;
+  }
+
+  try {
+    // Se falhar aqui, o erro sobe e o BullMQ faz o Retry Exponencial (5 tentativas)
+    await axios.post(`${evolutionUrl}/message/sendText/${propertyId}`, {
+      number,
+      options: { delay: 1200, presence: "composing" },
+      textMessage: { text }
+    }, {
+      headers: { 'apikey': evolutionKey }
+    });
+    
     console.log(`📤 [SENT] Resposta enviada para ${number}`);
   } catch (err) {
     console.error(`❌ [EVOLUTION ERROR] Falha ao enviar para ${number}:`, err);
