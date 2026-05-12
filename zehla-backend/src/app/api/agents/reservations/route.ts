@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { llmRouter } from '@/lib/ai/llm-router'
+import { PiiGuard } from '@/lib/security/pii-guard'
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,15 +59,18 @@ async function createReservation(propertyId: string, data: any) {
   const room = await prisma.room.findUnique({ where: { id: data.roomId } })
   const totalAmount = (room?.basePrice || 0) * nights * (data.guestCount || 1)
 
+  // Blindagem PII/FNRH
+  const protectedData = PiiGuard.protect(data);
+
   const reservation = await prisma.reservation.create({
     data: {
       code: `ZEH-${Date.now()}`,
       propertyId,
       roomId: data.roomId,
-      guestName: data.guestName,
-      guestEmail: data.guestEmail,
-      guestPhone: data.guestPhone,
-      guestCpf: data.guestCpf,
+      guestName: protectedData.guestName,
+      guestEmail: protectedData.guestEmail,
+      guestPhone: protectedData.guestPhone,
+      guestCpf: protectedData.guestCpf,
       guestCount: data.guestCount || 1,
       checkIn: new Date(data.checkIn),
       checkOut: new Date(data.checkOut),
@@ -89,16 +92,22 @@ async function createReservation(propertyId: string, data: any) {
     data: { status: 'OCCUPIED' }
   })
 
-  return NextResponse.json({ success: true, data: reservation })
+  return NextResponse.json({ success: true, data: PiiGuard.reveal(reservation) })
 }
 
 async function updateReservation(id: string, data: any) {
+  const protectedData = PiiGuard.protect(data);
+  
   const reservation = await prisma.reservation.update({
     where: { id },
     data: {
-      guestName: data.guestName,
-      guestEmail: data.guestEmail,
-      guestPhone: data.guestPhone,
+      guestName: protectedData.guestName,
+      guestEmail: protectedData.guestEmail,
+      guestPhone: protectedData.guestPhone,
+      guestCpf: protectedData.guestCpf,
+      guestAddress: protectedData.guestAddress,
+      guestZipCode: protectedData.guestZipCode,
+      guestBirthDate: protectedData.guestBirthDate,
       checkIn: data.checkIn ? new Date(data.checkIn) : undefined,
       checkOut: data.checkOut ? new Date(data.checkOut) : undefined,
       notes: data.notes,
@@ -107,7 +116,7 @@ async function updateReservation(id: string, data: any) {
     include: { room: true, payment: true }
   })
 
-  return NextResponse.json({ success: true, data: reservation })
+  return NextResponse.json({ success: true, data: PiiGuard.reveal(reservation) })
 }
 
 async function cancelReservation(id: string) {
@@ -131,12 +140,13 @@ async function checkIn(id: string) {
     where: { id },
     data: { 
       status: 'CHECKED_IN',
-      checkInStatus: 'DONE'
+      checkInStatus: 'DONE',
+      fnrhSubmittedAt: new Date()
     },
     include: { room: true, property: true }
   })
 
-  return NextResponse.json({ success: true, data: reservation })
+  return NextResponse.json({ success: true, data: PiiGuard.reveal(reservation) })
 }
 
 async function checkOut(id: string) {
@@ -168,7 +178,7 @@ async function listReservations(propertyId: string, filters: any) {
     orderBy: { checkIn: 'asc' }
   })
 
-  return NextResponse.json({ success: true, data: reservations })
+  return NextResponse.json({ success: true, data: PiiGuard.revealMany(reservations) })
 }
 
 export async function GET() {
