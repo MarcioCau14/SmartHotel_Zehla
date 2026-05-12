@@ -86,3 +86,62 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to fetch leads' }, { status: 500 });
   }
 }
+
+export async function POST(req: NextRequest) {
+  // 1. BLINDAGEM: Rate Limiting Agressivo para Cadastro (10 req/min por IP)
+  const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
+  const isAllowed = await Guardian.checkRateLimit(ip, 'POST_LEAD_CAPTURE');
+  if (!isAllowed) {
+    return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
+  }
+
+  try {
+    const data = await req.json();
+    const { name, email, whatsapp, city, state, source } = data;
+
+    // Validação mínima inegociável
+    if (!name || !whatsapp) {
+      return NextResponse.json({ error: 'Nome e WhatsApp são obrigatórios' }, { status: 400 });
+    }
+
+    // 2. INGESTÃO: Persistir no Lead Intelligence System (LIS)
+    const lead = await prisma.lead.create({
+      data: {
+        name,
+        email,
+        whatsapp,
+        city: city || 'Unknown',
+        state: state || 'Unknown',
+        region: 'OUTROS', // Será classificado pela Secretaria-IA
+        source: source || 'LANDING_PAGE',
+        status: 'NEW',
+        score: 0,
+        validationScore: 0,
+        intentSignals: ['VISIT_VITRINE'],
+        qualification: 'Aguardando Processamento Neural...',
+      },
+    });
+
+    // 3. GATILHO: Disparar Secretaria-IA para Raio-X (Async)
+    // Aqui injetamos no background worker para não atrasar o 100/100 Lighthouse
+    // Em ambiente de desenvolvimento, podemos simular ou chamar uma função async sem await
+    processLeadQualification(lead.id).catch(err => 
+      console.error('❌ [Secretaria-IA] Erro ao enfileirar qualificação:', err)
+    );
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Lead capturado e enviado para qualificação neural.',
+      leadId: lead.id 
+    });
+  } catch (error) {
+    console.error('❌ [LIS] Erro na captura de lead:', error);
+    return NextResponse.json({ error: 'Erro interno na captura' }, { status: 500 });
+  }
+}
+
+// Simulação de enfileiramento (BullMQ Integration Ready)
+async function processLeadQualification(leadId: string) {
+  // TODO: Integrar com BullMQ 'SECRETARIA_QUALIFY'
+  console.log(`🧠 [Secretaria-IA] Iniciando Raio-X do Lead: ${leadId}`);
+}
