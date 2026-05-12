@@ -1,8 +1,32 @@
-'use client';
-
-import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import { useState, useEffect, Suspense } from 'react';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Componente de Carregamento (Pitch-Black Skeleton)
+const DashboardSkeleton = () => (
+  <div className="w-full h-96 rounded-xl bg-neutral-900/50 animate-pulse border border-neutral-800 flex items-center justify-center">
+    <div className="flex flex-col items-center gap-3">
+      <div className="w-12 h-12 rounded-full border-2 border-orange-500/20 border-t-orange-500 animate-spin" />
+      <span className="text-xs text-neutral-600 font-mono">CALIBRANDO RADAR...</span>
+    </div>
+  </div>
+);
+
+// CARREGAMENTO DINÂMICO DOS MÓDULOS (Custo Zero de Ingestão)
+const LiveTerminal = dynamic(() => import('@/components/client/LiveTerminal').then(m => m.LiveTerminal), { ssr: false, loading: () => <DashboardSkeleton /> });
+const RoomBoard = dynamic(() => import('@/components/dashboard/RoomBoard').then(m => m.RoomBoard), { ssr: false, loading: () => <DashboardSkeleton /> });
+const Reservations = dynamic(() => import('@/components/dashboard/Reservations').then(m => m.Reservations), { ssr: false, loading: () => <DashboardSkeleton /> });
+const Promotions = dynamic(() => import('@/components/dashboard/Promotions').then(m => m.Promotions), { ssr: false, loading: () => <DashboardSkeleton /> });
+const SettingsPanel = dynamic(() => import('@/components/client/SettingsPanel').then(m => m.SettingsPanel), { ssr: false, loading: () => <DashboardSkeleton /> });
+const FinancialReport = dynamic(() => import('@/components/dashboard/FinancialReport').then(m => m.FinancialReport), { ssr: false, loading: () => <DashboardSkeleton /> });
+const MarketingView = dynamic(() => import('@/components/dashboard/MarketingView'), { ssr: false, loading: () => <DashboardSkeleton /> });
+const ZehlaWarRoom = dynamic(() => import('@/components/dashboard/ZehlaWarRoom'), { ssr: false, loading: () => <DashboardSkeleton /> });
+const VisibilityDashboard = dynamic(() => import('@/components/dashboard/VisibilityDashboard').then(m => m.VisibilityDashboard), { ssr: false, loading: () => <DashboardSkeleton /> });
+const FNRHCheckinProvider = dynamic(() => import('@/components/dashboard/FNRHCheckinProvider'), { ssr: false, loading: () => <DashboardSkeleton /> });
+const VoiceStudioV2 = dynamic(() => import('@/components/VoiceStudio/VoiceStudioV2').then(m => m.VoiceStudioV2), { ssr: false, loading: () => <DashboardSkeleton /> });
+const BrainDashboard = dynamic(() => import('@/components/dashboard/BrainDashboard').then(m => m.BrainDashboard), { ssr: false, loading: () => <DashboardSkeleton /> });
+
 import {
   LayoutDashboard,
   Terminal,
@@ -28,24 +52,23 @@ import {
   ChevronRight,
   Check,
   Zap,
-  Info
+  Info,
+  Globe,
+  Mic
 } from 'lucide-react';
 import { ClientTopNav } from '@/components/client/ClientTopNav';
-import { LiveTerminal } from '@/components/client/LiveTerminal';
 import { KPICards } from '@/components/dashboard/KPICards';
 import { ChartsSection } from '@/components/dashboard/ChartsSection';
-import { RoomBoard } from '@/components/dashboard/RoomBoard';
-import { Reservations } from '@/components/dashboard/Reservations';
 import { PaymentPanel } from '@/components/dashboard/PaymentPanel';
-import { Promotions } from '@/components/dashboard/Promotions';
-import { SettingsPanel } from '@/components/client/SettingsPanel';
-import { FinancialReport } from '@/components/dashboard/FinancialReport';
 import { SubscriptionSelector } from '@/components/subscription/SubscriptionSelector';
 
-type TabKey = 'painel' | 'terminal' | 'quartos' | 'reservas' | 'financeiro' | 'relatorios' | 'planilhas' | 'promocoes' | 'configuracoes';
+type TabKey = 'painel' | 'sala-de-guerra' | 'marketing' | 'visibilidade' | 'check-in' | 'terminal' | 'quartos' | 'reservas' | 'financeiro' | 'relatorios' | 'planilhas' | 'promocoes' | 'configuracoes' | 'voice-studio';
+
 
 const tabs: { key: TabKey; label: string; icon: typeof LayoutDashboard }[] = [
   { key: 'painel', label: 'Painel', icon: LayoutDashboard },
+  { key: 'voice-studio', label: 'Voice Studio', icon: Mic },
+  { key: 'check-in', label: 'Check-in', icon: TicketCheck },
   { key: 'terminal', label: 'Terminal', icon: Terminal },
   { key: 'quartos', label: 'Quartos', icon: BedDouble },
   { key: 'reservas', label: 'Reservas', icon: CalendarDays },
@@ -82,7 +105,7 @@ const zeroKpiConfig = [
   { label: 'Hóspedes Ativos', value: '1', icon: Users, color: 'text-orange-400', bg: 'bg-orange-500/10' },
   { label: 'Receita Hoje', value: 'R$ 448', icon: DollarSign, color: 'text-green-400', bg: 'bg-green-500/10' },
   { label: 'Check-ins Pendentes', value: '1', icon: Clock, color: 'text-amber-400', bg: 'bg-amber-500/10' },
-  { label: 'Automação ZEHLA (ROI)', value: '12', icon: TicketCheck, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+  { label: 'Economia Comissões (20%)', value: 'R$ 89,60', icon: DollarSign, color: 'text-green-500', bg: 'bg-green-500/20' },
   { label: 'Taxa Ocupação', value: '12%', icon: Percent, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
   { label: 'ADR Médio', value: 'R$ 448', icon: TrendingUp, color: 'text-rose-400', bg: 'bg-rose-500/10' },
 ];
@@ -125,64 +148,37 @@ interface TenantData {
   };
 }
 
-function getTenantData(): TenantData | null {
-  try {
-    const raw = localStorage.getItem('zehla-tenant-data');
-    if (!raw) return null;
-    return JSON.parse(raw) as TenantData;
-  } catch {
-    return null;
-  }
-}
+// Removidos helpers de localStorage (Migrado para Database/Prisma)
 
-function getTrialInfo(): { daysLeft: number; isExpired: boolean; isWarning: boolean } {
-  try {
-    const startStr = localStorage.getItem('zehla-trial-start');
-    if (!startStr) return { daysLeft: 7, isExpired: false, isWarning: false };
-    const start = new Date(startStr);
-    const now = new Date();
-    const elapsedMs = now.getTime() - start.getTime();
-    const elapsedDays = Math.floor(elapsedMs / (24 * 60 * 60 * 1000));
-    const daysLeft = Math.max(0, 7 - elapsedDays);
-    return {
-      daysLeft,
-      isExpired: daysLeft <= 0,
-      isWarning: daysLeft <= 2 && daysLeft > 0, // Warn on day 6 and day 7 (2 or 1 day left)
-    };
-  } catch {
-    return { daysLeft: 7, isExpired: false, isWarning: false };
-  }
-}
-
-// Zero-state rooms display from onboarding data
-function ZeroStateRooms({ rooms }: { rooms: TenantData['rooms'] }) {
+// Zero-state rooms display from database data
+function ZeroStateRooms({ rooms }: { rooms: any[] }) {
   const tipoLabels: Record<string, string> = {
-    standard: 'Standard',
-    luxo: 'Luxo',
-    suite: 'Suíte',
-    chale: 'Chalé',
+    STANDARD: 'Standard',
+    LUXO: 'Luxo',
+    SUITE: 'Suíte',
+    CHALE: 'Chalé',
   };
 
   return (
     <div className="glass-card p-4">
       <div className="flex items-center gap-2 mb-4">
         <BedDouble className="w-4 h-4 text-orange-400" />
-        <h3 className="text-sm font-semibold text-neutral-300">Seus Quartos ({rooms.length})</h3>
+        <h3 className="text-sm font-semibold text-neutral-300">Seus Quartos ({rooms?.length || 0})</h3>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        {rooms.map((room, i) => (
+        {rooms?.map((room, i) => (
           <div key={room.id} className="p-3 rounded-xl border border-orange-500/20 bg-white/[0.02] text-left">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-bold text-neutral-200">{room.nome}</span>
+              <span className="text-sm font-bold text-neutral-200">{room.number || room.name}</span>
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-400">
-                Disponível
+                {room.status === 'AVAILABLE' ? 'Disponível' : room.status}
               </span>
             </div>
             <div className="text-xs text-neutral-500">
-              {tipoLabels[room.tipo] || 'Standard'} • 👥 {room.capacidade}
+              {tipoLabels[room.type] || room.type} • 👥 {room.capacity}
             </div>
             <div className="text-xs text-orange-400 font-semibold mt-1">
-              R$ {room.preco}
+              R$ {room.basePrice}
             </div>
           </div>
         ))}
@@ -202,10 +198,10 @@ function SpreadsheetView({ tenantData }: { tenantData: TenantData | null }) {
   ];
 
   const tipoLabels: Record<string, string> = {
-    standard: 'Standard',
-    luxo: 'Luxo',
-    suite: 'Suíte',
-    chale: 'Chalé',
+    STANDARD: 'Standard',
+    LUXO: 'Luxo',
+    SUITE: 'Suíte',
+    CHALE: 'Chalé',
   };
 
   const statusLabels: Record<string, { label: string; className: string }> = {
@@ -279,7 +275,7 @@ function SpreadsheetView({ tenantData }: { tenantData: TenantData | null }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {roomsData.map((room, i) => (
+                    {roomsData.map((room: any, i: number) => (
                       <tr
                         key={room.id}
                         className={`border-b border-white/5 last:border-b-0 ${
@@ -287,17 +283,17 @@ function SpreadsheetView({ tenantData }: { tenantData: TenantData | null }) {
                         } hover:bg-white/[0.04] transition-colors`}
                       >
                         <td className="px-4 py-3 text-sm font-medium text-neutral-200 font-mono whitespace-nowrap">
-                          {room.nome}
+                          {room.number || room.name}
                         </td>
                         <td className="px-4 py-3 text-xs text-neutral-400 font-mono whitespace-nowrap">
-                          {tipoLabels[room.tipo] || room.tipo}
+                          {tipoLabels[room.type] || room.type}
                         </td>
                         <td className="px-4 py-3 text-xs text-neutral-400 font-mono whitespace-nowrap">
-                          👥 {room.capacidade} {room.capacidade === 1 ? 'pessoa' : 'pessoas'}
+                          👥 {room.capacity} {room.capacity === 1 ? 'pessoa' : 'pessoas'}
                         </td>
                         <td className="px-4 py-3 text-xs font-mono whitespace-nowrap">
                           <span className="text-orange-400 font-semibold">
-                            R$ {room.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            R$ {(room.basePrice || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                           </span>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
@@ -307,7 +303,7 @@ function SpreadsheetView({ tenantData }: { tenantData: TenantData | null }) {
                             }`}
                           >
                             <span className="w-1.5 h-1.5 rounded-full bg-orange-400 mr-1.5" />
-                            {statusLabels.disponivel.label}
+                            {room.status || 'Disponível'}
                           </span>
                         </td>
                       </tr>
@@ -392,29 +388,66 @@ function EmptySpreadsheet() {
 }
 
 function DashboardContent() {
+  const { data: session, status: authStatus } = useSession();
   const [activeTab, setActiveTab] = useState<TabKey>('painel');
-  const [tenantData, setTenantData] = useState<TenantData | null>(null);
+  const [tenantData, setTenantData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [trialInfo, setTrialInfo] = useState({ daysLeft: 7, isExpired: false, isWarning: false });
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading from localStorage on mount (SSR-safe)
-    setIsClient(true);
-    setTenantData(getTenantData());
-    setTrialInfo(getTrialInfo());
-  }, []);
+    if (authStatus === 'authenticated') {
+      fetch('/api/properties/me')
+        .then(res => res.json())
+        .then(data => {
+          if (!data.error) {
+            setTenantData(data);
+            
+            if (data.trialEndsAt) {
+              const ends = new Date(data.trialEndsAt);
+              const now = new Date();
+              const diff = ends.getTime() - now.getTime();
+              const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+              setTrialInfo({
+                daysLeft: Math.max(0, daysLeft),
+                isExpired: daysLeft <= 0,
+                isWarning: daysLeft <= 2 && daysLeft > 0
+              });
+            }
+          } else {
+            // Redirect to onboarding if no property exists
+            window.location.href = '/teste-gratis';
+          }
+          setLoading(false);
+        })
+        .catch(err => {
+          console.error("Erro ao buscar dados do tenant:", err);
+          setLoading(false);
+        });
+    } else if (authStatus === 'unauthenticated') {
+      setLoading(false);
+    }
+  }, [authStatus]);
 
-  const isNewAccount = isClient && !!tenantData;
+  if (loading || authStatus === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="flex flex-col items-center gap-4">
+          <Brain className="w-10 h-10 text-orange-500 animate-pulse" />
+          <p className="text-sm text-neutral-500 font-mono tracking-widest">SINCRONIZANDO CÉREBRO...</p>
+        </div>
+      </div>
+    );
+  }
 
   const topNavTenantData = tenantData
     ? {
-        nome: tenantData.nome,
-        email: tenantData.email,
-        whatsappProprietario: tenantData.whatsappProprietario,
-        whatsappAtendimento: tenantData.whatsappAtendimento,
+        nome: session?.user?.name || 'Proprietário',
+        email: session?.user?.email || '',
+        whatsappProprietario: tenantData.whatsapp || '',
+        whatsappAtendimento: tenantData.whatsapp || '',
         property: {
-          nome: tenantData.property.nome,
-          tipo: tenantData.property.tipo,
+          nome: tenantData.name,
+          tipo: tenantData.category,
         },
         trialDaysLeft: trialInfo.daysLeft,
         isExpired: trialInfo.isExpired,
@@ -423,10 +456,13 @@ function DashboardContent() {
     : null;
 
   // EXPIRED state — full block
-  if (isClient && trialInfo.isExpired) {
+  if (trialInfo.isExpired) {
     return (
       <div className="min-h-screen flex flex-col bg-[#0a0a0a]">
-        <ClientTopNav tenantData={topNavTenantData} />
+        <ClientTopNav 
+          tenantData={topNavTenantData} 
+          onOpenZCC={() => setActiveTab('sala-de-guerra')}
+        />
         <div className="flex-1 flex items-center justify-center p-4">
           <SubscriptionSelector />
         </div>
@@ -434,10 +470,15 @@ function DashboardContent() {
     );
   }
 
+  const isNewAccount = tenantData && (tenantData._count?.reservations === 0);
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Client Top Nav */}
-      <ClientTopNav tenantData={topNavTenantData} />
+      <ClientTopNav 
+        tenantData={topNavTenantData} 
+        onOpenZCC={() => setActiveTab('sala-de-guerra')}
+      />
 
       {/* Trial warning banner (day 6) */}
       {trialInfo.isWarning && (
@@ -513,249 +554,59 @@ function DashboardContent() {
           >
             {/* ===== TAB: PAINEL (COMMAND CENTER) ===== */}
             {activeTab === 'painel' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                
-                {/* Header: Status da Operação */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-orange-500/10 via-transparent to-transparent p-6 rounded-3xl border border-orange-500/10 glass-card">
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div>
+                  <h1 className="text-3xl font-bold text-[#fafafa] flex items-center gap-3">
+                    Sistema Operacional Cognitivo
+                  </h1>
+                  <p className="text-[#898989] mt-2">
+                    Bem-vindo ao centro de comando da sua pousada. A IA está processando dados regionais e de mercado.
+                  </p>
+                </div>
+
+                <BrainDashboard />
+              </div>
+            )}
+
+            {/* ===== TAB: SALA DE GUERRA (WAR ROOM) ===== */}
+            {activeTab === 'sala-de-guerra' && (
+              <div className="h-[calc(100vh-180px)]">
+                <ZehlaWarRoom />
+              </div>
+            )}
+
+            {/* ===== TAB: MARKETING ===== */}
+            {activeTab === 'marketing' && (
+              <MarketingView />
+            )}
+
+            {/* ===== TAB: VISIBILIDADE ===== */}
+            {activeTab === 'visibilidade' && (
+              <div className="max-w-4xl mx-auto space-y-6">
+                <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-2xl font-bold text-[#fafafa] flex items-center gap-3">
-                      DASHBOARD do Cliente
-                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 text-[10px] font-bold text-green-400 uppercase tracking-widest">
-                        <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                        </span>
-                        Sistema Online
-                      </div>
+                    <h1 className="text-2xl font-bold text-[#fafafa] flex items-center gap-2">
+                      <Globe className="w-6 h-6 text-orange-500" />
+                      Visibilidade Orgânica
                     </h1>
-                    <p className="text-sm text-neutral-500 mt-1">
-                      Visão consolidada da <span className="text-orange-400 font-medium">{tenantData?.property.nome || 'sua propriedade'}</span>
-                      <span className="ml-3 px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-mono text-neutral-400">
-                        REG: {tenantData?.property.registrationNumber || '0001/PRO/SC'}
-                      </span>
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#242424] border border-[#363636] text-xs font-medium text-neutral-300 hover:border-orange-500/30 transition-all">
-                      <CalendarDays className="w-4 h-4 text-orange-400" />
-                      Hoje, 30 Abr
-                    </button>
+                    <p className="text-sm text-neutral-500 mt-1">Sua presença no Google e SEO Local (Agente 09)</p>
                   </div>
                 </div>
+                <VisibilityDashboard />
+              </div>
+            )}
 
-                {/* Main Bento Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-                  
-                  {/* Left Column: Big Metrics & AI Feed (8/12) */}
-                  <div className="lg:col-span-8 space-y-6 flex flex-col">
-                    
-                    {/* Top Stats Row */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      {/* Receita Card */}
-                      <div className="glass-card p-6 border-l-4 border-l-green-500/50 hover:bg-white/[0.03] transition-all group relative">
-                        <div className="absolute top-4 right-4 group/tooltip">
-                          <Info className="w-3.5 h-3.5 text-neutral-600 hover:text-green-400 transition-colors cursor-help" />
-                          <div className="absolute right-0 top-6 w-48 p-2 bg-neutral-900 border border-white/10 rounded-lg text-[9px] text-neutral-400 opacity-0 group-hover/tooltip:opacity-100 transition-opacity z-50 pointer-events-none shadow-2xl">
-                            Total de pagamentos validados via PIX ou Cartão nas últimas 24h. Dinheiro que já está na sua conta ou garantido pela plataforma.
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="p-2 rounded-xl bg-green-500/10 text-green-400 group-hover:scale-110 transition-transform">
-                            <DollarSign className="w-5 h-5" />
-                          </div>
-                          <span className="text-[10px] font-bold text-green-500/70">+12% vs ontem</span>
-                        </div>
-                        <div className="text-xs text-neutral-500 mb-1">Receita Confirmada</div>
-                        <div className="text-2xl font-bold text-[#fafafa]">R$ 448,00</div>
-                      </div>
-
-                      {/* Ocupação Card */}
-                      <div className="glass-card p-6 border-l-4 border-l-blue-500/50 hover:bg-white/[0.03] transition-all group relative">
-                        <div className="absolute top-4 right-4 group/tooltip">
-                          <Info className="w-3.5 h-3.5 text-neutral-600 hover:text-blue-400 transition-colors cursor-help" />
-                          <div className="absolute right-0 top-6 w-48 p-2 bg-neutral-900 border border-white/10 rounded-lg text-[9px] text-neutral-400 opacity-0 group-hover/tooltip:opacity-100 transition-opacity z-50 pointer-events-none shadow-2xl">
-                            Percentual de quartos reservados hoje em relação ao total da sua propriedade. Ajuda a definir se você precisa de promoções de última hora.
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 group-hover:scale-110 transition-transform">
-                            <Users className="w-5 h-5" />
-                          </div>
-                          <span className="text-[10px] font-bold text-blue-500/70">8/12 Quartos</span>
-                        </div>
-                        <div className="text-xs text-neutral-500 mb-1">Taxa de Ocupação</div>
-                        <div className="text-2xl font-bold text-[#fafafa]">66.7%</div>
-                      </div>
-
-                      {/* ROI IA Card */}
-                      <div className="glass-card p-6 border-l-4 border-l-purple-500/50 hover:bg-white/[0.03] transition-all group relative">
-                        <div className="absolute top-4 right-4 group/tooltip">
-                          <Info className="w-3.5 h-3.5 text-neutral-600 hover:text-purple-400 transition-colors cursor-help" />
-                          <div className="absolute right-0 top-6 w-48 p-2 bg-neutral-900 border border-white/10 rounded-lg text-[9px] text-neutral-400 opacity-0 group-hover/tooltip:opacity-100 transition-opacity z-50 pointer-events-none shadow-2xl">
-                            Quantidade de atendimentos feitos 100% pela IA. A "Economia" é o tempo que você ganharia se tivesse que responder cada um manualmente.
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 group-hover:scale-110 transition-transform">
-                            <Sparkles className="w-5 h-5" />
-                          </div>
-                          <span className="text-[10px] font-bold text-purple-500/70">Economia: 4h</span>
-                        </div>
-                        <div className="text-xs text-neutral-500 mb-1">Automação ZEHLA</div>
-                        <div className="text-2xl font-bold text-[#fafafa]">12 Atend.</div>
-                      </div>
-                    </div>
-
-                    {/* Guest Activity Feed (Business Focused) */}
-                    <div className="glass-card overflow-hidden border border-white/5 relative group/card flex-1 flex flex-col">
-                      <div className="absolute top-5 right-24 group/tooltip">
-                        <Info className="w-3.5 h-3.5 text-neutral-600 hover:text-orange-400 transition-colors cursor-help" />
-                        <div className="absolute right-0 top-6 w-56 p-3 bg-neutral-900 border border-white/10 rounded-xl text-[9px] text-neutral-400 opacity-0 group-hover/tooltip:opacity-100 transition-opacity z-50 pointer-events-none shadow-2xl">
-                          <p className="font-bold text-orange-400 mb-1">CENTRO DE ATIVIDADE</p>
-                          Acompanhe em tempo real as solicitações dos seus hóspedes e o status de cada atendimento realizado pelo ZEHLA.
-                        </div>
-                      </div>
-                      <div className="p-5 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
-                            <Users className="w-5 h-5 text-orange-400" />
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-bold text-neutral-200">Atividade de Hóspedes</h3>
-                            <p className="text-[10px] text-neutral-500">Últimas interações e solicitações</p>
-                          </div>
-                        </div>
-                        <button onClick={() => setActiveTab('terminal')} className="text-[10px] font-bold text-orange-400 hover:underline">VER TODAS</button>
-                      </div>
-
-                      <div className="p-0">
-                        {/* Guest Item */}
-                        <div className="p-5 hover:bg-white/[0.02] transition-all border-b border-white/5 group">
-                          <div className="flex items-start gap-4">
-                            <div className="relative">
-                              <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-xs font-bold text-white shadow-lg">MC</div>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between mb-1">
-                                <h4 className="text-sm font-bold text-neutral-100">Marcio Cau</h4>
-                                <span className="text-[10px] text-neutral-600 tracking-tighter">Há 5min</span>
-                              </div>
-                              <p className="text-xs text-neutral-400 leading-relaxed italic border-l-2 border-white/10 pl-3 mb-3">
-                                "Gostaria de saber o valor para o feriado de 1 de maio para 2 pessoas."
-                              </p>
-                              <div className="flex flex-wrap gap-2">
-                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-green-500/10 border border-green-500/20 text-[9px] font-bold text-green-400">
-                                  PIX VALIDADO R$ 448
-                                </span>
-                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-orange-500/10 border border-orange-500/20 text-[9px] font-bold text-orange-400">
-                                  RESERVA CONFIRMADA
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* More fake items to show depth */}
-                        <div className="p-5 opacity-40 hover:opacity-100 transition-all border-b border-white/5">
-                          <div className="flex items-start gap-4">
-                            <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-xs font-bold text-neutral-500">JR</div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between mb-1">
-                                <h4 className="text-sm font-bold text-neutral-400">Juliana Ribeiro</h4>
-                                <span className="text-[10px] text-neutral-700">Há 20min</span>
-                              </div>
-                              <p className="text-xs text-neutral-600 truncate">"Vocês aceitam pet? Tenho um Golden."</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Column: Health & Operations (4/12) */}
-                  <div className="lg:col-span-4 space-y-6 flex flex-col">
-                    
-                    {/* Usage & Health Dashboard */}
-                    <div className="glass-card p-6 bg-gradient-to-b from-white/[0.02] to-transparent relative group/card">
-                      <div className="absolute top-6 right-6 group/tooltip">
-                        <Info className="w-3.5 h-3.5 text-neutral-600 hover:text-orange-400 transition-colors cursor-help" />
-                        <div className="absolute right-0 top-6 w-48 p-2 bg-neutral-900 border border-white/10 rounded-lg text-[9px] text-neutral-400 opacity-0 group-hover/tooltip:opacity-100 transition-opacity z-50 pointer-events-none shadow-2xl">
-                          Status do seu plano mensal. O medidor mostra quantas mensagens a IA ainda pode enviar antes da próxima renovação.
-                        </div>
-                      </div>
-                      <h3 className="text-sm font-bold text-[#fafafa] mb-6 flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-orange-400" />
-                        Saúde da Operação
-                      </h3>
-                      
-                      <div className="space-y-6">
-                        {/* Message Usage Meter */}
-                        <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-[11px] font-medium text-neutral-400">Mensagens IA do Plano (PRO)</span>
-                            <span className="text-[11px] font-bold text-orange-400">12 / 2.000</span>
-                          </div>
-                          <div className="h-2 w-full bg-[#1a1a1a] rounded-full overflow-hidden border border-white/5 shadow-inner">
-                            <motion.div 
-                              initial={{ width: 0 }}
-                              animate={{ width: '0.6%' }}
-                              className="h-full bg-gradient-to-r from-orange-600 to-orange-400 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.4)]"
-                            />
-                          </div>
-                          <p className="text-[9px] text-neutral-600 mt-2">Próxima renovação: <span className="text-neutral-400">30 de Maio</span></p>
-                        </div>
-
-                        {/* Quick Refill Button */}
-                        <motion.button 
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          className="w-full py-3.5 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-[11px] font-bold text-orange-400 flex items-center justify-center gap-2 group transition-all"
-                        >
-                          <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
-                          Comprar +500 mensagens por R$ 19,90
-                        </motion.button>
-
-                        <div className="h-px bg-white/5 w-full" />
-
-                        {/* System Health Indicators */}
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between text-[10px]">
-                            <span className="text-neutral-500">API OpenAI/Gemini</span>
-                            <span className="text-green-500 font-bold">100% Estável</span>
-                          </div>
-                          <div className="flex items-center justify-between text-[10px]">
-                            <span className="text-neutral-500">Integração WhatsApp</span>
-                            <span className="text-green-500 font-bold">Conectado</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Quick Management Box */}
-                    <div className="glass-card p-6 border-t-2 border-orange-500/20">
-                      <h3 className="text-sm font-bold text-neutral-200 mb-4">Próximos Check-ins</h3>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.01] border border-white/5 group hover:border-orange-500/20 transition-all cursor-pointer">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-[10px] font-bold text-orange-400">HOJE</div>
-                            <div>
-                              <p className="text-[11px] font-bold text-neutral-300">Marcio Cau</p>
-                              <p className="text-[9px] text-neutral-500">Quarto 04 - Luxo</p>
-                            </div>
-                          </div>
-                          <ChevronRight className="w-4 h-4 text-neutral-700 group-hover:text-orange-500 transition-colors" />
-                        </div>
-                        <div className="flex items-center justify-center p-3 rounded-xl border border-dashed border-white/5 text-[10px] text-neutral-600">
-                          Sem outros check-ins hoje
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
+            {/* ===== TAB: CHECK-IN (FNRH) ===== */}
+            {activeTab === 'check-in' && (
+              <div className="space-y-6">
+                <div>
+                  <h1 className="text-xl font-bold text-neutral-100 flex items-center gap-2">
+                    <TicketCheck className="w-6 h-6 text-orange-500" />
+                    Check-in Digital & FNRH
+                  </h1>
+                  <p className="text-sm text-neutral-500 mt-1">Conformidade com o Ministério do Turismo (Portaria 28/2025)</p>
                 </div>
-
-
+                <FNRHCheckinProvider />
               </div>
             )}
 
@@ -854,6 +705,22 @@ function DashboardContent() {
             {activeTab === 'configuracoes' && (
               <SettingsPanel />
             )}
+
+            {/* ===== TAB: VOICE STUDIO ===== */}
+            {activeTab === 'voice-studio' && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div>
+                  <h1 className="text-3xl font-bold text-[#fafafa] flex items-center gap-3">
+                    Voice Studio V2
+                  </h1>
+                  <p className="text-[#898989] mt-2">
+                    Engenharia Vocal e Clonagem DNA. Treine sua voz e deixe a IA falar como você.
+                  </p>
+                </div>
+
+                <VoiceStudioV2 />
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
       </main>
@@ -862,50 +729,5 @@ function DashboardContent() {
 }
 
 export default function DashboardPage() {
-  const [isOnboardingComplete, setIsOnboardingComplete] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    try {
-      const complete = localStorage.getItem('zehla-onboarding-complete');
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- reading from localStorage on mount (SSR-safe)
-      setIsOnboardingComplete(complete === 'true');
-    } catch {
-      setIsOnboardingComplete(false);
-    }
-  }, []);
-
-  const handleOnboardingComplete = () => {
-    setIsOnboardingComplete(true);
-  };
-
-  // Loading state while checking localStorage
-  if (isOnboardingComplete === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-neutral-500">Carregando...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Redirect to registration if not onboarded
-  if (!isOnboardingComplete) {
-    // Redirect to /teste-gratis instead of showing inline wizard
-    if (typeof window !== 'undefined') {
-      window.location.href = '/teste-gratis';
-    }
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-neutral-500">Redirecionando para cadastro...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show dashboard
   return <DashboardContent />;
 }
