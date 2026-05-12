@@ -178,6 +178,23 @@ const initialWhatsApp: WhatsAppConfig = {
   ignoreSuppliers: true,
 };
 
+// Section 4.1 — AI Persona (Mesa de Equalização)
+interface PersonaConfig {
+  formality: number; // 0-100
+  aggressiveness: 'PASSIVE' | 'CONSULTATIVE' | 'CLOSING';
+  allowEmojis: boolean;
+  style: 'REGIONAL' | 'EXECUTIVE' | 'RUSTIC' | 'MINIMALIST';
+  useBrandDNA: boolean;
+}
+
+const initialPersona: PersonaConfig = {
+  formality: 40,
+  aggressiveness: 'CONSULTATIVE',
+  allowEmojis: true,
+  style: 'RUSTIC',
+  useBrandDNA: true,
+};
+
 // Section 5 — Dynamic Pricing
 interface PricingRule {
   id: string;
@@ -265,7 +282,8 @@ export function SettingsPanel() {
   const [newRoomStatus, setNewRoomStatus] = useState<RoomStatus>('disponivel');
 
   // Section 4
-  const [whatsapp, setWhatsapp] = useState<WhatsAppConfig>(initialWhatsApp);
+  const [whatsapp, setWhatsapp] = useState(initialWhatsApp);
+  const [persona, setPersona] = useState(initialPersona);
 
   // Section 5
   const [pricingRules, setPricingRules] = useState<PricingRule[]>(initialPricingRules);
@@ -796,7 +814,117 @@ export function SettingsPanel() {
           </AccordionContent>
         </AccordionItem>
 
-        {/* ═══════════ SECTION 4: WhatsApp ═══════════ */}
+        {/* ═══════════ SECTION 4.1: Personalidade da IA (PERSONA) ═══════════ */}
+        <AccordionItem value="section-4-1" className="glass-card border-[#2e2e2e] rounded-xl overflow-hidden shadow-2xl shadow-orange-500/5">
+          <AccordionTrigger className="px-5 py-4 text-[#fafafa] hover:no-underline hover:text-[#FF5500] transition-colors [&>svg]:text-[#4d4d4d]">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-orange-400" />
+              </div>
+              <div className="text-left">
+                <div className="text-sm font-semibold">Personalidade da IA</div>
+                <div className="text-xs text-[#4d4d4d]">Calibre o tom de voz e o comportamento (Mesa de Equalização)</div>
+              </div>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="px-5 pb-5">
+            <div className="mt-2 space-y-6">
+              
+              {/* DNA Synchronization */}
+              <div className="flex items-center justify-between p-4 bg-orange-500/5 border border-orange-500/20 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-orange-500/10 rounded-full">
+                    <Zap className="w-4 h-4 text-orange-500" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-orange-400">Sincronizar com DNA da Marca</div>
+                    <div className="text-[10px] text-[#898989]">Usar aprendizado autônomo do Whatsapp Persona Learner</div>
+                  </div>
+                </div>
+                <Switch 
+                  checked={persona.useBrandDNA}
+                  onCheckedChange={(checked) => setPersona({...persona, useBrandDNA: checked})}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Formality Slider */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-[#fafafa] uppercase tracking-widest">Nível de Formalidade</label>
+                    <span className="text-[10px] font-mono text-orange-400">{persona.formality}%</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    value={persona.formality}
+                    onChange={(e) => setPersona({...persona, formality: parseInt(e.target.value)})}
+                    className="w-full accent-orange-500 bg-neutral-800 h-1.5 rounded-full appearance-none cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[9px] text-[#4d4d4d] font-bold uppercase">
+                    <span>Casual (E aí!)</span>
+                    <span>Formal (Prezado)</span>
+                  </div>
+                </div>
+
+                {/* Aggressiveness Select */}
+                <div className="space-y-3">
+                  <label className="text-xs font-bold text-[#fafafa] uppercase tracking-widest block">Agressividade Comercial</label>
+                  <Select 
+                    value={persona.aggressiveness}
+                    onValueChange={(v: any) => setPersona({...persona, aggressiveness: v})}
+                  >
+                    <SelectTrigger className={darkSelectTrigger}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-neutral-900 border-[#363636]">
+                      <SelectItem value="PASSIVE">Passivo (Apenas responde dúvidas)</SelectItem>
+                      <SelectItem value="CONSULTATIVE">Consultivo (Sugere e ajuda)</SelectItem>
+                      <SelectItem value="CLOSING">Fechador (Foca em fechar a reserva)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[9px] text-[#4d4d4d]">Define o apetite da IA para usar gatilhos de escassez e urgência.</p>
+                </div>
+
+                {/* Style Select */}
+                <div className="space-y-3">
+                  <label className="text-xs font-bold text-[#fafafa] uppercase tracking-widest block">Estilo de Linguagem</label>
+                  <Select 
+                    value={persona.style}
+                    onValueChange={(v: any) => setPersona({...persona, style: v})}
+                  >
+                    <SelectTrigger className={darkSelectTrigger}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-neutral-900 border-[#363636]">
+                      <SelectItem value="REGIONAL">Regional (Com gírias locais)</SelectItem>
+                      <SelectItem value="EXECUTIVE">Executivo (Polido e eficiente)</SelectItem>
+                      <SelectItem value="RUSTIC">Rústico (Acolhedor e simples)</SelectItem>
+                      <SelectItem value="MINIMALIST">Minimalista (Direto ao ponto)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Emojis Toggle */}
+                <div className="flex items-center justify-between p-4 bg-white/[0.02] border border-[#2e2e2e] rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">✨</span>
+                    <div>
+                      <div className="text-xs font-bold text-[#efefef]">Uso de Emojis</div>
+                      <div className="text-[10px] text-[#4d4d4d]">Permitir iconografia nas mensagens</div>
+                    </div>
+                  </div>
+                  <Switch 
+                    checked={persona.allowEmojis}
+                    onCheckedChange={(checked) => setPersona({...persona, allowEmojis: checked})}
+                  />
+                </div>
+              </div>
+
+            </div>
+          </AccordionContent>
+        </AccordionItem>
         <AccordionItem value="section-4" className="glass-card border-[#2e2e2e] rounded-xl overflow-hidden">
           <AccordionTrigger className="px-5 py-4 text-[#fafafa] hover:no-underline hover:text-[#FF5500] transition-colors [&>svg]:text-[#4d4d4d]">
             <div className="flex items-center gap-3">
