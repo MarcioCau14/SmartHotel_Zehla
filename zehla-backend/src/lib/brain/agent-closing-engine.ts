@@ -1,90 +1,94 @@
-import { prisma } from '@/lib/prisma'
-import { llmRouter } from '@/lib/ai/llm-router'
+import { prisma } from '@/lib/prisma';
+import { llmRouter } from '@/lib/ai/llm-router';
+import { WhatsappPersonaLearner } from './whatsapp-persona-learner';
+import { CognitiveTerminal } from '@/lib/observability/cognitive-terminal';
 
 export type ClosingState = 'IDLE' | 'QUALIFYING' | 'AVAILABILITY' | 'QUOTATION' | 'OBJECTION' | 'CLOSING' | 'HANDOVER'
 
-export interface ClosingContext {
-  propertyId: string
-  guestPhone: string
-  intent: string
-  currentState: ClosingState
-  data: {
-    dates?: string
-    guests?: number
-    roomType?: string
-    objections?: string[]
-  }
-}
-
 export class AgentClosingEngine {
   /**
-   * Determina o próximo passo lógico para fechar a reserva com foco em Conversão.
+   * MÁQUINA DE CONVERSÃO (Jornada do Hóspede)
+   * Processa a negociação e gera uma resposta focada em FECHAMENTO.
    */
-  static async determineNextAction(context: ClosingContext): Promise<{ state: ClosingState; response: string }> {
-    const { propertyId, intent, data, guestPhone } = context
-    
-    // 1. DETECTOR DE FRUSTRAÇÃO (HANDOVER)
-    const lastMessages = await prisma.message.findMany({
-      where: { phone: guestPhone, direction: 'INBOUND' },
-      take: 3,
-      orderBy: { createdAt: 'desc' }
-    });
+  static async processNegotiation(propertyId: string, leadId: string, lastMessages: any[]) {
+    try {
+      // 1. CARGA DE CONTEXTO (Bancada de Inox)
+      const [property, persona, trends, lead] = await Promise.all([
+        prisma.property.findUnique({
+          where: { id: propertyId },
+          include: { rooms: { include: { reservations: { where: { status: { in: ['CONFIRMED', 'CHECKED_IN'] } } } } } }
+        }),
+        WhatsappPersonaLearner.getPersona(propertyId),
+        this.getRecentTrends(),
+        prisma.lead.findUnique({ where: { id: leadId } })
+      ]);
 
-    const frustrationDetected = this.detectFrustration(lastMessages.map(m => m.content));
-    if (frustrationDetected) {
-      console.warn(`🚨 [HANDOVER] Frustração detectada para ${guestPhone}. Silenciando IA.`);
-      await this.notifyOwner(propertyId, guestPhone, 'O hóspede parece frustrado ou com objeções complexas. Assuma a conversa.');
-      return { 
-        state: 'HANDOVER', 
-        response: 'Entendo sua preocupação. Vou pedir para o nosso gerente de reservas te dar uma atenção especial agora mesmo. Um momento, por favor.' 
-      };
-    }
+      if (!property || !lead) throw new Error('Propriedade ou Lead não encontrado');
 
-    // 2. BUSCA DE DADOS REAIS PARA GATILHOS (ESCUTAR O COFRE)
-    const property = await prisma.property.findUnique({
-      where: { id: propertyId },
-      include: { rooms: { include: { reservations: true } } }
-    });
-
-    if (!property) throw new Error('Property not found');
-
-    // 3. LÓGICA TÁTICA DE VENDAS (CIALDINI)
-    switch (intent) {
-      case 'PRICE_INQUIRY':
-        const availability = this.calculateScarcity(property);
-        const baseResponse = await this.generateQuotationResponse(property, data);
-        
-        // Injeção de Gatilho de Escassez Real
-        if (availability.totalAvailable <= 2) {
-          return { 
-            state: 'QUOTATION', 
-            response: `${baseResponse}\n\n⚠️ Ricardo, notei aqui que restam apenas ${availability.totalAvailable} unidades para essa data. Como é um período de alta procura, as vagas costumam esgotar rápido.` 
-          };
-        }
-        return { state: 'QUOTATION', response: baseResponse };
-
-      case 'OBJECTION_PRICE':
+      // 2. AUDITORIA DE DISPONIBILIDADE (Escassez Real)
+      const availability = this.calculateRealAvailability(property);
+      
+      // 3. DETECÇÃO DE HANDOVER (Segurança)
+      if (this.detectHandoverNeed(lastMessages)) {
+        await this.triggerHandover(propertyId, lead.whatsapp, 'Solicitação de humano ou atrito detectado.');
         return { 
-          state: 'OBJECTION', 
-          response: `Entendo perfeitamente o valor, mas lembre-se que nossa tarifa inclui o café da manhã artesanal e acesso exclusivo à trilha privada. Posso verificar se consigo um benefício extra para você confirmar agora?` 
+          state: 'HANDOVER', 
+          response: 'Entendo perfeitamente. Vou pedir para o nosso gerente de reservas te dar uma atenção especial agora mesmo. Um momento.' 
         };
+      }
 
-      default:
-        return { state: 'QUALIFYING', response: 'Como posso ajudar a tornar sua estadia inesquecível?' };
+      // 4. GERAÇÃO TÁTICA (Kimi K2.6 / DeepSeek)
+      const prompt = this.buildClosingPrompt(property, persona, availability, trends, lead, lastMessages);
+      
+      const response = await llmRouter.generate({
+        model: 'reasoning', // DeepSeek-R1 para tática de vendas
+        messages: [
+          { role: 'system', content: `Você é o hoteleiro da pousada ${property.nome}. Seu DNA: ${persona.tone}. REGRAS: ${persona.rules.join('. ')}` },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.3,
+        maxTokens: 1000
+      });
+
+      await CognitiveTerminal.success('CLOSING-ENGINE', `Resposta de fechamento gerada para lead ${lead.name}`, { leadId });
+
+      return { state: 'CLOSING', response: response.content };
+
+    } catch (error) {
+      await CognitiveTerminal.error('CLOSING-ENGINE', `Falha no processamento da negociação: ${leadId}`, propertyId, error);
+      throw error;
     }
   }
 
-  private static detectFrustration(messages: string[]): boolean {
-    const triggers = ['ruim', 'caro', 'absurdo', 'demora', 'atendente', 'humano', 'gerente', '?', '!', 'lixo'];
-    return messages.some(msg => triggers.some(t => msg.toLowerCase().includes(t)));
+  private static calculateRealAvailability(property: any) {
+    const totalRooms = property.rooms.length;
+    const occupiedRooms = property.rooms.filter((r: any) => r.reservations.length > 0).length;
+    const available = totalRooms - occupiedRooms;
+    
+    return {
+      available,
+      isLow: available <= 2,
+      percentage: Math.round((available / totalRooms) * 100)
+    };
   }
 
-  private static calculateScarcity(property: any) {
-    const totalAvailable = property.rooms.filter((r: any) => r.reservations.length === 0).length; // Simplificado
-    return { totalAvailable };
+  private static async getRecentTrends() {
+    // Busca sinais de clima e feriados próximos para injetar na oferta
+    const [weather, holidays] = await Promise.all([
+      prisma.weatherSignal.findMany({ take: 3, orderBy: { createdAt: 'desc' } }),
+      prisma.holidaySignal.findMany({ where: { daysUntil: { lte: 15 } }, take: 1 })
+    ]);
+
+    return { weather, holidays };
   }
 
-  private static async notifyOwner(propertyId: string, phone: string, reason: string) {
+  private static detectHandoverNeed(messages: any[]): boolean {
+    const lastMessage = messages[messages.length - 1]?.content?.toLowerCase() || '';
+    const triggers = ['falar com humano', 'atendente', 'gerente', 'reclamação', 'estou bravo', 'ruim', 'não gostei', 'falar com o dono'];
+    return triggers.some(t => lastMessage.includes(t));
+  }
+
+  private static async triggerHandover(propertyId: string, phone: string, reason: string) {
     await prisma.securityAlert.create({
       data: {
         tenantId: propertyId,
@@ -93,11 +97,42 @@ export class AgentClosingEngine {
         metadata: JSON.stringify({ phone, reason, timestamp: new Date() })
       }
     });
+    await CognitiveTerminal.warn('SECURITY', `Handover ativado para ${phone}: ${reason}`, { propertyId });
   }
 
-  private static async generateQuotationResponse(property: any, data: any): Promise<string> {
-    // Integração real com os preços dos quartos
-    const minPrice = Math.min(...property.rooms.map((r: any) => r.preco))
-    return `Nossas diárias começam em R$ ${minPrice}. Para uma cotação exata, poderia me confirmar as datas desejadas?`
+  private static buildClosingPrompt(property: any, persona: any, availability: any, trends: any, lead: any, history: any[]) {
+    const historyText = history.map(m => `${m.role === 'user' ? 'Hóspede' : 'Pousada'}: ${m.content}`).join('\n');
+    
+    let trendContext = '';
+    if (trends.holidays.length > 0) {
+      trendContext += `\n- FERIADO PRÓXIMO: ${trends.holidays[0].name} em ${trends.holidays[0].daysUntil} dias.`;
+    }
+    if (trends.weather.length > 0) {
+      trendContext += `\n- CLIMA: Previsão de ${trends.weather[0].condition} com ${trends.weather[0].avgTemp}°C.`;
+    }
+
+    return `
+CONTEXTO DE NEGOCIAÇÃO:
+Hóspede: ${lead.name}
+Cidade: ${lead.city}
+Estágio: ${lead.funnelStage}
+Score: ${lead.conversionScore}
+
+DISPONIBILIDADE REAL (NÃO MINTA):
+- Suítes Livres: ${availability.available}
+- Status: ${availability.isLow ? 'CRÍTICO (USE ESCASSEZ REAL)' : 'NORMAL'}
+${trendContext}
+
+HISTÓRICO:
+${historyText}
+
+TAREFA:
+Gere uma resposta de fechamento mimetizando o hoteleiro (${persona.tone}).
+Use as expressões: ${persona.commonExpressions.join(', ')}.
+Se a disponibilidade for baixa (${availability.available}), use escassez real.
+Se houver feriado próximo, crie urgência.
+Se o clima estiver bom, use como argumento de venda.
+OBJETIVO: Levar o hóspede a confirmar a reserva AGORA. Responda em Português.
+    `;
   }
 }
