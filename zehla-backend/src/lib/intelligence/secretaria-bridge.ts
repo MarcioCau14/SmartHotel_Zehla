@@ -59,6 +59,54 @@ export class SecretariaBridge {
   }
 
   /**
+   * RAIO-X: Realiza a qualificação profunda de um lead individual
+   * Cruza dados de WhatsApp/Nome com fontes públicas via Secretaria-IA
+   */
+  static async qualifyLead(leadId: string): Promise<any> {
+    try {
+      const lead = await prisma.lead.findUnique({ where: { id: leadId } });
+      if (!lead) throw new Error(`Lead ${leadId} não encontrado.`);
+
+      console.log(`🧠 [SECRETARIA-IA] Iniciando Raio-X para: ${lead.name} (${lead.whatsapp})`);
+
+      // 1. Pesquisa Ativa (Google Maps / Social)
+      const searchQuery = `${lead.name} ${lead.city !== 'Unknown' ? lead.city : ''}`;
+      const candidates = await this.searchLeads(searchQuery, 1);
+
+      if (candidates.length > 0) {
+        const topCandidate = candidates[0];
+        
+        // 2. Enriquecimento de Perfil
+        return await prisma.lead.update({
+          where: { id: leadId },
+          data: {
+            qualification: topCandidate.match_explanation || 'Perfil validado via busca profunda.',
+            validationScore: topCandidate.validationScore,
+            status: topCandidate.validationScore > 70 ? 'QUALIFIED' : 'REVIEW_NEEDED',
+            // Enriquecer cidade se for desconhecida
+            city: lead.city === 'Unknown' ? (topCandidate.metadata?.city || lead.city) : lead.city,
+            state: lead.state === 'Unknown' ? (topCandidate.metadata?.state || lead.state) : lead.state,
+          }
+        });
+      }
+
+      // Se nada for encontrado, marcamos como inconclusivo
+      return await prisma.lead.update({
+        where: { id: leadId },
+        data: {
+          qualification: 'Nenhum sinal social claro encontrado. Aguardando interação humana.',
+          validationScore: 30,
+          status: 'UNQUALIFIED'
+        }
+      });
+
+    } catch (error) {
+      console.error(`[SECRETARIA-IA] Erro na qualificação do lead ${leadId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Parser simples para extrair os candidatos do output do terminal
    */
   private static parseOutput(output: string): SecretariaLead[] {

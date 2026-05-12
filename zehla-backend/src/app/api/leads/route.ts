@@ -1,7 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { Guardian } from '@/lib/security/guardian';
 import { getServerSession } from 'next-auth';
+import { subconsciousQueue } from '@/lib/ml/subconscious-worker';
 
 export async function GET(req: NextRequest) {
   // 1. BLINDAGEM: Rate Limiting (50 req/min)
@@ -122,12 +121,15 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // 3. GATILHO: Disparar Secretaria-IA para Raio-X (Async)
-    // Aqui injetamos no background worker para não atrasar o 100/100 Lighthouse
-    // Em ambiente de desenvolvimento, podemos simular ou chamar uma função async sem await
-    processLeadQualification(lead.id).catch(err => 
-      console.error('❌ [Secretaria-IA] Erro ao enfileirar qualificação:', err)
-    );
+    // 3. GATILHO: Disparar Secretaria-IA para Raio-X (Async via BullMQ)
+    await subconsciousQueue.add('QUALIFY_LEAD', { 
+      type: 'QUALIFY_LEAD', 
+      leadId: lead.id 
+    }, { 
+      removeOnComplete: true,
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 1000 }
+    });
 
     return NextResponse.json({ 
       success: true, 
@@ -138,10 +140,4 @@ export async function POST(req: NextRequest) {
     console.error('❌ [LIS] Erro na captura de lead:', error);
     return NextResponse.json({ error: 'Erro interno na captura' }, { status: 500 });
   }
-}
-
-// Simulação de enfileiramento (BullMQ Integration Ready)
-async function processLeadQualification(leadId: string) {
-  // TODO: Integrar com BullMQ 'SECRETARIA_QUALIFY'
-  console.log(`🧠 [Secretaria-IA] Iniciando Raio-X do Lead: ${leadId}`);
 }
