@@ -22,11 +22,8 @@ function createRedisInstance(name: string, dbIndex: number) {
   const url = getRedisUrlForDb(BASE_REDIS_URL, dbIndex);
 
   if (!url) {
-    if (isDev) {
-      console.warn(`⚠️ [${name}] REDIS_URL não definida. Usando MOCK em modo dev.`);
-      return createMockRedis();
-    }
-    throw new Error(`❌ [CRITICAL] REDIS_URL não definida para ${name} em produção.`);
+    console.warn(`⚠️ [${name}] REDIS_URL não definida. Usando MOCK (Resilience Mode).`);
+    return createMockRedis();
   }
 
   try {

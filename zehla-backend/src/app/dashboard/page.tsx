@@ -1,6 +1,7 @@
 "use client";
 import dynamic from 'next/dynamic';
 import { useState, useEffect, Suspense } from 'react';
+import { useSession } from 'next-auth/react';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { motion, AnimatePresence } from 'framer-motion';
 
