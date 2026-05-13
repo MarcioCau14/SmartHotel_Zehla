@@ -32,6 +32,7 @@ const BrainDashboard = dynamic(() => import('@/components/dashboard/BrainDashboa
 import {
   LayoutDashboard,
   Terminal,
+  Brain,
   BedDouble,
   CalendarDays,
   Wallet,
