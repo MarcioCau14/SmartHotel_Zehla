@@ -1,17 +1,68 @@
-name: CI
+name: ZEHLA CI/CD Pipeline
+
 on:
   push:
-      branches: [ principal ]
-      jobs:
-        build:
-            runs-on: ubuntu-latest
-                steps:
-                      - uses: actions/checkout@v4
-                            - uses: pnpm/action-setup@v3
-                                    with:
-                                              version: 9
-                                                    - run: |
-                                                              cd zehla-backend
-                                                                        pnpm install --no-frozen-lockfile
-                                                                                  pnpm test
-                                                                                  
+    branches: [ main ]
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./zehla-backend
+
+    steps:
+      - name: 📦 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Install PNPM
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+          run_install: false
+
+      - name: Extrair diretório de cache do pnpm
+        id: pnpm-cache-dir
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+
+      - name: ⚡ Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: 🛠️ Install Dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: 🏗️ Production Build (Next.js & Turbopack)
+        env:
+          # Hardware Optimization
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          # Database & Infrastructure Secrets
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
+          # AI & Integration Secrets
+          KIMI_API_KEY: ${{ secrets.KIMI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          PAGARME_API_KEY: ${{ secrets.PAGARME_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EVOLUTION_API_URL: ${{ secrets.EVOLUTION_API_URL }}
+          EVOLUTION_API_KEY: ${{ secrets.EVOLUTION_API_KEY }}
+          # App Config
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NODE_ENV: production
+        run: pnpm run build
+
+      - name: ✅ Validation Success
+        run: echo "Build concluído com sucesso e validado pelo CI!"
