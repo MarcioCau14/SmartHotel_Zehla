@@ -24,6 +24,8 @@ export async function POST(request: NextRequest) {
   }
 }
 
+import { RoomStatus } from '@prisma/client'
+
 async function updateRoomStatus(roomId: string, status: string) {
   const validStatuses = ['AVAILABLE', 'OCCUPIED', 'CLEANING', 'MAINTENANCE', 'BLOCKED']
 
@@ -33,7 +35,7 @@ async function updateRoomStatus(roomId: string, status: string) {
 
   const room = await prisma.room.update({
     where: { id: roomId },
-    data: { status },
+    data: { status: status as RoomStatus },
     include: { property: true }
   })
 
@@ -62,7 +64,7 @@ async function getRoomsStatus(propertyId: string) {
 async function scheduleCleaning(roomId: string, scheduledAt: string) {
   const room = await prisma.room.update({
     where: { id: roomId },
-    data: { status: 'CLEANING' }
+    data: { status: 'CLEANING' as RoomStatus }
   })
 
   return NextResponse.json({ 
@@ -75,7 +77,7 @@ async function scheduleCleaning(roomId: string, scheduledAt: string) {
 async function markRoomReady(roomId: string) {
   const room = await prisma.room.update({
     where: { id: roomId },
-    data: { status: 'AVAILABLE' }
+    data: { status: 'AVAILABLE' as RoomStatus }
   })
 
   return NextResponse.json({ 

@@ -1,3 +1,4 @@
+"use client";
 import dynamic from 'next/dynamic';
 import { useState, useEffect, Suspense } from 'react';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';

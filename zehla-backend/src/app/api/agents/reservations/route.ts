@@ -1,3 +1,4 @@
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { llmRouter } from '@/lib/ai/llm-router'
 import { PiiGuard } from '@/lib/security/pii-guard'
@@ -105,9 +106,9 @@ async function updateReservation(id: string, data: any) {
       guestEmail: protectedData.guestEmail,
       guestPhone: protectedData.guestPhone,
       guestCpf: protectedData.guestCpf,
-      guestAddress: protectedData.guestAddress,
-      guestZipCode: protectedData.guestZipCode,
-      guestBirthDate: protectedData.guestBirthDate,
+      // guestAddress: protectedData.guestAddress,
+      // guestZipCode: protectedData.guestZipCode,
+      // guestBirthDate: protectedData.guestBirthDate,
       checkIn: data.checkIn ? new Date(data.checkIn) : undefined,
       checkOut: data.checkOut ? new Date(data.checkOut) : undefined,
       notes: data.notes,
@@ -141,7 +142,7 @@ async function checkIn(id: string) {
     data: { 
       status: 'CHECKED_IN',
       checkInStatus: 'DONE',
-      fnrhSubmittedAt: new Date()
+      // fnrhSubmittedAt: new Date()
     },
     include: { room: true, property: true }
   })

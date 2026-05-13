@@ -1,4 +1,4 @@
-import { AgentOrchestrator } from './src/lib/brain/agent-orchestrator';
+import { AgentOrchestrator } from '../src/lib/brain/agent-orchestrator';
 
 async function testSecretariaAI() {
   const orchestrator = new AgentOrchestrator();

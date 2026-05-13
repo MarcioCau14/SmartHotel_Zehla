@@ -46,7 +46,8 @@ async function analyzePatterns(data: any) {
       return acc
     }, {}),
     byIntent: logs.reduce((acc: any, log) => {
-      acc[log.intent] = (acc[log.intent] || 0) + 1
+      const intentKey = log.intent || 'unknown'
+      acc[intentKey] = (acc[intentKey] || 0) + 1
       return acc
     }, {}),
     averageConfidence: logs.length > 0 

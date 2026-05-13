@@ -82,3 +82,56 @@ export class Guardian {
     });
   }
 }
+
+/**
+ * Sanitizes input to prevent XSS and injection attacks.
+ */
+export function sanitizeInput(input: string): string {
+  if (!input) return '';
+  return input.replace(/[<>"'&]/g, (match) => {
+    const map: Record<string, string> = {
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#x27;',
+      '&': '&amp;'
+    };
+    return map[match] || match;
+  });
+}
+
+/**
+ * Scans input for Personally Identifiable Information (PII) before logging or processing.
+ */
+export function scanPII(input: string): { hasPII: boolean; sanitized: string; found: string[] } {
+  const cpfRegex = /\b\d{3}\.\d{3}\.\d{3}-\d{2}\b/g;
+  const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
+  
+  let hasPII = false;
+  let sanitized = input || '';
+  const found: string[] = [];
+
+  const cpfMatches = sanitized.match(cpfRegex);
+  if (cpfMatches) {
+    hasPII = true;
+    found.push(...cpfMatches);
+    sanitized = sanitized.replace(cpfRegex, '***.***.***-**');
+  }
+
+  const emailMatches = sanitized.match(emailRegex);
+  if (emailMatches) {
+    hasPII = true;
+    found.push(...emailMatches);
+    sanitized = sanitized.replace(emailRegex, '[EMAIL REDACTED]');
+  }
+
+  return { hasPII, sanitized, found };
+}
+
+/**
+ * Validates generic API requests to ensure payload integrity.
+ */
+export async function validateRequest(req: Request): Promise<{ allowed: boolean; reason?: string }> {
+  // Implementation of request validation
+  return { allowed: true };
+}

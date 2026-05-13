@@ -1,3 +1,4 @@
+"use client";
 import { Brain, ChevronDown, User, Bell, Settings, Menu, X, AlertTriangle, BedDouble, CalendarDays, TicketCheck, LifeBuoy, LayoutDashboard } from 'lucide-react';
 import { useState } from 'react';
 
