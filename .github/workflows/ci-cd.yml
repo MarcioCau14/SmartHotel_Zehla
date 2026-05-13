@@ -1,0 +1,42 @@
+name: Pipeline ZEHLA CI/CD
+on:
+  push:
+      branches: [ principal ]
+      jobs:
+        build:
+            runs-on: ubuntu-latest
+                defaults:
+                      run:
+                              working-directory: ./zehla-backend
+                                  steps:
+                                        - name: Checkout Repository
+                                                uses: actions/checkout@v4
+                                                      - name: Setup Node.js v20
+                                                              uses: actions/setup-node@v4
+                                                                      with:
+                                                                                node-version: 20
+                                                                                      - name: Install PNPM
+                                                                                              uses: pnpm/action-setup@v3
+                                                                                                      with:
+                                                                                                                version: 9
+                                                                                                                      - name: Extract pnpm cache directory
+                                                                                                                              id: pnpm-cache
+                                                                                                                                      shell: bash
+                                                                                                                                              run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+                                                                                                                                                    - name: Setup pnpm cache
+                                                                                                                                                            uses: actions/cache@v4
+                                                                                                                                                                    with:
+                                                                                                                                                                              path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+                                                                                                                                                                                        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+                                                                                                                                                                                                  restore-keys: |
+                                                                                                                                                                                                              ${{ runner.os }}-pnpm-store-
+                                                                                                                                                                                                                    - name: Install dependencies
+                                                                                                                                                                                                                            run: pnpm install --no-frozen-lockfile
+                                                                                                                                                                                                                                  - name: Inject Production Secrets
+                                                                                                                                                                                                                                          run: |
+                                                                                                                                                                                                                                                    echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+                                                                                                                                                                                                                                                              echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+                                                                                                                                                                                                                                                                        echo "PORT=${{ secrets.PORT }}" >> .env
+                                                                                                                                                                                                                                                                              - name: Run CI Tests
+                                                                                                                                                                                                                                                                                      run: pnpm test
+                                                                                                                                                                                                                                                                                      
