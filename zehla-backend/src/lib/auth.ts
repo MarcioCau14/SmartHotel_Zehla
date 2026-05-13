@@ -4,6 +4,21 @@
  * Token management for session persistence
  */
 
+export enum UserRole {
+  CLIENT = 'CLIENT',
+  ADMIN = 'ADMIN',
+  SUPER_ADMIN = 'SUPER_ADMIN',
+  TEAM = 'TEAM'
+}
+
+export interface SessionData {
+  tid: string;    // Tenant ID
+  email: string;
+  role: UserRole;
+  iat: number;
+  exp: number;
+}
+
 const SALT_ROUNDS = 10;
 
 // Simple hash function for MVP (use bcrypt in production with PostgreSQL)
@@ -31,14 +46,30 @@ export function generateSessionToken(tenantId: string, email: string): string {
   return Buffer.from(payload).toString('base64url');
 }
 
-export function parseSessionToken(token: string): { tid: string; email: string; exp: number } | null {
+export function parseSessionToken(token: string): SessionData | null {
   try {
     const payload = JSON.parse(Buffer.from(token, 'base64url').toString());
     if (payload.exp < Date.now()) return null;
-    return { tid: payload.tid, email: payload.email, exp: payload.exp };
+    return payload as SessionData;
   } catch {
     return null;
   }
+}
+
+/**
+ * Verifica se o usuário tem permissão para acessar a área administrativa (ZCC).
+ */
+export function isZccAuthorized(role: UserRole): boolean {
+  return [UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.TEAM].includes(role);
+}
+
+/**
+ * Verifica se o usuário tem acesso a um tenant específico (Isolamento RLS).
+ */
+export function hasTenantAccess(session: SessionData, targetTenantId: string): boolean {
+  // Admins podem acessar qualquer tenant, Clientes apenas o seu próprio tid.
+  if (isZccAuthorized(session.role)) return true;
+  return session.tid === targetTenantId;
 }
 
 // Simple password strength checker

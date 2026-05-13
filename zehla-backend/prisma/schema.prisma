@@ -111,6 +111,9 @@ model Property {
   pricingRules PricingRule[]
   invoices    Invoice[]
   leads       Lead[] @relation("PropertyLeads")
+  finances    PousadaFinance[]
+  transactions FinanceTransaction[]
+  financeAlerts FinanceAlert[]
 
   @@map("properties")
 }
@@ -509,5 +512,92 @@ enum InvoiceStatus {
 enum InvoiceItemType {
   PACKAGE_FEE
   BOOKING_COMMISSION
+}
+
+enum FinanceScope {
+  CORPORATE // Financeiro Interno SmartHotel
+  CLIENT    // Dashboard do Dono da Pousada
+}
+
+enum FinanceTransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum FinanceSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+model PousadaFinance {
+  id             String   @id @default(cuid())
+  propertyId     String
+  scope          FinanceScope @default(CLIENT)
+  date           DateTime @unique // YYYY-MM-DD
+  
+  // Receita
+  grossRevenue   Float    // Receita bruta do dia
+  netRevenue     Float    // Receita líquida
+  channelBreakdown Json?  // { "booking": 4500, "airbnb": 1200, "direto": 2800 }
+  
+  // Ocupação & Métricas
+  totalRooms     Int
+  occupiedRooms  Int
+  occupancyRate  Float
+  adr            Float    // Average Daily Rate
+  revpar         Float    // Revenue Per Available Room
+  
+  // Gastos
+  operatingCosts Json?    // { "limpeza": 800, "manutencao": 200 }
+  totalCosts     Float
+  
+  // Agentes & Insights
+  aiInsight      String?  @db.Text
+  healthScore    Int?     // 0-100
+  alertLevel     String?  // "green", "yellow", "red"
+  
+  property       Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  @@index([propertyId, date])
+  @@map("pousada_finance")
+}
+
+model FinanceTransaction {
+  id          String   @id @default(cuid())
+  propertyId  String
+  scope       FinanceScope @default(CLIENT)
+  date        DateTime
+  type        FinanceTransactionType
+  category    String   // "reserva", "extra", "limpeza", "marketing", etc.
+  channel     String?  // "booking", "airbnb", "direto", "pagarme"
+  description String   @db.Text
+  amount      Float
+  status      String   // "confirmed", "pending", "cancelled"
+  metadata    Json?    // Dados extras da auditoria da Maria
+  
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  @@index([propertyId, date])
+  @@map("finance_transactions")
+}
+
+model FinanceAlert {
+  id          String   @id @default(cuid())
+  propertyId  String
+  scope       FinanceScope @default(CLIENT)
+  type        String   // "low_occupancy", "cost_spike", "auditory_mismatch"
+  severity    FinanceSeverity @default(INFO)
+  agentName   String   // "Jony", "Maria" ou "Tedd"
+  message     String   @db.Text
+  metric      Json?    // Dados do alerta para visualização
+  isRead      Boolean  @default(false)
+  actionTaken String?  @db.Text
+  createdAt   DateTime @default(now())
+  
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  @@index([propertyId, createdAt])
+  @@map("finance_alerts")
 }
 
