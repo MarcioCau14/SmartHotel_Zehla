@@ -27,8 +27,8 @@ jobs:
           run_install: false
 
 - name: Extrair diretório de cache do pnpm
-  id: pnpm-cache-dir
-  shell: bash
+          id: pnpm-cache-dir
+          shell: bash
   run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
 
       - name: ⚡ Setup pnpm cache
