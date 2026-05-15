@@ -1,0 +1,3 @@
+/Users/marciocau/zehla-backend/public/split-view.html
+/Users/marciocau/zehla-backend/public/robots.txt
+/Users/marciocau/zehla-backend/src/lib/delivery/templates/elite_prospecting.html

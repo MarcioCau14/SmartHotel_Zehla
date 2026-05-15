@@ -1,0 +1,252 @@
+{
+  "id": "sl8c1efviamp040f14",
+  "name": "Smoke Test Rapido",
+  "scenario": "smoke-test",
+  "status": "running",
+  "config": {
+    "profile": "baseline",
+    "maxConcurrent": 10,
+    "requestsPerSecond": 5,
+    "rampUpDuration": 10,
+    "sustainedDuration": 30,
+    "rampDownDuration": 10,
+    "timeoutPerRequest": 5000,
+    "retryOnFailure": true,
+    "maxRetries": 1,
+    "batchSize": 5,
+    "delayBetweenBatches": 200,
+    "chaosEnabled": false,
+    "chaosProbability": 0
+  },
+  "totalMessages": 679,
+  "totalErrors": 0,
+  "totalFallbacks": 0,
+  "avgResponseMs": -5792129.646258503,
+  "p95ResponseMs": 20048386,
+  "p99ResponseMs": 33076173,
+  "deliveryRate": 0.95,
+  "readRate": 0,
+  "errorRate": 0,
+  "throughputPeak": 2.8808277970486214,
+  "throughputAvg": 2.8808277970486214,
+  "memoryGrowthMB": 27.758148193359375,
+  "cpuAvg": 0,
+  "vulnerabilities": [
+    {
+      "id": "p8icfwt5wubmp041ij7",
+      "testRunId": "sl8c1efviamp040f14",
+      "type": "bottleneck",
+      "severity": "critica",
+      "component": "ZCC-TRENDS",
+      "description": "Throughput abaixo do target. Possivel bottleneck.",
+      "impact": "Sistema nao consegue processar mensagens na cadencia exigida. Fila cresce indefinidamente.",
+      "recommendation": "Identificar modulo mais lento (profiling). Adicionar cache, pool de conexoes, ou processamento assincrono.",
+      "score": 9.94993331877484,
+      "evidence": {
+        "metricName": "throughput",
+        "observed": 2.8808277970486214,
+        "threshold": 0.7,
+        "duration": 0
+      },
+      "detectedAt": "2026-05-10T18:32:37.651Z"
+    },
+    {
+      "id": "ltsitfq92nfmp041ij6",
+      "testRunId": "sl8c1efviamp040f14",
+      "type": "timeout",
+      "severity": "critica",
+      "component": "ZCC-WPP",
+      "description": "Tempo de resposta P95 do ZCC-WPP excede o limite",
+      "impact": "Hospedes recebem resposta lenta, podendo desistir da reserva. Experiencia ruim.",
+      "recommendation": "Aumentar pool de workers do ZCC-WPP, adicionar cache para TrendSignals, otimizar queries do LIS.",
+      "score": 9.610327985191491,
+      "evidence": {
+        "metricName": "p95_response_time",
+        "observed": 20048386,
+        "threshold": 2000,
+        "duration": 0
+      },
+      "detectedAt": "2026-05-10T18:32:37.650Z"
+    },
+    {
+      "id": "gv4kfn5ehwtmp041ij7",
+      "testRunId": "sl8c1efviamp040f14",
+      "type": "fallback_chain",
+      "severity": "critica",
+      "component": "ZMG",
+      "description": "Taxa de entrega abaixo do aceitavel",
+      "impact": "Mensagens nao chegam aos hospedes. WhatsApp pode estar com problemas de conectividade.",
+      "recommendation": "Verificar status do provider 360dialog/Z-API. Aumentar taxa de fallback para SMS.",
+      "score": 9.125825192860498,
+      "evidence": {
+        "metricName": "delivery_rate",
+        "observed": 0.95,
+        "threshold": 0.9,
+        "duration": 0
+      },
+      "detectedAt": "2026-05-10T18:32:37.651Z"
+    },
+    {
+      "id": "08cp0zkipnibmp041ij6",
+      "testRunId": "sl8c1efviamp040f14",
+      "type": "timeout",
+      "severity": "critica",
+      "component": "ZMG",
+      "description": "Tempo de resposta P99 do pipeline completo excede o limite",
+      "impact": "Pior caso de experiencia do hospede. Pode causar perda de reservas em horarios de pico.",
+      "recommendation": "Implementar circuit breaker no ZCC-TRENDS, adicionar queue prioritaria para mensagens urgentes.",
+      "score": 9.106795989456078,
+      "evidence": {
+        "metricName": "p99_response_time",
+        "observed": 33076173,
+        "threshold": 5000,
+        "duration": 0
+      },
+      "detectedAt": "2026-05-10T18:32:37.650Z"
+    },
+    {
+      "id": "b14dn5shlcjmp041ij7",
+      "testRunId": "sl8c1efviamp040f14",
+      "type": "degradation",
+      "severity": "critica",
+      "component": "System",
+      "description": "Performance degrada ao longo do teste (comparando inicio vs. fim)",
+      "impact": "Sistema nao sustenta carga prolongada. Precisa de otimizacoes ou mais recursos.",
+      "recommendation": "Verificar memory leaks, connection leaks, cache saturation. Adicionar GC manual periodico.",
+      "score": 8.383021708479559,
+      "evidence": {
+        "metricName": "degradation_percent",
+        "observed": 0.8036123311429263,
+        "threshold": 0.2,
+        "duration": 0
+      },
+      "detectedAt": "2026-05-10T18:32:37.651Z"
+    },
+    {
+      "id": "qszx46iwadbmp041ij7",
+      "testRunId": "sl8c1efviamp040f14",
+      "type": "degradation",
+      "severity": "critica",
+      "component": "System",
+      "description": "Performance degradou 80% ao longo do teste",
+      "impact": "O sistema nao sustenta carga prolongada. Pode crashar apos algumas horas de operacao.",
+      "recommendation": "Investigar memory leaks, connection leaks, e cache saturation. Adicionar monitoramento de recursos.",
+      "score": 8,
+      "evidence": {
+        "metricName": "degradation_percent",
+        "observed": 0.8036123311429263,
+        "threshold": 0.2,
+        "duration": 0
+      },
+      "detectedAt": "2026-05-10T18:32:37.651Z"
+    }
+  ],
+  "calibrations": [
+    {
+      "id": "a29slptj3hjmp041ij8",
+      "testRunId": "sl8c1efviamp040f14",
+      "vulnerabilityId": "ltsitfq92nfmp041ij6",
+      "component": "ZCC-WPP",
+      "current": "P95: 20048386ms (limite: 2000ms)",
+      "target": "P95 < 2000ms",
+      "action": "Adicionar cache Redis para TrendSignals. Aumentar pool de workers de 5 para 15. Implementar circuit breaker no ZCC-TRENDS.",
+      "estimatedImpact": "Reducao de 40-60% no tempo de resposta P95",
+      "priority": "critica",
+      "complexity": "media",
+      "phase": 1
+    },
+    {
+      "id": "ka1bsiqsazomp041ij9",
+      "testRunId": "sl8c1efviamp040f14",
+      "vulnerabilityId": "ltsitfq92nfmp041ij6",
+      "component": "ZCC-TRENDS",
+      "current": "ZCC-TRENDS bloqueando pipeline de resposta",
+      "target": "ZCC-TRENDS nao bloqueante (fire-and-forget)",
+      "action": "Mover chamada ao ZCC-TRENDS para background queue. Responder ao hospede imediatamente com dados em cache, atualizar em background.",
+      "estimatedImpact": "Eliminacao de 1-3 segundos de latencia por mensagem",
+      "priority": "critica",
+      "complexity": "media",
+      "phase": 1
+    },
+    {
+      "id": "ssoctxazrxrmp041ij9",
+      "testRunId": "sl8c1efviamp040f14",
+      "vulnerabilityId": "08cp0zkipnibmp041ij6",
+      "component": "ZMG",
+      "current": "P95: 33076173ms (limite: 5000ms)",
+      "target": "P95 < 5000ms",
+      "action": "Adicionar cache Redis para TrendSignals. Aumentar pool de workers de 5 para 15. Implementar circuit breaker no ZCC-TRENDS.",
+      "estimatedImpact": "Reducao de 40-60% no tempo de resposta P95",
+      "priority": "critica",
+      "complexity": "media",
+      "phase": 1
+    },
+    {
+      "id": "qyi7kqckkqdmp041ij9",
+      "testRunId": "sl8c1efviamp040f14",
+      "vulnerabilityId": "08cp0zkipnibmp041ij6",
+      "component": "ZCC-TRENDS",
+      "current": "ZCC-TRENDS bloqueando pipeline de resposta",
+      "target": "ZCC-TRENDS nao bloqueante (fire-and-forget)",
+      "action": "Mover chamada ao ZCC-TRENDS para background queue. Responder ao hospede imediatamente com dados em cache, atualizar em background.",
+      "estimatedImpact": "Eliminacao de 1-3 segundos de latencia por mensagem",
+      "priority": "critica",
+      "complexity": "media",
+      "phase": 1
+    },
+    {
+      "id": "pjvngu7cpnmp041ij8",
+      "testRunId": "sl8c1efviamp040f14",
+      "vulnerabilityId": "p8icfwt5wubmp041ij7",
+      "component": "ZCC-TRENDS",
+      "current": "Throughput: 2.9 msgs/s (target: 0.7)",
+      "target": "Throughput > 0.7 msgs/s",
+      "action": "Identificar componente mais lento via profiling. Adicionar processamento paralelo (worker threads). Aumentar concurrencia de BullMQ.",
+      "estimatedImpact": "Aumento de 2-3x no throughput",
+      "priority": "critica",
+      "complexity": "alta",
+      "phase": 2
+    },
+    {
+      "id": "k16ng2jew0hmp041ij9",
+      "testRunId": "sl8c1efviamp040f14",
+      "vulnerabilityId": "gv4kfn5ehwtmp041ij7",
+      "component": "ZMG",
+      "current": "Fallback rate acima do normal",
+      "target": "Fallback rate < 10%",
+      "action": "Melhorar deteccao de disponibilidade do WhatsApp (health check a cada 30s). Ajustar timeout de fallback de 5s para 8s. Implementar retry antes do fallback.",
+      "estimatedImpact": "Reducao de custos (SMS e mais caro que WhatsApp)",
+      "priority": "critica",
+      "complexity": "media",
+      "phase": 2
+    },
+    {
+      "id": "3zl4kl4atr5mp041ij9",
+      "testRunId": "sl8c1efviamp040f14",
+      "vulnerabilityId": "b14dn5shlcjmp041ij7",
+      "component": "System",
+      "current": "Degradacao: 80% (inicio vs fim do teste)",
+      "target": "Degradacao < 20%",
+      "action": "Implementar connection pooling (Prisma). Adicionar LRU cache para dados quentes (ContactProfile, PropertyProfile). Rotacionar workers periodicamente.",
+      "estimatedImpact": "Performance estavel por 24h+ de operacao continua",
+      "priority": "critica",
+      "complexity": "alta",
+      "phase": 2
+    },
+    {
+      "id": "ngzvk4z6mflmp041ij9",
+      "testRunId": "sl8c1efviamp040f14",
+      "vulnerabilityId": "qszx46iwadbmp041ij7",
+      "component": "System",
+      "current": "Degradacao: 80% (inicio vs fim do teste)",
+      "target": "Degradacao < 20%",
+      "action": "Implementar connection pooling (Prisma). Adicionar LRU cache para dados quentes (ContactProfile, PropertyProfile). Rotacionar workers periodicamente.",
+      "estimatedImpact": "Performance estavel por 24h+ de operacao continua",
+      "priority": "critica",
+      "complexity": "alta",
+      "phase": 2
+    }
+  ],
+  "createdAt": "2026-05-10T18:31:46.456Z",
+  "startedAt": "2026-05-10T18:31:46.456Z"
+}

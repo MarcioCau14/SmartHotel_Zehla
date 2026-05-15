@@ -1,0 +1,78 @@
+======================================================================
+  XTRESS_TEST — PLANO DE CALIBRAGEM DO ZEHLA
+======================================================================
+
+Teste:       Smoke Test Rapido
+Executado em: 2026-05-10T18:40:37.005Z
+Duracao:     704 mensagens processadas
+
+----------------------------------------------------------------------
+  RESUMO DO TESTE
+----------------------------------------------------------------------
+  Total de Mensagens:  704
+  Erros:               174 (100.0%)
+  Tempo Medio:         0ms
+  P95:                 0ms
+  P99:                 0ms
+  Throughput Medio:    3.4 msgs/s
+  Throughput Pico:     3.4 msgs/s
+  Vulnerabilidades:    3
+  Acoes de Calibragem: 3
+
+----------------------------------------------------------------------
+  VULNERABILIDADES DETECTADAS
+----------------------------------------------------------------------
+
+  [CRITICA] (3)
+    - ZCC-TRENDS: Throughput abaixo do target. Possivel bottleneck.
+      Score: 9.7/10 | Impacto: Sistema nao consegue processar mensagens na cadencia exigida. Fila cresce indefinidamente.
+    - ZMG: Taxa de entrega abaixo do aceitavel
+      Score: 9.1/10 | Impacto: Mensagens nao chegam aos hospedes. WhatsApp pode estar com problemas de conectividade.
+    - ZMG: Taxa de erro excede o limite aceitavel
+      Score: 8.8/10 | Impacto: Mensagens nao sao entregues. Hospedes nao recebem confirmacoes de reserva. Perda de receita.
+
+  [ALTA] (0)
+
+  [MEDIA] (0)
+
+  [BAIXA] (0)
+
+----------------------------------------------------------------------
+  PLANO DE CALIBRAGEM (POR FASE)
+----------------------------------------------------------------------
+
+  === FASE 1: IMEDIATO (Esta Semana) ===
+
+  1. [CRITICA] ZMG
+     Problema:    Taxa de erro: 100.0% (limite: 5.0%)
+     Objetivo:    Taxa de erro < 5.0%
+     Acao:        Investigar causas especificas de erro. Verificar rate limits, timeouts de provider (Z-API/360dialog), erros de validacao de payload. Adicionar retry com backoff exponencial.
+     Impacto:     Reducao de 70-90% na taxa de erro
+     Complexidade: undefined
+
+
+  === FASE 2: CURTO PRAZO (2-4 Semanas) ===
+
+  1. [CRITICA] ZCC-TRENDS
+     Problema:    Throughput: 3.4 msgs/s (target: 0.7)
+     Objetivo:    Throughput > 0.7 msgs/s
+     Acao:        Identificar componente mais lento via profiling. Adicionar processamento paralelo (worker threads). Aumentar concurrencia de BullMQ.
+     Impacto:     Aumento de 2-3x no throughput
+     Complexidade: undefined
+
+  2. [CRITICA] ZMG
+     Problema:    Fallback rate acima do normal
+     Objetivo:    Fallback rate < 10%
+     Acao:        Melhorar deteccao de disponibilidade do WhatsApp (health check a cada 30s). Ajustar timeout de fallback de 5s para 8s. Implementar retry antes do fallback.
+     Impacto:     Reducao de custos (SMS e mais caro que WhatsApp)
+     Complexidade: undefined
+
+----------------------------------------------------------------------
+  VERIFICACAO DE CRITERIOS DE SUCESSO
+----------------------------------------------------------------------
+  Perfil de Carga: baseline
+
+======================================================================
+  SCORE GERAL: 22/100
+  STATUS: SISTEMA NAO PRONTO — REFORMA ESTRUTURAL
+======================================================================

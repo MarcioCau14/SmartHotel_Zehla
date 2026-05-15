@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+@page { size: 794px 1123px; margin: 0; }
+html, body { margin: 0; padding: 0; width: 794px; height: 1123px; background: #f3f2f1; }
+
+.cover {
+  position: relative;
+  width: 794px;
+  height: 1123px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+/* Layer 0: Background fill */
+.bg-fill {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: #ffffff;
+  z-index: 0;
+}
+
+/* Layer 1: Decorative elements */
+.deco-circle-1 {
+  position: absolute;
+  top: -120px;
+  right: -40px;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: rgba(216, 88, 46, 0.06);
+  z-index: 1;
+}
+
+.deco-circle-2 {
+  position: absolute;
+  bottom: 180px;
+  left: -100px;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: rgba(216, 88, 46, 0.04);
+  z-index: 1;
+}
+
+.deco-line-v {
+  position: absolute;
+  top: 120px;
+  left: 80px;
+  width: 2px;
+  height: 340px;
+  background: linear-gradient(to bottom, #d8582e, transparent);
+  opacity: 0.3;
+  z-index: 2;
+}
+
+.deco-line-h {
+  position: absolute;
+  bottom: 200px;
+  left: 80px;
+  width: 200px;
+  height: 2px;
+  background: #d8582e;
+  opacity: 0.25;
+  z-index: 2;
+}
+
+.deco-grid {
+  position: absolute;
+  top: 80px;
+  right: 60px;
+  width: 120px;
+  height: 120px;
+  z-index: 1;
+  opacity: 0.08;
+}
+.deco-grid div {
+  position: absolute;
+  background: #d8582e;
+}
+.deco-grid .h1 { top: 0; left: 0; width: 100%; height: 1px; }
+.deco-grid .h2 { top: 40px; left: 0; width: 100%; height: 1px; }
+.deco-grid .h3 { top: 80px; left: 0; width: 100%; height: 1px; }
+.deco-grid .h4 { top: 120px; left: 0; width: 100%; height: 1px; }
+.deco-grid .v1 { top: 0; left: 0; width: 1px; height: 100%; }
+.deco-grid .v2 { top: 0; left: 40px; width: 1px; height: 100%; }
+.deco-grid .v3 { top: 0; left: 80px; width: 1px; height: 100%; }
+.deco-grid .v4 { top: 0; left: 120px; width: 1px; height: 100%; }
+
+/* Layer 2: Structure lines (none needed, clean design) */
+
+/* Layer 3: Text content */
+.content {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 3;
+  padding: 80px;
+  box-sizing: border-box;
+}
+
+.kicker {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #d8582e;
+  margin-bottom: 24px;
+  margin-left: 0px;
+}
+
+.hero-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 48px;
+  font-weight: 800;
+  color: #242321;
+  line-height: 1.12;
+  max-width: 520px;
+  margin-bottom: 20px;
+  margin-left: 0px;
+}
+
+.hero-title .accent {
+  color: #d8582e;
+}
+
+.meta-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #7b776f;
+  line-height: 1.6;
+  max-width: 460px;
+  margin-top: 8px;
+}
+
+.summary-block {
+  margin-top: 40px;
+  padding: 20px 24px;
+  background: rgba(216, 88, 46, 0.05);
+  border-left: 3px solid #d8582e;
+  max-width: 480px;
+}
+
+.summary-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: #242321;
+  line-height: 1.7;
+}
+
+.footer-meta {
+  position: absolute;
+  bottom: 60px;
+  left: 80px;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  color: #7b776f;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.footer-line {
+  position: absolute;
+  bottom: 50px;
+  left: 80px;
+  width: 634px;
+  height: 1px;
+  background: #e7e4df;
+}
+
+.badge-row {
+  margin-top: 28px;
+  display: flex;
+  gap: 10px;
+}
+
+.badge {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border: 1px solid #e7e4df;
+  border-radius: 4px;
+  color: #7b776f;
+  letter-spacing: 0.5px;
+}
+
+.watermark {
+  position: absolute;
+  bottom: 110px;
+  right: 80px;
+  font-family: 'Inter', sans-serif;
+  font-size: 72px;
+  font-weight: 800;
+  color: rgba(216, 88, 46, 0.04);
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  z-index: 1;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+<div class="cover">
+  <div class="bg-fill"></div>
+  <div class="deco-circle-1"></div>
+  <div class="deco-circle-2"></div>
+  <div class="deco-line-v"></div>
+  <div class="deco-line-h"></div>
+  <div class="deco-grid">
+    <div class="h1"></div><div class="h2"></div><div class="h3"></div><div class="h4"></div>
+    <div class="v1"></div><div class="v2"></div><div class="v3"></div><div class="v4"></div>
+  </div>
+  <div class="watermark">ML BRAIN</div>
+
+  <div class="content">
+    <div class="kicker">ZEHLA ECOSYSTEM // SMARTHOTEL</div>
+    <h1 class="hero-title">ML Brain<br>Protocol<br><span class="accent">Blueprint</span></h1>
+    <p class="meta-subtitle">
+      Arquitetura de Machine Learning para clonagem de voz,<br>
+      aprendizado continuo e inteligencia artificial personalizada<br>
+      por pousada no atendimento WhatsApp.
+    </p>
+    <div class="badge-row">
+      <span class="badge">RAG + FINE-TUNING</span>
+      <span class="badge">VOICE CLONING</span>
+      <span class="badge">DRIFT DETECTION</span>
+      <span class="badge">LGPD COMPLIANT</span>
+    </div>
+    <div class="summary-block">
+      <p class="summary-text">
+        Documento de referencia tecnica para agentes de desenvolvimento. Define a arquitetura
+        hibrida RAG + Fine-Tuning, o pipeline de Voice Cloning via analise de conversas WhatsApp,
+        o loop de feedback de conversao, a integracao com DNA Wizard, e o sistema Zehla Guardian
+        de deteccao e remediacao de drift.
+      </p>
+    </div>
+  </div>
+
+  <div class="footer-line"></div>
+  <div class="footer-meta">Versao 2.0 &nbsp;&nbsp;|&nbsp;&nbsp; Maio 2026 &nbsp;&nbsp;|&nbsp;&nbsp; Confidencial</div>
+</div>
+</body>
+</html>

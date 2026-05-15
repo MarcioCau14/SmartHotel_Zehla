@@ -1,0 +1,34 @@
+import { llmRouter } from '../src/lib/ai/llm-router';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+async function runAudit() {
+  const blueprint = readFileSync(join(process.cwd(), 'BLUEPRINTS/AGENTS/secretaria_ia_auditor.md'), 'utf-8');
+  
+  // Dados Reais do Lead extraídos do banco
+  const leadData = {
+    name: "Pousada do Rio Morro Palace",
+    city: "Morro de São Paulo",
+    buyingBehavior: "Comportamento Moderado: Equilíbrio entre tradição e abertura tecnológica. Valoriza ferramentas com prova social clara.",
+    intentSignals: "Otimização de processos, busca por redução de custos.",
+    qualification: "NORMAL",
+    validationStatus: "Validado via Digital Footprint",
+    site: "http://pousadadoriomorro.com.br" // URL Simulada para o teste
+  };
+
+  console.log("🕵️ Agente 09 (Auditor) analisando lead...");
+
+  const response = await llmRouter.generate({
+    model: 'general',
+    messages: [
+      { role: 'system', content: blueprint },
+      { role: 'user', content: `Realize a auditoria adversária deste lead:\n\n${JSON.stringify(leadData, null, 2)}` }
+    ],
+    temperature: 0.3
+  });
+
+  console.log("\n=== RELATÓRIO DE AUDITORIA ADVERSÁRIA ===");
+  console.log(response.content);
+}
+
+runAudit();

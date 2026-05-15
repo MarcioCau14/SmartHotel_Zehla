@@ -1,0 +1,11 @@
+{
+  "zehlaBaseUrl": "http://localhost:3000",
+  "zehlaApiKey": "zehla_xtress_2026",
+  "zmgEndpoint": "/api/zmg",
+  "webhookCallbackUrl": "http://localhost:9999/webhooks",
+  "dbPath": "./xtress_data.db",
+  "reportOutputDir": "./xtress_reports",
+  "defaultTimeout": 10000,
+  "maxConcurrent": 100,
+  "logLevel": "info"
+}

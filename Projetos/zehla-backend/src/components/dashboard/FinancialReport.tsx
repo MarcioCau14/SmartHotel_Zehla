@@ -1,0 +1,226 @@
+'use client';
+
+import { useState } from 'react';
+import { 
+  FileText, Download, Wallet, TrendingUp, 
+  ArrowDownCircle, ArrowUpCircle, Percent,
+  Calendar, ChevronDown, CheckCircle2, Clock
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { motion } from 'framer-motion';
+
+const mockReports = [
+  { id: 'rep-1', period: 'Março 2026', totalGross: 84200.00, totalNet: 75780.00, fees: 8420.00, status: 'Fechado' },
+  { id: 'rep-2', period: 'Fevereiro 2026', totalGross: 92500.00, totalNet: 83250.00, fees: 9250.00, status: 'Fechado' },
+  { id: 'rep-3', period: 'Janeiro 2026', totalGross: 115000.00, totalNet: 103500.00, fees: 11500.00, status: 'Fechado' },
+];
+
+const mockTransactions = [
+  { id: 'tx-1', guest: 'Claudio J. Silveira', date: '28/03/2026', gross: 2450.00, fee: 245.00, net: 2205.00, status: 'CONFIRMADO' },
+  { id: 'tx-2', guest: 'Mariana P. Costa', date: '27/03/2026', gross: 1800.00, fee: 180.00, net: 1620.00, status: 'CONFIRMADO' },
+  { id: 'tx-3', guest: 'Roberto F. Lima', date: '26/03/2026', gross: 3200.00, fee: 320.00, net: 2880.00, status: 'PENDENTE' },
+];
+
+export function FinancialReport() {
+  const [selectedMonth, setSelectedMonth] = useState('Março 2026');
+
+  return (
+    <div className="space-y-6">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="glass-card p-5 border-l-4 border-green-500">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-[#4d4d4d] font-bold uppercase">Total Bruto (Mês)</span>
+            <ArrowUpCircle className="w-4 h-4 text-green-400" />
+          </div>
+          <div className="text-2xl font-bold text-[#efefef]">R$ 84.200,00</div>
+          <p className="text-[10px] text-[#4d4d4d] mt-1">28 reservas processadas</p>
+        </div>
+
+        <div className="glass-card p-5 border-l-4 border-[#FF5500]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-[#4d4d4d] font-bold uppercase">Taxa ZEHLA (Plano)</span>
+            <Percent className="w-4 h-4 text-[#FF5500]" />
+          </div>
+          <div className="text-2xl font-bold text-[#FF5500]">R$ 85,00</div>
+          <p className="text-[10px] text-[#4d4d4d] mt-1">Dedução conforme seu plano (PRO: 2%)</p>
+        </div>
+
+        <div className="glass-card p-5 border-l-4 border-blue-500">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-[#4d4d4d] font-bold uppercase">Valor Líquido a Receber</span>
+            <Wallet className="w-4 h-4 text-blue-400" />
+          </div>
+          <div className="text-2xl font-bold text-blue-400">R$ 84.115,00</div>
+          <p className="text-[10px] text-[#4d4d4d] mt-1">Valor após comissão (Plano PRO)</p>
+        </div>
+      </div>
+
+      {/* Main Report Table */}
+      <div className="glass-card overflow-hidden">
+        <div className="px-6 py-8 border-b border-[#2e2e2e] bg-white/[0.01]">
+          <div className="flex flex-col md:flex-row justify-between gap-6 mb-8">
+            <div className="space-y-1">
+              <h2 className="text-xl font-bold text-[#efefef] flex items-center gap-2">
+                <FileText className="w-5 h-5 text-[#FF5500]" />
+                Dossiê de Faturamento Mensal
+              </h2>
+              <p className="text-xs text-[#4d4d4d]">Referente ao ciclo de Março 2026</p>
+            </div>
+            <div className="text-right space-y-1">
+              <div className="text-sm font-bold text-[#efefef]">Pousada Maravilha</div>
+              <div className="text-[10px] text-[#4d4d4d]">CNPJ: 12.345.678/0001-90</div>
+              <div className="text-[10px] text-[#4d4d4d]">Praia do Rosa, Imbituba/SC - CEP 88780-000</div>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="bg-orange-500/10 text-[#FF5500] border-orange-500/20">
+                Plano PRO Ativo (R$ 448/mês)
+              </Badge>
+            </div>
+            <div className="flex items-center gap-3">
+              <select 
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="bg-[#242424] border border-[#363636] rounded-lg px-3 py-1.5 text-xs text-[#b4b4b4] focus:outline-none"
+              >
+                <option>Março 2026</option>
+                <option>Fevereiro 2026</option>
+                <option>Janeiro 2026</option>
+              </select>
+              <Button size="sm" variant="outline" className="text-[10px] border-[#363636] text-[#898989] hover:text-[#FF5500]">
+                <Download className="w-3 h-3 mr-2" />
+                Baixar Dossiê PDF
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto zehla-scroll-x">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-[#2e2e2e] bg-white/[0.01]">
+                <th className="px-6 py-4 text-[10px] font-bold text-[#4d4d4d] uppercase">Descrição do Lançamento</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-[#4d4d4d] uppercase">Data / Hora</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-[#4d4d4d] uppercase">Referência</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-[#4d4d4d] uppercase text-right">Valor do Débito</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {/* Fixed package fee */}
+              <tr className="bg-orange-500/[0.02]">
+                <td className="px-6 py-4">
+                  <div className="text-xs font-bold text-[#efefef]">Mensalidade ZEHLA Pro</div>
+                  <div className="text-[10px] text-[#4d4d4d]">Assinatura recorrente do cérebro IA</div>
+                </td>
+                <td className="px-6 py-4 text-xs text-[#898989]">05/03/2026 09:00</td>
+                <td className="px-6 py-4 text-xs text-[#4d4d4d]">N/A</td>
+                <td className="px-6 py-4 text-xs text-[#efefef] font-bold text-right">R$ 448,00</td>
+              </tr>
+              {/* Dynamic commission items */}
+              <tr className="hover:bg-white/[0.02] transition-colors">
+                <td className="px-6 py-4">
+                  <div className="text-xs font-bold text-[#efefef]">Comissão de Reserva (2%)</div>
+                  <div className="text-[10px] text-[#4d4d4d]">Hóspede: Claudio J. Silveira</div>
+                </td>
+                <td className="px-6 py-4 text-xs text-[#898989]">28/03/2026 14:45</td>
+                <td className="px-6 py-4 text-[10px] text-[#4d4d4d] font-mono">ID: E123456789</td>
+                <td className="px-6 py-4 text-xs text-orange-400 font-bold text-right">R$ 49,00</td>
+              </tr>
+              <tr className="hover:bg-white/[0.02] transition-colors">
+                <td className="px-6 py-4">
+                  <div className="text-xs font-bold text-[#efefef]">Comissão de Reserva (2%)</div>
+                  <div className="text-[10px] text-[#4d4d4d]">Hóspede: Mariana P. Costa</div>
+                </td>
+                <td className="px-6 py-4 text-xs text-[#898989]">27/03/2026 11:20</td>
+                <td className="px-6 py-4 text-[10px] text-[#4d4d4d] font-mono">ID: E987654321</td>
+                <td className="px-6 py-4 text-xs text-orange-400 font-bold text-right">R$ 36,00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div className="px-6 py-6 bg-white/[0.01] border-t border-[#2e2e2e] flex items-center justify-between">
+          <div className="text-[10px] text-[#4d4d4d]">
+            * Valores debitados automaticamente no cartão de crédito final <b>4455</b>.
+          </div>
+          <div className="text-right">
+            <span className="text-xs text-[#4d4d4d] mr-4">Total de Débitos: R$ 533,00</span>
+            <span className="text-lg font-bold text-orange-500">Valor Final: R$ 533,00</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Weekly Performance Chart */}
+      <div className="glass-card p-6">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h3 className="text-sm font-bold text-neutral-200 uppercase tracking-tight">Desempenho de Vendas Semanal</h3>
+            <p className="text-[10px] text-neutral-500">Fluxo de receita capturada via ZEHLA IA</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+            <span className="text-[10px] text-neutral-500 font-medium">Reservas Validadas</span>
+          </div>
+        </div>
+        <div className="h-32 w-full flex items-end gap-3 px-2">
+          {[30, 45, 25, 60, 40, 80, 50].map((h, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center gap-3 group">
+              <motion.div 
+                initial={{ height: 0 }}
+                animate={{ height: `${h}%` }}
+                className={`w-full rounded-t-lg transition-all duration-500 ${i === 5 ? 'bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.4)]' : 'bg-neutral-800 group-hover:bg-neutral-700'}`}
+              />
+              <span className="text-[8px] text-neutral-600 uppercase font-bold tracking-wider">{['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][i]}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Package & Closing Info */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="glass-card p-5">
+          <h4 className="text-xs font-bold text-[#4d4d4d] uppercase mb-4 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-purple-400" />
+            Performance da Plataforma
+          </h4>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-[#898989]">Conversão via ZEHLA IA</span>
+              <span className="text-xs text-green-400 font-bold">92.4%</span>
+            </div>
+            <div className="h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
+              <div className="h-full bg-green-500" style={{ width: '92.4%' }} />
+            </div>
+            <p className="text-[10px] text-[#4d4d4d] leading-relaxed">
+              O ZEHLA processou 142 interações este mês, economizando aproximadamente 48 horas de atendimento manual da sua equipe.
+            </p>
+          </div>
+        </div>
+
+        <div className="glass-card p-5">
+          <h4 className="text-xs font-bold text-[#4d4d4d] uppercase mb-4 flex items-center gap-2">
+            <Clock className="w-4 h-4 text-amber-400" />
+            Datas de Fechamento
+          </h4>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white/[0.02]">
+              <span className="text-xs text-[#898989]">Ciclo de Faturamento</span>
+              <span className="text-xs text-[#efefef]">Todo dia 05</span>
+            </div>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-white/[0.02]">
+              <span className="text-xs text-[#898989]">Próximo Fechamento</span>
+              <span className="text-xs text-[#FF5500]">05/04/2026</span>
+            </div>
+            <p className="text-[10px] text-[#4d4d4d]">
+              Os valores líquidos são transferidos automaticamente para sua conta PIX cadastrada após a confirmação do hóspede.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

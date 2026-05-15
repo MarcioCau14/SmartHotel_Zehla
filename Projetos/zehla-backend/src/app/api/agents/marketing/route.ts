@@ -1,0 +1,109 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { action, propertyId, data } = body
+
+    switch (action) {
+      case 'CREATE_CAMPAIGN':
+        return await createCampaign(propertyId, data)
+      case 'GET_ANALYTICS':
+        return await getAnalytics(propertyId, data)
+      case 'GENERATE_PROMO':
+        return await generatePromo(propertyId, data)
+      default:
+        return NextResponse.json({ success: false, error: 'Ação inválida' }, { status: 400 })
+    }
+  } catch (error) {
+    console.error('❌ Erro em Marketing:', error)
+    return NextResponse.json({ success: false, error: 'Erro interno' }, { status: 500 })
+  }
+}
+
+async function createCampaign(propertyId: string, data: any) {
+  // Simular criação de campanha
+  const campaign = {
+    id: `camp-${Date.now()}`,
+    propertyId,
+    name: data.name,
+    type: data.type, // EMAIL, WHATSAPP, SOCIAL
+    target: data.target, // ALL, PAST_GUESTS, NEW_LEADS
+    content: data.content,
+    scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : null,
+    status: 'DRAFT',
+    createdAt: new Date()
+  }
+
+  return NextResponse.json({ success: true, data: campaign })
+}
+
+async function getAnalytics(propertyId: string, period: any) {
+  const startDate = period?.startDate ? new Date(period.startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+  const endDate = period?.endDate ? new Date(period.endDate) : new Date()
+
+  const reservations = await prisma.reservation.findMany({
+    where: {
+      propertyId,
+      createdAt: { gte: startDate, lte: endDate }
+    }
+  })
+
+  const messages = await prisma.message.findMany({
+    where: {
+      propertyId,
+      createdAt: { gte: startDate, lte: endDate }
+    }
+  })
+
+  const analytics = {
+    period: { startDate, endDate },
+    reservations: {
+      total: reservations.length,
+      bySource: reservations.reduce((acc: any, r) => {
+        acc[r.source] = (acc[r.source] || 0) + 1
+        return acc
+      }, {}),
+      conversionRate: 0 // Calcular baseado em leads
+    },
+    messages: {
+      total: messages.length,
+      inbound: messages.filter(m => m.direction === 'INBOUND').length,
+      outbound: messages.filter(m => m.direction === 'OUTBOUND').length,
+      responseRate: messages.length > 0 
+        ? messages.filter(m => m.status === 'READ').length / messages.length 
+        : 0
+    },
+    revenue: reservations.reduce((sum, r) => sum + r.totalAmount, 0)
+  }
+
+  return NextResponse.json({ success: true, data: analytics })
+}
+
+async function generatePromo(propertyId: string, data: any) {
+  const property = await prisma.property.findUnique({ where: { id: propertyId } })
+
+  const promo = {
+    id: `promo-${Date.now()}`,
+    propertyId,
+    code: data.code || `ZEHLA${Math.floor(Math.random() * 1000)}`,
+    discount: data.discount || 10, // %
+    discountType: data.discountType || 'PERCENTAGE', // PERCENTAGE, FIXED
+    validFrom: data.validFrom ? new Date(data.validFrom) : new Date(),
+    validUntil: data.validUntil ? new Date(data.validUntil) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    maxUses: data.maxUses || null,
+    description: data.description || `Desconto especial na ${property?.name}`,
+    createdAt: new Date()
+  }
+
+  return NextResponse.json({ success: true, data: promo })
+}
+
+export async function GET() {
+  return NextResponse.json({
+    agent: 'MARKETING',
+    status: 'online',
+    description: 'Campanhas, analytics e promoções'
+  })
+}

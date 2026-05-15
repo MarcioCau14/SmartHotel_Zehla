@@ -1,0 +1,22 @@
+/Users/marciocau/zehla-backend/src/lib/swipe/tracker.ts
+/Users/marciocau/zehla-backend/src/lib/swipe/types.ts
+/Users/marciocau/zehla-backend/src/lib/swipe/analyzer.ts
+/Users/marciocau/zehla-backend/src/lib/swipe/seed-swipes.ts
+/Users/marciocau/zehla-backend/src/lib/swipe/index.ts
+/Users/marciocau/zehla-backend/src/lib/swipe/library.ts
+/Users/marciocau/zehla-backend/src/lib/swipe/matcher.ts
+/Users/marciocau/zehla-backend/src/lib/swipe/classifier.ts
+/Users/marciocau/zehla-backend/postcss.config.mjs
+/Users/marciocau/zehla-backend/next-env.d.ts
+/Users/marciocau/zehla-backend/tailwind.config.ts
+/Users/marciocau/zehla-backend/eslint.config.mjs
+/Users/marciocau/zehla-backend/next.config.ts
+/Users/marciocau/zehla-backend/INFRA/prisma.config.ts
+/Users/marciocau/zehla-backend/INFRA/prisma/seed.ts
+/Users/marciocau/zehla-backend/INFRA/prisma/seed/seed.ts
+/Users/marciocau/zehla-backend/BLUEPRINTS/LAILLA_ZEHLA_VOICE/generate_lailla_report.py
+/Users/marciocau/zehla-backend/BLUEPRINTS/TTS Voice Cloning para ZEHLA /generate_tts_blueprint.py
+/Users/marciocau/zehla-backend/BLUEPRINTS/TTS Voice Cloning para ZEHLA  V2/generate_zehla_voice_arch.py
+/Users/marciocau/zehla-backend/BLUEPRINTS/TTS Voice Cloning para ZEHLA  V2/generate_tts_blueprint.py
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/assets/android_frame.jsx
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/assets/browser_window.jsx

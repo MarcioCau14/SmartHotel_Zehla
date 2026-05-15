@@ -1,0 +1,1024 @@
+[
+  {
+    "id": "y8v0tccmewsmp061e6j",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.243Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -18855990,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "any9b95414nmp060amy",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "1c1nt6r9zf8mp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 705256,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "va1lmoayntomp060amy",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "xhgtok3uqdmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 1726424,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "av50bkaqkj4mp060amy",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "vrltna7fm0fmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -18012803,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "kyg5f5o0yknmp060amy",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "bbqz3cx1eh4mp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -17532221,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "9vjyy35w25bmp060amy",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "d23p5c3f6f4mp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -14531624,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "6dfgv0s579lmp060amy",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "fu07hognvtmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 1188987,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "zz5lp5dl7tbmp060amy",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "42n5e1xpjhmmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -9070343,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "08aybvfdf4f9mp060amy",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "9affa2opeymp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 2150307,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "qyfq9omba7mp060amy",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "kjhbvptjfvmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 21650870,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "ejvhhrwiy6dmp060amz",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "i73iu73tocmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -548698,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "j97rkrrummlmp060amz",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "ex7dcbl7567mp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 28431863,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "6y4dwnwmp1mmp060amz",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "gvnbbx06b0gmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -16507344,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "j426ir0zzjmp060amz",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "n8tj5auz5n7mp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -5706759,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "cvntxvngpi9mp060amz",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "ej86d09ptfhmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 8033661,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "mqm7eetchcdmp060amz",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "pg1qpg1ercmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -7625515,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "hxf6dua5bwmp060amz",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "l5ihdoufczmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 1795004,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "51r203rkki8mp060amz",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "ljp77jaibw9mp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -15364551,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "r40wqzadk1mp060an0",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "4yntsfbu1vhmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -5763839,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "zgbzdxgqylrmp060an0",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "pvuzbubghipmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 20396722,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "v13fx2ubchdmp060an0",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "hpsonz05sjlmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 28857306,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "mxdcxb217vemp060an0",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "u5yl70lqg2mp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -12122207,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "h5jmb56b8gnmp060an0",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "3xr6cm9rc0wmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 8578343,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "7jjngkq005ump060an0",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "y1kzihnbgyhmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -1217,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "vuguiqxp6bgmp060an0",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "ukoi50ttenmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -8760702,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "j0msnubcbcrmp060an0",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "sdeazdjge6mp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -14399508,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "q72vwcthw5fmp060an0",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "tftzjf62yvmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -16318689,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "uts30h2o5ikmp060an0",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "ojcfr59utemp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -4438154,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "9zi39ykesfvmp060an0",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "fmelao8q7zmmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -7737467,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "8nyrxk4wryfmp060an0",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "vgwwu4iy3jmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 243104,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "d18944t3omemp060an0",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "xzz3rq0b8ammp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -1436016,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "o8zdqjdcodsmp060an0",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "e8ftwmsrdapmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 2464685,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "9pwht6xbp75mp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "57hie5n4vfimp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 29165190,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "puedrfc2ciamp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "igvzn0fk9rqmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 33665928,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "65iuvt0js1mp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "wbc6c55nnlmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 5646520,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "wc88h6cuwqmp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "89wqxnwm93jmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -8092355,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "ttu41dygl59mp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "fl4orbgw2spmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -4911565,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "ub8vjyeozwcmp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "sn1id2k09vjmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 1569046,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "nf4vku9et6mp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "8svyoi59ggkmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -17090209,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "q0bu3yndv3mp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "w1wk422fhxnmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -3529697,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "s1h81j4exump060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "cmupkpl8q3ump061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 2711178,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "5d3llukegsnmp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "691e29btkzmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 8411592,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "xtcxttxk6osmp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "wlrluc7afrmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 8891998,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "5bhzxr5hwjtmp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "5g8xnajnibvmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -9947601,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "t07z885pnsjmp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "twkf9krx2qnmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 6492866,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "9bm58h1evjkmp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "exyzacd4edmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -8266698,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "8qfdyysy02hmp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "tqnj397hxudmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -5146151,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "4wcqgvgu4z5mp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "lgg2j6y8x1lmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -14925692,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "5h97l9w03mvmp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "kgziufc6pamp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 3074702,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "612fqq0zp6nmp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "oi6a12yln2gmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 4995160,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "8v4p7fdydcemp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "m50ec9qi8qrmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 7455645,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "swdhyju044mmp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "gojrozizsfsmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 9616306,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "s5llxgvfe6rmp060an1",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "ze89e1spauhmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -14083050,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "3r9xty04bcdmp060an2",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "b84nogoq5bemp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -19422276,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "go3qzyd56wrmp060an2",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "yaaugw59scmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 19458139,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "zcvrf1ho3ymp060an2",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "zyx62qurzhbmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -17561400,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "gu9zkfpzclnmp060an2",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "g5hmvnktmsbmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -16780883,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "qhbci42xdqmp060an2",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "9bibzh0wh7mp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -17740435,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "dil2owcpwa9mp060an2",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "fhy08jrr5skmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -14080010,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "gcwafbrlaifmp060an2",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "k2a4pfm0u1imp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 3800694,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "28nmcvihhrfmp060an2",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "3dcarfbi2scmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -5438914,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "jnlvt84qckmp060an2",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "7dn313n4hv3mp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -3098488,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "qve5lojl5imp060an2",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "h5hph50chzqmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -4838056,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "ru564s3wt1kmp060an2",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "tz7sfuwq5emp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -18097648,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "icggiyg7n8jmp060an2",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "mw4q9mdnd1nmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 1102880,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "ouyish2fwmmp060an2",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "n95sv7gvsgdmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -15516382,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "01a7xn0wxy2imp060an2",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "nhrvtg8qy69mp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 9144518,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "zm4oelkf3uhmp060an2",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "3chgj6x09tlmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": 4525297,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "4yanreawtlpmp060an2",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "qyuyqucoempmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -694061,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "qunx50xotm8mp060an2",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "zce1cqakunkmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -2853419,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "nujtcvx8g1gmp060an3",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "c9kvvvre6ysmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -8972150,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "sdq6knxa4bmmp060an6",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "665o8mznr6wmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -4531019,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "9mx7wx923aimp060an7",
+      "statusCode": 200,
+      "error": null
+    }
+  },
+  {
+    "id": "4l7wdm42fjkmp061e6k",
+    "testRunId": "by7498uzekbmp060aab",
+    "timestamp": "2026-05-10T19:28:31.244Z",
+    "category": "injection",
+    "metricName": "injection_success",
+    "metricValue": -14669775,
+    "unit": "ms",
+    "metadata": {
+      "messageId": "eqaz362dqdomp060an7",
+      "statusCode": 200,
+      "error": null
+    }
+  }
+]

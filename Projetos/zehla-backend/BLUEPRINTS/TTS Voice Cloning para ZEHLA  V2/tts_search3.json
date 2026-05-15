@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://github.com/RVC-Boss/GPT-SoVITS",
+    "name": "RVC-Boss/GPT-SoVITS: 1 min voice data can also be used",
+    "snippet": "Clone the latest codes from github. Download v2 pretrained models from huggingface and put them into GPT_SoVITS/pretrained_models/gsv-v2final-pretrained .\nZero-shot TTS: Input a 5-second vocal sample and experience instant text-to-speech conversion. Few-shot TTS: Fine-tune the model with just 1 minute of training data for improved voice similarity and realism.",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://echokit.dev/docs/server/gpt-sovits",
+    "name": "Build and run a GPT-SoVITS server",
+    "snippet": "With a 1 minute audio sample, you could finetune the model to clone the voice . We have created a Rust-based API server that supports streaming TTS based on GPT - ...",
+    "host_name": "echokit.dev",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.nite07.com/en/posts/gpt-sovits",
+    "name": "GPT-SoVITS: Powerful Few-Shot Voice Cloning and TTS Tool",
+    "snippet": "Nov 6, 2025 — GPT-SoVITS is an advanced few-shot voice cloning and text-to-speech (TTS) tool that achieves high-quality voice cloning with just 1 minute ...\nTraditional voice cloning systems typically require hours of audio data, whereas GPT-SoVITS can clone a voice with just 1 minute of reference audio. This breakthrough feature stems from its innovative two-stage generation architecture.",
+    "host_name": "www.nite07.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/LocalLLaMA/comments/1gj14oa/best_open_source_voice_cloning_if_you_have_lots",
+    "name": "Best Open Source Voice Cloning if you have lots of",
+    "snippet": "Hey everyone,\n\nI've been using ElevenLabs for awhile but now want to self-host. I was really impressed with F5-TTS for its ability to clone using only ...",
+    "host_name": "www.reddit.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@akshit0405/gpt-sovits-a-practical-guide-to-voice-synthesis-using-python-cce78818c933",
+    "name": "GPT-SoVITS : A Practical Guide to Voice Synthesis using",
+    "snippet": "GPT - SoVITS provides a drastic change in data requirements by introducing access to a high-fidelity voice cloning facility with a “few-shot ...\nIn this article, we’re diving into one of the most popular models — GPT-SoVITS, where we will be discussing its architecture along with a basic implementation using Python.",
+    "host_name": "medium.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.researchgate.net/publication/403739266_Benchmarking_Real-Time_Voice_Cloning_on_Consumer_Apple_Silicon_A_Practical_Evaluation_of_GPT-SoVITS_on_M-Series_Hardware/download",
+    "name": "A Practical Evaluation of GPT-SoVITS on M-Series Hardware",
+    "snippet": "Apr 12, 2026 — Benchmarking Real-Time Voice Cloning on Consumer Apple Silicon: A Practical Evaluation of GPT - SoVITS on M-Series Hardware. April 2026.",
+    "host_name": "www.researchgate.net",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/kevinwang676/GPT-SoVITS-v-3",
+    "name": "kevinwang676/GPT-SoVITS-v-3",
+    "snippet": "Features: Zero-shot TTS: Input a 5-second vocal sample and experience instant text-to-speech conversion. Few-shot TTS: Fine-tune the model with just 1 ...",
+    "host_name": "huggingface.co",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://hackernoon.com/how-i-built-a-diy-audiobook-voice-cloning-pipeline-using-gpt-sovits-and-fish-speech",
+    "name": "How I Built a DIY Audiobook Voice Cloning Pipeline Using",
+    "snippet": "Jul 9, 2025 — I was attempting to adopt new tools for my audio book service, such as CosyVoice, F5-TTS, GPT - SoVITS , and fish-speech.\nRefering to some Chinese source such as this blog and this video, I was attempting to adopt new tools for my audio book service, such as CosyVoice, F5-TTS, GPT-SoVITS, and fish-speech.",
+    "host_name": "hackernoon.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/kevinwang676/GPT-SoVITS-v4",
+    "name": "kevinwang676/GPT-SoVITS-v4 · Hugging Face",
+    "snippet": "WebUI Tools: Integrated tools include voice accompaniment separation, automatic training set segmentation, Chinese ASR, and text labeling, assisting beginners in creating training datasets and GPT/SoVITS models.",
+    "host_name": "huggingface.co",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=kKE4nm7kLTs",
+    "name": "How to Setup GPT-SoVITS: The Ultimate Local AI Voice Cloning",
+    "snippet": "Stop paying for voice cloning subscriptions! In this video, I’m showing you how to set up GPT-SoVITS locally on your own machine.",
+    "host_name": "www.youtube.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

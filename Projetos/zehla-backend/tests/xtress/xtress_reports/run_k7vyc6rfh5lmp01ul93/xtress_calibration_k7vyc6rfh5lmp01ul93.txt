@@ -1,0 +1,110 @@
+======================================================================
+  XTRESS_TEST — PLANO DE CALIBRAGEM DO ZEHLA
+======================================================================
+
+Teste:       Smoke Test Rapido
+Executado em: 2026-05-10T17:31:15.351Z
+Duracao:     605 mensagens processadas
+
+----------------------------------------------------------------------
+  RESUMO DO TESTE
+----------------------------------------------------------------------
+  Total de Mensagens:  605
+  Erros:               0 (0.0%)
+  Tempo Medio:         -6793376ms
+  P95:                 25899294ms
+  P99:                 29552767ms
+  Throughput Medio:    1.7 msgs/s
+  Throughput Pico:     1.7 msgs/s
+  Vulnerabilidades:    5
+  Acoes de Calibragem: 7
+
+----------------------------------------------------------------------
+  VULNERABILIDADES DETECTADAS
+----------------------------------------------------------------------
+
+  [CRITICA] (4)
+    - ZCC-TRENDS: Throughput abaixo do target. Possivel bottleneck.
+      Score: 9.3/10 | Impacto: Sistema nao consegue processar mensagens na cadencia exigida. Fila cresce indefinidamente.
+    - ZMG: Tempo de resposta P99 do pipeline completo excede o limite
+      Score: 9.3/10 | Impacto: Pior caso de experiencia do hospede. Pode causar perda de reservas em horarios de pico.
+    - ZMG: Taxa de entrega abaixo do aceitavel
+      Score: 8.5/10 | Impacto: Mensagens nao chegam aos hospedes. WhatsApp pode estar com problemas de conectividade.
+    - ZCC-WPP: Tempo de resposta P95 do ZCC-WPP excede o limite
+      Score: 8.2/10 | Impacto: Hospedes recebem resposta lenta, podendo desistir da reserva. Experiencia ruim.
+
+  [ALTA] (0)
+
+  [MEDIA] (1)
+    - System: Crescimento de memoria acima do aceitavel (possivel memory leak)
+      Score: 7.2/10 | Impacto: Se nao corrigido, o processo Node.js vai crashar por OOM (Out of Memory) apos X horas.
+
+  [BAIXA] (0)
+
+----------------------------------------------------------------------
+  PLANO DE CALIBRAGEM (POR FASE)
+----------------------------------------------------------------------
+
+  === FASE 1: IMEDIATO (Esta Semana) ===
+
+  1. [CRITICA] ZMG
+     Problema:    P95: 29552767ms (limite: 5000ms)
+     Objetivo:    P95 < 5000ms
+     Acao:        Adicionar cache Redis para TrendSignals. Aumentar pool de workers de 5 para 15. Implementar circuit breaker no ZCC-TRENDS.
+     Impacto:     Reducao de 40-60% no tempo de resposta P95
+     Complexidade: undefined
+
+  2. [CRITICA] ZCC-TRENDS
+     Problema:    ZCC-TRENDS bloqueando pipeline de resposta
+     Objetivo:    ZCC-TRENDS nao bloqueante (fire-and-forget)
+     Acao:        Mover chamada ao ZCC-TRENDS para background queue. Responder ao hospede imediatamente com dados em cache, atualizar em background.
+     Impacto:     Eliminacao de 1-3 segundos de latencia por mensagem
+     Complexidade: undefined
+
+  3. [CRITICA] ZCC-WPP
+     Problema:    P95: 25899294ms (limite: 2000ms)
+     Objetivo:    P95 < 2000ms
+     Acao:        Adicionar cache Redis para TrendSignals. Aumentar pool de workers de 5 para 15. Implementar circuit breaker no ZCC-TRENDS.
+     Impacto:     Reducao de 40-60% no tempo de resposta P95
+     Complexidade: undefined
+
+  4. [CRITICA] ZCC-TRENDS
+     Problema:    ZCC-TRENDS bloqueando pipeline de resposta
+     Objetivo:    ZCC-TRENDS nao bloqueante (fire-and-forget)
+     Acao:        Mover chamada ao ZCC-TRENDS para background queue. Responder ao hospede imediatamente com dados em cache, atualizar em background.
+     Impacto:     Eliminacao de 1-3 segundos de latencia por mensagem
+     Complexidade: undefined
+
+
+  === FASE 2: CURTO PRAZO (2-4 Semanas) ===
+
+  1. [CRITICA] ZCC-TRENDS
+     Problema:    Throughput: 1.7 msgs/s (target: 0.7)
+     Objetivo:    Throughput > 0.7 msgs/s
+     Acao:        Identificar componente mais lento via profiling. Adicionar processamento paralelo (worker threads). Aumentar concurrencia de BullMQ.
+     Impacto:     Aumento de 2-3x no throughput
+     Complexidade: undefined
+
+  2. [CRITICA] ZMG
+     Problema:    Fallback rate acima do normal
+     Objetivo:    Fallback rate < 10%
+     Acao:        Melhorar deteccao de disponibilidade do WhatsApp (health check a cada 30s). Ajustar timeout de fallback de 5s para 8s. Implementar retry antes do fallback.
+     Impacto:     Reducao de custos (SMS e mais caro que WhatsApp)
+     Complexidade: undefined
+
+  3. [MEDIA] System
+     Problema:    Crescimento de memoria: 68.0MB/hora
+     Objetivo:    Crescimento < 10MB/hora (near-zero leak)
+     Acao:        Adicionar heap snapshots periodicos. Verificar closures nao liberadas, acumulo em arrays/mapas. Implementar GC manual periodico.
+     Impacto:     Eliminacao de crashes por OOM em producao
+     Complexidade: undefined
+
+----------------------------------------------------------------------
+  VERIFICACAO DE CRITERIOS DE SUCESSO
+----------------------------------------------------------------------
+  Perfil de Carga: baseline
+
+======================================================================
+  SCORE GERAL: 0/100
+  STATUS: SISTEMA NAO PRONTO — REFORMA ESTRUTURAL
+======================================================================

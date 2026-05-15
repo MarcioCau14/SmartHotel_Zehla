@@ -1,0 +1,56 @@
+{
+  "project": "ZEHLA SmartHotel",
+  "brain_version": "4.0.0",
+  "last_learning_update": "2026-05-07T15:40:00Z",
+  "mathematical_logic": {
+    "pricing_engine": {
+      "LITE": {
+        "price_brl": 248.0,
+        "target_profile": "Pousadas pequenas, gestão familiar, < 10 quartos",
+        "key_features": ["Gestão básica", "Radar Neural limitado", "WhatsApp Lite"]
+      },
+      "PRO": {
+        "price_brl": 498.0,
+        "target_profile": "Pousadas médias, 10-20 quartos, foco em crescimento",
+        "key_features": ["Automação completa", "Radar Neural Full", "IA Conversacional"]
+      },
+      "MAX": {
+        "price_brl": 798.0,
+        "target_profile": "Pousadas grandes, resorts, > 20 quartos, alto padrão",
+        "key_features": ["Voz Neural DNA", "Revenue Management preditivo", "Priority Support"]
+      }
+    },
+    "classification_brain": {
+      "logic_id": "PURCHASING_POWER_V1",
+      "criteria": [
+        {
+          "plan": "MAX",
+          "rules": [
+            "Qtd Quartos > 20",
+            "Score Qual. >= 90",
+            "Keywords: [luxo, premium, boutique, alto padrão, exclusive, resort]"
+          ]
+        },
+        {
+          "plan": "PRO",
+          "rules": [
+            "Qtd Quartos >= 10 AND <= 20",
+            "Score Qual. >= 70 AND < 90"
+          ]
+        },
+        {
+          "plan": "LITE",
+          "rules": [
+            "Qtd Quartos < 10",
+            "Score Qual. < 70"
+          ]
+        }
+      ]
+    }
+  },
+  "commercial_strategies": {
+    "hook": "Commission Trauma (Dor da comissão do Booking/Expedia)",
+    "value_prop": "Invisible Profit (Lucro invisível via automação G-Solis)",
+    "conversion_engine": "BullMQ 5-Stage Pipeline (Capture, Validate, Enrich, Classify, Act)"
+  }
+}

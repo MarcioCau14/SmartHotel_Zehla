@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.tencentcloud.com/techpedia/139225",
+    "name": "OpenClaw WhatsApp Voice Messages: AI Voice Recognition and",
+    "snippet": "This includes setting up the AI voice recognition engine, configuring the WhatsApp API, and integrating the reply generation module. Tencent Cloud ...",
+    "host_name": "www.tencentcloud.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.buzzi.ai/insights/whatsapp-voice-ai-integration-architecture",
+    "name": "WhatsApp Voice AI Integration Architecture Blueprint - Buzzi.ai",
+    "snippet": "Plan WhatsApp voice AI integration with a clear architecture that anticipates Meta Business API limits, reduces rework, and accelerates launch ...",
+    "host_name": "www.buzzi.ai",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://chronox.ai/blog/whatsapp-business-api-in-2025",
+    "name": "WhatsApp Business API in 2025 - Chronox AI",
+    "snippet": "In this guide, we'll walk you through exactly how the WhatsApp Business API works, why it's different from the app, how it transforms engagement ...",
+    "host_name": "chronox.ai",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://bonvoice.com/insights/whatsapp-api-integration-voice",
+    "name": "WhatsApp API Integration + Voice Calls for Business Growth",
+    "snippet": "WhatsApp API Integration with cloud telephony helps brands handle high volumes with ease. Explore features, benefits & provider selection.",
+    "host_name": "bonvoice.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://voiceinfra.ai/blog/whatsapp-voice-ai-inbound-integration-guide",
+    "name": "How to Add Voice AI to WhatsApp Business: A Practical Guide",
+    "snippet": "Learn how to integrate AI voice agents for inbound calls without complex setup, leveraging your existing WhatsApp Business API to handle 24/7 ...",
+    "host_name": "voiceinfra.ai",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://elevenlabs.io/blog/elevenlabs-agents-whatsapp-support",
+    "name": "ElevenLabs Agents now support WhatsApp",
+    "snippet": "With WhatsApp support, businesses can deliver voice and chat experiences directly in WhatsApp, meeting customers where they already are and ...",
+    "host_name": "elevenlabs.io",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://mobileecosystemforum.com/2025/08/12/whatsapp-business-voice-from-limited-support-to-strategic-platform",
+    "name": "WhatsApp Business Voice: From Limited Support to Strategic Platform",
+    "snippet": "The July 2025 Leap Forward · In-thread voice calling: Businesses can now initiate and receive voice calls directly within the WhatsApp chat ...",
+    "host_name": "mobileecosystemforum.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://voicegenie.ai/build-a-whatsapp-voice-ai-agent",
+    "name": "Built a WhatsApp Voice AI Agent using Twilio + n8n + Retell AI + MCP",
+    "snippet": "Seamless CRM Integration: AI voice agents can sync with your CRM, ensuring that all lead data is tracked, responses are logged, and business ...",
+    "host_name": "voicegenie.ai",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://webrtc.ventures/2025/11/how-to-integrate-the-whatsapp-business-calling-api-with-webrtc-to-enable-customer-voice-calls",
+    "name": "How to Integrate the WhatsApp Business Calling API with WebRTC",
+    "snippet": "Learn how to integrate the WhatsApp Business Calling API with WebRTC to enable real-time customer voice calls directly from WhatsApp ...",
+    "host_name": "webrtc.ventures",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://flowgent.ai/blog/whatsapp-business-api-guide",
+    "name": "WhatsApp Business API guide 2025: pricing, integration, setup & more",
+    "snippet": "Whatsapp business api is a powerful tool but it can be a bit complicated. In this article we cover everything you need to know!",
+    "host_name": "flowgent.ai",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

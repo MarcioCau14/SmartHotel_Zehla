@@ -1,0 +1,76 @@
+import Stripe from 'stripe';
+import { prisma } from '@/lib/prisma';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2025-01-27' as any,
+});
+
+export const PLAN_PRICES: Record<string, string> = {
+  LITE: 'price_lite_id', // Placeholder - será substituído por IDs Reais do Dashboard Stripe
+  PRO: 'price_pro_id',
+  MAX: 'price_max_id',
+};
+
+export class StripeService {
+  /**
+   * Cria uma sessão de Checkout para o hoteleiro assinar um plano
+   */
+  static async createCheckoutSession(tenantId: string, plan: 'LITE' | 'PRO' | 'MAX') {
+    const property = await prisma.property.findUnique({
+      where: { id: tenantId },
+      include: { user: true },
+    });
+
+    if (!property) throw new Error('Propriedade não encontrada');
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: PLAN_PRICES[plan],
+          quantity: 1,
+        },
+      ],
+      mode: 'subscription',
+      customer_email: property.user.email,
+      client_reference_id: tenantId,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?payment=success`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?payment=cancel`,
+      metadata: {
+        tenantId,
+        plan,
+      },
+    });
+
+    return session.url;
+  }
+
+  /**
+   * Processa Webhooks do Stripe
+   */
+  static async handleWebhook(event: Stripe.Event) {
+    switch (event.type) {
+      case 'checkout.session.completed':
+        const session = event.data.object as Stripe.Checkout.Session;
+        const tenantId = session.metadata?.tenantId;
+        const plan = session.metadata?.plan as any;
+
+        if (tenantId && plan) {
+          await prisma.property.update({
+            where: { id: tenantId },
+            data: {
+              plan: plan,
+              isTrial: false,
+              status: 'ACTIVE',
+            },
+          });
+          console.log(`✅ [STRIPE] Plano ${plan} ativado para o Tenant ${tenantId}`);
+        }
+        break;
+
+      case 'customer.subscription.deleted':
+        // Lógica de cancelamento
+        break;
+    }
+  }
+}

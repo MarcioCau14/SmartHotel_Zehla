@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 794px; height: 1123px; background: #f7f7f6; }
+.page { position: relative; width: 794px; height: 1123px; background: #f7f7f6; overflow: hidden; }
+.deco-v { position: absolute; left: 8%; top: 0; width: 1px; height: 100%; background: linear-gradient(to bottom, transparent, #4e4835 20%, #4e4835 80%, transparent); opacity: 0.08; }
+.deco-h { position: absolute; left: 0; top: 36%; width: 100%; height: 1px; background: linear-gradient(to right, transparent, #4e4835 15%, #4e4835 85%, transparent); opacity: 0.06; }
+.deco-bg { position: absolute; right: 0; top: 0; width: 45%; height: 100%; background: linear-gradient(135deg, #efeeec, transparent 60%); opacity: 0.5; }
+.deco-circle { position: absolute; right: 8%; bottom: 14%; width: 130px; height: 130px; border: 2px solid #4e2db1; border-radius: 50%; opacity: 0.1; }
+.deco-circle2 { position: absolute; right: 12%; bottom: 20%; width: 80px; height: 80px; border: 1px solid #39b376; border-radius: 50%; opacity: 0.08; }
+.deco-dots { position: absolute; left: 8%; bottom: 10%; width: 50px; height: 50px; background: radial-gradient(circle, #4e4835 1.5px, transparent 1.5px); background-size: 7px 7px; opacity: 0.08; }
+.watermark { position: absolute; right: 5%; top: 16%; font-family: 'Inter', sans-serif; font-size: 110px; font-weight: 800; color: #4e4835; opacity: 0.03; line-height: 1; writing-mode: vertical-rl; letter-spacing: 6px; }
+.content { position: absolute; left: 8%; top: 12%; width: 60%; z-index: 10; }
+.kicker { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #4e2db1; opacity: 0.85; margin-bottom: 24px; }
+.title { font-family: 'Inter', sans-serif; font-size: 40px; font-weight: 800; line-height: 1.12; color: #1e1d1b; margin-bottom: 20px; }
+.title .line2 { color: #4e4835; }
+.title .line3 { color: #4e2db1; }
+.subtitle { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 400; color: #77756e; line-height: 1.65; margin-bottom: 32px; max-width: 380px; }
+.meta { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; color: #77756e; letter-spacing: 1px; }
+.meta .sep { display: inline-block; width: 4px; height: 4px; background: #cac7bc; border-radius: 50%; margin: 0 10px; vertical-align: middle; }
+.summary-box { position: absolute; left: 8%; bottom: 12%; width: 52%; z-index: 10; }
+.summary-box p { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 400; color: #77756e; line-height: 1.7; }
+.summary-box .tag { display: inline-block; margin-top: 10px; padding: 4px 12px; background: #4e2db1; color: white; font-size: 10px; font-weight: 600; letter-spacing: 1px; border-radius: 3px; }
+.bottom-bar { position: absolute; left: 8%; bottom: 5%; width: 84%; height: 1px; background: linear-gradient(to right, #cac7bc, transparent); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="deco-v"></div>
+  <div class="deco-h"></div>
+  <div class="deco-bg"></div>
+  <div class="deco-circle"></div>
+  <div class="deco-circle2"></div>
+  <div class="deco-dots"></div>
+  <div class="watermark">ZEHLA BLAST</div>
+  <div class="content">
+    <div class="kicker">SMARTHOTEL / ZEHLA — MODULO DE MARKETING</div>
+    <div class="title">
+      Plataforma de<br>Envio em Massa<br><span class="line2">WhatsApp</span>
+    </div>
+    <div class="subtitle">
+      Pesquisa competitiva, arquitetura tecnica, anti-banimento completo e implementacao integrada ao ZEHLA Brain + LIS para 10.000+ contatos de pousadas.
+    </div>
+    <div class="meta">
+      ZEHLA BLAST<span class="sep"></span>2026<span class="sep"></span>v1.0
+    </div>
+  </div>
+  <div class="summary-box">
+    <p>
+      WaSeller + Zap Responder + Evolution API | 3 modulos Prisma | BullMQ + Redis | Pool de instancias | Throttler inteligente | Integracao ZEHLA Brain (score + cluster)
+    </p>
+    <div class="tag">PESQUISA + ARQUITETURA + CODIGO</div>
+  </div>
+  <div class="bottom-bar"></div>
+</div>
+</body>
+</html>

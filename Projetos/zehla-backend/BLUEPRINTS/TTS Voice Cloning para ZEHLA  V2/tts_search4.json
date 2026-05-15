@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.bentoml.com/blog/exploring-the-world-of-open-source-text-to-speech-models",
+    "name": "The Best Open-Source Text-to-Speech Models in 2026 - BentoML",
+    "snippet": "Key features: Voice cloning with minimal input: XTTS-v2 allows you to clone voices across multiple languages using only a 6-second audio clip, ...",
+    "host_name": "www.bentoml.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/fish-speech?l=python&o=asc&s=stars",
+    "name": "fish-speech · GitHub Topics",
+    "snippet": "Enhance communication with Fish Speech, a powerful multilingual Text-to-Speech system featuring speaker management, auto-transcription, and ... Missing: comparison | Show results with: comparison",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/LocalLLaMA/comments/1sntq7l/best_tool_for_opensource_voice_cloning",
+    "name": "Best tool for open-source voice cloning : r/LocalLLaMA - Reddit",
+    "snippet": "I have been trying to do voice cloning for some time for my personal project, experimented with Coqui XTTS v2 and F5-TTS, the results were ...",
+    "host_name": "www.reddit.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://inworld.ai/resources/best-voice-ai-tts-apis-for-real-time-voice-agents-2026-benchmarks",
+    "name": "Best voice AI / TTS APIs for real-time voice agents (2026 benchmarks)",
+    "snippet": "Compare the best voice AI and TTS APIs for real-time voice agents in 2026. Latency, quality, pricing, and benchmarks from Artificial ...",
+    "host_name": "inworld.ai",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.spheron.network/blog/deploy-open-source-tts-gpu-cloud-2026",
+    "name": "Deploy Open-Source TTS on GPU Cloud: Kokoro, Fish Speech, and",
+    "snippet": "Fish Speech 1.5 ranked first among open-source models on TTS-Arena as of early 2025 (FishAudio's newer S1 model has since claimed the #1 spot on ... Missing: XTTS | Show results with: XTTS",
+    "host_name": "www.spheron.network",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.siliconflow.com/articles/en/best-open-source-audio-models-for-mobile-apps",
+    "name": "The Best Open Source Audio Models For Mobile Apps in 2026",
+    "snippet": "Our top three recommendations for 2026 are FunAudioLLM/CosyVoice2-0.5B, IndexTeam/IndexTTS-2, and fishaudio/fish-speech-1.5—each chosen for their outstanding ... Missing: XTTS Kokoro",
+    "host_name": "www.siliconflow.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/TextToSpeech/comments/1so0our/6_opensource_tts_models_compared_after_running",
+    "name": "6 open-source TTS models compared after running all of them in",
+    "snippet": "The 6 models: Kokoro, Fish Speech S2 Pro, Qwen3-TTS, Sesame CSM ... Kokoro with better prosody IMO and also has voice cloning. There's ... Missing: 2025 | Show results with: 2025",
+    "host_name": "www.reddit.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.codesota.com/text-to-speech",
+    "name": "Text-to-Speech Benchmarks (Beta) - CodeSOTA",
+    "snippet": "F5-TTS uses flow-matching for fast cloning; XTTS v2 covers 17 languages. ... Fish Speech 1.5 is the open-source alternative for CJK-heavy deployments.",
+    "host_name": "www.codesota.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/xtts?o=asc&s=stars",
+    "name": "xtts · GitHub Topics",
+    "snippet": "🎙️ Build high-quality, self-hosted Text-to-Speech applications with voice cloning and multi-language support using the XTTS-v2 API. multilingual ... Missing: comparison | Show results with: comparison",
+    "host_name": "github.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://modal.com/blog/open-source-tts",
+    "name": "The Top Open-Source Text to Speech (TTS) Models - Modal",
+    "snippet": "This article explores the top open-source TTS models, based on Hugging Face's trending models and insights from our developer community.",
+    "host_name": "modal.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

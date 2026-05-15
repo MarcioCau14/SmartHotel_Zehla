@@ -1,0 +1,1802 @@
+[
+  {
+    "content": "OIIII",
+    "category": "disponibilidade",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5583965815386",
+    "conversationType": "bombardeio",
+    "conversationStep": 0,
+    "totalSteps": 17
+  },
+  {
+    "content": "Me ajuda pfv!!",
+    "category": "disponibilidade",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5583965815386",
+    "conversationType": "bombardeio",
+    "conversationStep": 1,
+    "totalSteps": 17
+  },
+  {
+    "content": "Preciso de um quarto URGENTE pra esse fds em Trancoso!!",
+    "category": "informacao",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5583965815386",
+    "conversationType": "bombardeio",
+    "conversationStep": 2,
+    "totalSteps": 17
+  },
+  {
+    "content": "Meu hotel cancelou de ultima hora!! SOS!",
+    "category": "informacao",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5583965815386",
+    "conversationType": "bombardeio",
+    "conversationStep": 3,
+    "totalSteps": 17
+  },
+  {
+    "content": "Tem quarto? TEM QUARTO?",
+    "category": "informacao",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5583965815386",
+    "conversationType": "bombardeio",
+    "conversationStep": 4,
+    "totalSteps": 17
+  },
+  {
+    "content": "Pra 6 pessoas! 6 noites! 💕",
+    "category": "informacao",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5583965815386",
+    "conversationType": "bombardeio",
+    "conversationStep": 5,
+    "totalSteps": 17
+  },
+  {
+    "content": "Quanto custa? ME FALA RAPIDO PFV",
+    "category": "preco",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5583965815386",
+    "conversationType": "bombardeio",
+    "conversationStep": 6,
+    "totalSteps": 17
+  },
+  {
+    "content": "Aceita PIX?!",
+    "category": "reserva",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5583965815386",
+    "conversationType": "bombardeio",
+    "conversationStep": 7,
+    "totalSteps": 17
+  },
+  {
+    "content": "Se tiver quarto reserva JÁ! Nao perco tempo!",
+    "category": "reserva",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5583965815386",
+    "conversationType": "bombardeio",
+    "conversationStep": 8,
+    "totalSteps": 17
+  },
+  {
+    "content": "E se eu quiser chegar HOJE? As 4 horas?",
+    "category": "informacao",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5583965815386",
+    "conversationType": "bombardeio",
+    "conversationStep": 9,
+    "totalSteps": 17
+  },
+  {
+    "content": "A {pousada} tem wifi? Meu filho precisa pra escola online",
+    "category": "informacao",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5583965815386",
+    "conversationType": "bombardeio",
+    "conversationStep": 10,
+    "totalSteps": 17
+  },
+  {
+    "content": "Tem estacionamento? Vamos de carro!",
+    "category": "informacao",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5583965815386",
+    "conversationType": "bombardeio",
+    "conversationStep": 11,
+    "totalSteps": 17
+  },
+  {
+    "content": "E a piscina? TA ABERTA MESMO?",
+    "category": "informacao",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5583965815386",
+    "conversationType": "bombardeio",
+    "conversationStep": 12,
+    "totalSteps": 17
+  },
+  {
+    "content": "Me manda o endereco via Google Maps pfv! ✨",
+    "category": "informacao",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5583965815386",
+    "conversationType": "bombardeio",
+    "conversationStep": 13,
+    "totalSteps": 17
+  },
+  {
+    "content": "Olha, se confirmar reserva agora eu pago na hora! R$ 1656 ta bom!",
+    "category": "reserva",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5583965815386",
+    "conversationType": "bombardeio",
+    "conversationStep": 14,
+    "totalSteps": 17
+  },
+  {
+    "content": "Esperando...",
+    "category": "reserva",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5583965815386",
+    "conversationType": "bombardeio",
+    "conversationStep": 15,
+    "totalSteps": 17
+  },
+  {
+    "content": "?? Ainda ta ai? Me responde pfv preciso saber URGENTE",
+    "category": "reserva",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5583965815386",
+    "conversationType": "bombardeio",
+    "conversationStep": 16,
+    "totalSteps": 17
+  },
+  {
+    "content": "Oiii 🔥 Boa tarde! Gostaria de saber sobre a Cantinho do Vale em Búzios",
+    "category": "disponibilidade",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 0,
+    "totalSteps": 8
+  },
+  {
+    "content": "Qual o preco da diaria pra casal? E tem cafe da manha incluso?",
+    "category": "informacao",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 1,
+    "totalSteps": 8
+  },
+  {
+    "content": "Hmm interessante. Vcs tem spa? E estacionamento?",
+    "category": "informacao",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 2,
+    "totalSteps": 8
+  },
+  {
+    "content": "A Estalagem Bela Vista fica longe do centrinho de Campos do Jordão? Tem transfer do aeroporto?",
+    "category": "informacao",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 3,
+    "totalSteps": 8
+  },
+  {
+    "content": "Me passa o preco pra 3 noites em 26/5 entao",
+    "category": "preco",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 4,
+    "totalSteps": 8
+  },
+  {
+    "content": "Hmm Velho, esse preco ta bom mas vi outro lugar mais barato. Vcs fazem melhor pra reserva direta?",
+    "category": "preco",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 5,
+    "totalSteps": 8
+  },
+  {
+    "content": "Tá bom, me reserva entao! Suite premium pra 5 pessoas. 😊",
+    "category": "reserva",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 6,
+    "totalSteps": 8
+  },
+  {
+    "content": "Quero pagar via cartão de débito. Manda os dados!",
+    "category": "reserva",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 7,
+    "totalSteps": 8
+  },
+  {
+    "content": "Oi, boa tarde! Vcs aceitam cachorro por acaso?",
+    "category": "disponibilidade",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5574976145246",
+    "conversationType": "rapida_info",
+    "conversationStep": 0,
+    "totalSteps": 2
+  },
+  {
+    "content": "Ah que pena. Obrigado mesmo assim! 🙏",
+    "category": "disponibilidade",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5574976145246",
+    "conversationType": "rapida_info",
+    "conversationStep": 1,
+    "totalSteps": 2
+  },
+  {
+    "content": "Oi! Quero reservar 7 noites em 02/6. Me faz um orcamento?",
+    "category": "disponibilidade",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "negociacao",
+    "conversationStep": 0,
+    "totalSteps": 6
+  },
+  {
+    "content": "Hmm R$ 2068 e caro demais! No Booking ta saindo 20% mais barato. Melhora pra mim?",
+    "category": "preco",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "negociacao",
+    "conversationStep": 1,
+    "totalSteps": 6
+  },
+  {
+    "content": "Olha, se voce fizer R$ 327 a diaria eu fecho agora mesmo! Via PIX! 🙏",
+    "category": "preco",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "negociacao",
+    "conversationStep": 2,
+    "totalSteps": 6
+  },
+  {
+    "content": "Conversei com minha esposa e a gente aceita R$ 481. Mas so se incluir cafe colonial e estacionamento. Combinado?",
+    "category": "preco",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "negociacao",
+    "conversationStep": 3,
+    "totalSteps": 6
+  },
+  {
+    "content": "E se a gente voltar em Carnaval? Da pra fechar pacote pra 2 feriados? Desconto progressivo?",
+    "category": "preco",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "negociacao",
+    "conversationStep": 4,
+    "totalSteps": 6
+  },
+  {
+    "content": "Tá bom Cara, aceito! Mas me joga aquele upgrade de suite pfv! ✨",
+    "category": "reserva",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "negociacao",
+    "conversationStep": 5,
+    "totalSteps": 6
+  },
+  {
+    "content": "Oiii 😊 Boa tarde! Gostaria de saber sobre a Recanto das Flores em Búzios",
+    "category": "disponibilidade",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 0,
+    "totalSteps": 8
+  },
+  {
+    "content": "Qual o preco da diaria pra casal? E tem cafe da manha incluso?",
+    "category": "informacao",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 1,
+    "totalSteps": 8
+  },
+  {
+    "content": "Hmm interessante. Vcs tem lareira? E estacionamento?",
+    "category": "informacao",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 2,
+    "totalSteps": 8
+  },
+  {
+    "content": "A Recanto das Flores fica longe do centrinho de Trancoso? Tem transfer do aeroporto?",
+    "category": "informacao",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 3,
+    "totalSteps": 8
+  },
+  {
+    "content": "Me passa o preco pra 2 noites em 24/5 entao",
+    "category": "preco",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 4,
+    "totalSteps": 8
+  },
+  {
+    "content": "Hmm Amiga, esse preco ta bom mas vi outro lugar mais barato. Vcs fazem melhor pra reserva direta?",
+    "category": "preco",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 5,
+    "totalSteps": 8
+  },
+  {
+    "content": "Tá bom, me reserva entao! Suite standard pra 2 pessoas. 😊",
+    "category": "reserva",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 6,
+    "totalSteps": 8
+  },
+  {
+    "content": "Quero pagar via PIX. Manda os dados!",
+    "category": "reserva",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 7,
+    "totalSteps": 8
+  },
+  {
+    "content": "Oiii ✨ Boa tarde! Gostaria de saber sobre a Cantinho do Vale em Jericoacoara",
+    "category": "disponibilidade",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 0,
+    "totalSteps": 8
+  },
+  {
+    "content": "Qual o preco da diaria pra casal? E tem cafe da manha incluso?",
+    "category": "informacao",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 1,
+    "totalSteps": 8
+  },
+  {
+    "content": "Hmm interessante. Vcs tem transfer? E estacionamento?",
+    "category": "informacao",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 2,
+    "totalSteps": 8
+  },
+  {
+    "content": "A Cantinho do Vale fica longe do centrinho de Trancoso? Tem transfer do aeroporto?",
+    "category": "informacao",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 3,
+    "totalSteps": 8
+  },
+  {
+    "content": "Me passa o preco pra 4 noites em 28/5 entao",
+    "category": "preco",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 4,
+    "totalSteps": 8
+  },
+  {
+    "content": "Hmm Opa, esse preco ta bom mas vi outro lugar mais barato. Vcs fazem melhor pra reserva direta?",
+    "category": "preco",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 5,
+    "totalSteps": 8
+  },
+  {
+    "content": "Tá bom, me reserva entao! Suite premium pra 1 pessoas. 👍",
+    "category": "reserva",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 6,
+    "totalSteps": 8
+  },
+  {
+    "content": "Quero pagar via cartão de débito. Manda os dados!",
+    "category": "reserva",
+    "pousadaId": "d6rga3ajof9moxhaxvr",
+    "guestPhone": "+5588967693791",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 7,
+    "totalSteps": 8
+  },
+  {
+    "content": "OIIII",
+    "category": "disponibilidade",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5528934822905",
+    "conversationType": "bombardeio",
+    "conversationStep": 0,
+    "totalSteps": 17
+  },
+  {
+    "content": "Me ajuda pfv!!",
+    "category": "disponibilidade",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5528934822905",
+    "conversationType": "bombardeio",
+    "conversationStep": 1,
+    "totalSteps": 17
+  },
+  {
+    "content": "Preciso de um quarto URGENTE pra esse fds em Pipa!!",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5528934822905",
+    "conversationType": "bombardeio",
+    "conversationStep": 2,
+    "totalSteps": 17
+  },
+  {
+    "content": "Meu hotel cancelou de ultima hora!! SOS!",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5528934822905",
+    "conversationType": "bombardeio",
+    "conversationStep": 3,
+    "totalSteps": 17
+  },
+  {
+    "content": "Tem quarto? TEM QUARTO?",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5528934822905",
+    "conversationType": "bombardeio",
+    "conversationStep": 4,
+    "totalSteps": 17
+  },
+  {
+    "content": "Pra 6 pessoas! 7 noites! 👍",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5528934822905",
+    "conversationType": "bombardeio",
+    "conversationStep": 5,
+    "totalSteps": 17
+  },
+  {
+    "content": "Quanto custa? ME FALA RAPIDO PFV",
+    "category": "preco",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5528934822905",
+    "conversationType": "bombardeio",
+    "conversationStep": 6,
+    "totalSteps": 17
+  },
+  {
+    "content": "Aceita PIX?!",
+    "category": "reserva",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5528934822905",
+    "conversationType": "bombardeio",
+    "conversationStep": 7,
+    "totalSteps": 17
+  },
+  {
+    "content": "Se tiver quarto reserva JÁ! Nao perco tempo!",
+    "category": "reserva",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5528934822905",
+    "conversationType": "bombardeio",
+    "conversationStep": 8,
+    "totalSteps": 17
+  },
+  {
+    "content": "E se eu quiser chegar HOJE? As 1 horas?",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5528934822905",
+    "conversationType": "bombardeio",
+    "conversationStep": 9,
+    "totalSteps": 17
+  },
+  {
+    "content": "A {pousada} tem wifi? Meu filho precisa pra escola online",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5528934822905",
+    "conversationType": "bombardeio",
+    "conversationStep": 10,
+    "totalSteps": 17
+  },
+  {
+    "content": "Tem estacionamento? Vamos de carro!",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5528934822905",
+    "conversationType": "bombardeio",
+    "conversationStep": 11,
+    "totalSteps": 17
+  },
+  {
+    "content": "E a piscina? TA ABERTA MESMO?",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5528934822905",
+    "conversationType": "bombardeio",
+    "conversationStep": 12,
+    "totalSteps": 17
+  },
+  {
+    "content": "Me manda o endereco via Google Maps pfv! 👋",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5528934822905",
+    "conversationType": "bombardeio",
+    "conversationStep": 13,
+    "totalSteps": 17
+  },
+  {
+    "content": "Olha, se confirmar reserva agora eu pago na hora! R$ 1526 ta bom!",
+    "category": "reserva",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5528934822905",
+    "conversationType": "bombardeio",
+    "conversationStep": 14,
+    "totalSteps": 17
+  },
+  {
+    "content": "Esperando...",
+    "category": "reserva",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5528934822905",
+    "conversationType": "bombardeio",
+    "conversationStep": 15,
+    "totalSteps": 17
+  },
+  {
+    "content": "?? Ainda ta ai? Me responde pfv preciso saber URGENTE",
+    "category": "reserva",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5528934822905",
+    "conversationType": "bombardeio",
+    "conversationStep": 16,
+    "totalSteps": 17
+  },
+  {
+    "content": "Hello! Do you have availability for this weekend? We are a couple from Argentina.",
+    "category": "disponibilidade",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5569984177586",
+    "conversationType": "internacional",
+    "conversationStep": 0,
+    "totalSteps": 6
+  },
+  {
+    "content": "We saw your inn on Booking.com and it looks amazing! What is the price per night?",
+    "category": "preco",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5569984177586",
+    "conversationType": "internacional",
+    "conversationStep": 1,
+    "totalSteps": 6
+  },
+  {
+    "content": "Do you accept credit card? We don't have PIX setup since we are tourists.",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5569984177586",
+    "conversationType": "internacional",
+    "conversationStep": 2,
+    "totalSteps": 6
+  },
+  {
+    "content": "Is breakfast included? We have one person with gluten intolerance. Do you have options?",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5569984177586",
+    "conversationType": "internacional",
+    "conversationStep": 3,
+    "totalSteps": 6
+  },
+  {
+    "content": "Perfect! We would like to book 2 nights. Can you send us the confirmation?",
+    "category": "reserva",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5569984177586",
+    "conversationType": "internacional",
+    "conversationStep": 4,
+    "totalSteps": 6
+  },
+  {
+    "content": "Gracias! We are very excited! Una ultima pregunta: is there airport transfer?",
+    "category": "followup",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5569984177586",
+    "conversationType": "internacional",
+    "conversationStep": 5,
+    "totalSteps": 6
+  },
+  {
+    "content": "Oii 🙏 Vcs aceitam cachorro? Tenho um dog de {randomInt(5, 25)}kg, super tranquilo!",
+    "category": "disponibilidade",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5513980657354",
+    "conversationType": "pet_friendly_flow",
+    "conversationStep": 0,
+    "totalSteps": 6
+  },
+  {
+    "content": "Quanto fica a diaria pra casal com pet em 09/5? Tem taxa extra pra ele?",
+    "category": "preco",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5513980657354",
+    "conversationType": "pet_friendly_flow",
+    "conversationStep": 1,
+    "totalSteps": 6
+  },
+  {
+    "content": "Tem area gramada? Ele pode ficar solto? Tem alguma regra tipo nao pode subir no sofa?",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5513980657354",
+    "conversationType": "pet_friendly_flow",
+    "conversationStep": 2,
+    "totalSteps": 6
+  },
+  {
+    "content": "E o quarto tem chao frio (pis frio)? Meu dog prefere. Tem pote e comedouro pro pet?",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5513980657354",
+    "conversationType": "pet_friendly_flow",
+    "conversationStep": 3,
+    "totalSteps": 6
+  },
+  {
+    "content": "A Estalagem Bela Vista perto tem veterinario? E pet shop? So por seguranca.",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5513980657354",
+    "conversationType": "pet_friendly_flow",
+    "conversationStep": 4,
+    "totalSteps": 6
+  },
+  {
+    "content": "Perfeito! Entao me reserva! 5 noites, casal + 1 dog. 💯",
+    "category": "reserva",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5513980657354",
+    "conversationType": "pet_friendly_flow",
+    "conversationStep": 5,
+    "totalSteps": 6
+  },
+  {
+    "content": "OIIII",
+    "category": "disponibilidade",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5583965511573",
+    "conversationType": "bombardeio",
+    "conversationStep": 0,
+    "totalSteps": 17
+  },
+  {
+    "content": "Me ajuda pfv!!",
+    "category": "disponibilidade",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5583965511573",
+    "conversationType": "bombardeio",
+    "conversationStep": 1,
+    "totalSteps": 17
+  },
+  {
+    "content": "Preciso de um quarto URGENTE pra esse fds em Florianópolis!!",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5583965511573",
+    "conversationType": "bombardeio",
+    "conversationStep": 2,
+    "totalSteps": 17
+  },
+  {
+    "content": "Meu hotel cancelou de ultima hora!! SOS!",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5583965511573",
+    "conversationType": "bombardeio",
+    "conversationStep": 3,
+    "totalSteps": 17
+  },
+  {
+    "content": "Tem quarto? TEM QUARTO?",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5583965511573",
+    "conversationType": "bombardeio",
+    "conversationStep": 4,
+    "totalSteps": 17
+  },
+  {
+    "content": "Pra 4 pessoas! 5 noites! 👍",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5583965511573",
+    "conversationType": "bombardeio",
+    "conversationStep": 5,
+    "totalSteps": 17
+  },
+  {
+    "content": "Quanto custa? ME FALA RAPIDO PFV",
+    "category": "preco",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5583965511573",
+    "conversationType": "bombardeio",
+    "conversationStep": 6,
+    "totalSteps": 17
+  },
+  {
+    "content": "Aceita PIX?!",
+    "category": "reserva",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5583965511573",
+    "conversationType": "bombardeio",
+    "conversationStep": 7,
+    "totalSteps": 17
+  },
+  {
+    "content": "Se tiver quarto reserva JÁ! Nao perco tempo!",
+    "category": "reserva",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5583965511573",
+    "conversationType": "bombardeio",
+    "conversationStep": 8,
+    "totalSteps": 17
+  },
+  {
+    "content": "E se eu quiser chegar HOJE? As 1 horas?",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5583965511573",
+    "conversationType": "bombardeio",
+    "conversationStep": 9,
+    "totalSteps": 17
+  },
+  {
+    "content": "A {pousada} tem wifi? Meu filho precisa pra escola online",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5583965511573",
+    "conversationType": "bombardeio",
+    "conversationStep": 10,
+    "totalSteps": 17
+  },
+  {
+    "content": "Tem estacionamento? Vamos de carro!",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5583965511573",
+    "conversationType": "bombardeio",
+    "conversationStep": 11,
+    "totalSteps": 17
+  },
+  {
+    "content": "E a piscina? TA ABERTA MESMO?",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5583965511573",
+    "conversationType": "bombardeio",
+    "conversationStep": 12,
+    "totalSteps": 17
+  },
+  {
+    "content": "Me manda o endereco via Google Maps pfv! 🙏",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5583965511573",
+    "conversationType": "bombardeio",
+    "conversationStep": 13,
+    "totalSteps": 17
+  },
+  {
+    "content": "Olha, se confirmar reserva agora eu pago na hora! R$ 1807 ta bom!",
+    "category": "reserva",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5583965511573",
+    "conversationType": "bombardeio",
+    "conversationStep": 14,
+    "totalSteps": 17
+  },
+  {
+    "content": "Esperando...",
+    "category": "reserva",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5583965511573",
+    "conversationType": "bombardeio",
+    "conversationStep": 15,
+    "totalSteps": 17
+  },
+  {
+    "content": "?? Ainda ta ai? Me responde pfv preciso saber URGENTE",
+    "category": "reserva",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5583965511573",
+    "conversationType": "bombardeio",
+    "conversationStep": 16,
+    "totalSteps": 17
+  },
+  {
+    "content": "Boa noite... to na pousada agora e o ar condicionado NAO funciona. Ta 35 graus aqui dentro.",
+    "category": "reclamacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5569984177586",
+    "conversationType": "reclamacao_escalonada",
+    "conversationStep": 0,
+    "totalSteps": 7
+  },
+  {
+    "content": "Ja mandei msg la na recepcao presencialmente mas ninguem veio ainda. Faz 40 minutos.",
+    "category": "reclamacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5569984177586",
+    "conversationType": "reclamacao_escalonada",
+    "conversationStep": 1,
+    "totalSteps": 7
+  },
+  {
+    "content": "Agora o Wifi tambem caiu!! Sem internet e sem ar condicionado!! Impossivel ficar aqui!",
+    "category": "reclamacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5569984177586",
+    "conversationType": "reclamacao_escalonada",
+    "conversationStep": 2,
+    "totalSteps": 7
+  },
+  {
+    "content": "Joana disse que ia mandar alguem mas ate agora NINGUEM apareceu. To muito decepcionado com a Vila da Praia.",
+    "category": "reclamacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5569984177586",
+    "conversationType": "reclamacao_escalonada",
+    "conversationStep": 3,
+    "totalSteps": 7
+  },
+  {
+    "content": "Olha, ou voces resolvem isso AGORA ou vou pedir reembolso total e fazer avaliacao no Google. Ja gravei video do quarto.",
+    "category": "reclamacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5569984177586",
+    "conversationType": "reclamacao_escalonada",
+    "conversationStep": 4,
+    "totalSteps": 7
+  },
+  {
+    "content": "Se pelo menos me trocassem de quarto... Mas ninguem nem se manifesta. Que servico e esse da Recanto das Flores?",
+    "category": "reclamacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5569984177586",
+    "conversationType": "reclamacao_escalonada",
+    "conversationStep": 5,
+    "totalSteps": 7
+  },
+  {
+    "content": "Finalmente alguem veio! Mas o ar novo tambem faz barulho. Vou ver se melhora durante a noite. Se nao, amanha quero falar com o gerente.",
+    "category": "reclamacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5569984177586",
+    "conversationType": "reclamacao_escalonada",
+    "conversationStep": 6,
+    "totalSteps": 7
+  },
+  {
+    "content": "Oi! 🔥 Tem quarto disponivel pra 09/5? Pra 4 pessoas.",
+    "category": "disponibilidade",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5513980657354",
+    "conversationType": "rapida_reserva",
+    "conversationStep": 0,
+    "totalSteps": 5
+  },
+  {
+    "content": "Meu amor! Quanto fica a diaria pra 5 noites?",
+    "category": "preco",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5513980657354",
+    "conversationType": "rapida_reserva",
+    "conversationStep": 1,
+    "totalSteps": 5
+  },
+  {
+    "content": "Beleza! Quero reservar suite. Como faco o pagamento? dinheiro?",
+    "category": "reserva",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5513980657354",
+    "conversationType": "rapida_reserva",
+    "conversationStep": 2,
+    "totalSteps": 5
+  },
+  {
+    "content": "Perfecto, manda a chave PIX pra mim 👋",
+    "category": "reserva",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5513980657354",
+    "conversationType": "rapida_reserva",
+    "conversationStep": 3,
+    "totalSteps": 5
+  },
+  {
+    "content": "Me confirma se deu tudo certo com a reserva?",
+    "category": "followup",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5513980657354",
+    "conversationType": "rapida_reserva",
+    "conversationStep": 4,
+    "totalSteps": 5
+  },
+  {
+    "content": "Oiii 🙏 Boa tarde! Gostaria de saber sobre a Solar das Estrelas em Pirenópolis",
+    "category": "disponibilidade",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5567977501323",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 0,
+    "totalSteps": 8
+  },
+  {
+    "content": "Qual o preco da diaria pra casal? E tem cafe da manha incluso?",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5567977501323",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 1,
+    "totalSteps": 8
+  },
+  {
+    "content": "Hmm interessante. Vcs tem spa? E estacionamento?",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5567977501323",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 2,
+    "totalSteps": 8
+  },
+  {
+    "content": "A Vila da Praia fica longe do centrinho de Itacaré? Tem transfer do aeroporto?",
+    "category": "informacao",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5567977501323",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 3,
+    "totalSteps": 8
+  },
+  {
+    "content": "Me passa o preco pra 1 noites em 14/5 entao",
+    "category": "preco",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5567977501323",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 4,
+    "totalSteps": 8
+  },
+  {
+    "content": "Hmm Mano, esse preco ta bom mas vi outro lugar mais barato. Vcs fazem melhor pra reserva direta?",
+    "category": "preco",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5567977501323",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 5,
+    "totalSteps": 8
+  },
+  {
+    "content": "Tá bom, me reserva entao! Suite suite pra 5 pessoas. 🔥",
+    "category": "reserva",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5567977501323",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 6,
+    "totalSteps": 8
+  },
+  {
+    "content": "Quero pagar via cartão de débito. Manda os dados!",
+    "category": "reserva",
+    "pousadaId": "a8ern4chd3bmoxhaxvr",
+    "guestPhone": "+5567977501323",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 7,
+    "totalSteps": 8
+  },
+  {
+    "content": "Oiii 💕 Boa tarde! Gostaria de saber sobre a Casa da Montanha em Búzios",
+    "category": "disponibilidade",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5565920313109",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 0,
+    "totalSteps": 8
+  },
+  {
+    "content": "Qual o preco da diaria pra casal? E tem cafe da manha incluso?",
+    "category": "informacao",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5565920313109",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 1,
+    "totalSteps": 8
+  },
+  {
+    "content": "Hmm interessante. Vcs tem spa? E estacionamento?",
+    "category": "informacao",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5565920313109",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 2,
+    "totalSteps": 8
+  },
+  {
+    "content": "A Chalé da Serra fica longe do centrinho de Campos do Jordão? Tem transfer do aeroporto?",
+    "category": "informacao",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5565920313109",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 3,
+    "totalSteps": 8
+  },
+  {
+    "content": "Me passa o preco pra 6 noites em 31/5 entao",
+    "category": "preco",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5565920313109",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 4,
+    "totalSteps": 8
+  },
+  {
+    "content": "Hmm Velho, esse preco ta bom mas vi outro lugar mais barato. Vcs fazem melhor pra reserva direta?",
+    "category": "preco",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5565920313109",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 5,
+    "totalSteps": 8
+  },
+  {
+    "content": "Tá bom, me reserva entao! Suite triplo pra 6 pessoas. 🔥",
+    "category": "reserva",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5565920313109",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 6,
+    "totalSteps": 8
+  },
+  {
+    "content": "Quero pagar via cartão de crédito. Manda os dados!",
+    "category": "reserva",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5565920313109",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 7,
+    "totalSteps": 8
+  },
+  {
+    "content": "Oi! Quero reservar 3 noites em 25/5. Me faz um orcamento?",
+    "category": "disponibilidade",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "negociacao",
+    "conversationStep": 0,
+    "totalSteps": 6
+  },
+  {
+    "content": "Hmm R$ 1268 e caro demais! No Booking ta saindo 20% mais barato. Melhora pra mim?",
+    "category": "preco",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "negociacao",
+    "conversationStep": 1,
+    "totalSteps": 6
+  },
+  {
+    "content": "Olha, se voce fizer R$ 577 a diaria eu fecho agora mesmo! Via PIX! ✨",
+    "category": "preco",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "negociacao",
+    "conversationStep": 2,
+    "totalSteps": 6
+  },
+  {
+    "content": "Conversei com minha esposa e a gente aceita R$ 637. Mas so se incluir cafe colonial e estacionamento. Combinado?",
+    "category": "preco",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "negociacao",
+    "conversationStep": 3,
+    "totalSteps": 6
+  },
+  {
+    "content": "E se a gente voltar em Tiradentes? Da pra fechar pacote pra 2 feriados? Desconto progressivo?",
+    "category": "preco",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "negociacao",
+    "conversationStep": 4,
+    "totalSteps": 6
+  },
+  {
+    "content": "Tá bom Mano, aceito! Mas me joga aquele upgrade de suite pfv! 🔥",
+    "category": "reserva",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "negociacao",
+    "conversationStep": 5,
+    "totalSteps": 6
+  },
+  {
+    "content": "Oiii 🔥 Somos uma familia com 0 criancas (idades 3, 7 e 12). Vcs tem estrutura pra gente?",
+    "category": "disponibilidade",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "longa_familia",
+    "conversationStep": 0,
+    "totalSteps": 13
+  },
+  {
+    "content": "Primeira coisa: tem quarto familiar? Ou quarto interligado? Precisamos de espaco pra 6 pessoas.",
+    "category": "informacao",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "longa_familia",
+    "conversationStep": 1,
+    "totalSteps": 13
+  },
+  {
+    "content": "O quarto tem frigobar? Microondas? A gente precisa preparar mamadeira pro bebê as vezes.",
+    "category": "informacao",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "longa_familia",
+    "conversationStep": 2,
+    "totalSteps": 13
+  },
+  {
+    "content": "E a piscina? Tem agua aquecida? Tem parte rasa pra crianca pequena? Tem guarda-vidas?",
+    "category": "informacao",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "longa_familia",
+    "conversationStep": 3,
+    "totalSteps": 13
+  },
+  {
+    "content": "O cafe da manha tem opcoes pra crianca? Suco, pao, bolo? Minha filha tem alergia a castanha, tem controle?",
+    "category": "informacao",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "longa_familia",
+    "conversationStep": 4,
+    "totalSteps": 13
+  },
+  {
+    "content": "Tem playground? Area verde? Alguma atividade pra criancas? Precisamos que eles se entretenham 😊",
+    "category": "informacao",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "longa_familia",
+    "conversationStep": 5,
+    "totalSteps": 13
+  },
+  {
+    "content": "A Solar das Estrelas fica em local seguro? Tem cerca? A rua e tranquila? Preocupacao de mae kkk",
+    "category": "informacao",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "longa_familia",
+    "conversationStep": 6,
+    "totalSteps": 13
+  },
+  {
+    "content": "E sobre a praia/piscina, precisa levar toalha? Vcs fornecem? E guarda-sol?",
+    "category": "informacao",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "longa_familia",
+    "conversationStep": 7,
+    "totalSteps": 13
+  },
+  {
+    "content": "Quantas camas tem no quarto? Pode colocar berco? Tem cama extra se precisar?",
+    "category": "informacao",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "longa_familia",
+    "conversationStep": 8,
+    "totalSteps": 13
+  },
+  {
+    "content": "Me passa o preco pra 2 noites entao. Ja com desconto de familia se tiver? 2 pessoas, 1 quartos",
+    "category": "preco",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "longa_familia",
+    "conversationStep": 9,
+    "totalSteps": 13
+  },
+  {
+    "content": "Hmm o preco ta OK. E se a gente precisar cancelar? Qual a politica? Com crianca nunca sabemos se vai dar certo.",
+    "category": "preco",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "longa_familia",
+    "conversationStep": 10,
+    "totalSteps": 13
+  },
+  {
+    "content": "Tá bom Mano, a gente topa! Me reserva pfv. Quarto familiar, 15/5 ate 16/5. 👋",
+    "category": "reserva",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "longa_familia",
+    "conversationStep": 11,
+    "totalSteps": 13
+  },
+  {
+    "content": "Vou pagar via dinheiro. Mais uma coisa: tem estacionamento? E gratuito? Vamos de carro.",
+    "category": "reserva",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5595997961024",
+    "conversationType": "longa_familia",
+    "conversationStep": 12,
+    "totalSteps": 13
+  },
+  {
+    "content": "Oiii Ana! Tudo bem? Aqui e o casal que ficou la em marco! Amamos a Pousada do Sol! 💯",
+    "category": "disponibilidade",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5579992278513",
+    "conversationType": "recorrente_return",
+    "conversationStep": 0,
+    "totalSteps": 5
+  },
+  {
+    "content": "Queremos voltar em 18/5! Da pra ter o mesmo quarto? O de cima com vista?",
+    "category": "informacao",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5579992278513",
+    "conversationType": "recorrente_return",
+    "conversationStep": 1,
+    "totalSteps": 5
+  },
+  {
+    "content": "E dessa vez vai ter o bolo de cenoura que voce fez? Minha esposa nao para de falar dele kkkk",
+    "category": "informacao",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5579992278513",
+    "conversationType": "recorrente_return",
+    "conversationStep": 2,
+    "totalSteps": 5
+  },
+  {
+    "content": "Me reserva entao! 6 noites, 31/5. Vou pagar via cartão de débito na hora! 🔥",
+    "category": "reserva",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5579992278513",
+    "conversationType": "recorrente_return",
+    "conversationStep": 3,
+    "totalSteps": 5
+  },
+  {
+    "content": "Ah, e vamos levar nosso dog dessa vez! Ele tambem quer voltar haha",
+    "category": "followup",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5579992278513",
+    "conversationType": "recorrente_return",
+    "conversationStep": 4,
+    "totalSteps": 5
+  },
+  {
+    "content": "Oi! Estou planejando uma viagem pra Búzios e vi a Pousada Paraíso no Google. Podem me ajudar?",
+    "category": "disponibilidade",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5579992278513",
+    "conversationType": "longa_pesquisa",
+    "conversationStep": 0,
+    "totalSteps": 13
+  },
+  {
+    "content": "Primeiro: qual a localizacao exata? Fica perto de que? Perto do centrinho, da praia?",
+    "category": "informacao",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5579992278513",
+    "conversationType": "longa_pesquisa",
+    "conversationStep": 1,
+    "totalSteps": 13
+  },
+  {
+    "content": "Quais tipos de quarto vcs tem? Quero ver as opcoes. Suite, quarto standard, tem algo mais premium?",
+    "category": "informacao",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5579992278513",
+    "conversationType": "longa_pesquisa",
+    "conversationStep": 2,
+    "totalSteps": 13
+  },
+  {
+    "content": "E sobre o cafe da manha? E completo mesmo? O que tem? Tem opcao pra intolerancia a lactose?",
+    "category": "informacao",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5579992278513",
+    "conversationType": "longa_pesquisa",
+    "conversationStep": 3,
+    "totalSteps": 13
+  },
+  {
+    "content": "Vcs tem café colonial? E café colonial? Me conta todas as comodidades pfv 👋",
+    "category": "informacao",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5579992278513",
+    "conversationType": "longa_pesquisa",
+    "conversationStep": 4,
+    "totalSteps": 13
+  },
+  {
+    "content": "Legal! Agora sobre precos: qual o valor da diaria pra cada tipo de quarto? E tem algum pacote?",
+    "category": "preco",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5579992278513",
+    "conversationType": "longa_pesquisa",
+    "conversationStep": 5,
+    "totalSteps": 13
+  },
+  {
+    "content": "O R$ 398 ta bom mas no Booking ta saindo mais barato. Se eu reservar direto com voces tem desconto?",
+    "category": "preco",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5579992278513",
+    "conversationType": "longa_pesquisa",
+    "conversationStep": 6,
+    "totalSteps": 13
+  },
+  {
+    "content": "Hmm deixa eu pensar... Vou conversar com minha esposa e te dou um retorno. Pode ser amanha?",
+    "category": "disponibilidade",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5579992278513",
+    "conversationType": "longa_pesquisa",
+    "conversationStep": 7,
+    "totalSteps": 13
+  },
+  {
+    "content": "Oi de novo! Conversamos aqui e decidimos que a Pousada do Sol e a melhor opcao. Quanto fica pra 6 noites em 19/5?",
+    "category": "disponibilidade",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5579992278513",
+    "conversationType": "longa_pesquisa",
+    "conversationStep": 8,
+    "totalSteps": 13
+  },
+  {
+    "content": "Esse valor ja inclui tudo? Cafe, transfer, estacionamento? Nao tem taxa extra nao?",
+    "category": "preco",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5579992278513",
+    "conversationType": "longa_pesquisa",
+    "conversationStep": 9,
+    "totalSteps": 13
+  },
+  {
+    "content": "E se a gente quiser chegar mais cedo, tipo as 12h? Tem como fazer check-in antecipado?",
+    "category": "informacao",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5579992278513",
+    "conversationType": "longa_pesquisa",
+    "conversationStep": 10,
+    "totalSteps": 13
+  },
+  {
+    "content": "Perfeito! Vamos reservar entao. 5 pessoas, 2 noites. Qual o proximo passo? 💕",
+    "category": "reserva",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5579992278513",
+    "conversationType": "longa_pesquisa",
+    "conversationStep": 11,
+    "totalSteps": 13
+  },
+  {
+    "content": "E como funciona o pagamento? Aceita cartão de débito? Pode parcelar?",
+    "category": "reserva",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5579992278513",
+    "conversationType": "longa_pesquisa",
+    "conversationStep": 12,
+    "totalSteps": 13
+  },
+  {
+    "content": "Oi, boa tarde! Vcs aceitam cachorro por acaso?",
+    "category": "disponibilidade",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5534969593750",
+    "conversationType": "rapida_info",
+    "conversationStep": 0,
+    "totalSteps": 2
+  },
+  {
+    "content": "Ah que pena. Obrigado mesmo assim! 👋",
+    "category": "disponibilidade",
+    "pousadaId": "5vn3ys3u08nmoxhaxvr",
+    "guestPhone": "+5534969593750",
+    "conversationType": "rapida_info",
+    "conversationStep": 1,
+    "totalSteps": 2
+  },
+  {
+    "content": "Oiii ✨ Somos uma familia com 3 criancas (idades 3, 7 e 12). Vcs tem estrutura pra gente?",
+    "category": "disponibilidade",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "longa_familia",
+    "conversationStep": 0,
+    "totalSteps": 13
+  },
+  {
+    "content": "Primeira coisa: tem quarto familiar? Ou quarto interligado? Precisamos de espaco pra 5 pessoas.",
+    "category": "informacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "longa_familia",
+    "conversationStep": 1,
+    "totalSteps": 13
+  },
+  {
+    "content": "O quarto tem frigobar? Microondas? A gente precisa preparar mamadeira pro bebê as vezes.",
+    "category": "informacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "longa_familia",
+    "conversationStep": 2,
+    "totalSteps": 13
+  },
+  {
+    "content": "E a piscina? Tem agua aquecida? Tem parte rasa pra crianca pequena? Tem guarda-vidas?",
+    "category": "informacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "longa_familia",
+    "conversationStep": 3,
+    "totalSteps": 13
+  },
+  {
+    "content": "O cafe da manha tem opcoes pra crianca? Suco, pao, bolo? Minha filha tem alergia a castanha, tem controle?",
+    "category": "informacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "longa_familia",
+    "conversationStep": 4,
+    "totalSteps": 13
+  },
+  {
+    "content": "Tem playground? Area verde? Alguma atividade pra criancas? Precisamos que eles se entretenham 💯",
+    "category": "informacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "longa_familia",
+    "conversationStep": 5,
+    "totalSteps": 13
+  },
+  {
+    "content": "A Chalé da Serra fica em local seguro? Tem cerca? A rua e tranquila? Preocupacao de mae kkk",
+    "category": "informacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "longa_familia",
+    "conversationStep": 6,
+    "totalSteps": 13
+  },
+  {
+    "content": "E sobre a praia/piscina, precisa levar toalha? Vcs fornecem? E guarda-sol?",
+    "category": "informacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "longa_familia",
+    "conversationStep": 7,
+    "totalSteps": 13
+  },
+  {
+    "content": "Quantas camas tem no quarto? Pode colocar berco? Tem cama extra se precisar?",
+    "category": "informacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "longa_familia",
+    "conversationStep": 8,
+    "totalSteps": 13
+  },
+  {
+    "content": "Me passa o preco pra 5 noites entao. Ja com desconto de familia se tiver? 5 pessoas, 1 quartos",
+    "category": "preco",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "longa_familia",
+    "conversationStep": 9,
+    "totalSteps": 13
+  },
+  {
+    "content": "Hmm o preco ta OK. E se a gente precisar cancelar? Qual a politica? Com crianca nunca sabemos se vai dar certo.",
+    "category": "preco",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "longa_familia",
+    "conversationStep": 10,
+    "totalSteps": 13
+  },
+  {
+    "content": "Tá bom Mermão, a gente topa! Me reserva pfv. Quarto familiar, 22/5 ate 26/5. 💕",
+    "category": "reserva",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "longa_familia",
+    "conversationStep": 11,
+    "totalSteps": 13
+  },
+  {
+    "content": "Vou pagar via PIX. Mais uma coisa: tem estacionamento? E gratuito? Vamos de carro.",
+    "category": "reserva",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "longa_familia",
+    "conversationStep": 12,
+    "totalSteps": 13
+  },
+  {
+    "content": "Oiii ✨ Boa tarde! Gostaria de saber sobre a Chalé da Serra em Porto Seguro",
+    "category": "disponibilidade",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5532925188171",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 0,
+    "totalSteps": 8
+  },
+  {
+    "content": "Qual o preco da diaria pra casal? E tem cafe da manha incluso?",
+    "category": "informacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5532925188171",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 1,
+    "totalSteps": 8
+  },
+  {
+    "content": "Hmm interessante. Vcs tem vista? E estacionamento?",
+    "category": "informacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5532925188171",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 2,
+    "totalSteps": 8
+  },
+  {
+    "content": "A Solar das Estrelas fica longe do centrinho de Trancoso? Tem transfer do aeroporto?",
+    "category": "informacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5532925188171",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 3,
+    "totalSteps": 8
+  },
+  {
+    "content": "Me passa o preco pra 7 noites em 27/5 entao",
+    "category": "preco",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5532925188171",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 4,
+    "totalSteps": 8
+  },
+  {
+    "content": "Hmm Cara, esse preco ta bom mas vi outro lugar mais barato. Vcs fazem melhor pra reserva direta?",
+    "category": "preco",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5532925188171",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 5,
+    "totalSteps": 8
+  },
+  {
+    "content": "Tá bom, me reserva entao! Suite premium pra 5 pessoas. 🌟",
+    "category": "reserva",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5532925188171",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 6,
+    "totalSteps": 8
+  },
+  {
+    "content": "Quero pagar via PIX. Manda os dados!",
+    "category": "reserva",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5532925188171",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 7,
+    "totalSteps": 8
+  },
+  {
+    "content": "Oiii ✨ Boa tarde! Gostaria de saber sobre a Chalé da Serra em Jericoacoara",
+    "category": "disponibilidade",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 0,
+    "totalSteps": 8
+  },
+  {
+    "content": "Qual o preco da diaria pra casal? E tem cafe da manha incluso?",
+    "category": "informacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 1,
+    "totalSteps": 8
+  },
+  {
+    "content": "Hmm interessante. Vcs tem vista? E estacionamento?",
+    "category": "informacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 2,
+    "totalSteps": 8
+  },
+  {
+    "content": "A Recanto das Flores fica longe do centrinho de Jericoacoara? Tem transfer do aeroporto?",
+    "category": "informacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 3,
+    "totalSteps": 8
+  },
+  {
+    "content": "Me passa o preco pra 5 noites em 05/6 entao",
+    "category": "preco",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 4,
+    "totalSteps": 8
+  },
+  {
+    "content": "Hmm Velho, esse preco ta bom mas vi outro lugar mais barato. Vcs fazem melhor pra reserva direta?",
+    "category": "preco",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 5,
+    "totalSteps": 8
+  },
+  {
+    "content": "Tá bom, me reserva entao! Suite master pra 3 pessoas. 💯",
+    "category": "reserva",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 6,
+    "totalSteps": 8
+  },
+  {
+    "content": "Quero pagar via cartão de crédito. Manda os dados!",
+    "category": "reserva",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5567973994350",
+    "conversationType": "media_pesquisa",
+    "conversationStep": 7,
+    "totalSteps": 8
+  },
+  {
+    "content": "Boa noite... to na pousada agora e o ar condicionado NAO funciona. Ta 35 graus aqui dentro.",
+    "category": "reclamacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5561986927187",
+    "conversationType": "reclamacao_escalonada",
+    "conversationStep": 0,
+    "totalSteps": 7
+  },
+  {
+    "content": "Ja mandei msg la na recepcao presencialmente mas ninguem veio ainda. Faz 40 minutos.",
+    "category": "reclamacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5561986927187",
+    "conversationType": "reclamacao_escalonada",
+    "conversationStep": 1,
+    "totalSteps": 7
+  },
+  {
+    "content": "Agora o Wifi tambem caiu!! Sem internet e sem ar condicionado!! Impossivel ficar aqui!",
+    "category": "reclamacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5561986927187",
+    "conversationType": "reclamacao_escalonada",
+    "conversationStep": 2,
+    "totalSteps": 7
+  },
+  {
+    "content": "Joana disse que ia mandar alguem mas ate agora NINGUEM apareceu. To muito decepcionado com a Chalé da Serra.",
+    "category": "reclamacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5561986927187",
+    "conversationType": "reclamacao_escalonada",
+    "conversationStep": 3,
+    "totalSteps": 7
+  },
+  {
+    "content": "Olha, ou voces resolvem isso AGORA ou vou pedir reembolso total e fazer avaliacao no Google. Ja gravei video do quarto.",
+    "category": "reclamacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5561986927187",
+    "conversationType": "reclamacao_escalonada",
+    "conversationStep": 4,
+    "totalSteps": 7
+  },
+  {
+    "content": "Se pelo menos me trocassem de quarto... Mas ninguem nem se manifesta. Que servico e esse da Recanto das Flores?",
+    "category": "reclamacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5561986927187",
+    "conversationType": "reclamacao_escalonada",
+    "conversationStep": 5,
+    "totalSteps": 7
+  },
+  {
+    "content": "Finalmente alguem veio! Mas o ar novo tambem faz barulho. Vou ver se melhora durante a noite. Se nao, amanha quero falar com o gerente.",
+    "category": "reclamacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5561986927187",
+    "conversationType": "reclamacao_escalonada",
+    "conversationStep": 6,
+    "totalSteps": 7
+  },
+  {
+    "content": "Boa noite... to na pousada agora e o ar condicionado NAO funciona. Ta 35 graus aqui dentro.",
+    "category": "reclamacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5522961931941",
+    "conversationType": "reclamacao_escalonada",
+    "conversationStep": 0,
+    "totalSteps": 7
+  },
+  {
+    "content": "Ja mandei msg la na recepcao presencialmente mas ninguem veio ainda. Faz 40 minutos.",
+    "category": "reclamacao",
+    "pousadaId": "p7x9k2vjakmoxhaxvr",
+    "guestPhone": "+5522961931941",
+    "conversationType": "reclamacao_escalonada",
+    "conversationStep": 1,
+    "totalSteps": 7
+  }
+]

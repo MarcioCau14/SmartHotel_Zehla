@@ -1,0 +1,1088 @@
+{
+  "nodes": [
+    {
+      "id": "users_marciocau_zehla_backend_src_app_api_telemetry_events_route_ts",
+      "label": "route.ts",
+      "file_type": "code",
+      "source_file": "api/telemetry/events/route.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "events_route_post",
+      "label": "POST()",
+      "file_type": "code",
+      "source_file": "api/telemetry/events/route.ts",
+      "source_location": "L4"
+    },
+    {
+      "id": "events_route_get",
+      "label": "GET()",
+      "file_type": "code",
+      "source_file": "api/telemetry/events/route.ts",
+      "source_location": "L30"
+    },
+    {
+      "id": "src_app_zcc_page_tsx",
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "zcc_page_zcctab",
+      "label": "ZCCTab",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L86"
+    },
+    {
+      "id": "zcc_page_tabconfig",
+      "label": "TabConfig",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L99"
+    },
+    {
+      "id": "zcc_page_zcccommunity",
+      "label": "ZCCCommunity",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L109"
+    },
+    {
+      "id": "zcc_page_communities",
+      "label": "communities",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L116"
+    },
+    {
+      "id": "zcc_page_tabs",
+      "label": "tabs",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L154"
+    },
+    {
+      "id": "zcc_page_agentmanagementpanel",
+      "label": "AgentManagementPanel",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L157"
+    },
+    {
+      "id": "zcc_page_securitypanel",
+      "label": "SecurityPanel",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L161"
+    },
+    {
+      "id": "zcc_page_teammanagementtab",
+      "label": "TeamManagementTab",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L165"
+    },
+    {
+      "id": "zcc_page_router",
+      "label": "router",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L173"
+    },
+    {
+      "id": "zcc_page_isadmin_setisadmin",
+      "label": "[isAdmin, setIsAdmin]",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L174"
+    },
+    {
+      "id": "zcc_page_usersession_setusersession",
+      "label": "[userSession, setUserSession]",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L175"
+    },
+    {
+      "id": "zcc_page_activetab_setactivetab",
+      "label": "[activeTab, setActiveTab]",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L176"
+    },
+    {
+      "id": "zcc_page_brainhealth_setbrainhealth",
+      "label": "[brainHealth, setBrainHealth]",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L177"
+    },
+    {
+      "id": "zcc_page_sidebaropen_setsidebaropen",
+      "label": "[sidebarOpen, setSidebarOpen]",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L178"
+    },
+    {
+      "id": "zcc_page_admintoken",
+      "label": "adminToken",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L193"
+    },
+    {
+      "id": "zcc_page_payload",
+      "label": "payload",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L195"
+    },
+    {
+      "id": "zcc_page_load",
+      "label": "load()",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L225"
+    },
+    {
+      "id": "node_session_checkpoint",
+      "label": "SESSION_CHECKPOINT.md",
+      "file_type": "document",
+      "source_file": "INTELLIGENCE/SESSION_CHECKPOINT.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-05-11T19:52:29Z",
+      "author": "Antigravity",
+      "contributor": null
+    },
+    {
+      "id": "node_z_last_session",
+      "label": "Z_LAST_SESSION.md",
+      "file_type": "document",
+      "source_file": "INTELLIGENCE/Z_LAST_SESSION.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-05-11T19:52:35Z",
+      "author": "Antigravity",
+      "contributor": null
+    },
+    {
+      "id": "node_mission_checkpoint",
+      "label": "ZEHLA_MISSION_CHECKPOINT.md",
+      "file_type": "document",
+      "source_file": "INTELLIGENCE/ZEHLA_MISSION_CHECKPOINT.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-05-11T19:52:42Z",
+      "author": "Antigravity",
+      "contributor": null
+    },
+    {
+      "id": "node_task_md",
+      "label": "task.md",
+      "file_type": "document",
+      "source_file": "INTELLIGENCE/task.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-05-11T19:52:23Z",
+      "author": "Antigravity",
+      "contributor": null
+    },
+    {
+      "id": "node_zcc_page",
+      "label": "zcc/page.tsx",
+      "file_type": "code",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "node_zcc_components",
+      "label": "ZCC Components Directory",
+      "file_type": "code",
+      "source_file": "src/components/zcc/",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "node_whatsapp_service",
+      "label": "WhatsappAgentService.ts",
+      "file_type": "code",
+      "source_file": "src/services/WhatsappAgentService.ts",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "node_closing_engine",
+      "label": "AgentClosingEngine.ts",
+      "file_type": "code",
+      "source_file": "src/services/AgentClosingEngine.ts",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "node_redis_singleton",
+      "label": "Redis Singleton",
+      "file_type": "code",
+      "source_file": "src/lib/redis.ts",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "node_agents_md",
+      "label": "AGENTS.md",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "node_stealth_hunter",
+      "label": "Stealth Hunter skill",
+      "file_type": "code",
+      "source_file": "backend/skills/web/stealth.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "node_revenue_report",
+      "label": "RevenueReportElite.tsx",
+      "file_type": "code",
+      "source_file": "src/components/secretaria/RevenueReportElite.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "node_swarm_overview",
+      "label": "SwarmOverview.tsx",
+      "file_type": "code",
+      "source_file": "src/components/zcc/SwarmOverview.tsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "users_marciocau_zehla_backend_src_app_api_telemetry_events_route_ts",
+      "target": "server",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/telemetry/events/route.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "users_marciocau_zehla_backend_src_app_api_telemetry_events_route_ts",
+      "target": "users_marciocau_zehla_backend_src_lib_redis_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/telemetry/events/route.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "users_marciocau_zehla_backend_src_app_api_telemetry_events_route_ts",
+      "target": "lib_redis_redis",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "api/telemetry/events/route.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "users_marciocau_zehla_backend_src_app_api_telemetry_events_route_ts",
+      "target": "events_route_post",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/telemetry/events/route.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "users_marciocau_zehla_backend_src_app_api_telemetry_events_route_ts",
+      "target": "events_route_get",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/telemetry/events/route.ts",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "dynamic",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "framer_motion",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "link",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "navigation",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "lucide_react",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_dashboard_terminalpanel_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "dashboard_terminalpanel_terminalpanel",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_dashboard_cognitivepanel_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L58",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "dashboard_cognitivepanel_cognitivepanel",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L58",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_dashboard_marketingleads_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L59",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "dashboard_marketingleads_marketingleads",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L59",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_dashboard_whatsapppanel_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L60",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "dashboard_whatsapppanel_whatsapppanel",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L60",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_dashboard_apistatus_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L61",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "dashboard_apistatus_apistatus",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L61",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_dashboard_paymentpanel_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "dashboard_paymentpanel_paymentpanel",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_dashboard_systemstatusbar_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L63",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "dashboard_systemstatusbar_systemstatusbar",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L63",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_dashboard_visibilitydashboard_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L64",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "dashboard_visibilitydashboard_visibilitydashboard",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L64",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_zcc_swarmoverview_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L67",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_swarmoverview_swarmoverview",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L67",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_zcc_zccautohealer_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L68",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_zccautohealer_zccautohealer",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L68",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_zcc_tenantmanagement_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L69",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_tenantmanagement_tenantmanagement",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L69",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_zcc_fintechhub_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L70",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_fintechhub_fintechhub",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L70",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_zcc_cognitiveobservability_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L71",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_cognitiveobservability_cognitiveobservability",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L71",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_zcc_scalemetrics_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L72",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_scalemetrics_scalemetrics",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L72",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_zcc_apikeyspanel_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L73",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_apikeyspanel_apikeyspanel",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L73",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_dashboard_bitelemetryview_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L74",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_zcc_marketing_leadintelligencemap_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L75",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "marketing_leadintelligencemap_leadintelligencemap",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L75",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_zcc_zccvoicecontrolpanel_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_zccvoicecontrolpanel_zccvoicecontrolpanel",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_zcc_zmgcontrolcenter_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L77",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_zmgcontrolcenter_zmgcontrolcenter",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L77",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_ui_badge_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L79",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "ui_badge_badge",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L79",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_components_ui_skeleton_tsx",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L80",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "ui_skeleton_skeleton",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L80",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "users_marciocau_zehla_backend_src_lib_store_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L82",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "lib_store_aiagent",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L82",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_page_zcctab",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L86",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_page_tabconfig",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L99",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_page_zcccommunity",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L109",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_page_communities",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L116",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_page_tabs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L154",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_page_agentmanagementpanel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L157",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_page_securitypanel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L161",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_page_teammanagementtab",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L165",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_page_router",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L173",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_page_isadmin_setisadmin",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L174",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_page_usersession_setusersession",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L175",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_page_activetab_setactivetab",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L176",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_page_brainhealth_setbrainhealth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L177",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_page_sidebaropen_setsidebaropen",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L178",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_page_admintoken",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L193",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_page_payload",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L195",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_zcc_page_tsx",
+      "target": "zcc_page_load",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/zcc/page.tsx",
+      "source_location": "L225",
+      "weight": 1.0
+    },
+    {
+      "source": "node_session_checkpoint",
+      "target": "node_zcc_page",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INTELLIGENCE/SESSION_CHECKPOINT.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "node_session_checkpoint",
+      "target": "node_zcc_components",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INTELLIGENCE/SESSION_CHECKPOINT.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "node_session_checkpoint",
+      "target": "node_whatsapp_service",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INTELLIGENCE/SESSION_CHECKPOINT.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "node_session_checkpoint",
+      "target": "node_closing_engine",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INTELLIGENCE/SESSION_CHECKPOINT.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "node_session_checkpoint",
+      "target": "node_redis_singleton",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INTELLIGENCE/SESSION_CHECKPOINT.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "node_z_last_session",
+      "target": "node_session_checkpoint",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "INTELLIGENCE/Z_LAST_SESSION.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "node_mission_checkpoint",
+      "target": "node_stealth_hunter",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INTELLIGENCE/ZEHLA_MISSION_CHECKPOINT.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "node_mission_checkpoint",
+      "target": "node_revenue_report",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INTELLIGENCE/ZEHLA_MISSION_CHECKPOINT.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "node_task_md",
+      "target": "node_agents_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INTELLIGENCE/task.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "node_task_md",
+      "target": "node_swarm_overview",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INTELLIGENCE/task.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

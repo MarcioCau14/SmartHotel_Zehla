@@ -1,0 +1,19 @@
+// src/app/api/swipes/[id]/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const swipe = await prisma.swipeTemplate.findUnique({ where: { id: params.id } });
+  return NextResponse.json(swipe);
+}
+
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+  const body = await req.json();
+  const swipe = await prisma.swipeTemplate.update({ where: { id: params.id }, data: body });
+  return NextResponse.json(swipe);
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  await prisma.swipeTemplate.update({ where: { id: params.id }, data: { isActive: false } });
+  return NextResponse.json({ success: true });
+}
