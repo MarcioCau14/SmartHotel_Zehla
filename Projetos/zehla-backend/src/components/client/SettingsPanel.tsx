@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Building2,
@@ -31,14 +31,14 @@ import {
   Shield,
   Eye,
   BarChart3,
-  CheckCircle2,
-} from 'lucide-react';
+  CheckCircle2 } from
+'lucide-react';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
+  AccordionTrigger } from
+'@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,8 +49,8 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  SelectValue } from
+'@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 
 /* ────────────────────────────────────────────
@@ -69,7 +69,7 @@ const initialProperty = {
   checkinTime: '14:00',
   checkoutTime: '11:00',
   propertyType: 'pousada',
-  starRating: '4',
+  starRating: '4'
 };
 
 // Section 2 — Accommodation Types
@@ -82,47 +82,47 @@ interface AccommodationType {
 }
 
 const amenityOptions = [
-  { key: 'wifi', label: 'Wi-Fi', icon: Wifi },
-  { key: 'ac', label: 'Ar Condicionado', icon: Wind },
-  { key: 'tv', label: 'TV', icon: Tv },
-  { key: 'parking', label: 'Estacionamento', icon: Car },
-  { key: 'pool', label: 'Piscina', icon: Waves },
-  { key: 'restaurant', label: 'Restaurante', icon: UtensilsCrossed },
-  { key: 'minibar', label: 'Frigobar', icon: Snowflake },
-  { key: 'bathtub', label: 'Banheira', icon: Bath },
-  { key: 'coffee', label: 'Café da Manhã', icon: Coffee },
-];
+{ key: 'wifi', label: 'Wi-Fi', icon: Wifi },
+{ key: 'ac', label: 'Ar Condicionado', icon: Wind },
+{ key: 'tv', label: 'TV', icon: Tv },
+{ key: 'parking', label: 'Estacionamento', icon: Car },
+{ key: 'pool', label: 'Piscina', icon: Waves },
+{ key: 'restaurant', label: 'Restaurante', icon: UtensilsCrossed },
+{ key: 'minibar', label: 'Frigobar', icon: Snowflake },
+{ key: 'bathtub', label: 'Banheira', icon: Bath },
+{ key: 'coffee', label: 'Café da Manhã', icon: Coffee }];
+
 
 const initialAccommodationTypes: AccommodationType[] = [
-  {
-    id: 'at-1',
-    name: 'Standard',
-    capacity: 2,
-    basePrice: 280,
-    amenities: ['wifi', 'ac', 'tv', 'coffee'],
-  },
-  {
-    id: 'at-2',
-    name: 'Superior',
-    capacity: 2,
-    basePrice: 420,
-    amenities: ['wifi', 'ac', 'tv', 'minibar', 'coffee', 'bathtub'],
-  },
-  {
-    id: 'at-3',
-    name: 'Suíte Premium',
-    capacity: 3,
-    basePrice: 580,
-    amenities: ['wifi', 'ac', 'tv', 'minibar', 'coffee', 'bathtub', 'pool', 'restaurant'],
-  },
-  {
-    id: 'at-4',
-    name: 'Chalé Família',
-    capacity: 5,
-    basePrice: 780,
-    amenities: ['wifi', 'ac', 'tv', 'parking', 'minibar', 'coffee', 'bathtub', 'pool', 'restaurant'],
-  },
-];
+{
+  id: 'at-1',
+  name: 'Standard',
+  capacity: 2,
+  basePrice: 280,
+  amenities: ['wifi', 'ac', 'tv', 'coffee']
+},
+{
+  id: 'at-2',
+  name: 'Superior',
+  capacity: 2,
+  basePrice: 420,
+  amenities: ['wifi', 'ac', 'tv', 'minibar', 'coffee', 'bathtub']
+},
+{
+  id: 'at-3',
+  name: 'Suíte Premium',
+  capacity: 3,
+  basePrice: 580,
+  amenities: ['wifi', 'ac', 'tv', 'minibar', 'coffee', 'bathtub', 'pool', 'restaurant']
+},
+{
+  id: 'at-4',
+  name: 'Chalé Família',
+  capacity: 5,
+  basePrice: 780,
+  amenities: ['wifi', 'ac', 'tv', 'parking', 'minibar', 'coffee', 'bathtub', 'pool', 'restaurant']
+}];
+
 
 // Section 3 — Rooms
 type RoomStatus = 'disponivel' | 'ocupado' | 'sujo' | 'manutencao';
@@ -135,23 +135,23 @@ interface Room {
   status: RoomStatus;
 }
 
-const statusConfig: Record<RoomStatus, { label: string; color: string; dotColor: string }> = {
+const statusConfig: Record<RoomStatus, {label: string;color: string;dotColor: string;}> = {
   disponivel: { label: 'Disponível', color: 'bg-orange-500/15 text-[#FF5500] border-[#FF5500]/30', dotColor: 'bg-[#FF5500]' },
   ocupado: { label: 'Ocupado', color: 'bg-blue-500/15 text-blue-400 border-blue-500/30', dotColor: 'bg-blue-400' },
   sujo: { label: 'Sujo', color: 'bg-amber-500/15 text-[#FF5500] border-[#FF5500]/30', dotColor: 'bg-amber-400' },
-  manutencao: { label: 'Manutenção', color: 'bg-red-500/15 text-red-400 border-red-500/30', dotColor: 'bg-red-400' },
+  manutencao: { label: 'Manutenção', color: 'bg-red-500/15 text-red-400 border-red-500/30', dotColor: 'bg-red-400' }
 };
 
 const initialRooms: Room[] = [
-  { id: 'r-1', number: '101', typeId: 'at-1', floor: 1, status: 'disponivel' },
-  { id: 'r-2', number: '102', typeId: 'at-1', floor: 1, status: 'ocupado' },
-  { id: 'r-3', number: '103', typeId: 'at-2', floor: 1, status: 'sujo' },
-  { id: 'r-4', number: '201', typeId: 'at-2', floor: 2, status: 'disponivel' },
-  { id: 'r-5', number: '202', typeId: 'at-3', floor: 2, status: 'ocupado' },
-  { id: 'r-6', number: '203', typeId: 'at-3', floor: 2, status: 'disponivel' },
-  { id: 'r-7', number: '301', typeId: 'at-4', floor: 3, status: 'manutencao' },
-  { id: 'r-8', number: '302', typeId: 'at-4', floor: 3, status: 'disponivel' },
-];
+{ id: 'r-1', number: '101', typeId: 'at-1', floor: 1, status: 'disponivel' },
+{ id: 'r-2', number: '102', typeId: 'at-1', floor: 1, status: 'ocupado' },
+{ id: 'r-3', number: '103', typeId: 'at-2', floor: 1, status: 'sujo' },
+{ id: 'r-4', number: '201', typeId: 'at-2', floor: 2, status: 'disponivel' },
+{ id: 'r-5', number: '202', typeId: 'at-3', floor: 2, status: 'ocupado' },
+{ id: 'r-6', number: '203', typeId: 'at-3', floor: 2, status: 'disponivel' },
+{ id: 'r-7', number: '301', typeId: 'at-4', floor: 3, status: 'manutencao' },
+{ id: 'r-8', number: '302', typeId: 'at-4', floor: 3, status: 'disponivel' }];
+
 
 // Section 4 — WhatsApp
 interface WhatsAppConfig {
@@ -175,7 +175,7 @@ const initialWhatsApp: WhatsAppConfig = {
   hoursInfo: '🏊 Piscina: 07h–22h | 🍽️ Restaurante: 07h–10h (café) e 12h–22h (almoço/jantar) | 🧹 Limpeza diária: 09h–15h',
   whatsappType: 'GUESTS_ONLY',
   supplierContact: '',
-  ignoreSuppliers: true,
+  ignoreSuppliers: true
 };
 
 // Section 4.1 — AI Persona (Mesa de Equalização)
@@ -192,7 +192,7 @@ const initialPersona: PersonaConfig = {
   aggressiveness: 'CONSULTATIVE',
   allowEmojis: true,
   style: 'RUSTIC',
-  useBrandDNA: true,
+  useBrandDNA: true
 };
 
 // Section 5 — Dynamic Pricing
@@ -207,11 +207,11 @@ interface PricingRule {
 }
 
 const initialPricingRules: PricingRule[] = [
-  { id: 'pr-1', typeId: 'at-1', altaPercent: 30, baixaPercent: 15, feriadoPercent: 45, minPrice: 200, maxPrice: 450 },
-  { id: 'pr-2', typeId: 'at-2', altaPercent: 25, baixaPercent: 15, feriadoPercent: 40, minPrice: 320, maxPrice: 650 },
-  { id: 'pr-3', typeId: 'at-3', altaPercent: 25, baixaPercent: 10, feriadoPercent: 35, minPrice: 450, maxPrice: 850 },
-  { id: 'pr-4', typeId: 'at-4', altaPercent: 20, baixaPercent: 10, feriadoPercent: 30, minPrice: 600, maxPrice: 1100 },
-];
+{ id: 'pr-1', typeId: 'at-1', altaPercent: 30, baixaPercent: 15, feriadoPercent: 45, minPrice: 200, maxPrice: 450 },
+{ id: 'pr-2', typeId: 'at-2', altaPercent: 25, baixaPercent: 15, feriadoPercent: 40, minPrice: 320, maxPrice: 650 },
+{ id: 'pr-3', typeId: 'at-3', altaPercent: 25, baixaPercent: 10, feriadoPercent: 35, minPrice: 450, maxPrice: 850 },
+{ id: 'pr-4', typeId: 'at-4', altaPercent: 20, baixaPercent: 10, feriadoPercent: 30, minPrice: 600, maxPrice: 1100 }];
+
 
 // Section 6 — Team
 interface TeamMember {
@@ -223,12 +223,12 @@ interface TeamMember {
 }
 
 const initialTeam: TeamMember[] = [
-  { id: 'tm-1', name: 'Carla Mendes', role: 'Gerente', phone: '(81) 99876-5432', email: 'carla@pousadamaravilha.com.br' },
-  { id: 'tm-2', name: 'Rafael Costa', role: 'Recepcionista', phone: '(81) 99123-4567', email: 'rafael@pousadamaravilha.com.br' },
-  { id: 'tm-3', name: 'Ana Beatriz Lima', role: 'Recepcionista', phone: '(81) 99876-1234', email: 'anab@pousadamaravilha.com.br' },
-  { id: 'tm-4', name: 'Maria das Neves', role: 'Camareira', phone: '(81) 99345-6789', email: 'maria@pousadamaravilha.com.br' },
-  { id: 'tm-5', name: 'José Carlos Silva', role: 'Manutenção', phone: '(81) 99456-7890', email: 'jose@pousadamaravilha.com.br' },
-];
+{ id: 'tm-1', name: 'Carla Mendes', role: 'Gerente', phone: '(81) 99876-5432', email: 'carla@pousadamaravilha.com.br' },
+{ id: 'tm-2', name: 'Rafael Costa', role: 'Recepcionista', phone: '(81) 99123-4567', email: 'rafael@pousadamaravilha.com.br' },
+{ id: 'tm-3', name: 'Ana Beatriz Lima', role: 'Recepcionista', phone: '(81) 99876-1234', email: 'anab@pousadamaravilha.com.br' },
+{ id: 'tm-4', name: 'Maria das Neves', role: 'Camareira', phone: '(81) 99345-6789', email: 'maria@pousadamaravilha.com.br' },
+{ id: 'tm-5', name: 'José Carlos Silva', role: 'Manutenção', phone: '(81) 99456-7890', email: 'jose@pousadamaravilha.com.br' }];
+
 
 // Section 7 — Notifications
 interface NotificationPrefs {
@@ -246,7 +246,7 @@ const initialNotifications: NotificationPrefs = {
   checkouts: true,
   paymentAlerts: true,
   whatsappMessages: false,
-  dailyReports: true,
+  dailyReports: true
 };
 
 /* ────────────────────────────────────────────
@@ -302,11 +302,11 @@ export function SettingsPanel() {
 
   // ── Handlers ──
 
-  const getTypeName = (typeId: string) => accommodationTypes.find(t => t.id === typeId)?.name || 'N/A';
+  const getTypeName = (typeId: string) => accommodationTypes.find((t) => t.id === typeId)?.name || 'N/A';
 
   const toggleAmenity = (key: string) => {
-    setNewTypeAmenities(prev =>
-      prev.includes(key) ? prev.filter(a => a !== key) : [...prev, key]
+    setNewTypeAmenities((prev) =>
+    prev.includes(key) ? useMemo(() => prev.filter((a) => a !== key), []) : [...prev, key]
     );
   };
 
@@ -317,9 +317,9 @@ export function SettingsPanel() {
       name: newTypeName.trim(),
       capacity: newTypeCapacity,
       basePrice: newTypePrice,
-      amenities: newTypeAmenities,
+      amenities: newTypeAmenities
     };
-    setAccommodationTypes(prev => [...prev, newType]);
+    setAccommodationTypes((prev) => [...prev, newType]);
     setNewTypeName('');
     setNewTypeCapacity(2);
     setNewTypePrice(300);
@@ -329,7 +329,7 @@ export function SettingsPanel() {
   };
 
   const removeAccommodationType = (id: string) => {
-    setAccommodationTypes(prev => prev.filter(t => t.id !== id));
+    setAccommodationTypes((prev) => useMemo(() => prev.filter((t) => t.id !== id), []));
   };
 
   const addRoom = () => {
@@ -339,9 +339,9 @@ export function SettingsPanel() {
       number: newRoomNumber.trim(),
       typeId: newRoomTypeId,
       floor: newRoomFloor,
-      status: newRoomStatus,
+      status: newRoomStatus
     };
-    setRooms(prev => [...prev, newRoom]);
+    setRooms((prev) => [...prev, newRoom]);
     setNewRoomNumber('');
     setNewRoomTypeId('at-1');
     setNewRoomFloor(1);
@@ -351,7 +351,7 @@ export function SettingsPanel() {
   };
 
   const removeRoom = (id: string) => {
-    setRooms(prev => prev.filter(r => r.id !== id));
+    setRooms((prev) => useMemo(() => prev.filter((r) => r.id !== id), []));
   };
 
   const addTeamMember = () => {
@@ -361,9 +361,9 @@ export function SettingsPanel() {
       name: newMemberName.trim(),
       role: newMemberRole,
       phone: newMemberPhone.trim(),
-      email: newMemberEmail.trim(),
+      email: newMemberEmail.trim()
     };
-    setTeam(prev => [...prev, member]);
+    setTeam((prev) => [...prev, member]);
     setNewMemberName('');
     setNewMemberRole('Recepcionista');
     setNewMemberPhone('');
@@ -373,19 +373,19 @@ export function SettingsPanel() {
   };
 
   const removeTeamMember = (id: string) => {
-    setTeam(prev => prev.filter(m => m.id !== id));
+    setTeam((prev) => useMemo(() => prev.filter((m) => m.id !== id), []));
   };
 
   const handleSave = () => {
     toast({
       title: 'Configurações salvas',
-      description: 'Todas as alterações foram salvas com sucesso.',
+      description: 'Todas as alterações foram salvas com sucesso.'
     });
   };
 
   const updatePricingRule = (id: string, field: keyof PricingRule, value: number) => {
-    setPricingRules(prev =>
-      prev.map(r => (r.id === id ? { ...r, [field]: value } : r))
+    setPricingRules((prev) =>
+    prev.map((r) => r.id === id ? { ...r, [field]: value } : r)
     );
   };
 
@@ -406,8 +406,8 @@ export function SettingsPanel() {
         </div>
         <Button
           onClick={handleSave}
-          className="bg-orange-500 hover:bg-orange-600 text-white gap-2 self-start sm:self-auto"
-        >
+          className="bg-orange-500 hover:bg-orange-600 text-white gap-2 self-start sm:self-auto">
+          
           <Save className="w-4 h-4" />
           Salvar Configurações
         </Button>
@@ -435,64 +435,64 @@ export function SettingsPanel() {
                 <label className="text-xs text-[#4d4d4d] mb-1 block">Nome da Propriedade</label>
                 <Input
                   value={property.name}
-                  onChange={e => setProperty({ ...property, name: e.target.value })}
-                  className={darkInput}
-                />
+                  onChange={(e) => setProperty({ ...property, name: e.target.value })}
+                  className={darkInput} />
+                
               </div>
               <div>
                 <label className="text-xs text-[#4d4d4d] mb-1 block">CNPJ</label>
                 <Input
                   value={property.cnpj}
-                  onChange={e => setProperty({ ...property, cnpj: e.target.value })}
-                  className={darkInput}
-                />
+                  onChange={(e) => setProperty({ ...property, cnpj: e.target.value })}
+                  className={darkInput} />
+                
               </div>
               <div>
                 <label className="text-xs text-[#4d4d4d] mb-1 block">Telefone</label>
                 <Input
                   value={property.phone}
-                  onChange={e => setProperty({ ...property, phone: e.target.value })}
-                  className={darkInput}
-                />
+                  onChange={(e) => setProperty({ ...property, phone: e.target.value })}
+                  className={darkInput} />
+                
               </div>
               <div className="sm:col-span-2">
                 <label className="text-xs text-[#4d4d4d] mb-1 block">Endereço</label>
                 <Input
                   value={property.address}
-                  onChange={e => setProperty({ ...property, address: e.target.value })}
-                  className={darkInput}
-                />
+                  onChange={(e) => setProperty({ ...property, address: e.target.value })}
+                  className={darkInput} />
+                
               </div>
               <div>
                 <label className="text-xs text-[#4d4d4d] mb-1 block">Cidade</label>
                 <Input
                   value={property.city}
-                  onChange={e => setProperty({ ...property, city: e.target.value })}
-                  className={darkInput}
-                />
+                  onChange={(e) => setProperty({ ...property, city: e.target.value })}
+                  className={darkInput} />
+                
               </div>
               <div>
                 <label className="text-xs text-[#4d4d4d] mb-1 block">Estado</label>
                 <Input
                   value={property.state}
-                  onChange={e => setProperty({ ...property, state: e.target.value })}
-                  className={darkInput}
-                />
+                  onChange={(e) => setProperty({ ...property, state: e.target.value })}
+                  className={darkInput} />
+                
               </div>
               <div>
                 <label className="text-xs text-[#4d4d4d] mb-1 block">E-mail</label>
                 <Input
                   value={property.email}
-                  onChange={e => setProperty({ ...property, email: e.target.value })}
-                  className={darkInput}
-                />
+                  onChange={(e) => setProperty({ ...property, email: e.target.value })}
+                  className={darkInput} />
+                
               </div>
               <div>
                 <label className="text-xs text-[#4d4d4d] mb-1 block">Tipo de Propriedade</label>
                 <Select
                   value={property.propertyType}
-                  onValueChange={v => setProperty({ ...property, propertyType: v })}
-                >
+                  onValueChange={(v) => setProperty({ ...property, propertyType: v })}>
+                  
                   <SelectTrigger className={darkSelectTrigger}>
                     <SelectValue />
                   </SelectTrigger>
@@ -509,25 +509,25 @@ export function SettingsPanel() {
                 <Input
                   type="time"
                   value={property.checkinTime}
-                  onChange={e => setProperty({ ...property, checkinTime: e.target.value })}
-                  className={darkInput}
-                />
+                  onChange={(e) => setProperty({ ...property, checkinTime: e.target.value })}
+                  className={darkInput} />
+                
               </div>
               <div>
                 <label className="text-xs text-[#4d4d4d] mb-1 block">Check-out</label>
                 <Input
                   type="time"
                   value={property.checkoutTime}
-                  onChange={e => setProperty({ ...property, checkoutTime: e.target.value })}
-                  className={darkInput}
-                />
+                  onChange={(e) => setProperty({ ...property, checkoutTime: e.target.value })}
+                  className={darkInput} />
+                
               </div>
               <div>
                 <label className="text-xs text-[#4d4d4d] mb-1 block">Classificação (Estrelas)</label>
                 <Select
                   value={property.starRating}
-                  onValueChange={v => setProperty({ ...property, starRating: v })}
-                >
+                  onValueChange={(v) => setProperty({ ...property, starRating: v })}>
+                  
                   <SelectTrigger className={darkSelectTrigger}>
                     <SelectValue />
                   </SelectTrigger>
@@ -557,15 +557,15 @@ export function SettingsPanel() {
           </AccordionTrigger>
           <AccordionContent className="px-5 pb-5">
             <div className="space-y-3 mt-2">
-              {accommodationTypes.map(type => (
-                <motion.div
-                  key={type.id}
-                  layout
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  className="bg-white/[0.03] border border-[#2e2e2e] rounded-xl p-4"
-                >
+              {accommodationTypes.map((type) =>
+              <motion.div
+                key={type.id}
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="bg-white/[0.03] border border-[#2e2e2e] rounded-xl p-4">
+                
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
@@ -578,80 +578,80 @@ export function SettingsPanel() {
                         R$ {type.basePrice.toLocaleString('pt-BR')},00 <span className="text-[#4d4d4d] text-xs">/noite</span>
                       </div>
                       <div className="flex flex-wrap gap-1.5">
-                        {type.amenities.map(amenityKey => {
-                          const amenity = amenityOptions.find(a => a.key === amenityKey);
-                          if (!amenity) return null;
-                          return (
-                            <span key={amenityKey} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#242424] text-[10px] text-[#898989]">
+                        {type.amenities.map((amenityKey) => {
+                        const amenity = amenityOptions.find((a) => a.key === amenityKey);
+                        if (!amenity) return null;
+                        return (
+                          <span key={amenityKey} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#242424] text-[10px] text-[#898989]">
                               <amenity.icon className="w-3 h-3" />
                               {amenity.label}
-                            </span>
-                          );
-                        })}
+                            </span>);
+
+                      })}
                       </div>
                     </div>
                     <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-[#363636] hover:text-red-400 hover:bg-red-500/10 shrink-0"
-                      onClick={() => removeAccommodationType(type.id)}
-                    >
+                    variant="ghost"
+                    size="icon"
+                    className="text-[#363636] hover:text-red-400 hover:bg-red-500/10 shrink-0"
+                    onClick={() => removeAccommodationType(type.id)}>
+                    
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 </motion.div>
-              ))}
+              )}
 
               {/* Add new type */}
               <AnimatePresence>
-                {showAddType && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -12 }}
-                    className="bg-white/[0.02] border border-dashed border-[#FF5500]/30 rounded-xl p-4 space-y-3"
-                  >
+                {showAddType &&
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  className="bg-white/[0.02] border border-dashed border-[#FF5500]/30 rounded-xl p-4 space-y-3">
+                  
                     <div className="text-xs font-semibold text-[#FF5500]">Novo Tipo de Acomodação</div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <Input
-                        placeholder="Nome do tipo"
-                        value={newTypeName}
-                        onChange={e => setNewTypeName(e.target.value)}
-                        className={darkInput}
-                      />
+                      placeholder="Nome do tipo"
+                      value={newTypeName}
+                      onChange={(e) => setNewTypeName(e.target.value)}
+                      className={darkInput} />
+                    
                       <Input
-                        type="number"
-                        placeholder="Capacidade"
-                        value={newTypeCapacity}
-                        onChange={e => setNewTypeCapacity(Number(e.target.value))}
-                        className={darkInput}
-                      />
+                      type="number"
+                      placeholder="Capacidade"
+                      value={newTypeCapacity}
+                      onChange={(e) => setNewTypeCapacity(Number(e.target.value))}
+                      className={darkInput} />
+                    
                       <Input
-                        type="number"
-                        placeholder="Preço base (R$)"
-                        value={newTypePrice}
-                        onChange={e => setNewTypePrice(Number(e.target.value))}
-                        className={darkInput}
-                      />
+                      type="number"
+                      placeholder="Preço base (R$)"
+                      value={newTypePrice}
+                      onChange={(e) => setNewTypePrice(Number(e.target.value))}
+                      className={darkInput} />
+                    
                     </div>
                     <div>
                       <div className="text-[10px] text-[#4d4d4d] mb-2">Comodidades</div>
                       <div className="flex flex-wrap gap-2">
-                        {amenityOptions.map(a => (
-                          <button
-                            key={a.key}
-                            type="button"
-                            onClick={() => toggleAmenity(a.key)}
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-colors ${
-                              newTypeAmenities.includes(a.key)
-                                ? 'bg-[#FF5500]/10 text-[#FF5500] border border-[#FF5500]/30'
-                                : 'bg-[#242424] text-[#4d4d4d] border border-[#363636] hover:bg-[#2e2e2e]'
-                            }`}
-                          >
+                        {amenityOptions.map((a) =>
+                      <button
+                        key={a.key}
+                        type="button"
+                        onClick={() => toggleAmenity(a.key)}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-colors ${
+                        newTypeAmenities.includes(a.key) ?
+                        'bg-[#FF5500]/10 text-[#FF5500] border border-[#FF5500]/30' :
+                        'bg-[#242424] text-[#4d4d4d] border border-[#363636] hover:bg-[#2e2e2e]'}`
+                        }>
+                        
                             <a.icon className="w-3 h-3" />
                             {a.label}
                           </button>
-                        ))}
+                      )}
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -663,19 +663,19 @@ export function SettingsPanel() {
                       </Button>
                     </div>
                   </motion.div>
-                )}
+                }
               </AnimatePresence>
 
-              {!showAddType && (
-                <Button
-                  variant="outline"
-                  className="w-full border-dashed border-[#363636] text-[#4d4d4d] hover:text-[#FF5500] hover:border-[#FF5500]/30 hover:bg-orange-500/5"
-                  onClick={() => setShowAddType(true)}
-                >
+              {!showAddType &&
+              <Button
+                variant="outline"
+                className="w-full border-dashed border-[#363636] text-[#4d4d4d] hover:text-[#FF5500] hover:border-[#FF5500]/30 hover:bg-orange-500/5"
+                onClick={() => setShowAddType(true)}>
+                
                   <Plus className="w-4 h-4" />
                   Adicionar Tipo de Acomodação
                 </Button>
-              )}
+              }
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -697,14 +697,14 @@ export function SettingsPanel() {
             <div className="mt-2">
               {/* Room grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {rooms.map(room => {
+                {rooms.map((room) => {
                   const st = statusConfig[room.status];
                   return (
                     <motion.div
                       key={room.id}
                       layout
-                      className="bg-white/[0.03] border border-[#2e2e2e] rounded-xl p-3 group"
-                    >
+                      className="bg-white/[0.03] border border-[#2e2e2e] rounded-xl p-3 group">
+                      
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <span className="text-lg font-bold text-[#fafafa]">#{room.number}</span>
@@ -714,8 +714,8 @@ export function SettingsPanel() {
                             variant="ghost"
                             size="icon"
                             className="w-7 h-7 text-[#363636] hover:text-red-400 hover:bg-red-500/10"
-                            onClick={() => removeRoom(room.id)}
-                          >
+                            onClick={() => removeRoom(room.id)}>
+                            
                             <Trash2 className="w-3 h-3" />
                           </Button>
                         </div>
@@ -737,45 +737,45 @@ export function SettingsPanel() {
                           </span>
                         </div>
                       </div>
-                    </motion.div>
-                  );
+                    </motion.div>);
+
                 })}
               </div>
 
               {/* Add new room */}
               <AnimatePresence>
-                {showAddRoom && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -12 }}
-                    className="mt-4 bg-white/[0.02] border border-dashed border-[#FF5500]/30 rounded-xl p-4 space-y-3"
-                  >
+                {showAddRoom &&
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  className="mt-4 bg-white/[0.02] border border-dashed border-[#FF5500]/30 rounded-xl p-4 space-y-3">
+                  
                     <div className="text-xs font-semibold text-[#FF5500]">Novo Quarto</div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       <Input
-                        placeholder="Nº Quarto"
-                        value={newRoomNumber}
-                        onChange={e => setNewRoomNumber(e.target.value)}
-                        className={darkInput}
-                      />
+                      placeholder="Nº Quarto"
+                      value={newRoomNumber}
+                      onChange={(e) => setNewRoomNumber(e.target.value)}
+                      className={darkInput} />
+                    
                       <Select value={newRoomTypeId} onValueChange={setNewRoomTypeId}>
                         <SelectTrigger className={darkSelectTrigger}>
                           <SelectValue placeholder="Tipo" />
                         </SelectTrigger>
                         <SelectContent className="bg-neutral-900 border-[#363636]">
-                          {accommodationTypes.map(t => (
-                            <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                          ))}
+                          {accommodationTypes.map((t) =>
+                        <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                        )}
                         </SelectContent>
                       </Select>
                       <Input
-                        type="number"
-                        placeholder="Andar"
-                        value={newRoomFloor}
-                        onChange={e => setNewRoomFloor(Number(e.target.value))}
-                        className={darkInput}
-                      />
+                      type="number"
+                      placeholder="Andar"
+                      value={newRoomFloor}
+                      onChange={(e) => setNewRoomFloor(Number(e.target.value))}
+                      className={darkInput} />
+                    
                       <Select value={newRoomStatus} onValueChange={(v: RoomStatus) => setNewRoomStatus(v)}>
                         <SelectTrigger className={darkSelectTrigger}>
                           <SelectValue placeholder="Status" />
@@ -797,19 +797,19 @@ export function SettingsPanel() {
                       </Button>
                     </div>
                   </motion.div>
-                )}
+                }
               </AnimatePresence>
 
-              {!showAddRoom && (
-                <Button
-                  variant="outline"
-                  className="w-full border-dashed border-[#363636] text-[#4d4d4d] hover:text-[#FF5500] hover:border-[#FF5500]/30 hover:bg-orange-500/5 mt-4"
-                  onClick={() => setShowAddRoom(true)}
-                >
+              {!showAddRoom &&
+              <Button
+                variant="outline"
+                className="w-full border-dashed border-[#363636] text-[#4d4d4d] hover:text-[#FF5500] hover:border-[#FF5500]/30 hover:bg-orange-500/5 mt-4"
+                onClick={() => setShowAddRoom(true)}>
+                
                   <Plus className="w-4 h-4" />
                   Adicionar Quarto
                 </Button>
-              )}
+              }
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -841,10 +841,10 @@ export function SettingsPanel() {
                     <div className="text-[10px] text-[#898989]">Usar aprendizado autônomo do Whatsapp Persona Learner</div>
                   </div>
                 </div>
-                <Switch 
+                <Switch
                   checked={persona.useBrandDNA}
-                  onCheckedChange={(checked) => setPersona({...persona, useBrandDNA: checked})}
-                />
+                  onCheckedChange={(checked) => setPersona({ ...persona, useBrandDNA: checked })} />
+                
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -854,14 +854,14 @@ export function SettingsPanel() {
                     <label className="text-xs font-bold text-[#fafafa] uppercase tracking-widest">Nível de Formalidade</label>
                     <span className="text-[10px] font-mono text-orange-400">{persona.formality}%</span>
                   </div>
-                  <input 
-                    type="range" 
-                    min="0" 
-                    max="100" 
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
                     value={persona.formality}
-                    onChange={(e) => setPersona({...persona, formality: parseInt(e.target.value)})}
-                    className="w-full accent-orange-500 bg-neutral-800 h-1.5 rounded-full appearance-none cursor-pointer"
-                  />
+                    onChange={(e) => setPersona({ ...persona, formality: parseInt(e.target.value) })}
+                    className="w-full accent-orange-500 bg-neutral-800 h-1.5 rounded-full appearance-none cursor-pointer" />
+                  
                   <div className="flex justify-between text-[9px] text-[#4d4d4d] font-bold uppercase">
                     <span>Casual (E aí!)</span>
                     <span>Formal (Prezado)</span>
@@ -871,10 +871,10 @@ export function SettingsPanel() {
                 {/* Aggressiveness Select */}
                 <div className="space-y-3">
                   <label className="text-xs font-bold text-[#fafafa] uppercase tracking-widest block">Agressividade Comercial</label>
-                  <Select 
+                  <Select
                     value={persona.aggressiveness}
-                    onValueChange={(v: any) => setPersona({...persona, aggressiveness: v})}
-                  >
+                    onValueChange={(v: any) => setPersona({ ...persona, aggressiveness: v })}>
+                    
                     <SelectTrigger className={darkSelectTrigger}>
                       <SelectValue />
                     </SelectTrigger>
@@ -890,10 +890,10 @@ export function SettingsPanel() {
                 {/* Style Select */}
                 <div className="space-y-3">
                   <label className="text-xs font-bold text-[#fafafa] uppercase tracking-widest block">Estilo de Linguagem</label>
-                  <Select 
+                  <Select
                     value={persona.style}
-                    onValueChange={(v: any) => setPersona({...persona, style: v})}
-                  >
+                    onValueChange={(v: any) => setPersona({ ...persona, style: v })}>
+                    
                     <SelectTrigger className={darkSelectTrigger}>
                       <SelectValue />
                     </SelectTrigger>
@@ -915,10 +915,10 @@ export function SettingsPanel() {
                       <div className="text-[10px] text-[#4d4d4d]">Permitir iconografia nas mensagens</div>
                     </div>
                   </div>
-                  <Switch 
+                  <Switch
                     checked={persona.allowEmojis}
-                    onCheckedChange={(checked) => setPersona({...persona, allowEmojis: checked})}
-                  />
+                    onCheckedChange={(checked) => setPersona({ ...persona, allowEmojis: checked })} />
+                  
                 </div>
               </div>
 
@@ -967,8 +967,8 @@ export function SettingsPanel() {
                 </div>
                 <Switch
                   checked={whatsapp.autoReply}
-                  onCheckedChange={checked => setWhatsapp({ ...whatsapp, autoReply: checked })}
-                />
+                  onCheckedChange={(checked) => setWhatsapp({ ...whatsapp, autoReply: checked })} />
+                
               </div>
 
               {/* Channel Config */}
@@ -977,8 +977,8 @@ export function SettingsPanel() {
                   <label className="text-xs text-[#4d4d4d] mb-1.5 block">Configuração de Canal</label>
                   <Select
                     value={whatsapp.whatsappType}
-                    onValueChange={v => setWhatsapp({ ...whatsapp, whatsappType: v as any })}
-                  >
+                    onValueChange={(v) => setWhatsapp({ ...whatsapp, whatsappType: v as any })}>
+                    
                     <SelectTrigger className={darkSelectTrigger}>
                       <SelectValue />
                     </SelectTrigger>
@@ -992,71 +992,71 @@ export function SettingsPanel() {
                   </p>
                 </div>
 
-                {whatsapp.whatsappType === 'GUESTS_ONLY' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-3 pt-3 border-t border-[#2e2e2e]"
-                  >
+                {whatsapp.whatsappType === 'GUESTS_ONLY' &&
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-3 pt-3 border-t border-[#2e2e2e]">
+                  
                     <div>
                       <label className="text-xs text-[#4d4d4d] mb-1.5 block">Número Alternativo para Fornecedores</label>
                       <Input
-                        placeholder="Ex: (81) 99999-9999"
-                        value={whatsapp.supplierContact}
-                        onChange={e => setWhatsapp({ ...whatsapp, supplierContact: e.target.value })}
-                        className={darkInput}
-                      />
+                      placeholder="Ex: (81) 99999-9999"
+                      value={whatsapp.supplierContact}
+                      onChange={(e) => setWhatsapp({ ...whatsapp, supplierContact: e.target.value })}
+                      className={darkInput} />
+                    
                     </div>
                   </motion.div>
-                )}
+                }
               </div>
 
               {/* Templates */}
-              {whatsapp.autoReply && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="space-y-4"
-                >
+              {whatsapp.autoReply &&
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-4">
+                
                   <div>
                     <label className="text-xs text-[#4d4d4d] mb-1.5 block">👋 Mensagem de Boas-vindas</label>
                     <textarea
-                      value={whatsapp.welcomeMessage}
-                      onChange={e => setWhatsapp({ ...whatsapp, welcomeMessage: e.target.value })}
-                      className={`${darkInput} min-h-[80px] resize-none`}
-                      rows={3}
-                    />
+                    value={whatsapp.welcomeMessage}
+                    onChange={(e) => setWhatsapp({ ...whatsapp, welcomeMessage: e.target.value })}
+                    className={`${darkInput} min-h-[80px] resize-none`}
+                    rows={3} />
+                  
                   </div>
                   <div>
                     <label className="text-xs text-[#4d4d4d] mb-1.5 block">🏨 Instruções de Check-in</label>
                     <textarea
-                      value={whatsapp.checkinInstructions}
-                      onChange={e => setWhatsapp({ ...whatsapp, checkinInstructions: e.target.value })}
-                      className={`${darkInput} min-h-[80px] resize-none`}
-                      rows={3}
-                    />
+                    value={whatsapp.checkinInstructions}
+                    onChange={(e) => setWhatsapp({ ...whatsapp, checkinInstructions: e.target.value })}
+                    className={`${darkInput} min-h-[80px] resize-none`}
+                    rows={3} />
+                  
                   </div>
                   <div>
                     <label className="text-xs text-[#4d4d4d] mb-1.5 block">📶 Informações de Wi-Fi</label>
                     <textarea
-                      value={whatsapp.wifiInfo}
-                      onChange={e => setWhatsapp({ ...whatsapp, wifiInfo: e.target.value })}
-                      className={`${darkInput} min-h-[60px] resize-none`}
-                      rows={2}
-                    />
+                    value={whatsapp.wifiInfo}
+                    onChange={(e) => setWhatsapp({ ...whatsapp, wifiInfo: e.target.value })}
+                    className={`${darkInput} min-h-[60px] resize-none`}
+                    rows={2} />
+                  
                   </div>
                   <div>
                     <label className="text-xs text-[#4d4d4d] mb-1.5 block">🏊 Horários (Piscina, Restaurante, etc.)</label>
                     <textarea
-                      value={whatsapp.hoursInfo}
-                      onChange={e => setWhatsapp({ ...whatsapp, hoursInfo: e.target.value })}
-                      className={`${darkInput} min-h-[80px] resize-none`}
-                      rows={3}
-                    />
+                    value={whatsapp.hoursInfo}
+                    onChange={(e) => setWhatsapp({ ...whatsapp, hoursInfo: e.target.value })}
+                    className={`${darkInput} min-h-[80px] resize-none`}
+                    rows={3} />
+                  
                   </div>
                 </motion.div>
-              )}
+              }
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -1087,17 +1087,17 @@ export function SettingsPanel() {
                 </div>
                 <Switch
                   checked={competitorPricing}
-                  onCheckedChange={setCompetitorPricing}
-                />
+                  onCheckedChange={setCompetitorPricing} />
+                
               </div>
 
               {/* Rules per type */}
-              {pricingRules.map(rule => (
-                <div key={rule.id} className="bg-white/[0.03] border border-[#2e2e2e] rounded-xl p-4 space-y-3">
+              {pricingRules.map((rule) =>
+              <div key={rule.id} className="bg-white/[0.03] border border-[#2e2e2e] rounded-xl p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold text-[#fafafa]">{getTypeName(rule.typeId)}</span>
                     <span className="text-xs text-[#4d4d4d]">
-                      Base: R$ {accommodationTypes.find(t => t.id === rule.typeId)?.basePrice.toLocaleString('pt-BR')},00
+                      Base: R$ {accommodationTypes.find((t) => t.id === rule.typeId)?.basePrice.toLocaleString('pt-BR')},00
                     </span>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -1106,11 +1106,11 @@ export function SettingsPanel() {
                       <div className="flex items-center gap-1">
                         <span className="text-xs text-[#FF5500]">+</span>
                         <Input
-                          type="number"
-                          value={rule.altaPercent}
-                          onChange={e => updatePricingRule(rule.id, 'altaPercent', Number(e.target.value))}
-                          className={darkInput}
-                        />
+                        type="number"
+                        value={rule.altaPercent}
+                        onChange={(e) => updatePricingRule(rule.id, 'altaPercent', Number(e.target.value))}
+                        className={darkInput} />
+                      
                         <span className="text-xs text-[#4d4d4d]">%</span>
                       </div>
                     </div>
@@ -1119,11 +1119,11 @@ export function SettingsPanel() {
                       <div className="flex items-center gap-1">
                         <span className="text-xs text-blue-400">−</span>
                         <Input
-                          type="number"
-                          value={rule.baixaPercent}
-                          onChange={e => updatePricingRule(rule.id, 'baixaPercent', Number(e.target.value))}
-                          className={darkInput}
-                        />
+                        type="number"
+                        value={rule.baixaPercent}
+                        onChange={(e) => updatePricingRule(rule.id, 'baixaPercent', Number(e.target.value))}
+                        className={darkInput} />
+                      
                         <span className="text-xs text-[#4d4d4d]">%</span>
                       </div>
                     </div>
@@ -1132,11 +1132,11 @@ export function SettingsPanel() {
                       <div className="flex items-center gap-1">
                         <span className="text-xs text-[#FF5500]">+</span>
                         <Input
-                          type="number"
-                          value={rule.feriadoPercent}
-                          onChange={e => updatePricingRule(rule.id, 'feriadoPercent', Number(e.target.value))}
-                          className={darkInput}
-                        />
+                        type="number"
+                        value={rule.feriadoPercent}
+                        onChange={(e) => updatePricingRule(rule.id, 'feriadoPercent', Number(e.target.value))}
+                        className={darkInput} />
+                      
                         <span className="text-xs text-[#4d4d4d]">%</span>
                       </div>
                     </div>
@@ -1145,24 +1145,24 @@ export function SettingsPanel() {
                     <div>
                       <label className="text-[10px] text-[#4d4d4d] mb-1 block">Preço Mínimo (R$)</label>
                       <Input
-                        type="number"
-                        value={rule.minPrice}
-                        onChange={e => updatePricingRule(rule.id, 'minPrice', Number(e.target.value))}
-                        className={darkInput}
-                      />
+                      type="number"
+                      value={rule.minPrice}
+                      onChange={(e) => updatePricingRule(rule.id, 'minPrice', Number(e.target.value))}
+                      className={darkInput} />
+                    
                     </div>
                     <div>
                       <label className="text-[10px] text-[#4d4d4d] mb-1 block">Preço Máximo (R$)</label>
                       <Input
-                        type="number"
-                        value={rule.maxPrice}
-                        onChange={e => updatePricingRule(rule.id, 'maxPrice', Number(e.target.value))}
-                        className={darkInput}
-                      />
+                      type="number"
+                      value={rule.maxPrice}
+                      onChange={(e) => updatePricingRule(rule.id, 'maxPrice', Number(e.target.value))}
+                      className={darkInput} />
+                    
                     </div>
                   </div>
                 </div>
-              ))}
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -1182,23 +1182,23 @@ export function SettingsPanel() {
           </AccordionTrigger>
           <AccordionContent className="px-5 pb-5">
             <div className="mt-2 space-y-3">
-              {team.map(member => {
+              {team.map((member) => {
                 const roleColors: Record<string, string> = {
                   Gerente: 'bg-purple-500/15 text-[#FF5500] border-[#FF5500]/30',
                   Recepcionista: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
                   Camareira: 'bg-pink-500/15 text-pink-400 border-pink-500/30',
-                  Manutenção: 'bg-amber-500/15 text-[#FF5500] border-[#FF5500]/30',
+                  Manutenção: 'bg-amber-500/15 text-[#FF5500] border-[#FF5500]/30'
                 };
                 return (
                   <motion.div
                     key={member.id}
                     layout
-                    className="bg-white/[0.03] border border-[#2e2e2e] rounded-xl p-4 group flex items-center justify-between gap-3"
-                  >
+                    className="bg-white/[0.03] border border-[#2e2e2e] rounded-xl p-4 group flex items-center justify-between gap-3">
+                    
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <div className="w-9 h-9 rounded-full bg-[#242424] border border-[#363636] flex items-center justify-center shrink-0">
                         <span className="text-xs font-bold text-[#898989]">
-                          {member.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
+                          {member.name.split(' ').map((n) => n[0]).slice(0, 2).join('')}
                         </span>
                       </div>
                       <div className="min-w-0">
@@ -1217,31 +1217,31 @@ export function SettingsPanel() {
                       variant="ghost"
                       size="icon"
                       className="text-[#363636] hover:text-red-400 hover:bg-red-500/10 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => removeTeamMember(member.id)}
-                    >
+                      onClick={() => removeTeamMember(member.id)}>
+                      
                       <Trash2 className="w-4 h-4" />
                     </Button>
-                  </motion.div>
-                );
+                  </motion.div>);
+
               })}
 
               {/* Add new member */}
               <AnimatePresence>
-                {showAddMember && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -12 }}
-                    className="bg-white/[0.02] border border-dashed border-[#FF5500]/30 rounded-xl p-4 space-y-3"
-                  >
+                {showAddMember &&
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  className="bg-white/[0.02] border border-dashed border-[#FF5500]/30 rounded-xl p-4 space-y-3">
+                  
                     <div className="text-xs font-semibold text-[#FF5500]">Novo Membro</div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <Input
-                        placeholder="Nome completo"
-                        value={newMemberName}
-                        onChange={e => setNewMemberName(e.target.value)}
-                        className={darkInput}
-                      />
+                      placeholder="Nome completo"
+                      value={newMemberName}
+                      onChange={(e) => setNewMemberName(e.target.value)}
+                      className={darkInput} />
+                    
                       <Select value={newMemberRole} onValueChange={setNewMemberRole}>
                         <SelectTrigger className={darkSelectTrigger}>
                           <SelectValue placeholder="Cargo" />
@@ -1254,17 +1254,17 @@ export function SettingsPanel() {
                         </SelectContent>
                       </Select>
                       <Input
-                        placeholder="Telefone"
-                        value={newMemberPhone}
-                        onChange={e => setNewMemberPhone(e.target.value)}
-                        className={darkInput}
-                      />
+                      placeholder="Telefone"
+                      value={newMemberPhone}
+                      onChange={(e) => setNewMemberPhone(e.target.value)}
+                      className={darkInput} />
+                    
                       <Input
-                        placeholder="E-mail"
-                        value={newMemberEmail}
-                        onChange={e => setNewMemberEmail(e.target.value)}
-                        className={darkInput}
-                      />
+                      placeholder="E-mail"
+                      value={newMemberEmail}
+                      onChange={(e) => setNewMemberEmail(e.target.value)}
+                      className={darkInput} />
+                    
                     </div>
                     <div className="flex gap-2">
                       <Button size="sm" onClick={addTeamMember} className="bg-orange-500 hover:bg-orange-600 text-white">
@@ -1275,19 +1275,19 @@ export function SettingsPanel() {
                       </Button>
                     </div>
                   </motion.div>
-                )}
+                }
               </AnimatePresence>
 
-              {!showAddMember && (
-                <Button
-                  variant="outline"
-                  className="w-full border-dashed border-[#363636] text-[#4d4d4d] hover:text-[#FF5500] hover:border-[#FF5500]/30 hover:bg-orange-500/5"
-                  onClick={() => setShowAddMember(true)}
-                >
+              {!showAddMember &&
+              <Button
+                variant="outline"
+                className="w-full border-dashed border-[#363636] text-[#4d4d4d] hover:text-[#FF5500] hover:border-[#FF5500]/30 hover:bg-orange-500/5"
+                onClick={() => setShowAddMember(true)}>
+                
                   <Plus className="w-4 h-4" />
                   Adicionar Membro
                 </Button>
-              )}
+              }
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -1307,18 +1307,18 @@ export function SettingsPanel() {
           </AccordionTrigger>
           <AccordionContent className="px-5 pb-5">
             <div className="mt-2 space-y-1">
-              {([
-                { key: 'newReservations' as const, label: 'Novas reservas', desc: 'Receber alerta quando uma nova reserva for feita', icon: CalendarDays },
-                { key: 'checkins' as const, label: 'Check-ins', desc: 'Notificar quando um hóspede realizar check-in', icon: DoorOpen },
-                { key: 'checkouts' as const, label: 'Check-outs', desc: 'Notificar quando um hóspede realizar check-out', icon: Clock },
-                { key: 'paymentAlerts' as const, label: 'Alertas de pagamento', desc: 'Notificar sobre pagamentos recebidos ou falhas', icon: DollarSign },
-                { key: 'whatsappMessages' as const, label: 'Mensagens do WhatsApp', desc: 'Notificar sobre novas mensagens recebidas', icon: MessageCircle },
-                { key: 'dailyReports' as const, label: 'Relatórios diários', desc: 'Receber relatório de ocupação e receita por e-mail', icon: BarChart3 },
-              ]).map(item => (
-                <div
-                  key={item.key}
-                  className="flex items-center justify-between p-3 rounded-xl hover:bg-white/[0.02] transition-colors"
-                >
+              {[
+              { key: 'newReservations' as const, label: 'Novas reservas', desc: 'Receber alerta quando uma nova reserva for feita', icon: CalendarDays },
+              { key: 'checkins' as const, label: 'Check-ins', desc: 'Notificar quando um hóspede realizar check-in', icon: DoorOpen },
+              { key: 'checkouts' as const, label: 'Check-outs', desc: 'Notificar quando um hóspede realizar check-out', icon: Clock },
+              { key: 'paymentAlerts' as const, label: 'Alertas de pagamento', desc: 'Notificar sobre pagamentos recebidos ou falhas', icon: DollarSign },
+              { key: 'whatsappMessages' as const, label: 'Mensagens do WhatsApp', desc: 'Notificar sobre novas mensagens recebidas', icon: MessageCircle },
+              { key: 'dailyReports' as const, label: 'Relatórios diários', desc: 'Receber relatório de ocupação e receita por e-mail', icon: BarChart3 }].
+              map((item) =>
+              <div
+                key={item.key}
+                className="flex items-center justify-between p-3 rounded-xl hover:bg-white/[0.02] transition-colors">
+                
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-[#242424] flex items-center justify-center">
                       <item.icon className="w-4 h-4 text-[#4d4d4d]" />
@@ -1329,13 +1329,13 @@ export function SettingsPanel() {
                     </div>
                   </div>
                   <Switch
-                    checked={notifications[item.key]}
-                    onCheckedChange={checked =>
-                      setNotifications(prev => ({ ...prev, [item.key]: checked }))
-                    }
-                  />
+                  checked={notifications[item.key]}
+                  onCheckedChange={(checked) =>
+                  setNotifications((prev) => ({ ...prev, [item.key]: checked }))
+                  } />
+                
                 </div>
-              ))}
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -1346,14 +1346,12 @@ export function SettingsPanel() {
       <div className="flex justify-end pt-2 pb-4">
         <Button
           onClick={handleSave}
-          className="bg-orange-500 hover:bg-orange-600 text-white gap-2"
-        >
+          className="bg-orange-500 hover:bg-orange-600 text-white gap-2">
+          
           <Save className="w-4 h-4" />
           Salvar Configurações
         </Button>
       </div>
-    </div>
-  );
+    </div>);
+
 }
-
-

@@ -5,7 +5,7 @@ import { EvolutionClient } from '@/lib/blast/evolution-client';
 export async function launchCampaign(campaignId: string) {
   const campaign = await prisma.blastCampaign.findUniqueOrThrow({
     where: { id: campaignId },
-    include: { messages: true },
+    include: { messages: true }
   });
 
   if (campaign.status === 'active') {
@@ -20,7 +20,7 @@ export async function launchCampaign(campaignId: string) {
   }
 
   // Configuração de Throttling (Extraída do JSON da campanha ou valores padrão)
-  const config = (campaign.config as any) || {};
+  const config = campaign.config as any || {};
   const delayMsg = config.delayMsg || 30000; // 30s default entre mensagens
   const batchSize = config.batchSize || 25;
   const batchPause = config.batchPause || 600000; // 10 min de pausa entre lotes
@@ -28,7 +28,7 @@ export async function launchCampaign(campaignId: string) {
 
   // Buscar instâncias ativas no pool
   const instances = await prisma.blastInstance.findMany({
-    where: { status: 'connected' },
+    where: { status: 'connected' }
   });
 
   if (instances.length === 0) {
@@ -40,17 +40,17 @@ export async function launchCampaign(campaignId: string) {
     where: { id: campaignId },
     data: {
       status: 'active',
-      startedAt: new Date(),
-    },
+      startedAt: new Date()
+    }
   });
 
   // 2. Buscar mensagens pendentes e FILTRAR OPT-OUTS (Section 3.3 Rule 1 & 6)
   const messages = await prisma.blastMessage.findMany({
     where: {
       campaignId,
-      status: 'pending',
+      status: 'pending'
     },
-    orderBy: { createdAt: 'asc' },
+    orderBy: { createdAt: 'asc' }
   });
 
   console.log(`🚀 [BLAST] Iniciando campanha "${campaign.name}" para ${messages.length} leads.`);
@@ -58,13 +58,13 @@ export async function launchCampaign(campaignId: string) {
   // Distribuição entre instâncias (Round-Robin) com Throttling
   let instanceIdx = 0;
   let batchCounter = 0;
-  let currentDelay = 0;
+  let currentDelay = 0;const blastContactBatch = await prisma.blastContact.findMany({ where: { phone: { in: messages.map((msg) => msg.contactPhone) } } });const blastContactMap = new Map(blastContactBatch.map((r) => [r.phone, r]));
 
   for (const msg of messages) {
     // Verificar se o contato optou por sair em outra campanha entre a criação e o lançamento desta
-    const contact = await prisma.blastContact.findFirst({
-      where: { phone: msg.contactPhone }
-    });
+    const contact = await blastContactMap.get(
+      msg.contactPhone);
+
 
     if (contact?.optedOut) {
       console.log(`🚫 [BLAST] Ignorando ${msg.contactPhone} (Opt-out detectado)`);
@@ -100,14 +100,14 @@ export async function launchCampaign(campaignId: string) {
         content: {
           text: msg.renderedMessage,
           mediaUrl: msg.mediaUrl,
-          mediaType: campaign.mediaType,
+          mediaType: campaign.mediaType
         },
         instanceId: instance.id,
-        delay: messageDelay, // Delay informativo para o log do worker
+        delay: messageDelay // Delay informativo para o log do worker
       },
       {
         delay: currentDelay, // Este é o delay REAL que o BullMQ respeitará
-        jobId: `msg-${msg.id}`,
+        jobId: `msg-${msg.id}`
       }
     );
   }
@@ -120,6 +120,6 @@ export async function pauseCampaign(campaignId: string) {
   // Para simplificar agora, apenas mudamos o status
   await prisma.blastCampaign.update({
     where: { id: campaignId },
-    data: { status: 'paused' },
+    data: { status: 'paused' }
   });
 }

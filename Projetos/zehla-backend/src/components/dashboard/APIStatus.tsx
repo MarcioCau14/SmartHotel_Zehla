@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -24,65 +24,65 @@ interface LLMProvider {
 }
 
 const initialProviders: LLMProvider[] = [
-  {
-    name: 'OpenAI',
-    type: 'paga',
-    provider: 'OpenAI Inc.',
-    rateLimit: '500 req/min (Tier 1)',
-    uptime: '99.98%',
-    models: [
-      { name: 'GPT-4o', status: 'online', latency_ms: 320, success_rate: 99.7, tokens_today: 45000 },
-      { name: 'GPT-4o-mini', status: 'online', latency_ms: 180, success_rate: 99.9, tokens_today: 32000 },
-    ],
-  },
-  {
-    name: 'Anthropic',
-    type: 'paga',
-    provider: 'Anthropic PBC',
-    rateLimit: '1000 req/min',
-    uptime: '99.95%',
-    models: [
-      { name: 'Claude 4 Sonnet', status: 'online', latency_ms: 410, success_rate: 99.5, tokens_today: 28000 },
-      { name: 'Claude 4 Haiku', status: 'degraded', latency_ms: 650, success_rate: 97.8, tokens_today: 12000 },
-    ],
-  },
-  {
-    name: 'Google',
-    type: 'gratuita',
-    provider: 'Google LLC',
-    rateLimit: '1500 req/min',
-    uptime: '99.97%',
-    models: [
-      { name: 'Gemini 2.5 Pro', status: 'online', latency_ms: 280, success_rate: 99.8, tokens_today: 35000 },
-      { name: 'Gemini 2.5 Flash', status: 'online', latency_ms: 150, success_rate: 99.9, tokens_today: 52000 },
-    ],
-  },
-  {
-    name: 'Meta',
-    type: 'gratuita',
-    provider: 'Meta Platforms',
-    rateLimit: 'N/A',
-    uptime: '—',
-    models: [
-      { name: 'Llama 4 Maverick', status: 'offline', latency_ms: 0, success_rate: 0, tokens_today: 0 },
-    ],
-  },
-  {
-    name: 'z-ai-web-dev-sdk',
-    type: 'gratuita',
-    provider: 'ZEHLA (Incluído)',
-    rateLimit: 'Sem limite',
-    uptime: '99.99%',
-    models: [
-      { name: 'ZAI Default', status: 'online', latency_ms: 45, success_rate: 99.9, tokens_today: 156000 },
-    ],
-  },
-];
+{
+  name: 'OpenAI',
+  type: 'paga',
+  provider: 'OpenAI Inc.',
+  rateLimit: '500 req/min (Tier 1)',
+  uptime: '99.98%',
+  models: [
+  { name: 'GPT-4o', status: 'online', latency_ms: 320, success_rate: 99.7, tokens_today: 45000 },
+  { name: 'GPT-4o-mini', status: 'online', latency_ms: 180, success_rate: 99.9, tokens_today: 32000 }]
+
+},
+{
+  name: 'Anthropic',
+  type: 'paga',
+  provider: 'Anthropic PBC',
+  rateLimit: '1000 req/min',
+  uptime: '99.95%',
+  models: [
+  { name: 'Claude 4 Sonnet', status: 'online', latency_ms: 410, success_rate: 99.5, tokens_today: 28000 },
+  { name: 'Claude 4 Haiku', status: 'degraded', latency_ms: 650, success_rate: 97.8, tokens_today: 12000 }]
+
+},
+{
+  name: 'Google',
+  type: 'gratuita',
+  provider: 'Google LLC',
+  rateLimit: '1500 req/min',
+  uptime: '99.97%',
+  models: [
+  { name: 'Gemini 2.5 Pro', status: 'online', latency_ms: 280, success_rate: 99.8, tokens_today: 35000 },
+  { name: 'Gemini 2.5 Flash', status: 'online', latency_ms: 150, success_rate: 99.9, tokens_today: 52000 }]
+
+},
+{
+  name: 'Meta',
+  type: 'gratuita',
+  provider: 'Meta Platforms',
+  rateLimit: 'N/A',
+  uptime: '—',
+  models: [
+  { name: 'Llama 4 Maverick', status: 'offline', latency_ms: 0, success_rate: 0, tokens_today: 0 }]
+
+},
+{
+  name: 'z-ai-web-dev-sdk',
+  type: 'gratuita',
+  provider: 'ZEHLA (Incluído)',
+  rateLimit: 'Sem limite',
+  uptime: '99.99%',
+  models: [
+  { name: 'ZAI Default', status: 'online', latency_ms: 45, success_rate: 99.9, tokens_today: 156000 }]
+
+}];
+
 
 const statusConfig = {
   online: { color: 'text-[#FF5500]', bg: 'bg-[#FF5500]/10', label: 'Ativo', badgeColor: 'bg-[#FF5500]/10 text-[#FF5500] border-[#FF5500]/30' },
   degraded: { color: 'text-[#FF5500]', bg: 'bg-[#FF5500]/10', label: 'Degradado', badgeColor: 'bg-[#FF5500]/10 text-[#FF5500] border-[#FF5500]/30' },
-  offline: { color: 'text-red-400', bg: 'bg-red-500/10', label: 'Inativo', badgeColor: 'bg-red-500/20 text-red-400 border-red-500/30' },
+  offline: { color: 'text-red-400', bg: 'bg-red-500/10', label: 'Inativo', badgeColor: 'bg-red-500/20 text-red-400 border-red-500/30' }
 };
 
 export function APIStatus() {
@@ -96,10 +96,10 @@ export function APIStatus() {
   };
 
   const toggleExpand = (providerName: string) => {
-    setExpandedProviders(prev => {
+    setExpandedProviders((prev) => {
       const next = new Set(prev);
-      if (next.has(providerName)) next.delete(providerName);
-      else next.add(providerName);
+      if (next.has(providerName)) next.delete(providerName);else
+      next.add(providerName);
       return next;
     });
   };
@@ -116,7 +116,7 @@ export function APIStatus() {
         <div className="glass-card p-4">
           <Activity className="w-4 h-4 text-[#FF5500] mb-1.5" />
           <div className="text-lg font-bold text-[#FF5500]">
-            {initialProviders.filter(p => p.models.some(m => m.status === 'online')).length}
+            {useMemo(() => initialProviders.filter((p) => p.models.some((m) => m.status === 'online')), []).length}
           </div>
           <div className="text-[10px] text-[#4d4d4d]">Provedores Ativos</div>
         </div>
@@ -135,33 +135,33 @@ export function APIStatus() {
       {/* Provider Cards */}
       {providers.map((provider) => {
         const isExpanded = expandedProviders.has(provider.name);
-        const hasOnlineModel = provider.models.some(m => m.status === 'online');
-        const totalTokens = provider.models.reduce((s, m) => s + m.tokens_today, 0);
+        const hasOnlineModel = provider.models.some((m) => m.status === 'online');
+        const totalTokens = useMemo(() => provider.models.reduce((s, m) => s + m.tokens_today, 0), []);
 
         return (
           <div key={provider.name} className="glass-card overflow-hidden">
             {/* Provider Header */}
             <div
               className="p-4 cursor-pointer hover:bg-white/[0.02] transition-colors"
-              onClick={() => toggleExpand(provider.name)}
-            >
+              onClick={() => toggleExpand(provider.name)}>
+              
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className={`p-1.5 rounded-lg ${statusConfig[provider.models[0].status].bg}`}>
-                    {hasOnlineModel ? (
-                      <CheckCircle className={`w-4 h-4 ${statusConfig[provider.models[0].status].color}`} />
-                    ) : (
-                      <XCircle className="w-4 h-4 text-red-400" />
-                    )}
+                    {hasOnlineModel ?
+                    <CheckCircle className={`w-4 h-4 ${statusConfig[provider.models[0].status].color}`} /> :
+
+                    <XCircle className="w-4 h-4 text-red-400" />
+                    }
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold text-[#efefef]">{provider.name}</span>
                       <Badge variant="outline" className={`border-0 text-[10px] ${
-                        provider.type === 'gratuita'
-                          ? 'bg-[#FF5500]/10 text-[#FF5500]'
-                          : 'bg-[#FF5500]/10 text-[#FF5500]'
-                      }`}>
+                      provider.type === 'gratuita' ?
+                      'bg-[#FF5500]/10 text-[#FF5500]' :
+                      'bg-[#FF5500]/10 text-[#FF5500]'}`
+                      }>
                         {provider.type === 'gratuita' ? 'Gratuita' : 'Paga'}
                       </Badge>
                     </div>
@@ -179,18 +179,18 @@ export function APIStatus() {
                       <div className="font-mono text-[#FF5500]">{provider.uptime}</div>
                     </span>
                   </div>
-                  {isExpanded ? (
-                    <ChevronUp className="w-4 h-4 text-[#4d4d4d]" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-[#4d4d4d]" />
-                  )}
+                  {isExpanded ?
+                  <ChevronUp className="w-4 h-4 text-[#4d4d4d]" /> :
+
+                  <ChevronDown className="w-4 h-4 text-[#4d4d4d]" />
+                  }
                 </div>
               </div>
             </div>
 
             {/* Expanded Details */}
-            {isExpanded && (
-              <div className="border-t border-[#2e2e2e] p-4">
+            {isExpanded &&
+            <div className="border-t border-[#2e2e2e] p-4">
                 {/* Provider Meta Info */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                   <div className="bg-white/[0.02] rounded-lg p-2.5">
@@ -217,19 +217,19 @@ export function APIStatus() {
                 <div className="text-[10px] text-[#4d4d4d] mb-2 font-medium">Modelos</div>
                 <div className="space-y-2">
                   {provider.models.map((model) => {
-                    const cfg = statusConfig[model.status];
-                    const modelKey = `${provider.name}-${model.name}`;
-                    return (
-                      <div key={model.name} className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
+                  const cfg = statusConfig[model.status];
+                  const modelKey = `${provider.name}-${model.name}`;
+                  return (
+                    <div key={model.name} className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
                         <div className="flex items-center gap-3">
                           <div className={`p-1.5 rounded-lg ${cfg.bg}`}>
-                            {model.status === 'online' ? (
-                              <CheckCircle className={`w-4 h-4 ${cfg.color}`} />
-                            ) : model.status === 'degraded' ? (
-                              <CheckCircle className={`w-4 h-4 ${cfg.color}`} />
-                            ) : (
-                              <XCircle className={`w-4 h-4 ${cfg.color}`} />
-                            )}
+                            {model.status === 'online' ?
+                          <CheckCircle className={`w-4 h-4 ${cfg.color}`} /> :
+                          model.status === 'degraded' ?
+                          <CheckCircle className={`w-4 h-4 ${cfg.color}`} /> :
+
+                          <XCircle className={`w-4 h-4 ${cfg.color}`} />
+                          }
                           </div>
                           <div>
                             <div className="text-sm text-[#efefef]">{model.name}</div>
@@ -254,26 +254,26 @@ export function APIStatus() {
                             <div className="font-mono text-[#898989]">{model.tokens_today > 0 ? model.tokens_today.toLocaleString('pt-BR') : '—'}</div>
                           </div>
                           <button
-                            onClick={() => handleTest(modelKey)}
-                            disabled={model.status === 'offline'}
-                            className="px-3 py-1.5 rounded-lg bg-[#242424] hover:bg-[#2e2e2e] disabled:opacity-30 text-xs text-[#898989] transition-colors"
-                          >
-                            {testing === modelKey ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              'Testar'
-                            )}
+                          onClick={() => handleTest(modelKey)}
+                          disabled={model.status === 'offline'}
+                          className="px-3 py-1.5 rounded-lg bg-[#242424] hover:bg-[#2e2e2e] disabled:opacity-30 text-xs text-[#898989] transition-colors">
+                          
+                            {testing === modelKey ?
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" /> :
+
+                          'Testar'
+                          }
                           </button>
                         </div>
-                      </div>
-                    );
-                  })}
+                      </div>);
+
+                })}
                 </div>
               </div>
-            )}
-          </div>
-        );
+            }
+          </div>);
+
       })}
-    </div>
-  );
+    </div>);
+
 }

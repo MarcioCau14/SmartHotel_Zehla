@@ -5,20 +5,20 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet/dist/leaflet.css';
-import { 
-  Zap, 
-  Search, 
-  Filter, 
-  Map as MapIcon, 
-  BarChart3, 
-  List, 
-  X, 
-  MessageCircle, 
-  Mail, 
+import {
+  Zap,
+  Search,
+  Filter,
+  Map as MapIcon,
+  BarChart3,
+  List,
+  X,
+  MessageCircle,
+  Mail,
   Instagram,
   Activity,
-  Target
-} from 'lucide-react';
+  Target } from
+'lucide-react';
 
 // --- ICONS & STYLES ---
 const createCustomIcon = (color: string, iconChar: string, isHot: boolean) => {
@@ -36,17 +36,17 @@ const createCustomIcon = (color: string, iconChar: string, isHot: boolean) => {
     className: 'custom-lead-marker',
     iconSize: [28, 36],
     iconAnchor: [14, 36],
-    popupAnchor: [0, -36],
+    popupAnchor: [0, -36]
   });
 };
 
 const icons = {
   default: createCustomIcon('#f59e0b', '★', false),
   hot: createCustomIcon('#ef4444', '🔥', true),
-  converted: createCustomIcon('#10b981', '✓', false),
+  converted: createCustomIcon('#10b981', '✓', false)
 };
 
-function MapController({ center }: { center: [number, number] | null }) {
+function MapController({ center }: {center: [number, number] | null;}) {
   const map = useMap();
   useEffect(() => {
     if (center) {
@@ -110,21 +110,21 @@ export default function LeadMap() {
           <div className="space-y-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Buscar por cidade ou nome..."
                 className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-zinc-300 focus:outline-none focus:border-[#FF5500]/50"
                 value={filters.search}
-                onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
-              />
+                onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))} />
+              
             </div>
 
             <div className="flex gap-2">
-              <select 
+              <select
                 className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[10px] text-zinc-400 focus:outline-none"
                 value={filters.region}
-                onChange={(e) => setFilters(f => ({ ...f, region: e.target.value }))}
-              >
+                onChange={(e) => setFilters((f) => ({ ...f, region: e.target.value }))}>
+                
                 <option value="all">Todas Regiões</option>
                 <option value="Sul">Sul</option>
                 <option value="Sudeste">Sudeste</option>
@@ -139,8 +139,8 @@ export default function LeadMap() {
 
         {/* Stats Grid */}
         <div className="p-6 flex-1 overflow-y-auto custom-scrollbar space-y-6">
-          {stats && (
-            <div className="grid grid-cols-2 gap-3">
+          {stats &&
+          <div className="grid grid-cols-2 gap-3">
               <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
                 <p className="text-[10px] text-zinc-500 uppercase mb-1">Total</p>
                 <p className="text-xl font-light text-white">{stats.total}</p>
@@ -150,31 +150,31 @@ export default function LeadMap() {
                 <p className="text-xl font-light text-[#FF5500]">{stats.avgScore}%</p>
               </div>
             </div>
-          )}
+          }
 
           <div className="space-y-3">
             <h3 className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Distribuição Regional</h3>
-            {stats?.byRegion?.map((r: any) => (
-              <div key={r.name} className="space-y-1">
+            {stats?.byRegion?.map((r: any) =>
+            <div key={r.name} className="space-y-1">
                 <div className="flex justify-between text-[10px] text-zinc-400">
                   <span>{r.name}</span>
                   <span>{r.count}</span>
                 </div>
                 <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-[#FF5500] to-[#FF8800]" 
-                    style={{ width: `${(r.count / stats.total) * 100}%` }}
-                  />
+                  <div
+                  className="h-full bg-gradient-to-r from-[#FF5500] to-[#FF8800]"
+                  style={{ width: `${r.count / stats.total * 100}%` }} />
+                
                 </div>
               </div>
-            ))}
+            )}
           </div>
 
           <div className="pt-4">
-            <button 
+            <button
               onClick={() => setView(view === 'map' ? 'analytics' : 'map')}
-              className="w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-3 text-[10px] font-bold uppercase tracking-widest transition-all"
-            >
+              className="w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-3 text-[10px] font-bold uppercase tracking-widest transition-all">
+              
               {view === 'map' ? 'Ver Analytics Detalhado' : 'Voltar ao Mapa'}
             </button>
           </div>
@@ -195,28 +195,28 @@ export default function LeadMap() {
           zoom={5}
           className="h-full w-full"
           zoomControl={false}
-          style={{ background: '#0a0e1a' }}
-        >
+          style={{ background: '#0a0e1a' }}>
+          
           <TileLayer
             attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          />
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+          
           <MapController center={selectedLead ? [selectedLead.latitude, selectedLead.longitude] : null} />
           
           <MarkerClusterGroup
             chunkedLoading
             maxClusterRadius={50}
-            polygonOptions={{ fillColor: '#FF5500', color: '#FF5500', weight: 1, opacity: 0.1, fillOpacity: 0.05 }}
-          >
-            {leads.map(lead => (
-              <Marker
-                key={lead.id}
-                position={[lead.latitude, lead.longitude]}
-                icon={lead.status === 'CONVERTED' ? icons.converted : lead.score >= 90 ? icons.hot : icons.default}
-                eventHandlers={{
-                  click: () => setSelectedLead(lead)
-                }}
-              >
+            polygonOptions={{ fillColor: '#FF5500', color: '#FF5500', weight: 1, opacity: 0.1, fillOpacity: 0.05 }}>
+            
+            {leads.map((lead) =>
+            <Marker
+              key={lead.id}
+              position={[lead.latitude, lead.longitude]}
+              icon={lead.status === 'CONVERTED' ? icons.converted : lead.score >= 90 ? icons.hot : icons.default}
+              eventHandlers={{
+                click: () => setSelectedLead(lead)
+              }}>
+              
                 <Popup className="zehla-custom-popup">
                   <div className="p-3 min-w-[240px] bg-[#0d1117] text-white">
                     <div className="flex justify-between items-start mb-2">
@@ -227,12 +227,12 @@ export default function LeadMap() {
                     </div>
                     <p className="text-[10px] text-zinc-500 mb-3">{lead.city} / {lead.state}</p>
                     
-                    {lead.intentSignals && (
-                      <div className="bg-white/5 rounded-lg p-2 mb-3 border border-white/5">
+                    {lead.intentSignals &&
+                  <div className="bg-white/5 rounded-lg p-2 mb-3 border border-white/5">
                         <p className="text-[9px] text-zinc-500 uppercase mb-1">Sinais de Intenção</p>
                         <p className="text-[10px] text-zinc-300 italic">"{lead.intentSignals}"</p>
                       </div>
-                    )}
+                  }
 
                     <div className="flex gap-2">
                       <a href={`https://wa.me/${lead.whatsapp}`} target="_blank" className="flex-1 flex items-center justify-center gap-1.5 bg-[#25D366] hover:bg-[#128C7E] text-white py-1.5 rounded-lg transition-colors">
@@ -246,19 +246,19 @@ export default function LeadMap() {
                   </div>
                 </Popup>
               </Marker>
-            ))}
+            )}
           </MarkerClusterGroup>
         </MapContainer>
 
         {/* HUD de Lead Selecionado */}
-        {selectedLead && (
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-full max-w-lg z-[1002] px-6">
+        {selectedLead &&
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-full max-w-lg z-[1002] px-6">
             <div className="bg-black/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 left-0 w-1 h-full bg-[#FF5500]" />
-              <button 
-                onClick={() => setSelectedLead(null)}
-                className="absolute top-4 right-4 text-zinc-500 hover:text-white"
-              >
+              <button
+              onClick={() => setSelectedLead(null)}
+              className="absolute top-4 right-4 text-zinc-500 hover:text-white">
+              
                 <X className="w-5 h-5" />
               </button>
 
@@ -301,7 +301,7 @@ export default function LeadMap() {
               </div>
             </div>
           </div>
-        )}
+        }
 
         {/* Mini Radar Overlay (Zehla Style) */}
         <div className="absolute top-6 right-6 flex flex-col gap-2 z-[1000]">
@@ -313,7 +313,7 @@ export default function LeadMap() {
             <div className="w-px h-8 bg-white/10" />
             <div className="flex flex-col">
               <span className="text-[10px] text-zinc-500 uppercase">Hot Leads</span>
-              <span className="text-xs text-[#FF5500] font-mono">{leads.filter(l => l.score >= 90).length}</span>
+              <span className="text-xs text-[#FF5500] font-mono">{useMemo(() => leads.filter((l) => l.score >= 90), []).length}</span>
             </div>
           </div>
         </div>
@@ -347,6 +347,6 @@ export default function LeadMap() {
           font-family: 'Inter', sans-serif;
         }
       `}</style>
-    </div>
-  );
+    </div>);
+
 }
