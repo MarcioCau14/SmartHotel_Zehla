@@ -434,6 +434,19 @@ model Lead {
   
   emailTracking EmailTracking[]
 
+  // --- ZEHLA FISH EXTENSIONS ---
+  roomsCount              Int?      @default(0)
+  instagramFollowers      Int?      @default(0)
+  googleReviewsCount      Int?      @default(0)
+  otaCommissionLost       Float?    @default(0.0) // Estimativa de comissões perdidas por dependência de OTA (22%)
+  hasWebsite              Boolean   @default(false)
+  otaDependenceLevel      String?   @default("MEDIUM") // LOW, MEDIUM, HIGH, TOTAL
+  buyingBehavior          String?   // Tradicional, Inovador, Sob-Pressão, Premium
+  conversionProbability   Float?    @default(0.0) // Probabilidade calculada via MiroFish
+  objectKeywords          String?   @db.Text // JSON ou string com objeções
+  recommendedPitch        String?   @db.Text // Roteiro customizado gerado
+  leadTier                String    @default("COLD") // HOT, WARM, WARM_LOW, COLD, DEAD
+
   @@map("leads")
 }
 
