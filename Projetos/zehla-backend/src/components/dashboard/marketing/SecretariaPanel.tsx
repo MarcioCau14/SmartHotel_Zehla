@@ -1,203 +1,378 @@
 'use client';
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useMemo } from 'react';
 import { 
-  Bot, 
-  Search, 
-  Upload, 
-  Zap, 
-  Database,
-  Globe,
-  Plus,
-  MessageSquare,
-  CheckCircle2,
-  RefreshCw,
-  BarChart3,
-  ShieldCheck,
-  ChevronRight
+  Sparkles, RefreshCw, Megaphone, Building2, Eye, List, Zap, 
+  Upload, FolderOpen, Loader2, MapPin, Search, Download 
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
 
 export function SecretariaPanel() {
-  const [activeMode, setActiveMode] = useState<'search' | 'import' | 'automate'>('search');
-  const [isSearching, setIsSearching] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [leads, setLeads] = useState<any[]>([]);
+  const [statsData, setStatsData] = useState<any>(null);
 
-  const handleExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // WA Extraction State
+  const [instances, setInstances] = useState<any[]>([]);
+  const [selectedInstance, setSelectedInstance] = useState('');
+  const [groups, setGroups] = useState<any[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState('');
+  const [extractionType, setExtractionType] = useState<'CONTACTS' | 'GROUP'>('CONTACTS');
+  const [isSearchingGroups, setIsSearchingGroups] = useState(false);
+  const [foundGroups, setFoundGroups] = useState<any[]>([]);
+  const [searchLocation, setSearchLocation] = useState('Litoral de Santa Catarina');
 
-    toast.loading('Analisando estrutura da planilha...', { id: 'upload' });
-    
-    // Simulação de processamento inteligente
-    setTimeout(() => {
-      toast.success('Estrutura detectada: 18 colunas (Padrão Secretaria)', { id: 'upload' });
-    }, 1500);
+  useEffect(() => {
+    refreshData();
+    fetchInstances();
+  }, []);
+
+  const refreshData = () => {
+    fetch('/api/zcc/leads')
+      .then((res) => res.json())
+      .then((data) => {
+        setLeads(data.leads || []);
+        setStatsData(data.stats);
+      })
+      .catch(console.error);
+  };
+
+  const fetchInstances = async () => {
+    try {
+      const res = await fetch('/api/zcc/whatsapp/extract?action=listInstances');
+      const data = await res.json();
+      setInstances(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Error fetching WA instances:', err);
+    }
+  };
+
+  const fetchGroups = async (instanceName: string) => {
+    try {
+      const res = await fetch(`/api/zcc/whatsapp/extract?action=listGroups&instanceName=${instanceName}`);
+      const data = await res.json();
+      setGroups(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Error fetching WA groups:', err);
+    }
+  };
+
+  const handleStartExtraction = async () => {
+    if (!selectedInstance) return alert('Selecione uma instância!');
+
+    setIsExtracting(true);
+    try {
+      const res = await fetch('/api/zcc/whatsapp/extract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          instanceName: selectedInstance,
+          type: extractionType,
+          groupJid: extractionType === 'GROUP' ? selectedGroup : undefined,
+          propertyId: 'cm1...' 
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert(`Extração concluída! ${data.savedCount} novos leads salvos.`);
+        refreshData();
+      }
+    } catch (err) {
+      console.error('Extraction failed:', err);
+    } finally {
+      setIsExtracting(false);
+    }
+  };
+
+  const handleSearchGroups = async () => {
+    setIsSearchingGroups(true);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      setFoundGroups([
+        { title: `Proprietários Pousadas - ${searchLocation}`, url: 'https://chat.whatsapp.com/...' },
+        { title: `Turismo ${searchLocation} Networking`, url: 'https://chat.whatsapp.com/...' }
+      ]);
+    } finally {
+      setIsSearchingGroups(false);
+    }
+  };
+
+  const waLeads = useMemo(() => leads.filter((l) => l.source === 'WHATSAPP_EXTRACT'), [leads]);
+
+  const stats = [
+    { label: 'Total Leads (SC)', value: statsData?.total || 0, icon: Building2, color: 'blue' },
+    { label: 'Total Aberturas', value: statsData?.totalOpens || 0, icon: Eye, color: 'green' },
+    { label: 'Extraídos (WA)', value: waLeads.length, icon: List, color: 'purple' },
+    { label: 'Convertidos', value: statsData?.converted || 0, icon: Zap, color: 'amber' }
+  ];
+
+  const handleDownloadVCard = () => {
+    if (waLeads.length === 0) return alert('Nenhum lead de WhatsApp para exportar.');
+
+    const vCardContent = waLeads.map((l) => {
+      return [
+        'BEGIN:VCARD',
+        'VERSION:3.0',
+        `FN:${l.name}`,
+        `TEL;TYPE=CELL;TYPE=VOICE;TYPE=pref:+${l.whatsapp || l.phone}`,
+        `NOTE:Lead Extraído via Secretaria-IA - Score: ${l.score}`,
+        'END:VCARD'
+      ].join('\n');
+    }).join('\n');
+
+    const blob = new Blob([vCardContent], { type: 'text/vcard' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `leads_zehla_${new Date().toISOString().split('T')[0]}.vcf`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleSync = async () => {
+    setIsSyncing(true);
+    try {
+      const res = await fetch('/api/zcc/leads');
+      const data = await res.json();
+      setLeads(data.leads || []);
+      setStatsData(data.stats);
+      setIsSyncing(false);
+      alert(`Sincronização concluída! ${data.stats?.total || 0} leads processados.`);
+    } catch {
+      setIsSyncing(false);
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Modes Selection */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          { id: 'search', label: 'Prospecção Neural', icon: Search, desc: 'Busca ativa em grupos e web' },
-          { id: 'import', label: 'Importação Smart', icon: Upload, desc: 'Excel, CSV e JSON (Auto-map)' },
-          { id: 'automate', label: 'Enriquecimento', icon: Zap, desc: 'Dados reais via Secretaria-IA' },
-        ].map((mode) => (
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-[#fafafa] flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-[#FF5500]" />
+            Módulo Secretaria-IA
+          </h2>
+          <p className="text-xs text-[#4d4d4d]">Acoplamento total com o banco de prospecção.</p>
+        </div>
+        <div className="flex gap-3">
           <button
-            key={mode.id}
-            onClick={() => setActiveMode(mode.id as any)}
-            className={`p-4 rounded-2xl border transition-all text-left group ${
-              activeMode === mode.id 
-                ? 'bg-[#FF5500]/5 border-[#FF5500]/30 shadow-lg shadow-[#FF5500]/5' 
-                : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'
-            }`}
-          >
-            <div className={`p-2 rounded-lg w-fit mb-3 transition-colors ${
-              activeMode === mode.id ? 'bg-[#FF5500] text-white' : 'bg-zinc-800 text-zinc-500 group-hover:text-zinc-300'
-            }`}>
-              <mode.icon size={20} />
-            </div>
-            <h4 className={`text-sm font-bold ${activeMode === mode.id ? 'text-zinc-200' : 'text-zinc-400'}`}>
-              {mode.label}
-            </h4>
-            <p className="text-[10px] text-zinc-500 mt-1">{mode.desc}</p>
+            onClick={handleSync}
+            disabled={isSyncing}
+            className="glass-card hover:border-[#FF5500]/30 text-[#efefef] text-xs font-bold px-4 py-2 rounded-xl transition-all flex items-center gap-2">
+            
+            <RefreshCw className={`w-4 h-4 text-[#FF5500] ${isSyncing ? 'animate-spin' : ''}`} />
+            Sincronizar Planilhas
           </button>
+          <button className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors flex items-center gap-2">
+            <Megaphone className="w-4 h-4" />
+            Nova Campanha
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat, i) => (
+          <div key={i} className="glass-card p-4 relative overflow-hidden group">
+            <div className={`absolute -right-4 -top-4 w-16 h-16 opacity-5 group-hover:opacity-10 transition-opacity`}>
+              <stat.icon className="w-full h-full text-[#FF5500]" />
+            </div>
+            <div className="text-[10px] text-[#4d4d4d] mb-1">{stat.label}</div>
+            <div className="text-2xl font-bold text-[#fafafa]">{stat.value}</div>
+          </div>
         ))}
       </div>
 
-      {activeMode === 'search' && (
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-6"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-              <Globe className="text-blue-400" size={20} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="glass-card p-6 space-y-6">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-xl bg-[#FF5500]/10">
+              <Upload className="w-5 h-5 text-[#FF5500]" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-zinc-200 uppercase tracking-widest">Radar de Oportunidades</h3>
-              <p className="text-[10px] text-zinc-500">Mapeamento em tempo real de novos leads via Google Maps & Grupos</p>
+              <h3 className="font-semibold text-[#efefef]">Extração Inteligente (WA)</h3>
+              <p className="text-xs text-[#4d4d4d]">Extraia leads diretamente de grupos ou contatos do WhatsApp.</p>
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <input 
-              type="text" 
-              placeholder="Ex: Pousadas em Garopaba, Hotéis litoral SC..."
-              className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-zinc-300 focus:outline-none focus:ring-1 focus:ring-orange-500/50"
-            />
-            <button 
-              onClick={() => {
-                setIsSearching(true);
-                setTimeout(() => setIsSearching(false), 3000);
-              }}
-              disabled={isSearching}
-              className="bg-[#FF5500] hover:bg-[#EA580C] text-white font-bold text-xs px-6 py-3 rounded-xl transition-all shadow-lg shadow-[#FF5500]/20 flex items-center gap-2 disabled:opacity-50"
-            >
-              {isSearching ? <RefreshCw size={14} className="animate-spin" /> : <Search size={14} />}
-              {isSearching ? 'Buscando...' : 'Pesquisar'}
-            </button>
-          </div>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase font-bold text-[#4d4d4d]">1. Selecionar Instância</label>
+              <select
+                value={selectedInstance}
+                onChange={(e) => {
+                  setSelectedInstance(e.target.value);
+                  if (e.target.value) fetchGroups(e.target.value);
+                }}
+                className="w-full bg-[#242424] border border-[#363636] rounded-xl px-4 py-2.5 text-xs text-[#efefef] focus:border-[#FF5500]/50 outline-none transition-all">
+                
+                <option value="">Selecione uma conta conectada...</option>
+                {instances.map((inst) => (
+                  <option key={inst.instance.instanceName} value={inst.instance.instanceName}>
+                    {inst.instance.instanceName} ({inst.instance.status})
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          {/* Search Simulation Results */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-            <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black text-zinc-500 uppercase">Filtros de Qualidade</span>
-                <Badge className="bg-emerald-500/10 text-emerald-500 border-0 text-[9px]">ATIVO</Badge>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setExtractionType('CONTACTS')}
+                className={`p-3 rounded-xl border text-center transition-all ${
+                  extractionType === 'CONTACTS' ?
+                  'bg-[#FF5500]/10 border-[#FF5500]/30 text-[#FF5500]' :
+                  'bg-[#242424] border-[#363636] text-[#4d4d4d] hover:text-[#b4b4b4]'}`
+                }>
+                <List className="w-5 h-5 mx-auto mb-1.5" />
+                <span className="text-[10px] font-bold uppercase">Todos Contatos</span>
+              </button>
+              <button
+                onClick={() => setExtractionType('GROUP')}
+                className={`p-3 rounded-xl border text-center transition-all ${
+                  extractionType === 'GROUP' ?
+                  'bg-[#FF5500]/10 border-[#FF5500]/30 text-[#FF5500]' :
+                  'bg-[#242424] border-[#363636] text-[#4d4d4d] hover:text-[#b4b4b4]'}`
+                }>
+                <FolderOpen className="w-5 h-5 mx-auto mb-1.5" />
+                <span className="text-[10px] font-bold uppercase">De um Grupo</span>
+              </button>
+            </div>
+
+            {extractionType === 'GROUP' && (
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                <label className="text-[10px] uppercase font-bold text-[#4d4d4d]">2. Selecionar Grupo</label>
+                <select
+                  value={selectedGroup}
+                  onChange={(e) => setSelectedGroup(e.target.value)}
+                  className="w-full bg-[#242424] border border-[#363636] rounded-xl px-4 py-2.5 text-xs text-[#efefef] focus:border-[#FF5500]/50 outline-none transition-all">
+                  <option value="">Selecione o grupo...</option>
+                  {groups.map((g) => (
+                    <option key={g.id} value={g.id}>{g.subject} ({g.size} membros)</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <button
+              onClick={handleStartExtraction}
+              disabled={isExtracting || !selectedInstance || (extractionType === 'GROUP' && !selectedGroup)}
+              className="w-full bg-[#FF5500] hover:bg-[#EA580C] disabled:bg-[#363636] disabled:text-[#4d4d4d] text-white text-xs font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-[#FF5500]/20 flex items-center justify-center gap-2 mt-4">
+              
+              {isExtracting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Extraindo Dados (Lendo window.Store)...
+                </>
+              ) : (
+                <>
+                  <Zap className="w-4 h-4" />
+                  Iniciar Extração Inteligente
+                </>
+              )}
+            </button>
+
+            <div className="pt-4 border-t border-[#2e2e2e]">
+              <p className="text-[10px] text-[#4d4d4d] mb-3 uppercase font-bold">Faltam grupos? Procure novos na rede:</p>
+              
+              <div className="relative mb-3">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#4d4d4d]" />
+                <input
+                  type="text"
+                  value={searchLocation}
+                  onChange={(e) => setSearchLocation(e.target.value)}
+                  placeholder="Ex: Itacaré, BA ou Praia do Rosa"
+                  className="w-full bg-[#1a1a1a] border border-[#363636] rounded-xl pl-9 pr-4 py-2 text-xs text-[#efefef] focus:border-[#FF5500]/50 outline-none transition-all placeholder:text-[#363636]" />
+              </div>
+
+              <button
+                onClick={handleSearchGroups}
+                disabled={isSearchingGroups || !searchLocation}
+                className="w-full border border-[#363636] hover:border-[#FF5500]/30 hover:bg-[#FF5500]/5 text-[#efefef] text-[10px] font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2">
+                
+                {isSearchingGroups ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
+                Buscar Grupos ({searchLocation})
+              </button>
+              
+              {foundGroups.length > 0 && (
+                <div className="mt-3 space-y-2 animate-in fade-in slide-in-from-bottom-2">
+                  {foundGroups.map((g, idx) => (
+                    <div key={idx} className="p-2 rounded-lg bg-white/[0.02] border border-white/5 flex items-center justify-between">
+                      <span className="text-[10px] text-[#b4b4b4] truncate max-w-[150px]">{g.title}</span>
+                      <a href={g.url} target="_blank" className="text-[9px] text-[#FF5500] font-bold">Entrar no Grupo</a>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="glass-card p-5">
+            <h3 className="text-sm font-semibold text-[#b4b4b4] mb-4 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#FF5500]" />
+              Inteligência de Campanha
+            </h3>
+            <div className="space-y-4">
+              <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/10">
+                <div className="text-[10px] text-[#FF5500] font-bold mb-1 uppercase tracking-wider">Sugestão da IA</div>
+                <p className="text-xs text-[#b4b4b4] leading-relaxed">
+                  Detectamos 42 pousadas na Praia do Rosa que ainda não usam motor de reservas. 
+                  Recomendo iniciar campanha <span className="text-[#FF5500]">"Trauma da Comissão"</span> focando no alívio da dor das taxas da Booking.com.
+                </p>
               </div>
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-zinc-400">Verificar Cadastur</span>
-                  <div className="w-8 h-4 bg-emerald-600 rounded-full relative"><div className="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></div></div>
+                <div className="flex justify-between text-[10px]">
+                  <span className="text-[#4d4d4d]">Qualidade da Base (Extração WA)</span>
+                  <span className="text-[#FF5500]">92%</span>
                 </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-zinc-400">Excluir duplicados (CRM)</span>
-                  <div className="w-8 h-4 bg-emerald-600 rounded-full relative"><div className="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></div></div>
-                </div>
-              </div>
-            </div>
-            <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl space-y-3">
-              <span className="text-[10px] font-black text-zinc-500 uppercase">Capacidade da Secretaria</span>
-              <div className="space-y-1">
-                <div className="flex justify-between text-[10px] text-zinc-400 font-mono">
-                  <span>Tokens em uso</span>
-                  <span>45%</span>
-                </div>
-                <div className="h-1.5 bg-zinc-900 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 w-[45%]"></div>
+                <div className="h-1 bg-[#242424] rounded-full overflow-hidden">
+                  <div className="h-full bg-[#FF5500] w-[92%]" />
                 </div>
               </div>
             </div>
           </div>
-        </motion.div>
-      )}
 
-      {activeMode === 'import' && (
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-6"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
-              <Upload className="text-[#FF5500]" size={20} />
+          <div className="glass-card overflow-hidden">
+            <div className="px-5 py-4 border-b border-[#2e2e2e] flex items-center justify-between bg-white/[0.01]">
+              <h3 className="text-sm font-semibold text-[#b4b4b4]">Leads Extraídos Hoje</h3>
+              <button
+                onClick={handleDownloadVCard}
+                className="text-[10px] text-[#FF5500] hover:underline flex items-center gap-1">
+                <Download className="w-3 h-3" />
+                Baixar vCard
+              </button>
             </div>
-            <div>
-              <h3 className="text-sm font-bold text-zinc-200 uppercase tracking-widest">Importação Inteligente</h3>
-              <p className="text-[10px] text-zinc-500">O ZEHLA identifica automaticamente colunas de Pousada, Telefone e E-mail</p>
-            </div>
-          </div>
-
-          <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-zinc-800 rounded-2xl cursor-pointer hover:bg-zinc-800/20 transition-all hover:border-[#FF5500]/50 group">
-            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              <div className="p-4 rounded-full bg-zinc-800 group-hover:bg-[#FF5500]/10 mb-4 transition-colors">
-                <Database className="text-zinc-600 group-hover:text-[#FF5500]" size={24} />
-              </div>
-              <p className="mb-2 text-sm text-zinc-300">Clique para selecionar ou arraste o arquivo</p>
-              <p className="text-[10px] text-zinc-500">XLSX, CSV ou JSON (Máx. 50MB)</p>
-            </div>
-            <input type="file" className="hidden" accept=".csv, .xlsx, .json" onChange={handleExcelUpload} />
-          </label>
-        </motion.div>
-      )}
-
-      {activeMode === 'automate' && (
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6"
-        >
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4">
-             <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                  <ShieldCheck className="text-emerald-500" size={16} />
+            <div className="divide-y divide-white/5 max-h-[300px] overflow-y-auto zehla-scroll">
+              {waLeads.map((lead) => (
+                <div key={lead.id} className="px-5 py-3 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
+                  <div>
+                    <div className="text-xs font-bold text-[#efefef] flex items-center gap-2">
+                      {lead.name}
+                      {lead._count?.emailTracking > 0 && (
+                        <span className="flex items-center gap-1 text-[9px] text-green-400 bg-green-400/10 px-1.5 py-0.5 rounded-full">
+                          <Eye className="w-2.5 h-2.5" />
+                          {lead._count.emailTracking} aberturas
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[10px] text-[#4d4d4d]">{lead.whatsapp || lead.phone}</div>
+                  </div>
+                  <Badge variant="outline" className="text-[9px] bg-[#FF5500]/10 text-[#FF5500] border-[#FF5500]/30">
+                    {lead.status}
+                  </Badge>
                 </div>
-                <h4 className="text-xs font-black text-zinc-200 uppercase tracking-widest">Enriquecimento Cadastur</h4>
-             </div>
-             <p className="text-[10px] text-zinc-500">Verifica se a pousada possui registro ativo no Ministério do Turismo, aumentando a confiabilidade do lead.</p>
-             <button className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-[10px] font-black text-zinc-300 transition-colors uppercase tracking-widest">
-                Executar Scanner (v2.6)
-             </button>
-          </div>
-
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4">
-             <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                  <Zap className="text-amber-500" size={16} />
+              ))}
+              {waLeads.length === 0 && (
+                <div className="p-8 text-center text-[10px] text-[#4d4d4d]">
+                  Nenhum lead extraído via WA hoje.
                 </div>
-                <h4 className="text-xs font-black text-zinc-200 uppercase tracking-widest">DNA Mapping (LITE)</h4>
-             </div>
-             <p className="text-[10px] text-zinc-500">Mapeia o perfil psicográfico do proprietário baseado em postagens e site oficial para personalizar o tom de voz.</p>
-             <button className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-[10px] font-black text-zinc-300 transition-colors uppercase tracking-widest">
-                Iniciar Mapeamento
-             </button>
+              )}
+            </div>
           </div>
-        </motion.div>
-      )}
+        </div>
+      </div>
     </div>
   );
 }

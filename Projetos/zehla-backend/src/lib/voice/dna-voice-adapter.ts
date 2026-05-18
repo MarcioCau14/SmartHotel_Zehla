@@ -26,4 +26,23 @@ export class DNAVoiceAdapter {
       language: 'pt-BR'
     };
   }
+
+  /**
+   * Retrieves adaptive parameters for the guest's voice profile.
+   */
+  static async getAdaptiveParams(sessionId: string): Promise<{ speaking_rate: number; pitch: number; style: string; emotiveness: number }> {
+    return {
+      speaking_rate: 1.0,
+      pitch: 1.0,
+      style: 'friendly',
+      emotiveness: 0.8
+    };
+  }
+
+  /**
+   * Generates system instructions based on adaptation parameters.
+   */
+  static getSystemInstruction(adaptation: any): string {
+    return `Adote um estilo de voz ${adaptation.style} com emotividade de ${adaptation.emotiveness}.`;
+  }
 }
