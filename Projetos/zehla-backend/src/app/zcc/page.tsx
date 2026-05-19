@@ -1,35 +1,5 @@
 import Link from 'next/link';
 import {
-import { motion, AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-
-import { APIStatus } from '@/components/dashboard/APIStatus';
-import { AgentManagementPanel } from '@/components/zcc/AgentManagementPanel';
-import { ApiKeysPanel } from '@/components/zcc/ApiKeysPanel';
-import { ConnectEditor } from '@/components/connect/ConnectEditor';
-import { Badge } from '@/components/ui/badge';
-import { CognitiveObservability } from '@/components/zcc/CognitiveObservability';
-import { CognitivePanel } from '@/components/dashboard/CognitivePanel';
-import { FintechHub } from '@/components/zcc/FintechHub';
-import { MarketingLeads } from '@/components/dashboard/MarketingLeads';
-import { PaymentPanel } from '@/components/dashboard/PaymentPanel';
-import { ScaleMetrics } from '@/components/zcc/ScaleMetrics';
-import { SecurityPanel } from '@/components/zcc/SecurityPanel';
-import { Skeleton } from '@/components/ui/skeleton';
-import { SwarmOverview } from '@/components/zcc/SwarmOverview';
-import { SystemStatusBar } from '@/components/dashboard/SystemStatusBar';
-import { TeamManagementTab } from '@/components/zcc/TeamManagementTab';
-import { TenantManagement } from '@/components/zcc/TenantManagement';
-import { TerminalPanel } from '@/components/dashboard/TerminalPanel';
-import { VisibilityDashboard } from '@/components/dashboard/VisibilityDashboard';
-import { WhatsAppPanel } from '@/components/dashboard/WhatsAppPanel';
-import { ZccAutoHealer } from '@/components/zcc/ZccAutoHealer';
-
-import type { AIAgent } from '@/lib/store';
-
-'use client';
-
   ArrowLeft,
   Command,
   Brain,
@@ -71,6 +41,7 @@ import type { AIAgent } from '@/lib/store';
   User,
   Edit3,
   Trash2,
+  LayoutDashboard,
 } from 'lucide-react';
 
 // Dashboard components to reuse
@@ -94,7 +65,8 @@ type ZCCTab =
   | 'apis'
   | 'equipe'
   | 'seguranca'
-  | 'connect';
+  | 'connect'
+  | 'crm';
 
 interface TabConfig {
   id: ZCCTab;
@@ -118,6 +90,7 @@ const tabs: TabConfig[] = [
   { id: 'equipe', label: 'Equipe', shortLabel: 'Equipe', icon: Users, permission: 'manage_team' },
   { id: 'seguranca', label: 'Segurança', shortLabel: 'Segurança', icon: Shield, permission: 'view_security' },
   { id: 'connect', label: 'Connect', shortLabel: 'Connect', icon: Link2, permission: 'view_marketing' },
+  { id: 'crm', label: 'CRM', shortLabel: 'CRM', icon: LayoutDashboard, permission: 'view_marketing' },
 ];
 
 
@@ -375,6 +348,9 @@ export default function ZCCPage() {
 
             {/* Tab 13: Connect */}
             {activeTab === 'connect' && <ZccAutoHealer fallbackName="Connect Profile"><ConnectEditor /></ZccAutoHealer>}
+
+            {/* Tab 14: CRM */}
+            {activeTab === 'crm' && <CRMModule />}
           </motion.div>
         </AnimatePresence>
         </div>
