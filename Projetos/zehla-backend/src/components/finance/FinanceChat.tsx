@@ -1,10 +1,12 @@
-'use client';
-
-import { useState } from 'react';
+import { Bot, User, Send, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Bot, User, Send, Loader2 } from "lucide-react";
+import { useState } from 'react';
+
+
+'use client';
+
 
 interface Message {
   role: 'assistant' | 'user';
@@ -14,7 +16,7 @@ interface Message {
 /**
  * FinanceChat: Interface conversacional para interagir com Jony, Maria ou Tedd.
  */
-export function FinanceChat() {
+export function FinanceChat() : void {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',

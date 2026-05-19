@@ -1,6 +1,8 @@
+import { PrismaClient } from "@prisma/client";
+
+
 // prisma/seed-trends.ts
 
-import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -25,7 +27,8 @@ const TYPES = [
 ];
 
 async function main() {
-  console.log("🌱 [SEED] Populando keywords de tendências...");
+  try {
+  
 
   // Destinos
   for (const city of DESTINATIONS) {
@@ -70,7 +73,7 @@ async function main() {
     });
   }
 
-  console.log("✅ [SEED] Keywords populadas com sucesso.");
+  
 }
 
 main()

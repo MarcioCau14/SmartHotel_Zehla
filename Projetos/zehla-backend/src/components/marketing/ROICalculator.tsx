@@ -1,10 +1,13 @@
+import React, { useState } from 'react';
+import { TrendingDown, Wallet, ArrowRight, AlertTriangle } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+
 'use client';
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { TrendingDown, Wallet, ArrowRight, AlertTriangle } from 'lucide-react';
 
-export function ROICalculator() {
+export function ROICalculator() : void {
+  try {
   const [messagesPerDay, setMessagesPerDay] = useState(10);
   const [dailyRate, setDailyRate] = useState(450);
 

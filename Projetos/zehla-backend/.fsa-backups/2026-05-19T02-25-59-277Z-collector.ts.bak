@@ -1,0 +1,169 @@
+// src/lib/trends/collector.ts
+
+import { prisma } from "@/lib/prisma";
+import { fetchRSSFeeds } from "./rss-parser";
+import { fetchWikipediaPageviews } from "./wikipedia-api";
+import { fetchWeatherForecast } from "./weather-collector";
+import { fetchHolidays } from "./holiday-collector";
+import { detectSignal } from "./detector";
+import { type TrendSignalInput } from "./types";
+
+/**
+ * Orquestrador Central ZCC-TRENDS.
+ * Executa a coleta de todas as fontes de custo zero e sincroniza com o banco.
+ */
+export async function collectAllTrends(tierFilter?: string) {
+  
+  
+  const keywords = await prisma.trendKeyword.findMany({
+    where: { isActive: true, ...(tierFilter ? { tier: tierFilter } : {}) },
+  });
+
+  const results = {
+    rss: 0,
+    wikipedia: 0,
+    weather: 0,
+    holidays: 0,
+    signals: 0,
+  };
+
+  // 1. Google Trends RSS (Tempo Real)
+  const rssTrends = await fetchRSSFeeds();
+  for (const trend of rssTrends) {
+    const matchedKeyword = keywords.find(kw =>
+      trend.title.toLowerCase().includes(kw.keyword.toLowerCase()) ||
+      kw.keyword.toLowerCase().includes(trend.title.toLowerCase())
+    );
+
+    if (matchedKeyword) {
+      const signalData: TrendSignalInput = {
+        type: "destino_boom",
+        keyword: matchedKeyword.keyword,
+        keywordId: matchedKeyword.id,
+        category: matchedKeyword.category,
+        interestScore: 100, // RSS trending = impacto máximo
+        deltaPercent: 50,
+        severity: "alta",
+        geo: "BR"
+      };
+
+      await createTrendSignal(signalData);
+      results.rss++;
+      results.signals++;
+    }
+  }
+
+  // 2. Wikipedia (Proxy de Demanda — 50 Destinos)
+  const wikiDestinations = keywords.filter(k => k.category === "destino");
+  for (const kw of wikiDestinations) {
+    // Remover "pousada em " para buscar o artigo da cidade na Wikipedia
+    const articleTitle = kw.keyword.replace(/^pousada em /i, "").trim();
+    const wikiData = await fetchWikipediaPageviews(articleTitle);
+    
+    if (wikiData) {
+      await prisma.trendDataPoint.create({
+        data: {
+          keywordId: kw.id,
+          interestScore: wikiData.pageviews,
+          interestDelta: wikiData.deltaPercent,
+          date: new Date(),
+          source: "wikipedia",
+        },
+      });
+
+      const signal = detectSignal(kw, {
+        interestScore: wikiData.pageviews,
+        interestDelta: wikiData.deltaPercent,
+      });
+
+      if (signal) {
+        await createTrendSignal(signal);
+        results.signals++;
+      }
+      results.wikipedia++;
+      `);
+    }
+    await new Promise(r => setTimeout(r, 200));
+  }
+
+  // 3. Feriados (Programático)
+  const holidays = await fetchHolidays();
+  for (const h of holidays) {
+    await prisma.holidaySignal.upsert({
+      where: { id: `holiday-${h.name}-${h.date}` }, // ID determinístico para evitar duplicatas
+      update: { daysUntil: h.daysUntil, isExtended: h.isExtended },
+      create: {
+        id: `holiday-${h.name}-${h.date}`,
+        name: h.name,
+        date: new Date(h.date),
+        type: h.type,
+        isExtended: h.isExtended,
+        daysUntil: h.daysUntil
+      }
+    });
+    results.holidays++;
+  }
+
+  // 4. Clima (Apenas para destinos ativos com coordenadas)
+  // Nota: Isso seria expandido conforme tivermos as coordenadas das propriedades
+  // Por enquanto, faremos para cidades polo (ex: Imbituba, Paraty, Gramado)
+  const cities = [
+    { name: "Imbituba", lat: -28.24, lon: -48.67, state: "SC" },
+    { name: "Paraty", lat: -23.22, lon: -44.71, state: "RJ" },
+    { name: "Gramado", lat: -29.37, lon: -50.87, state: "RS" }
+  ];
+
+  for (const city of cities) {
+    const weatherSignals = await fetchWeatherForecast(city.lat, city.lon, city.name);
+    for (const ws of weatherSignals) {
+      await prisma.weatherSignal.create({
+        data: {
+          city: city.name,
+          state: city.state,
+          dateRange: ws.date,
+          avgTemp: ws.tempMax,
+          precipitation: ws.precipitation,
+          condition: ws.condition,
+          impactScore: ws.impactScore
+        }
+      });
+      results.weather++;
+    }
+  }
+
+  
+  return results;
+}
+
+async function createTrendSignal(input: TrendSignalInput) {
+  // Evitar sinais duplicados para a mesma keyword no mesmo dia
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const existing = await prisma.trendSignal.findFirst({
+    where: {
+      keyword: input.keyword,
+      type: input.type,
+      createdAt: { gte: today }
+    }
+  });
+
+  if (!existing) {
+    return await prisma.trendSignal.create({
+      data: {
+        type: input.type,
+        keyword: input.keyword,
+        keywordId: input.keywordId,
+        category: input.category,
+        interestScore: input.interestScore,
+        deltaPercent: input.deltaPercent,
+        severity: input.severity,
+        geo: input.geo,
+        dateDetected: new Date(),
+        previousScore: input.previousScore,
+        agentsNotified: "[]",
+      }
+    });
+  }
+  return existing;
+}

@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { db as prisma } from '@/lib/db';
 
+
 // GET: List all API configs for the default tenant
-export async function GET() {
+export async function GET() : void {
   try {
     // For MVP, get configs from the first tenant
     const tenant = await prisma.tenant.findFirst({ include: { apiConfigs: true } });
@@ -40,7 +42,7 @@ export async function GET() {
 }
 
 // PUT: Save API key for a provider
-export async function PUT(request: NextRequest) {
+export async function PUT(request: NextRequest) : void {
   try {
     const { provider, apiKey, model } = await request.json();
 
@@ -81,7 +83,7 @@ export async function PUT(request: NextRequest) {
 }
 
 // PATCH: Toggle provider active/inactive
-export async function PATCH(request: NextRequest) {
+export async function PATCH(request: NextRequest) : void {
   try {
     const { provider, isActive } = await request.json();
 

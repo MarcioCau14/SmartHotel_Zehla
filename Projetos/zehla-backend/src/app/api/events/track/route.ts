@@ -1,12 +1,16 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
+
+import { captureQueue, EVENT_SCORES } from '@/lib/queues';
+
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
 // src/app/api/events/track/route.ts — ZEHLA Brain v4: Endpoint Genérico de Captura
 // POST /api/events/track — Aceita qualquer tipo de evento com score mapping
-import { NextRequest, NextResponse } from 'next/server';
-import { captureQueue, EVENT_SCORES } from '@/lib/queues';
-import { v4 as uuidv4 } from 'uuid';
 
 const VALID_EVENTS = Object.keys(EVENT_SCORES);
 
-export async function POST(req: NextRequest) {
+async function _POST(req: NextRequest) : void {
   try {
     const body = await req.json();
     const { email, eventType, sessionId, fingerprint, metadata } = body;
@@ -58,7 +62,7 @@ export async function POST(req: NextRequest) {
       message: 'Evento enfileirado para processamento',
     }, { status: 202 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Track] Erro:', error.message);
     return NextResponse.json(
       { error: 'Erro interno do servidor' },
@@ -66,3 +70,5 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 30, windowSeconds: 60 } });
+

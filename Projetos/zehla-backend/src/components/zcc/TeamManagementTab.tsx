@@ -1,7 +1,9 @@
+import { 
+import { useState, useEffect } from 'react';
+
+
 'use client';
 
-import { useState, useEffect } from 'react';
-import { 
   Users, 
   Plus, 
   User, 
@@ -10,7 +12,7 @@ import {
   LockKeyhole 
 } from 'lucide-react';
 
-export function TeamManagementTab() {
+export function TeamManagementTab() : void {
   const [members, setMembers] = useState<any[]>([]);
 
   useEffect(() => {

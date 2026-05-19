@@ -1,9 +1,12 @@
+import { ChevronUp, ChevronDown, X } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+
+import { Skeleton } from '@/components/ui/skeleton';
+
+import type { TerminalMessage } from '@/lib/store';
+
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronUp, ChevronDown, X } from 'lucide-react';
-import type { TerminalMessage } from '@/lib/store';
 
 const categoryFilters = [
 { key: 'all', label: 'Todos', color: 'bg-neutral-500/20 text-[#b4b4b4] border-neutral-500/30' },
@@ -15,7 +18,7 @@ const;
 
 type CategoryFilter = (typeof categoryFilters)[number]['key'];
 
-export function TerminalPanel() {
+export function TerminalPanel() : void {
   const [messages, setMessages] = useState<TerminalMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);

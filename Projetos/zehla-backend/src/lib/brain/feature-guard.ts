@@ -1,5 +1,6 @@
 import { Plan } from '@prisma/client';
 
+
 export type Feature = 
   | 'IA_PERSONA' 
   | 'SUPPLIER_MANAGEMENT' 
@@ -14,10 +15,12 @@ const PLAN_FEATURES: Record<Plan, Feature[]> = {
 };
 
 export function hasFeature(plan: Plan, feature: Feature): boolean {
+  try {
   return PLAN_FEATURES[plan].includes(feature);
 }
 
 export function getPlanName(plan: Plan): string {
+  try {
   const names: Record<Plan, string> = {
     LITE: 'ZEHLA Lite',
     PRO: 'ZEHLA Pro',

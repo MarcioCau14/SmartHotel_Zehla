@@ -1,8 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 
+
 const prisma = new PrismaClient();
 
 async function main() {
+  try {
   const scLeads = await prisma.lead.findMany({
     where: { state: 'SC' },
     select: {
@@ -14,8 +16,8 @@ async function main() {
     take: 5
   });
 
-  console.log('--- Amostra Coordenadas SC ---');
-  console.log(JSON.stringify(scLeads, null, 2));
+  
+  );
 }
 
 main()

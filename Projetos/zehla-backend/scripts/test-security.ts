@@ -1,7 +1,8 @@
 import { prisma } from '../src/lib/prisma';
 
+
 async function testCanaryDetection() {
-  console.log('🧪 Testando detecção de Canary...');
+  try {
 
   // 1. Tentar ler um registro canary (isso deve disparar o alerta via Prisma Extension)
   const canary = await prisma.reservation.findFirst({
@@ -13,10 +14,8 @@ async function testCanaryDetection() {
     return;
   }
 
-  console.log(`🔍 Registro Canary acessado: ${canary.id}`);
 
   // 2. Aguardar um pouco para o alerta assíncrono (fire-and-forget) ser processado
-  console.log('⏳ Aguardando processamento do alerta...');
   await new Promise(resolve => setTimeout(resolve, 2000));
 
   // 3. Verificar se o alerta foi criado na tabela SecurityAlert
@@ -26,10 +25,6 @@ async function testCanaryDetection() {
   });
 
   if (alert) {
-    console.log('✅ SUCESSO! Alerta de segurança detectado no banco:');
-    console.log(`   Tipo: ${alert.alertType}`);
-    console.log(`   Severidade: ${alert.severity}`);
-    console.log(`   Metadados: ${alert.metadata}`);
   } else {
     console.error('❌ FALHA! Nenhum alerta de segurança foi gerado.');
   }

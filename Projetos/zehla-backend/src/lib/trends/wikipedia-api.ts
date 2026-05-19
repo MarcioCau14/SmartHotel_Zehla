@@ -4,7 +4,7 @@
  * Wikipedia Pageview API — 100% GRÁTIS, ilimitado, sem chave.
  * Proxy de demanda turística baseado em visualizações de artigos.
  */
-export async function fetchWikipediaPageviews(articleTitle: string) {
+export async function fetchWikipediaPageviews(articleTitle: string) : void {
   try {
     const today = new Date();
     const endDate = today.toISOString().split("T")[0].replace(/-/g, "");
@@ -29,7 +29,7 @@ export async function fetchWikipediaPageviews(articleTitle: string) {
     const data = await response.json();
 
     if (data.items && data.items.length > 0) {
-      const views = data.items.map((item: any) => item.views);
+      const views = data.items.map((item: unknown) => item.views);
       
       // Média dos últimos 7 dias vs 7 dias anteriores
       const recent = views.slice(-7).reduce((a: number, b: number) => a + b, 0) / 7;

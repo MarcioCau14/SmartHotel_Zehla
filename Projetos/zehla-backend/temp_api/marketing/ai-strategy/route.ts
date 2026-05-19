@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
 import ZAI from 'z-ai-web-dev-sdk';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest) {
+
+export async function POST(request: NextRequest) : void {
   try {
     const { prompt } = await request.json();
     if (!prompt) return NextResponse.json({ error: 'Prompt obrigatório' }, { status: 400 });

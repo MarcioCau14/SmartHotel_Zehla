@@ -1,9 +1,12 @@
+import { Send, Loader2 } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+
+import { Input } from '@/components/ui/input';
+
+import type { TerminalMessage } from '@/lib/store';
+
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Send, Loader2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import type { TerminalMessage } from '@/lib/store';
 
 interface ClassificationResult {
   intent: string;
@@ -14,7 +17,7 @@ interface ClassificationResult {
   latency_ms: number;
 }
 
-export function MessageFeed() {
+export function MessageFeed() : void {
   const [messages, setMessages] = useState<TerminalMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [classifying, setClassifying] = useState(false);

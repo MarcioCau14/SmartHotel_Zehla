@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
-import { join } from 'path';
 import * as fs from 'fs';
+import { join } from 'path';
+
 
 const folder = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_';
 
@@ -54,7 +55,8 @@ const REGIONAL_HUBS: Record<string, any[]> = {
 };
 
 async function operation10k() {
-  console.log('🚀 [OPERAÇÃO 10K] Iniciando Missão Final de Expansão Continental...');
+  try {
+  
   
   const uniqueWhatsapps = new Set();
   const currentLeadsByFile: Record<string, any[][]> = {};
@@ -63,12 +65,12 @@ async function operation10k() {
   for (const source of dataSources) {
     const path = join(folder, source.file);
     if (fs.existsSync(path)) {
-      console.log(`📂 Lendo: ${source.file}...`);
+      
       const wb = XLSX.readFile(path);
       const data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
       
-      const rows: any[][] = [];
-      data.forEach((row: any) => {
+      const rows: unknown[][] = [];
+      data.forEach((row: unknown) => {
         let wa = String(row.Whatsapp || row.whatsapp || '').replace(/\D/g, '');
         if (wa) uniqueWhatsapps.add(wa);
         
@@ -85,8 +87,7 @@ async function operation10k() {
     }
   }
 
-  console.log(`📊 Total de leads pré-operação: ${uniqueWhatsapps.size}`);
-  const targetNew = 1500;
+  
   let addedTotal = 0;
 
   // 2. Gerar 1500 novos leads distribuídos
@@ -101,7 +102,7 @@ async function operation10k() {
   ];
 
   for (const region of distribution) {
-    console.log(`🚀 [${region.key}] Gerando ${region.target} novos leads para ${region.file}...`);
+    
     const hubs = REGIONAL_HUBS[region.key];
     const fileRows = currentLeadsByFile[region.file] || [];
 
@@ -149,9 +150,9 @@ async function operation10k() {
     XLSX.writeFile(wb, join(folder, region.file));
   }
 
-  console.log(`\n✨ [OPERAÇÃO 10K CONCLUÍDA]`);
-  console.log(`✅ Novos Leads Adicionados: ${addedTotal}`);
-  console.log(`📊 Total Final Estimado: ${uniqueWhatsapps.size}`);
+  
+  
+  
 }
 
 operation10k().catch(console.error);

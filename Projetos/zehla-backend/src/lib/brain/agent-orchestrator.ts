@@ -1,13 +1,15 @@
+import { AgentRequest, AgentResponse } from '@/types'
+import { getCachedResponse, setCachedResponse } from '@/lib/ai/semanticCache'
+
 import { DNAVoiceAdapter } from '../voice/dna-voice-adapter';
 import { ProcessPaymentProofUseCase } from './use-cases/ProcessPaymentProofUseCase';
+import { PromptBuilder } from './processors/PromptBuilder';
 import { ReceiptExtractor } from './receipt-extractor'
-import { AgentRequest, AgentResponse } from '@/types'
-import { prisma } from '../prisma'
-import { getCachedResponse, setCachedResponse } from '@/lib/ai/semanticCache'
-import { llmRouter } from '../ai/llm-router'
 import { SecurityProcessor } from './processors/SecurityProcessor';
 import { TrialValidator } from './processors/TrialValidator';
-import { PromptBuilder } from './processors/PromptBuilder';
+import { llmRouter } from '../ai/llm-router'
+import { prisma } from '../prisma'
+
 
 // Utilitários de segurança simulados para o contexto
 const classifyIntent = async (p: string) => ({ intent: 'GREETING', confidence: 0.9, entities: {} });

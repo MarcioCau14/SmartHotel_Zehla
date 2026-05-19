@@ -1,5 +1,6 @@
 import axios from 'axios'
 
+
 const EVOLUTION_API_URL = process.env.EVOLUTION_API_URL || 'http://localhost:8080'
 const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY || 'zehla-evolution-key'
 
@@ -36,7 +37,7 @@ export class WhatsappExtractorService {
   static async fetchContacts(instanceName: string): Promise<WAContact[]> {
     try {
       const res = await axios.get(`${EVOLUTION_API_URL}/contact/fetchContacts/${instanceName}`, { headers: this.headers })
-      return res.data.map((c: any) => ({
+      return res.data.map((c: unknown) => ({
         id: c.id,
         name: c.name || c.pushname || 'Sem Nome',
         pushName: c.pushname,
@@ -61,7 +62,7 @@ export class WhatsappExtractorService {
   static async fetchGroups(instanceName: string): Promise<WAGroup[]> {
     try {
       const res = await axios.get(`${EVOLUTION_API_URL}/group/fetchAllGroups/${instanceName}`, { headers: this.headers })
-      return res.data.map((g: any) => ({
+      return res.data.map((g: unknown) => ({
         id: g.id,
         subject: g.subject,
         size: g.size || 0
@@ -75,7 +76,7 @@ export class WhatsappExtractorService {
   static async fetchGroupParticipants(instanceName: string, groupJid: string): Promise<WAContact[]> {
     try {
       const res = await axios.get(`${EVOLUTION_API_URL}/group/getParticipants/${instanceName}?groupJid=${groupJid}`, { headers: this.headers })
-      return res.data.map((p: any) => ({
+      return res.data.map((p: unknown) => ({
         id: p.id,
         name: p.name || p.pushname || 'Participante',
         number: p.id.split('@')[0]

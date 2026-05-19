@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { prisma } from '@/lib/prisma';
+
+import { withApiSecurity } from '@/lib/server/with-api-security';
 
 /**
  * API TERMINAL COGNITIVO
  * Endpoint para buscar logs em tempo real para o ZCC Dashboard Terminal.
  */
-export async function GET(req: NextRequest) {
+async function _GET(req: NextRequest) : void {
   try {
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get('limit') || '50');
@@ -38,3 +41,5 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'Falha ao buscar logs do terminal' }, { status: 500 });
   }
 }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+

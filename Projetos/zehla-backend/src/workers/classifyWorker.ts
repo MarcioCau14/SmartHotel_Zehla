@@ -1,16 +1,19 @@
+import { Worker, Job } from 'bullmq';
+
+import { prisma } from '@/lib/prisma';
+import { redis } from '@/lib/redis';
+
+import { QUEUE_NAMES, WORKER_CONFIG, swipeMatchQueue, determineCluster, type Cluster } from '@/lib/queues';
+
 // src/workers/classifyWorker.ts — ZEHLA Brain v4: Estágio 4 (Classify / Score Engine)
 // Recalcula score total, determina cluster, detecta transições
-import { Worker, Job } from 'bullmq';
-import { redis } from '@/lib/redis';
-import { QUEUE_NAMES, WORKER_CONFIG, swipeMatchQueue, determineCluster, type Cluster } from '@/lib/queues';
-import { prisma } from '@/lib/prisma';
 
 export const classifyWorker = new Worker(
   QUEUE_NAMES.CLASSIFY,
   async (job: Job) => {
     const { eventId, leadId, eventType, enrichedMetadata } = job.data;
 
-    console.log(`[Classify] Classificando lead: ${leadId}`);
+    
 
     // 1. Buscar lead atual
     const lead = await prisma.lead.findUnique({
@@ -78,7 +81,6 @@ export const classifyWorker = new Worker(
       profile,
     };
 
-    console.log(
       `[Classify] Lead ${lead.email}: ${lead.conversionScore} (${previousCluster}) ` +
       `→ ${newConversionScore} (${newCluster})${clusterChanged ? ' *** TRANSIÇÃO ***' : ''}`
     );
@@ -105,6 +107,7 @@ export const classifyWorker = new Worker(
 
 // Detecção de perfil comportamental (reaproveitando lógica do LeadIntelligenceEngine)
 function detectBehaviorProfile(events: { type: string }[]): string {
+  try {
   const types = events.map(e => e.type);
   const hasFastResponse = types.includes('WHATSAPP_REPLY');
   const clickCount = types.filter(t => t === 'LINK_CLICK').length;
@@ -119,6 +122,7 @@ function detectBehaviorProfile(events: { type: string }[]): string {
 
 // Detecção de estágio do funil
 function detectFunnelStage(events: { type: string }[]): string {
+  try {
   const types = events.map(e => e.type);
   if (types.includes('CONVERSION') || types.includes('PAYMENT_MADE')) return 'CONVERTED';
   if (types.includes('TRIAL_STARTED')) return 'TRIAL';

@@ -55,6 +55,7 @@
   };
 
   function interpolate(t, input, output, easing) {
+    try {
     const [inStart, inEnd] = input;
     const [outStart, outEnd] = output;
 
@@ -70,11 +71,13 @@
   }
 
   function useTime() {
+    try {
     const ctx = useContext(TimeContext);
     return ctx.time;
   }
 
   function useSprite() {
+    try {
     const sprite = useContext(SpriteContext);
     if (!sprite) {
       return { t: 0, elapsed: 0, duration: 0 };
@@ -163,6 +166,7 @@
   };
 
   function Stage({ duration = 10, width = 1920, height = 1080, fps = 60, loop = true, children, bgColor = '#fff' }) {
+    try {
     const [time, setTime] = useState(0);
     const [playing, setPlaying] = useState(true);
     const [scale, setScale] = useState(1);
@@ -178,6 +182,7 @@
 
     useEffect(() => {
       function updateScale() {
+        try {
         const vw = window.innerWidth;
         const vh = window.innerHeight - 56;
         const s = Math.min(vw / width, vh / height);
@@ -194,6 +199,7 @@
       let last = null;
 
       function tick(now) {
+        try {
         if (cancelled) return;
         if (last === null) {
           // First animation frame. Set last=now so delta starts at 0,
@@ -305,6 +311,7 @@
   }
 
   function Sprite({ start = 0, end, children, style }) {
+    try {
     const { time } = useContext(TimeContext);
     const actualEnd = end == null ? Infinity : end;
 

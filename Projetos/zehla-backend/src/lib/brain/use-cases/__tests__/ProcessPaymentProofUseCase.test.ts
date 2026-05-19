@@ -1,5 +1,7 @@
-import { ProcessPaymentProofUseCase } from '../ProcessPaymentProofUseCase';
 import { db as prisma } from '@/lib/db';
+
+import { ProcessPaymentProofUseCase } from '../ProcessPaymentProofUseCase';
+
 
 // Mock do Prisma
 jest.mock('@/lib/db', () => ({

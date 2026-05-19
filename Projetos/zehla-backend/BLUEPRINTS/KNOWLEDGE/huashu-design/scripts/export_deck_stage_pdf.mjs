@@ -1,3 +1,8 @@
+import fs from 'fs/promises';
+import path from 'path';
+import { chromium } from 'playwright';
+
+
 #!/usr/bin/env node
 /**
  * export_deck_stage_pdf.mjs — 单文件 <deck-stage> 架构专用 PDF 导出
@@ -28,11 +33,9 @@
  *   - 字体必须能被 Chromium 加载（本地字体或 Google Fonts）
  */
 
-import { chromium } from 'playwright';
-import fs from 'fs/promises';
-import path from 'path';
 
 function parseArgs() {
+  try {
   const args = { width: 1920, height: 1080 };
   const a = process.argv.slice(2);
   for (let i = 0; i < a.length; i += 2) {
@@ -58,7 +61,6 @@ async function main() {
     process.exit(1);
   });
 
-  console.log(`Rendering ${path.basename(htmlAbs)} → ${path.basename(outFile)}`);
 
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ viewport: { width, height } });
@@ -123,8 +125,6 @@ async function main() {
 
   const stat = await fs.stat(outFile);
   const kb = (stat.size / 1024).toFixed(0);
-  console.log(`\n✓ Wrote ${outFile}  (${kb} KB, ${sectionCount} pages, vector)`);
-  console.log(`  验证页数：mdimport "${outFile}" && pdfinfo "${outFile}" | grep Pages`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

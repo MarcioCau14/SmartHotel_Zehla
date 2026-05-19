@@ -1,8 +1,11 @@
+import { useEffect, useCallback, useRef } from 'react';
+
+import { trackEvent } from '@/lib/eventTracker';
+
+
 // src/hooks/useEventTracker.ts — ZEHLA Brain v4: React Hook para Tracking
 'use client';
 
-import { useEffect, useCallback, useRef } from 'react';
-import { trackEvent } from '@/lib/eventTracker';
 
 interface UseEventTrackerOptions {
   email?: string | null;
@@ -16,7 +19,8 @@ interface UseEventTrackerOptions {
  * const { trackClick, trackAction } = useEventTracker({ email: user.email });
  * <button onClick={() => trackClick('pricing_button')}>Ver Preços</button>
  */
-export function useEventTracker(options: UseEventTrackerOptions = {}) {
+export function useEventTracker(options: UseEventTrackerOptions = : void {}) {
+  try {
   const { email, autoTrackPageView = true } = options;
   const hasTrackedPageView = useRef(false);
 

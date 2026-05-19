@@ -104,6 +104,7 @@ const canvasStyles = {
 };
 
 function DesignCanvas({ title, subtitle, columns = 3, children }) {
+  try {
   const [expanded, setExpanded] = React.useState(null);
 
   const gridStyle = {
@@ -167,6 +168,7 @@ function DesignCanvas({ title, subtitle, columns = 3, children }) {
 }
 
 function Variation({ label, description, number, children, _index, _expanded, _onToggle, aspectRatio = '4 / 3' }) {
+  try {
   const displayNumber = number || String(_index + 1).padStart(2, '0');
 
   return (

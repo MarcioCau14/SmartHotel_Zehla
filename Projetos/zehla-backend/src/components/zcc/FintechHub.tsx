@@ -1,8 +1,11 @@
+import { QrCode, CreditCard, CheckCircle, ArrowDownUp, TrendingUp, Shield, Building, ArrowUpRight } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+
+
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { QrCode, CreditCard, CheckCircle, ArrowDownUp, TrendingUp, Shield, Building, ArrowUpRight } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 
 interface PaymentOption {
   name: string;
@@ -46,7 +49,8 @@ const typeLabels = {
   gateway: 'Gateway'
 };
 
-export function FintechHub() {
+export function FintechHub() : void {
+  try {
   const [payments, setPayments] = useState<any[]>([]);
   const [totalRevenue, setTotalRevenue] = useState(0);
 

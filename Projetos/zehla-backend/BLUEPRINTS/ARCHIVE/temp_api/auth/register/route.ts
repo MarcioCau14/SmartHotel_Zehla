@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { db as prisma } from '@/lib/db';
 import { hashPassword, generateSessionToken, checkPasswordStrength } from '@/lib/auth';
 
-export async function POST(request: NextRequest) {
+
+export async function POST(request: NextRequest) : void {
   try {
     const body = await request.json();
     const { nome, email, senha, whatsappProprietario, whatsappAtendimento } = body;

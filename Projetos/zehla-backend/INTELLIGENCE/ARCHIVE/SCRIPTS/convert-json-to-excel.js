@@ -29,7 +29,7 @@ try {
     XLSX.utils.book_append_sheet(wb, ws, "POUSADAS_SAQUAREMA");
     XLSX.writeFile(wb, filePath);
 
-    console.log(`Success: POUSADAS_MARKETING_FASE.xlsx updated via JSON.`);
+    
 } catch (err) {
     console.error('Error processing JSON to Excel:', err);
     process.exit(1);

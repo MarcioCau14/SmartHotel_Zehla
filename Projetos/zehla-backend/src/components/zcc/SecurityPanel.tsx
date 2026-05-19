@@ -1,7 +1,12 @@
+import {
+import { useState, useEffect, useMemo } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+
+
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import {
   Shield,
   Zap,
   Lock,
@@ -9,10 +14,9 @@ import {
   Terminal,
   FileCheck } from
 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 
-export function SecurityPanel() {
+export function SecurityPanel() : void {
+  try {
   const [security, setSecurity] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
 

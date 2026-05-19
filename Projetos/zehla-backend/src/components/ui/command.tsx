@@ -1,11 +1,13 @@
-"use client"
-
 import * as React from "react"
+import {
 import { Command as CommandPrimitive } from "cmdk"
 import { SearchIcon } from "lucide-react"
-
 import { cn } from "@/lib/utils"
-import {
+
+
+"use client"
+
+
   Dialog,
   DialogContent,
   DialogDescription,
@@ -14,6 +16,7 @@ import {
 } from "@/components/ui/dialog"
 
 function Command({
+  try {
   className,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive>) {
@@ -30,6 +33,7 @@ function Command({
 }
 
 function CommandDialog({
+  try {
   title = "Command Palette",
   description = "Search for a command to run...",
   children,
@@ -61,6 +65,7 @@ function CommandDialog({
 }
 
 function CommandInput({
+  try {
   className,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Input>) {
@@ -83,6 +88,7 @@ function CommandInput({
 }
 
 function CommandList({
+  try {
   className,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.List>) {
@@ -99,6 +105,7 @@ function CommandList({
 }
 
 function CommandEmpty({
+  try {
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Empty>) {
   return (
@@ -111,6 +118,7 @@ function CommandEmpty({
 }
 
 function CommandGroup({
+  try {
   className,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Group>) {
@@ -127,6 +135,7 @@ function CommandGroup({
 }
 
 function CommandSeparator({
+  try {
   className,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Separator>) {
@@ -140,6 +149,7 @@ function CommandSeparator({
 }
 
 function CommandItem({
+  try {
   className,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Item>) {
@@ -156,6 +166,7 @@ function CommandItem({
 }
 
 function CommandShortcut({
+  try {
   className,
   ...props
 }: React.ComponentProps<"span">) {

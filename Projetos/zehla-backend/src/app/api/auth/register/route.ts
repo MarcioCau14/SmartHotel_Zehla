@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { hashPassword, generateSessionToken, checkPasswordStrength } from '@/lib/auth';
 
-export async function POST(request: NextRequest) {
+import { hashPassword, generateSessionToken, checkPasswordStrength } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+async function _POST(request: NextRequest) : void {
   try {
     const body = await request.json();
     const { nome, email, senha, whatsappProprietario, whatsappAtendimento } = body;
@@ -107,3 +110,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 30, windowSeconds: 60 } });
+

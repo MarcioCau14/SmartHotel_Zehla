@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
+  try {
   const hashedPassword = await bcrypt.hash('zehla_secret_2026', 10);
   
   // Criar Usuário Admin
@@ -34,8 +35,8 @@ async function main() {
     },
   });
 
-  console.log({ user, property });
-  console.log('✅ Usuário e Propriedade de teste criados com sucesso!');
+  
+  
 }
 
 main()

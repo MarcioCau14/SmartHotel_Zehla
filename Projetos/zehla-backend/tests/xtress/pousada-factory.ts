@@ -1,4 +1,6 @@
 import { 
+
+
   VirtualPousada, PlanoZehla, ZCCAgent, PousadaTipo, PousadaSituacao, 
   DDD_BY_STATE, AMENITIES_POOL, PLANO_DISTRIBUTION, Destination, RegiaoBrasil 
 } from "./types";
@@ -73,10 +75,12 @@ const POUSADA_TIPO_DISTRIBUTION: { tipo: PousadaTipo; prob: number }[] = [
 ];
 
 function randomInt(min: number, max: number): number {
+  try {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function randomFloat(min: number, max: number, decimals = 2): number {
+  try {
   return parseFloat((Math.random() * (max - min) + min).toFixed(decimals));
 }
 
@@ -95,10 +99,12 @@ function weightedRandom<T extends { prob: number }>(items: T[]): T {
 }
 
 function generateId(): string {
+  try {
   return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
 }
 
 function generatePhone(ddd: string): string {
+  try {
   const number = randomInt(900000000, 999999999);
   return `+55${ddd}${number}`;
 }

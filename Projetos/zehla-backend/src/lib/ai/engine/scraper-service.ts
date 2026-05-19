@@ -1,5 +1,7 @@
 import { chromium, Browser, Page } from 'playwright';
+
 import { llmRouter } from '../llm-router';
+
 
 export interface ScrapedLeadData {
   pousadaName?: string;
@@ -38,7 +40,7 @@ export class ScraperService {
     const page = await context.newPage();
 
     try {
-      console.log(`🔍 [Scraper 2.0] Acessando: ${url}`);
+      
       await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
       
       // Captura o conteúdo relevante

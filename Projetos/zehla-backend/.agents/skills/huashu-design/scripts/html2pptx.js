@@ -35,6 +35,7 @@ const EMU_PER_IN = 914400;
 
 // Helper: Get body dimensions and check for overflow
 async function getBodyDimensions(page) {
+  try {
   const bodyDimensions = await page.evaluate(() => {
     const body = document.body;
     const style = window.getComputedStyle(body);
@@ -67,6 +68,7 @@ async function getBodyDimensions(page) {
 
 // Helper: Validate dimensions match presentation layout
 function validateDimensions(bodyDimensions, pres) {
+  try {
   const errors = [];
   const widthInches = bodyDimensions.width / PX_PER_IN;
   const heightInches = bodyDimensions.height / PX_PER_IN;
@@ -86,6 +88,7 @@ function validateDimensions(bodyDimensions, pres) {
 }
 
 function validateTextBoxPosition(slideData, bodyDimensions) {
+  try {
   const errors = [];
   const slideHeightInches = bodyDimensions.height / PX_PER_IN;
   const minBottomMargin = 0.5; // 0.5 inches from bottom
@@ -119,6 +122,7 @@ function validateTextBoxPosition(slideData, bodyDimensions) {
 
 // Helper: Add background to slide
 async function addBackground(slideData, targetSlide, tmpDir) {
+  try {
   if (slideData.background.type === 'image' && slideData.background.path) {
     let imagePath = slideData.background.path.startsWith('file://')
       ? slideData.background.path.replace('file://', '')
@@ -131,6 +135,7 @@ async function addBackground(slideData, targetSlide, tmpDir) {
 
 // Helper: Add elements to slide
 function addElements(slideData, targetSlide, pres) {
+  try {
   for (const el of slideData.elements) {
     if (el.type === 'image') {
       let imagePath = el.src.startsWith('file://') ? el.src.replace('file://', '') : el.src;
@@ -242,6 +247,7 @@ function addElements(slideData, targetSlide, pres) {
 
 // Helper: Extract slide data from HTML page
 async function extractSlideData(page) {
+  try {
   return await page.evaluate(() => {
     const PT_PER_PX = 0.75;
     const PX_PER_IN = 96;
@@ -918,7 +924,6 @@ async function html2pptx(htmlFile, pres, options = {}) {
       const page = await browser.newPage();
       page.on('console', (msg) => {
         // Log the message text to your test runner's console
-        console.log(`Browser console: ${msg.text()}`);
       });
 
       await page.goto(`file://${filePath}`);

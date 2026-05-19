@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+import { Guardian } from '@/lib/security/guardian';
 import { LISBatchValidator } from '@/lib/intelligence/lis-validator';
 import { ZMGDispatcher } from '@/lib/delivery/zmg-dispatcher';
-import { Guardian } from '@/lib/security/guardian';
+
 
 /**
  * [OPERATIONAL] Ingestão em Lote (Zero Browser Policy)
  * Processa até 300 leads estritamente via JSON para evitar carga de CPU local.
  */
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest) : void {
   // 1. BLINDAGEM: Rate Limiting Militar (2 req/min para lotes)
   const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
   const isAllowed = await Guardian.checkRateLimit(ip, 'POST_BATCH_INGESTION');
@@ -28,7 +30,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Payload deve ser um array de leads.' }, { status: 400 });
     }
 
-    console.log(`📦 [BATCH_INGEST] Recebido lote de ${leads.length} leads.`);
+    
 
     // 3. PROCESSAMENTO: LIS Batch Validator (Zero Browser)
     const validator = new LISBatchValidator();
@@ -47,7 +49,7 @@ export async function POST(req: NextRequest) {
       message: `${validatedLeads.length} leads qualificados e enfileirados para ZMG.`
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ [BATCH_INGEST] Critical Failure:', error.message);
     return NextResponse.json({ error: 'Internal operational error.' }, { status: 500 });
   }

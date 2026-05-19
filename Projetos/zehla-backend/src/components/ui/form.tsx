@@ -1,9 +1,13 @@
+import * as LabelPrimitive from "@radix-ui/react-label"
+import * as React from "react"
+import {
+import { Label } from "@/components/ui/label"
+import { Slot } from "@radix-ui/react-slot"
+import { cn } from "@/lib/utils"
+
+
 "use client"
 
-import * as React from "react"
-import * as LabelPrimitive from "@radix-ui/react-label"
-import { Slot } from "@radix-ui/react-slot"
-import {
   Controller,
   FormProvider,
   useFormContext,
@@ -13,8 +17,6 @@ import {
   type FieldValues,
 } from "react-hook-form"
 
-import { cn } from "@/lib/utils"
-import { Label } from "@/components/ui/label"
 
 const Form = FormProvider
 
@@ -74,6 +76,7 @@ const FormItemContext = React.createContext<FormItemContextValue>(
 )
 
 function FormItem({ className, ...props }: React.ComponentProps<"div">) {
+  try {
   const id = React.useId()
 
   return (
@@ -88,6 +91,7 @@ function FormItem({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function FormLabel({
+  try {
   className,
   ...props
 }: React.ComponentProps<typeof LabelPrimitive.Root>) {
@@ -105,6 +109,7 @@ function FormLabel({
 }
 
 function FormControl({ ...props }: React.ComponentProps<typeof Slot>) {
+  try {
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
 
   return (
@@ -123,6 +128,7 @@ function FormControl({ ...props }: React.ComponentProps<typeof Slot>) {
 }
 
 function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
+  try {
   const { formDescriptionId } = useFormField()
 
   return (
@@ -136,6 +142,7 @@ function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
 }
 
 function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
+  try {
   const { error, formMessageId } = useFormField()
   const body = error ? String(error?.message ?? "") : props.children
 

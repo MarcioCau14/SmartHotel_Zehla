@@ -1,8 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 
+
 const prisma = new PrismaClient();
 
 async function main() {
+  try {
   const scLeads = await prisma.lead.count({
     where: { state: 'SC' }
   });
@@ -28,10 +30,10 @@ async function main() {
     take: 10
   });
 
-  console.log('--- Resumo de Leads ---');
-  console.log('Total SC:', scLeads);
-  console.log('Distribuição por Estado:', JSON.stringify(leadsByState, null, 2));
-  console.log('Top Cidades SC:', JSON.stringify(topCities, null, 2));
+  
+  
+  );
+  );
 }
 
 main()

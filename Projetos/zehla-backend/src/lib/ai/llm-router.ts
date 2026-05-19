@@ -1,5 +1,6 @@
 import { LLMRequest, LLMResponse } from '../../types'
 
+
 // Interfaces para o Zehla ML Brain (RAG / Fine-Tuning)
 export interface MLInteractionLog {
   tenantId: string;
@@ -50,7 +51,7 @@ export class LLMRouter {
 
         if (this.localFailureCount >= this.MAX_LOCAL_FAILURES) {
           this.useLocal = false
-          console.log('🔄 Switching to cloud model (Kimi K2.6)')
+          ')
         }
       }
     }
@@ -160,10 +161,10 @@ export class LLMRouter {
       // Exemplo conceitual:
       // await prisma.mlInteraction.create({ data: log })
       
-      console.log(`🧠 [Zehla ML Brain] Interação registrada para Tenant: ${log.tenantId} | Resultado: ${log.outcome}`)
+      
       
       if (log.outcome === 'BOOKED') {
-        console.log(`📈 [Zehla ML Brain] Reforço Positivo: Preparando threadHistory para vetorização (RAG).`)
+        .`)
         // Trigger para job de geração de embeddings...
       }
     } catch (error) {

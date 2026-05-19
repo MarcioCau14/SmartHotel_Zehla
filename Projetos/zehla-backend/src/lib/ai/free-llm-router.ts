@@ -1,3 +1,7 @@
+import { LLMRequest, LLMResponse } from '@/types'
+import { scanAndMaskPII, sanitizePrompt } from '@/lib/security/pii-scanner'
+
+
 // ============================================================
 // FREE LLM ROUTER — APIs GRATUITAS PARA DESENVOLVIMENTO
 // ============================================================
@@ -5,8 +9,6 @@
 // Em produção: substituir por Kimi K2.6 via OpenRouter
 // ============================================================
 
-import { LLMRequest, LLMResponse } from '@/types'
-import { scanAndMaskPII, sanitizePrompt } from '@/lib/security/pii-scanner'
 
 interface ProviderConfig {
   name: string
@@ -78,12 +80,12 @@ export class FreeLLMRouter {
       if ((this.failureCounts.get(provider.name) || 0) >= this.MAX_FAILURES) continue
 
       try {
-        console.log(`🤖 Tentando ${provider.name}...`)
+        
         const response = await this.callProvider(provider, secureRequest)
         this.failureCounts.set(provider.name, 0)
         this.currentProvider = providers.indexOf(provider)
         return { ...response, duration: Date.now() - startTime }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.warn(`⚠️ ${provider.name} falhou: ${error.message}`)
         this.failureCounts.set(provider.name, (this.failureCounts.get(provider.name) || 0) + 1)
         errors.push(`${provider.name}: ${error.message}`)

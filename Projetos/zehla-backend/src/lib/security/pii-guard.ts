@@ -1,5 +1,6 @@
 import { encrypt, decrypt } from './encryption';
 
+
 /**
  * PII_GUARD: O Escudo de Dados Sensíveis do ZEHLA
  * Garante que dados governamentais (FNRH) e PII sejam criptografados at-rest.

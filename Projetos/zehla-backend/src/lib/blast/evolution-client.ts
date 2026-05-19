@@ -1,5 +1,7 @@
 import { BlastInstance } from '@prisma/client';
+
 import { decrypt } from '@/lib/security/encryption';
+
 
 interface EvolutionMessage {
   number: string;
@@ -20,7 +22,7 @@ export class EvolutionClient {
     this.instanceName = instance.instanceName;
   }
 
-  private async request(method: string, path: string, body?: any) {
+  private async request(method: string, path: string, body?: unknown) {
     const url = `${this.baseUrl}${path}`;
     const opts: any = {
       method,

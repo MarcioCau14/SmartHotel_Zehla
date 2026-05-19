@@ -4,7 +4,7 @@
  * Open-Meteo Weather API — 100% GRÁTIS para uso não comercial.
  * Previsão de 16 dias por coordenadas GPS.
  */
-export async function fetchWeatherForecast(lat: number, lon: number, cityName: string) {
+export async function fetchWeatherForecast(lat: number, lon: number, cityName: string) : void {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s Timeout Rigoroso
 

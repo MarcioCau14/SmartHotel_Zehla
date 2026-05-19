@@ -1,4 +1,6 @@
 import {
+
+
   VirtualGuest, GuestProfile, Formalidade, RegiaoBrasil,
   DDD_BY_STATE
 } from "./types";
@@ -100,6 +102,7 @@ const FORMALIDADE_DISTRIBUTION = [
 ];
 
 function randomInt(min: number, max: number): number {
+  try {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
@@ -118,10 +121,12 @@ function weightedRandom<T extends { prob: number }>(items: T[]): T {
 }
 
 function generateId(): string {
+  try {
   return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
 }
 
 function generatePhone(ddd: string): string {
+  try {
   const prefix = "9"; // Mobile in Brazil
   const number = randomInt(10000000, 99999999);
   return `+55${ddd}${prefix}${number}`;

@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { PrismaClient } from '@prisma/client';
 
+
 const prisma = new PrismaClient();
 
 export class ActiveListeningWhisper {
@@ -12,7 +13,7 @@ export class ActiveListeningWhisper {
    */
   public async transcribeAudio(audioBuffer: Buffer, propertyId: string, leadId: string): Promise<string> {
     try {
-      console.log(`[ActiveListening] Iniciando transcrição para Lead ${leadId}`);
+      
       
       // 1. Simulação: Enviar áudio para um modelo Whisper local ou OpenAI
       // const response = await openai.audio.transcriptions.create({ file: audioBuffer, model: 'whisper-1' });
@@ -31,10 +32,10 @@ export class ActiveListeningWhisper {
         }
       });
       
-      console.log(`[ActiveListening] Transcrição concluída: "${text}"`);
+      
       return text;
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`[ActiveListening] Falha na transcrição: ${error.message}`);
       throw new Error('Falha na decodificação do áudio do hóspede.');
     }

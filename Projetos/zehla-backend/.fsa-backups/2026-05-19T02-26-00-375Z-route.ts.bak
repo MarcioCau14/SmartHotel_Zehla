@@ -1,0 +1,193 @@
+import { NextRequest, NextResponse } from 'next/server'
+
+import { PiiGuard } from '@/lib/security/pii-guard'
+import { llmRouter } from '@/lib/ai/llm-router'
+import { prisma } from '@/lib/prisma'
+
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { action, propertyId, data } = body
+
+    switch (action) {
+      case 'CREATE':
+        return await createReservation(propertyId, data)
+      case 'UPDATE':
+        return await updateReservation(data.id, data)
+      case 'CANCEL':
+        return await cancelReservation(data.id)
+      case 'CHECK_IN':
+        return await checkIn(data.id)
+      case 'CHECK_OUT':
+        return await checkOut(data.id)
+      case 'LIST':
+        return await listReservations(propertyId, data)
+      default:
+        return NextResponse.json({ success: false, error: 'Ação inválida' }, { status: 400 })
+    }
+  } catch (error) {
+    console.error('❌ Erro em Reservas:', error)
+    return NextResponse.json({ success: false, error: 'Erro interno' }, { status: 500 })
+  }
+}
+
+async function createReservation(propertyId: string, data: any) {
+  // Verificar disponibilidade
+  const existingReservation = await prisma.reservation.findFirst({
+    where: {
+      propertyId,
+      roomId: data.roomId,
+      status: { in: ['CONFIRMED', 'CHECKED_IN'] },
+      OR: [
+        {
+          checkIn: { lte: new Date(data.checkOut) },
+          checkOut: { gte: new Date(data.checkIn) }
+        }
+      ]
+    }
+  })
+
+  if (existingReservation) {
+    return NextResponse.json(
+      { success: false, error: 'Quarto não disponível para as datas selecionadas' },
+      { status: 409 }
+    )
+  }
+
+  const nights = Math.ceil(
+    (new Date(data.checkOut).getTime() - new Date(data.checkIn).getTime()) / (1000 * 60 * 60 * 24)
+  )
+
+  const room = await prisma.room.findUnique({ where: { id: data.roomId } })
+  const totalAmount = (room?.basePrice || 0) * nights * (data.guestCount || 1)
+
+  // Blindagem PII/FNRH
+  const protectedData = PiiGuard.protect(data);
+
+  const reservation = await prisma.reservation.create({
+    data: {
+      code: `ZEH-${Date.now()}`,
+      propertyId,
+      roomId: data.roomId,
+      guestName: protectedData.guestName,
+      guestEmail: protectedData.guestEmail,
+      guestPhone: protectedData.guestPhone,
+      guestCpf: protectedData.guestCpf,
+      guestCount: data.guestCount || 1,
+      checkIn: new Date(data.checkIn),
+      checkOut: new Date(data.checkOut),
+      nights,
+      roomPrice: room?.basePrice || 0,
+      totalAmount,
+      paidAmount: 0,
+      status: 'CONFIRMED',
+      checkInStatus: 'PENDING',
+      source: data.source || 'DIRECT',
+      notes: data.notes
+    },
+    include: { room: true, property: true }
+  })
+
+  // Atualizar status do quarto
+  await prisma.room.update({
+    where: { id: data.roomId },
+    data: { status: 'OCCUPIED' }
+  })
+
+  return NextResponse.json({ success: true, data: PiiGuard.reveal(reservation) })
+}
+
+async function updateReservation(id: string, data: any) {
+  const protectedData = PiiGuard.protect(data);
+  
+  const reservation = await prisma.reservation.update({
+    where: { id },
+    data: {
+      guestName: protectedData.guestName,
+      guestEmail: protectedData.guestEmail,
+      guestPhone: protectedData.guestPhone,
+      guestCpf: protectedData.guestCpf,
+      // guestAddress: protectedData.guestAddress,
+      // guestZipCode: protectedData.guestZipCode,
+      // guestBirthDate: protectedData.guestBirthDate,
+      checkIn: data.checkIn ? new Date(data.checkIn) : undefined,
+      checkOut: data.checkOut ? new Date(data.checkOut) : undefined,
+      notes: data.notes,
+      status: data.status
+    },
+    include: { room: true, payment: true }
+  })
+
+  return NextResponse.json({ success: true, data: PiiGuard.reveal(reservation) })
+}
+
+async function cancelReservation(id: string) {
+  const reservation = await prisma.reservation.update({
+    where: { id },
+    data: { status: 'CANCELLED' },
+    include: { room: true }
+  })
+
+  // Liberar quarto
+  await prisma.room.update({
+    where: { id: reservation.roomId },
+    data: { status: 'AVAILABLE' }
+  })
+
+  return NextResponse.json({ success: true, data: reservation })
+}
+
+async function checkIn(id: string) {
+  const reservation = await prisma.reservation.update({
+    where: { id },
+    data: { 
+      status: 'CHECKED_IN',
+      checkInStatus: 'DONE',
+      // fnrhSubmittedAt: new Date()
+    },
+    include: { room: true, property: true }
+  })
+
+  return NextResponse.json({ success: true, data: PiiGuard.reveal(reservation) })
+}
+
+async function checkOut(id: string) {
+  const reservation = await prisma.reservation.update({
+    where: { id },
+    data: { status: 'CHECKED_OUT' },
+    include: { room: true }
+  })
+
+  // Liberar quarto
+  await prisma.room.update({
+    where: { id: reservation.roomId },
+    data: { status: 'CLEANING' }
+  })
+
+  return NextResponse.json({ success: true, data: reservation })
+}
+
+async function listReservations(propertyId: string, filters: any) {
+  const where: any = { propertyId }
+
+  if (filters?.status) where.status = filters.status
+  if (filters?.startDate) where.checkIn = { gte: new Date(filters.startDate) }
+  if (filters?.endDate) where.checkOut = { lte: new Date(filters.endDate) }
+
+  const reservations = await prisma.reservation.findMany({
+    where,
+    include: { room: true, payment: true },
+    orderBy: { checkIn: 'asc' }
+  })
+
+  return NextResponse.json({ success: true, data: PiiGuard.revealMany(reservations) })
+}
+
+export async function GET() {
+  return NextResponse.json({
+    agent: 'RESERVATIONS',
+    status: 'online',
+    description: 'Gestão de reservas, check-in e check-out'
+  })
+}

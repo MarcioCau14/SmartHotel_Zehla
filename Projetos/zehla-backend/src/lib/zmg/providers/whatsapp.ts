@@ -1,9 +1,11 @@
+import { ZMGStatus } from '../types';
+
+
 /**
  * ZMG WhatsApp Provider
  * Integrates with Evolution API (Current) and Z-API/360dialog (Future)
  */
 
-import { ZMGStatus } from '../types';
 
 export interface WhatsAppResponse {
   success: boolean;
@@ -21,7 +23,7 @@ export class WhatsAppProvider {
       const number = phone.replace('+', '');
 
       if (!evoKey) {
-        console.log(`[ZMG:WA] Simulation: Sending to ${phone}: ${text}`);
+        
         return { success: true, externalId: 'mock-wa-' + Date.now() };
       }
 

@@ -1,7 +1,9 @@
 import { fireGuardianAlert } from '../src/lib/security/guardian-alert';
 
+
 async function test() {
-  console.log('Simulando CANARY_TOUCHED...');
+  try {
+  
   await fireGuardianAlert({
     alertType: 'CANARY_TOUCHED',
     severity: 'CRITICAL',
@@ -11,7 +13,7 @@ async function test() {
       reason: 'Acesso a rota restrita'
     }
   });
-  console.log('Alerta disparado. Aguardando processamento...');
+  
 }
 
 test();

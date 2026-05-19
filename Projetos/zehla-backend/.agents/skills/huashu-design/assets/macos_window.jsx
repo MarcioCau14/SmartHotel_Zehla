@@ -64,6 +64,7 @@ const macosWindowStyles = {
 };
 
 function MacosWindow({ title = '', width = 900, height = 600, darkMode = false, children }) {
+  try {
   return (
     <div style={{ ...macosWindowStyles.window, background: darkMode ? '#1e1e1e' : '#fff' }}>
       <div style={{

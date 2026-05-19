@@ -1,20 +1,23 @@
+import { CognitiveTerminal } from '@/lib/observability/cognitive-terminal';
+import { MLInteractionLogger } from '@/lib/ml/interaction-logger';
+import { MemoryIngestionService } from '@/lib/ml/memory-service';
+import { prisma } from '@/lib/prisma';
+
+import { EmailProvider } from './providers/email';
+import { MessagingIntent, ZMGStatus } from './types';
+import { SMSProvider } from './providers/sms';
+import { WhatsAppProvider } from './providers/whatsapp';
+import { ZMGContentTransformer } from './content-transformer';
+import { ZMGEnricher } from './enricher';
+import { ZMGRouter } from './router';
+import { detectChannels } from './channel-detector';
+
+
 /**
  * ZMG — ZEHLA MESSAGING GATEWAY
  * Orquestrador Principal do Pipeline de 7 Estágios
  */
 
-import { prisma } from '@/lib/prisma';
-import { MessagingIntent, ZMGStatus } from './types';
-import { detectChannels } from './channel-detector';
-import { ZMGRouter } from './router';
-import { WhatsAppProvider } from './providers/whatsapp';
-import { SMSProvider } from './providers/sms';
-import { EmailProvider } from './providers/email';
-import { ZMGContentTransformer } from './content-transformer';
-import { ZMGEnricher } from './enricher';
-import { CognitiveTerminal } from '@/lib/observability/cognitive-terminal';
-import { MLInteractionLogger } from '@/lib/ml/interaction-logger';
-import { MemoryIngestionService } from '@/lib/ml/memory-service';
 
 export class ZMG {
   /**

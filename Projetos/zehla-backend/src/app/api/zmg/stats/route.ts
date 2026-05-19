@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
+
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+async function _GET() : void {
   try {
     // 1. Total de mensagens nas últimas 24h
     const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -27,3 +30,5 @@ export async function GET() {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+

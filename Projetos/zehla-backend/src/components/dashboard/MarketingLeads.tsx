@@ -1,16 +1,20 @@
-'use client';
-
-import { useState, useEffect, useMemo } from 'react';
 import {
-  TrendingUp, Sparkles, Loader2, List, ChevronDown, ChevronRight
-} from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import type { B2BLead } from '@/lib/store';
+
 import { RegionSpreadsheetView } from './marketing/RegionSpreadsheetView';
 import { SecretariaPanel } from './marketing/SecretariaPanel';
 
-export function MarketingLeads() {
+import type { B2BLead } from '@/lib/store';
+
+'use client';
+
+  TrendingUp, Sparkles, Loader2, List, ChevronDown, ChevronRight
+} from 'lucide-react';
+
+export function MarketingLeads() : void {
   const [activeSubTab, setActiveSubTab] = useState<string>('dashboard');
   const [leadsMenuExpanded, setLeadsMenuExpanded] = useState(true);
 

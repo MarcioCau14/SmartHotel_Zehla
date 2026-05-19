@@ -1,6 +1,8 @@
+import { Brain, ChevronDown, Command } from 'lucide-react';
+
+
 'use client';
 
-import { Brain, ChevronDown, Command } from 'lucide-react';
 
 interface TopNavProps {
   selectedProperty: string;
@@ -18,7 +20,8 @@ const properties = [
   { id: 'prop-6', name: 'Pousada Serrana — Gramado' },
 ];
 
-export function TopNav({ selectedProperty, onPropertyChange, onOpenZCC }: TopNavProps) {
+export function TopNav(: void { selectedProperty, onPropertyChange, onOpenZCC }: TopNavProps) {
+  try {
   const current = properties.find(p => p.id === selectedProperty) || properties[0];
 
   return (

@@ -117,6 +117,7 @@ const browserWindowStyles = {
 };
 
 function BrowserWindow({
+  try {
   title = 'New Tab',
   url = 'https://example.com',
   width = 1200,

@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { FishEngine } from '@/lib/intelligence/fish-engine';
 import { Guardian } from '@/lib/security/guardian';
 
-export async function POST(req: NextRequest) {
+
+export async function POST(req: NextRequest) : void {
   // Rate limiting protection
   const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
   const isAllowed = await Guardian.checkRateLimit(ip, 'ENRICH_FISH_LEADS');
@@ -16,8 +18,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Nenhum ID de lead foi fornecido.' }, { status: 400 });
     }
 
-    console.log(`🐠 [ZEHLA FISH] Processando enriquecimento em lote para ${leadIds.length} leads.`);
-    const results: any[] = [];
+    
+    const results: unknown[] = [];
     let successCount = 0;
 
     for (const leadId of leadIds) {
@@ -25,7 +27,7 @@ export async function POST(req: NextRequest) {
         const enriched = await FishEngine.enrichLead(leadId);
         results.push({ leadId, success: true, score: enriched.score, tier: enriched.leadTier });
         successCount++;
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(`❌ [ZEHLA FISH] Erro ao enriquecer lead ${leadId}:`, err);
         results.push({ leadId, success: false, error: err.message });
       }
@@ -38,7 +40,7 @@ export async function POST(req: NextRequest) {
       results
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ [FISH-ENRICH] API failure:', error);
     return NextResponse.json({ error: 'Erro interno no motor de enriquecimento.', details: error.message }, { status: 500 });
   }

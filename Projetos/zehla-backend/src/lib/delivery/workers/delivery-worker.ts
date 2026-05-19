@@ -1,7 +1,10 @@
 import { Worker, Queue } from 'bullmq';
-import { redisConfig } from '../redis-connection';
-import { redis } from '../redis-connection';
+
 import { prisma } from '@/lib/prisma';
+
+import { redis } from '../redis-connection';
+import { redisConfig } from '../redis-connection';
+
 
 /**
  * ZEHLA DELIVERY WORKER
@@ -25,7 +28,7 @@ export const deliveryWorker = new Worker(
       // BullMQ automaticamente gerencia o delay baseado no limiter da fila (TD2)
     }
 
-    console.log(`✉️ [DELIVERY] Enviando e-mail para: ${lead.email}`);
+    
 
     // Simulação de Envio Real (Aqui entraria Resend/SES)
     // Para tornar "palpável", vamos registrar o envio no banco
@@ -63,7 +66,7 @@ deliveryWorker.on('failed', async (job, err) => {
   console.error(`🚨 [DELIVERY] Falha crítica no Job ${job?.id}:`, err.message);
   
   if (job && job.attemptsMade >= 3) {
-    console.log(`💀 [DLQ] Movendo Lead ${job.data.id} para análise humana.`);
+    
     await dlqQueue.add('failed-delivery', {
       lead: job.data,
       error: err.message,

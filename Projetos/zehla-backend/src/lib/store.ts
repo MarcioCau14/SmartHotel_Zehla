@@ -262,7 +262,8 @@ export const b2bLeads: B2BLead[] = [
 
 // ===== HELPER FUNCTIONS =====
 
-export function getBrainHealth() {
+export function getBrainHealth() : void {
+  try {
   return {
     edge_latency: Math.floor(20 + Math.random() * 30),
     brain_queue: Math.floor(Math.random() * 15),
@@ -279,7 +280,8 @@ export function getBrainHealth() {
   };
 }
 
-export function getRevenueKPIs() {
+export function getRevenueKPIs() : void {
+  try {
   const monthlyRevenue = [
     { month: 'Nov', revenue: 48200 },
     { month: 'Dez', revenue: 62400 },
@@ -311,7 +313,8 @@ export function getRevenueKPIs() {
   };
 }
 
-export function getSecurityStatus() {
+export function getSecurityStatus() : void {
+  try {
   return {
     zdr_status: 'active',
     zdr_uptime: '99.97%',
@@ -342,7 +345,8 @@ export function getSecurityStatus() {
   };
 }
 
-export function simulateClassification(message: string) {
+export function simulateClassification(message: string) : void {
+  try {
   const intents = [
     { intent: 'wifi_password', classification: 'fast_path', response: 'A senha do WiFi é: POUSADA_5G. Acesse a rede "ZEHLA_Guest" e use esta senha.', confidence: 0.98 },
     { intent: 'checkout_request', classification: 'fast_path', response: 'Seu check-out está previsto para hoje às 12:00. Deseja estender até 14:00 por R$ 80,00?', confidence: 0.95 },

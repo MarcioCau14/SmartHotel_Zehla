@@ -1,0 +1,76 @@
+import { PrismaClient } from '@prisma/client';
+import * as XLSX from 'xlsx';
+import path from 'path';
+import fs from 'fs';
+
+const prisma = new PrismaClient();
+
+async function ingestLeads() {
+  // Caminho para a planilha de leads
+  const filePath = '/Users/marciocau/Downloads/ENTREGÁVEIS ZEHLA FULL STACK/ZEHLA SMARTHOTEL - Cronograma Geral do Projeto.xlsx';
+
+  if (!fs.existsSync(filePath)) {
+    console.error('❌ Planilha não encontrada em:', filePath);
+    return;
+  }
+
+  console.log('📊 Iniciando ingestão de leads da planilha...');
+
+  const workbook = XLSX.readFile(filePath);
+
+  // Vamos procurar por uma aba que contenha "Leads" ou similar.
+  // Se não encontrar, vamos mapear o que temos.
+  const sheetName = workbook.SheetNames.find(n => n.toLowerCase().includes('lead')) || workbook.SheetNames[0];
+  const worksheet = workbook.Sheets[sheetName];
+  const data = XLSX.utils.sheet_to_json(worksheet);
+
+  console.log(`📑 Lendo aba: ${sheetName} (${data.length} linhas encontradas)`);
+
+  let count = 0;
+  for (const row of data as any[]) {
+    // Mapeamento básico baseado nos campos comuns de planilhas de prospecção
+    const email = row['E-mail'] || row['Email'] || null;
+    const whatsapp = row['Whatsapp'] || row['Telefone'] || row['WhatsApp'] || null;
+    const name = row['Pousada'] || row['Nome'] || 'Pousada Desconhecida';
+
+    if (!email && !whatsapp) continue;
+
+    try {
+      await prisma.lead.upsert({
+        where: { whatsapp: whatsapp?.toString() || 'unknown-' + Math.random() },
+        update: {
+          name: name,
+          email: email,
+          city: row['Cidade'] || null,
+          state: row['UF'] || 'SC',
+          roomsCount: parseInt(row['Qtd Quartos']) || 0,
+          category: 'pousada',
+          source: 'XLSX_IMPORT',
+          metadata: JSON.stringify(row),
+          status: 'PROSPECT',
+        },
+        create: {
+          name: name,
+          email: email,
+          whatsapp: whatsapp?.toString(),
+          city: row['Cidade'] || null,
+          state: row['UF'] || 'SC',
+          roomsCount: parseInt(row['Qtd Quartos']) || 0,
+          category: 'pousada',
+          source: 'XLSX_IMPORT',
+          metadata: JSON.stringify(row),
+          status: 'PROSPECT',
+        },
+      });
+      count++;
+    } catch (e) {
+      // Ignorar erros de duplicação ou dados inválidos para não travar o loop
+    }
+  }
+
+  console.log(`✅ Ingestão finalizada: ${count} leads processados.`);
+}
+
+ingestLeads()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect());

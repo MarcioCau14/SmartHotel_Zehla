@@ -1,7 +1,9 @@
-'use client';
-
 import { Brain, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+
+
+'use client';
+
 
 interface SalesHeroProps {
   badge: string;

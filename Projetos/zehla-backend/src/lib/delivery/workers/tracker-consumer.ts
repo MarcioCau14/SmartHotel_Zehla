@@ -1,5 +1,6 @@
 import { redis } from '../redis-connection';
 
+
 /**
  * ZEHLA TRACKER CONSUMER
  * Processa a fila de eventos do Redis Streams de forma escalável.
@@ -9,15 +10,15 @@ const GROUP_NAME = 'tracker-group';
 const CONSUMER_NAME = `consumer-${process.pid}`;
 const STREAM_KEY = 'events:tracking';
 
-export async function startTrackerConsumer() {
+export async function startTrackerConsumer() : void {
   // 1. Cria o grupo se não existir
   try {
     await redis.xgroup('CREATE', STREAM_KEY, GROUP_NAME, '$', 'MKSTREAM');
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (!err.message.includes('BUSYGROUP')) throw err;
   }
 
-  console.log(`🚀 [TRACKER_CONSUMER] Ouvindo eventos via Consumer Group: ${GROUP_NAME}`);
+  
 
   while (true) {
     try {
@@ -33,7 +34,6 @@ export async function startTrackerConsumer() {
         for (const [stream, messages] of streams) {
           for (const [id, fields] of messages) {
             // Processamento estruturado (Logs JSON para Observabilidade)
-            console.log(JSON.stringify({
               ts: Date.now(),
               level: 'info',
               msg: 'Evento de tracking processado',

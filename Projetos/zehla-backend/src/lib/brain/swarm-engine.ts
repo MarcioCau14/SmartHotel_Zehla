@@ -1,6 +1,8 @@
-import { prisma } from '@/lib/prisma'
 import { llmRouter } from '@/lib/ai/llm-router'
+import { prisma } from '@/lib/prisma'
+
 import { semanticCache } from '../ai/semanticCache'
+
 
 export interface SwarmConfig {
   tenantId: string
@@ -20,7 +22,7 @@ export class SwarmEngine {
     // 1. ESCUDO SEMÂNTICO (MiroFish Cache Intercept)
     const cachedResult = await semanticCache.get(tenantId, `sim:${context}`);
     if (cachedResult) {
-      console.log('💰 [MIROFISH] Simulação interceptada pelo cache semântico ($0).');
+      .');
       // Retornaria um cenário simulado ou o resultado anterior
     }
 
@@ -66,7 +68,7 @@ export class SwarmEngine {
       const agents = JSON.parse(response.content)
       // Otimização N+1: Inserção em lote (Bulk Insert)
       await prisma.simulationAgent.createMany({
-        data: agents.map((agent: any) => ({
+        data: agents.map((agent: unknown) => ({
           scenarioId,
           name: agent.name,
           role: agent.role,

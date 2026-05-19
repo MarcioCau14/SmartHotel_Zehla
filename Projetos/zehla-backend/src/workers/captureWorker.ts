@@ -1,10 +1,13 @@
-// src/workers/captureWorker.ts — ZEHLA Brain v4: Estágio 1 (Capture)
-// Rate limiting, deduplicação SHA-256, persistência do evento bruto
+import crypto from 'crypto';
 import { Worker, Job } from 'bullmq';
-import { redis } from '@/lib/redis';
+
 import { QUEUE_NAMES, WORKER_CONFIG, EVENT_SCORES, validateQueue } from '@/lib/queues';
 import { prisma } from '@/lib/prisma';
-import crypto from 'crypto';
+import { redis } from '@/lib/redis';
+
+
+// src/workers/captureWorker.ts — ZEHLA Brain v4: Estágio 1 (Capture)
+// Rate limiting, deduplicação SHA-256, persistência do evento bruto
 
 const RATE_LIMIT_WINDOW = 3600; // 1 hora em segundos
 const RATE_LIMIT_MAX = 100;     // Max 100 eventos/hora por email
@@ -14,7 +17,7 @@ export const captureWorker = new Worker(
   async (job: Job) => {
     const { email, eventType, sessionId, fingerprint, metadata, eventSource } = job.data;
 
-    console.log(`[Capture] Evento recebido: ${eventType} (${email})`);
+    `);
 
     // 1. Rate Limiting via Redis
     const rateLimitKey = `brain:rate:${email}`;
@@ -24,7 +27,7 @@ export const captureWorker = new Worker(
         await redis.expire(rateLimitKey, RATE_LIMIT_WINDOW);
       }
       if (current > RATE_LIMIT_MAX) {
-        console.log(`[Capture] Rate limit excedido para ${email}: ${current}/${RATE_LIMIT_MAX}`);
+        
         return { status: 'rate_limited', email, count: current };
       }
     } catch (e) {
@@ -42,7 +45,7 @@ export const captureWorker = new Worker(
     });
 
     if (existingEvent) {
-      console.log(`[Capture] Evento duplicado ignorado: ${eventType} (${email})`);
+      `);
       return { status: 'duplicate', dedupHash };
     }
 
@@ -65,7 +68,7 @@ export const captureWorker = new Worker(
       backoff: { type: 'exponential', delay: 2000 },
     });
 
-    console.log(`[Capture] Evento validado e encaminhado: ${eventType} → validate (score: +${scoreImpact})`);
+    `);
 
     return { status: 'captured', email, eventType, scoreImpact, dedupHash };
   },

@@ -1,10 +1,13 @@
+import { Percent, TrendingUp, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
+
+
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Percent, TrendingUp, Sparkles } from 'lucide-react';
 
-export function PainPoints() {
+export function PainPoints() : void {
+  try {
   const [dailyRate, setDailyRate] = useState(350);
   const [bookings, setBookings] = useState(20);
   const [selectedPlan, setSelectedPlan] = useState<'Lite' | 'Pro' | 'Max'>('Pro');

@@ -1,9 +1,12 @@
 import {
+
+
   MetricPoint, MetricSnapshot, TestRun, InjectionEvent,
   ZCCAgent, MessageChannel
 } from "./types";
 
 function generateId(): string {
+  try {
   return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
 }
 

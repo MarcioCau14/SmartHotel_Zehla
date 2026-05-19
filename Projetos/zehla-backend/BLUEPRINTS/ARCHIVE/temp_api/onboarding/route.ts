@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { db as prisma } from '@/lib/db';
 import { parseSessionToken } from '@/lib/auth';
 
+
 // POST: Complete onboarding - creates property, rooms, api configs
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest) : void {
   try {
     const body = await request.json();
     const { tenantId, property, rooms, services, payment } = body;

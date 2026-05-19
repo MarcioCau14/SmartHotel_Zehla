@@ -1,0 +1,31 @@
+import { NextResponse } from 'next/server';
+
+import { prisma } from '@/lib/prisma';
+
+
+export async function GET() {
+  try {
+    // 1. Total de mensagens nas últimas 24h
+    const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const total24h = await prisma.zMGMessage.count({
+      where: { createdAt: { gte: last24h } }
+    });
+
+    // 2. Taxa de entrega
+    const sentCount = await prisma.zMGMessage.count({ where: { status: 'SENT' } });
+    const failedCount = await prisma.zMGMessage.count({ where: { status: 'FAILED' } });
+    const deliveryRate = sentCount > 0 ? (sentCount / (sentCount + failedCount)) * 100 : 0;
+
+    // 3. Fallback stats
+    const fallbackCount = await prisma.zMGMessage.count({ where: { fallbackUsed: true } });
+
+    return NextResponse.json({
+      total24h,
+      deliveryRate: deliveryRate.toFixed(1) + '%',
+      fallbackCount,
+      economy: 'R$ ' + (total24h * 0.15).toFixed(2), // Simulação de economia vs canais pagos
+    });
+  } catch (error) {
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}

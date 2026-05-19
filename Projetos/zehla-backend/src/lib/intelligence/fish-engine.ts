@@ -1,6 +1,8 @@
+import { prisma } from '@/lib/prisma';
+
+
 // src/lib/intelligence/fish-engine.ts — ZEHLA FISH: Core Intelligence Engine
 // Native Google Antigravity local rules, zero external LLM dependencies, zero costs!
-import { prisma } from '@/lib/prisma';
 
 export interface EnrichedLeadResult {
   roomsCount: number;
@@ -32,7 +34,7 @@ export class FishEngine {
       throw new Error(`Lead ${leadId} não encontrado.`);
     }
 
-    console.log(`🐠 [ZEHLA FISH] Iniciando pipeline Antigravity local para: ${lead.name}`);
+    
 
     // 1. SHERLOCKER & OSINT CRAWLING (Simulado determinístico com base em metadados reais e inferência Antigravity)
     const hasWebsite = !!lead.phone || Math.random() > 0.3; // Se tem telefone, geralmente tem website indexado
@@ -145,7 +147,7 @@ export class FishEngine {
       }
     });
 
-    console.log(`🐠 [ZEHLA FISH] Enriquecimento concluído: ${lead.name} | Tier: ${leadTier} | Score: ${score}`);
+    
     return result;
   }
 

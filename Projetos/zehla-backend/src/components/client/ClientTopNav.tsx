@@ -1,6 +1,8 @@
-"use client";
 import { Brain, ChevronDown, User, Bell, Settings, Menu, X, AlertTriangle, BedDouble, CalendarDays, TicketCheck, LifeBuoy, LayoutDashboard } from 'lucide-react';
 import { useState } from 'react';
+
+
+"use client";
 
 interface TenantInfo {
   nome: string;
@@ -19,11 +21,12 @@ interface TenantInfo {
 interface ClientTopNavProps {
   tenantData: TenantInfo | null;
   activeTab: string;
-  setActiveTab: (tab: any) => void;
+  setActiveTab: (tab: unknown) => void;
   onOpenZCC?: () => void;
 }
 
-export function ClientTopNav({ tenantData, activeTab, setActiveTab, onOpenZCC }: ClientTopNavProps) {
+export function ClientTopNav(: void { tenantData, activeTab, setActiveTab, onOpenZCC }: ClientTopNavProps) {
+  try {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [

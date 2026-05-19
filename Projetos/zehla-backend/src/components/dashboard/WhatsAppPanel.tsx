@@ -1,11 +1,14 @@
+import { MessageSquare, CheckCircle, XCircle, Clock, Settings, RefreshCw, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+
+
 'use client';
 
-import { useState, useEffect } from 'react';
-import { MessageSquare, CheckCircle, XCircle, Clock, Settings, RefreshCw, AlertTriangle } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
 
-export function WhatsAppPanel() {
+export function WhatsAppPanel() : void {
   const [health, setHealth] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
 

@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
-import { join } from 'path';
 import * as fs from 'fs';
+import { join } from 'path';
+
 
 const filePath = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_/POUSADAS_MARKETING_FASE (1).xlsx';
 const tabName = 'Leads_SUL_BR (1)';
@@ -39,7 +40,8 @@ const MESH: Record<string, { lat: number, lng: number }> = {
 };
 
 async function updateSulLeads() {
-  console.log(`🧠 [Secretaria-IA] Atualizando Leads SC na aba: ${tabName}...`);
+  try {
+  
   
   const workbook = XLSX.readFile(filePath);
   const sheet = workbook.Sheets[tabName];
@@ -49,7 +51,7 @@ async function updateSulLeads() {
   const leads = [];
 
   // 1. Process current leads
-  currentData.forEach((row: any, index) => {
+  currentData.forEach((row: unknown, index) => {
     let wa = String(row.Whatsapp || row.whatsapp || '').replace(/\D/g, '');
     if (!wa) return;
     uniqueWhatsapps.add(wa);
@@ -132,8 +134,8 @@ async function updateSulLeads() {
   workbook.Sheets[tabName] = newSheet;
   
   XLSX.writeFile(workbook, filePath);
-  console.log(`✅ [Secretaria-IA] Aba '${tabName}' atualizada com sucesso!`);
-  console.log(`📊 Total de leads na aba: ${leads.length}`);
+  
+  
 }
 
 updateSulLeads().catch(console.error);

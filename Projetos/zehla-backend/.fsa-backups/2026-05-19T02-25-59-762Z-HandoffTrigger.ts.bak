@@ -1,0 +1,53 @@
+import { PrismaClient } from '@prisma/client'
+
+
+const prisma = new PrismaClient()
+
+export interface HandoffContext {
+  propertyId: string;
+  leadId: string;
+  phone: string;
+  reason: 'CLOSE_READY' | 'SEVERE_DISSATISFACTION' | 'AI_FAILURES' | 'SDE_OVERLOAD';
+  metadata?: any;
+}
+
+export class HandoffTrigger {
+  /**
+   * Gatilho de Handoff (Layer 3 - Hooks)
+   * Interrompe o loop autônomo e alerta o ZCC (ZEHLA Control Center).
+   * Ativado em caso de alta intenção de fechamento ou falha semântica.
+   */
+  static async triggerHandoff(context: HandoffContext) {
+    
+
+    // 1. Atualizar o estado do Lead e desligar IA (Mock)
+    await prisma.lead.update({
+      where: { id: context.leadId },
+      data: { 
+        status: 'QUALIFIED',
+        cluster: 'HOT',
+        // Ideal: adicionar flag { agentHandled: 'HUMAN' } na infraestrutura de mensagens
+      }
+    });
+
+    // 2. Registrar no Audit / Sec Log
+    await prisma.securityAlert.create({
+      data: {
+        tenantId: context.propertyId,
+        alertType: 'HANDOFF_TRIGGERED',
+        severity: context.reason === 'SEVERE_DISSATISFACTION' ? 'CRITICAL' : 'HIGH',
+        metadata: JSON.stringify({ reason: context.reason, phone: context.phone, ...context.metadata })
+      }
+    });
+
+    // 3. Notificar Radar Neural (ZCC)
+    this.notifyZCC(context);
+    
+    return { success: true, timestamp: Date.now() };
+  }
+
+  private static notifyZCC(context: HandoffContext) {
+    // Integração real usaria Redis Pub/Sub ou Websocket para o front-end "Pitch-Black"
+    
+  }
+}

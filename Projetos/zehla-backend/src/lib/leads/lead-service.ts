@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma';
-import { scanAndMask } from '../security/pii-scanner';
+
 import { addEmailJob } from '../queue/client';
+import { scanAndMask } from '../security/pii-scanner';
+
 
 export interface RawLeadData {
   name: string;
@@ -45,10 +47,10 @@ export class LeadService {
 
       if (boomSignal) {
         initialScore += 25;
-        console.log(`📈 [LIS] Score aumentado (+25) devido ao boom em ${data.city}`);
+         devido ao boom em ${data.city}`);
       } else if (crashSignal) {
         initialScore -= 10;
-        console.log(`📉 [LIS] Score reduzido (-10) devido à queda em ${data.city}`);
+         devido à queda em ${data.city}`);
       }
     }
 

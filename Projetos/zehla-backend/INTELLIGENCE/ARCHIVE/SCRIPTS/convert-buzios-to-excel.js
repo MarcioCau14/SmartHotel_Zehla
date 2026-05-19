@@ -29,7 +29,7 @@ try {
     XLSX.utils.book_append_sheet(wb, ws, "POUSADAS_BUZIOS");
     XLSX.writeFile(wb, filePath);
 
-    console.log(`Success: POUSADAS_LAGOS_RJ.xlsx (BÚZIOS) updated via JSON.`);
+     updated via JSON.`);
 } catch (err) {
     console.error('Error processing Búzios JSON to Excel:', err);
     process.exit(1);

@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
+  try {
   const hashedPassword = await bcrypt.hash('zehla2026', 10);
 
   // 1. Criar Usuário Admin Master
@@ -37,9 +38,9 @@ async function main() {
     },
   });
 
-  console.log('✅ Seed finalizado com sucesso!');
-  console.log('Admin:', admin.email);
-  console.log('Propriedade:', property.name);
+  
+  
+  
 }
 
 main()

@@ -1,10 +1,13 @@
-// src/workers/validateWorker.ts — ZEHLA Brain v4: Estágio 2 (Validate)
-// Validação de payload, upsert de lead, deduplicação temporal, persistência do evento
+import { LeadEventType } from '@prisma/client';
 import { Worker, Job } from 'bullmq';
-import { redis } from '@/lib/redis';
+
 import { QUEUE_NAMES, WORKER_CONFIG, enrichQueue } from '@/lib/queues';
 import { prisma } from '@/lib/prisma';
-import { LeadEventType } from '@prisma/client';
+import { redis } from '@/lib/redis';
+
+
+// src/workers/validateWorker.ts — ZEHLA Brain v4: Estágio 2 (Validate)
+// Validação de payload, upsert de lead, deduplicação temporal, persistência do evento
 
 // Tipos de evento válidos (deve corresponder ao enum Prisma)
 const VALID_EVENT_TYPES: string[] = [
@@ -20,7 +23,7 @@ export const validateWorker = new Worker(
       sessionId, fingerprint, eventSource, metadata,
     } = job.data;
 
-    console.log(`[Validate] Processando evento: ${eventType} para ${email}`);
+    
 
     // 1. Validação de payload
     if (!email || !eventType) {
@@ -49,7 +52,7 @@ export const validateWorker = new Worker(
           conversionScore: 0,
         },
       });
-      console.log(`[Validate] Novo lead criado: ${lead.id} (${email})`);
+      `);
     }
 
     // 3. Persistir evento no banco
@@ -67,7 +70,7 @@ export const validateWorker = new Worker(
       },
     });
 
-    console.log(`[Validate] Evento persistido: ${event.id} (lead: ${lead.id})`);
+    `);
 
     // 4. Encaminhar para enriquecimento
     await enrichQueue.add('enrich-event', {

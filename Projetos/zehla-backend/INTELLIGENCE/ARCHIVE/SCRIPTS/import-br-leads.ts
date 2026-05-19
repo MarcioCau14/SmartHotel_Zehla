@@ -1,8 +1,9 @@
-import { PrismaClient, LeadStatus } from '@prisma/client';
 import * as XLSX from 'xlsx';
-import path from 'path';
-import fs from 'fs';
 import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
+import { PrismaClient, LeadStatus } from '@prisma/client';
+
 
 dotenv.config();
 
@@ -50,7 +51,7 @@ const CITY_COORDINATES: Record<string, { lat: number, lng: number, region: strin
 const PLANILHAS_PATH = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_';
 
 async function importLeads() {
-  console.log('🚀 Iniciando Ingestão Massiva de Leads ZEHLA...');
+  
   
   const files = [
     'POUSADA_LITORAL_SP_NORTE.xlsx',
@@ -69,12 +70,12 @@ async function importLeads() {
       continue;
     }
 
-    console.log(`\n📂 Processando: ${fileName}`);
+    
     const workbook = XLSX.readFile(filePath);
     const sheetName = workbook.SheetNames[0];
     const data = XLSX.utils.sheet_to_json<any>(workbook.Sheets[sheetName]);
 
-    console.log(`📊 Total de linhas detectadas: ${data.length}`);
+    
 
     for (const row of data) {
       const whatsapp = String(row['Whatsapp'] || row['whatsapp'] || '').replace(/\D/g, '');
@@ -157,9 +158,9 @@ async function importLeads() {
     }
   }
 
-  console.log(`\n✅ Ingestão Concluída!`);
-  console.log(`📈 Importados/Atualizados: ${totalImported}`);
-  console.log(`📉 Ignorados: ${totalSkipped}`);
+  
+  
+  
 }
 
 importLeads()

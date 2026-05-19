@@ -1,5 +1,6 @@
-import { webkit } from 'playwright';
 import * as path from 'path';
+import { webkit } from 'playwright';
+
 
 /**
  * Motor de Automação ZEHLA - Execução de Receitas
@@ -7,8 +8,6 @@ import * as path from 'path';
  */
 
 async function runRecipe(recipeName: string) {
-  console.log(`🚀 Iniciando Motor ZEHLA no Safari...`);
-  console.log(`📖 Carregando receita: ${recipeName}`);
 
   const browser = await webkit.launch({ 
     headless: true, // Sempre headless para economizar recursos
@@ -30,16 +29,13 @@ async function runRecipe(recipeName: string) {
       throw new Error(`A receita ${recipeName} não exporta uma função 'execute'.`);
     }
 
-    console.log(`⚡ Executando...`);
     await execute(page);
-    console.log(`✅ Receita concluída com sucesso.`);
 
   } catch (error) {
     console.error(`❌ Erro na execução da receita:`, error);
     process.exit(1);
   } finally {
     await browser.close();
-    console.log(`🏁 Motor encerrado.`);
   }
 }
 

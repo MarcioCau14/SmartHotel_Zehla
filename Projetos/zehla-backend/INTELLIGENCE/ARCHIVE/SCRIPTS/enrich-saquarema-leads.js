@@ -70,5 +70,5 @@ if (wb.SheetNames.includes('POUSADAS_SAQUAREMA')) {
 XLSX.utils.book_append_sheet(wb, ws, "POUSADAS_SAQUAREMA");
 XLSX.writeFile(wb, filePath);
 
-console.log(`Planilha Mestra ATUALIZADA: ${filePath}`);
-console.log(`Aba 'POUSADAS_SAQUAREMA' agora conta com 35 leads VALIDADOS E ENRIQUECIDOS.`);
+
+

@@ -1,8 +1,10 @@
+import {
+import { motion } from 'framer-motion';
+import { useState } from 'react';
+
+
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import {
   Shield,
   CheckCircle,
   AlertCircle,
@@ -15,10 +17,11 @@ import {
 } from 'lucide-react';
 
 interface LegalPanelProps {
-  tenantData: any;
+  tenantData: unknown;
 }
 
-export function LegalPanel({ tenantData }: LegalPanelProps) {
+export function LegalPanel(: void { tenantData }: LegalPanelProps) {
+  try {
   const [isSyncing, setIsSyncing] = useState(false);
   const [snrhosConfig, setSnrhosConfig] = useState({
     usuario: 'pousada_sol_api',

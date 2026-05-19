@@ -1,6 +1,8 @@
+import { useCallback } from 'react';
+
+
 'use client';
 
-import { useCallback } from 'react';
 
 export type EventType = 'PAGE_VIEW' | 'CLICK' | 'FORM_SUBMIT' | 'CONVERSION' | 'ABANDON';
 
@@ -8,10 +10,10 @@ export interface TelemetryEvent {
   type: EventType;
   page: string;
   elementId?: string;
-  metadata?: any;
+  metadata?: unknown;
 }
 
-export function useTelemetry() {
+export function useTelemetry() : void {
   const trackEvent = useCallback(async (event: TelemetryEvent) => {
     try {
       // In a real scenario, this would use fetch or a WebSocket

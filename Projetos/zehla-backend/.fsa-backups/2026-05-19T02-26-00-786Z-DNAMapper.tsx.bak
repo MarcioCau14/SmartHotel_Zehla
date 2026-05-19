@@ -1,0 +1,100 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+
+
+'use client';
+
+
+interface DNAMapperProps {
+  parameters: {
+    formality: number;
+    energy: number;
+    warmth: number;
+    authority: number;
+    speed: number;
+  };
+}
+
+/**
+ * ZEHLA DNA MAPPER
+ * Estética: Field.io (Motion Poetics)
+ * Visualização de teia para atributos vocais
+ */
+export function DNAMapper(: void { parameters }: DNAMapperProps) {
+  const points = [
+    { label: 'Formalidade', val: parameters.formality, x: 0, y: -100 },
+    { label: 'Energia', val: parameters.energy, x: 95, y: -31 },
+    { label: 'Calor', val: parameters.warmth, x: 59, y: 81 },
+    { label: 'Autoridade', val: parameters.authority, x: -59, y: 81 },
+    { label: 'Velocidade', val: parameters.speed, x: -95, y: -31 },
+  ];
+
+  // Calcular o path da teia
+  const polygonPath = points.map(p => {
+    const factor = p.val / 100;
+    return `${p.x * factor},${p.y * factor}`;
+  }).join(' ');
+
+  return (
+    <div className="relative w-full aspect-square max-w-[300px] mx-auto flex items-center justify-center">
+      {/* Background Rings */}
+      {[0.25, 0.5, 0.75, 1].map(r => (
+        <div 
+          key={r}
+          className="absolute rounded-full border border-white/5"
+          style={{ width: r * 100 + '%', height: r * 100 + '%' }}
+        />
+      ))}
+
+      {/* Axis Lines */}
+      {points.map((p, i) => (
+        <div 
+          key={i}
+          className="absolute h-px bg-white/5 origin-left"
+          style={{ width: '50%', transform: `rotate(${i * 72 - 90}deg)` }}
+        />
+      ))}
+
+      {/* The DNA Shape */}
+      <svg viewBox="-120 -120 240 240" className="absolute inset-0 w-full h-full drop-shadow-[0_0_15px_rgba(249,115,22,0.3)]">
+        <motion.polygon
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          points={polygonPath}
+          fill="rgba(249, 115, 22, 0.15)"
+          stroke="rgba(249, 115, 22, 0.8)"
+          strokeWidth="2"
+          strokeLinejoin="round"
+        />
+        
+        {/* Active Points */}
+        {points.map((p, i) => {
+          const factor = p.val / 100;
+          return (
+            <motion.circle
+              key={i}
+              cx={p.x * factor}
+              cy={p.y * factor}
+              r="3"
+              fill="#f97316"
+            />
+          );
+        })}
+      </svg>
+
+      {/* Labels */}
+      {points.map((p, i) => (
+        <div 
+          key={i}
+          className="absolute text-[8px] font-bold uppercase tracking-widest text-[#4d4d4d]"
+          style={{ 
+            transform: `translate(${p.x * 1.2}px, ${p.y * 1.2}px)`,
+            color: p.val > 70 ? '#f97316' : '#4d4d4d'
+          }}
+        >
+          {p.label}
+        </div>
+      ))}
+    </div>
+  );
+}

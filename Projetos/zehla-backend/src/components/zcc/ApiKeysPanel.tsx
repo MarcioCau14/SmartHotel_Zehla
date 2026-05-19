@@ -1,8 +1,10 @@
+import {
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
+
+
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
   Key,
   Eye,
   EyeOff,
@@ -90,7 +92,7 @@ const PROVIDER_INFO: Record<string, { name: string; icon: string; color: string;
   },
 };
 
-export function ApiKeysPanel() {
+export function ApiKeysPanel() : void {
   const [configs, setConfigs] = useState<ProviderConfig[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);

@@ -1,5 +1,7 @@
-// src/lib/metrics/guardian-metrics.ts
 import { Counter, Histogram, Gauge, register } from 'prom-client';
+
+
+// src/lib/metrics/guardian-metrics.ts
 
 // Registradores do Guardian
 export const guardianMetrics = {

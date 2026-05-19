@@ -1,5 +1,6 @@
 import { llmRouter } from '@/lib/ai/llm-router'
 
+
 export const INTENTS = [
   'RESERVATION_CREATE',
   'RESERVATION_MODIFY',

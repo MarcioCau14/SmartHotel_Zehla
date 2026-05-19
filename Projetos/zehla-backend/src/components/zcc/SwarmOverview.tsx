@@ -1,10 +1,13 @@
+import { Wifi, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+
+import type { AIAgent } from '@/lib/store';
+
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { Wifi, CheckCircle, Clock, XCircle } from 'lucide-react';
-import type { AIAgent } from '@/lib/store';
 
 interface SwarmOverviewProps {
   brainHealth: Record<string, unknown>;
@@ -37,7 +40,8 @@ const typeConfig = {
   paga: { color: 'bg-[#FF5500]/10 text-[#FF5500]', label: 'Paga' }
 };
 
-export function SwarmOverview({ brainHealth }: SwarmOverviewProps) {
+export function SwarmOverview(: void { brainHealth }: SwarmOverviewProps) {
+  try {
   const [agents, setAgents] = useState<AIAgent[]>([]);
   const [loading, setLoading] = useState(true);
 

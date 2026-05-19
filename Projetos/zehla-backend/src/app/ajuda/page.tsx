@@ -1,8 +1,10 @@
+import {
+import { motion } from 'framer-motion';
+import { useState, useRef, useEffect } from 'react';
+
+
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import {
   Brain,
   ArrowLeft,
   Search,

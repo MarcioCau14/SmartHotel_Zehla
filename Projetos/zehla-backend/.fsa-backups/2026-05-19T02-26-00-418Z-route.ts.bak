@@ -1,0 +1,119 @@
+import fs from 'fs';
+import path from 'path';
+import { NextResponse } from 'next/server';
+import { execSync } from 'child_process';
+
+import { llmRouter } from '@/lib/ai/llm-router';
+import { prisma } from '@/lib/prisma';
+
+
+export async function POST(req: Request) {
+  try {
+    const { name, email, phone, gbpUrl } = await req.json();
+
+    if (!name || !email || !phone || !gbpUrl) {
+      return NextResponse.json({ error: 'Campos obrigatórios ausentes.' }, { status: 400 });
+    }
+
+    // 1. Usar a inteligência do ZEHLA (Secretaria-IA) para classificar o lead
+    let qualificacao = 'Lead Quente via Landing Page';
+    let comportamento = 'Busca Visibilidade e Automação';
+    let sinais = 'Alta intenção de fechar direto';
+
+    try {
+      const systemPrompt = `Você é o Agente 09 (Secretaria-IA) do ZEHLA SmartHotel.
+Seu objetivo é classificar e qualificar um lead capturado via Landing Page.
+Recebemos os seguintes dados:
+- Nome/Pousada: ${name}
+- Email: ${email}
+- WhatsApp: ${phone}
+- URL/GBP: ${gbpUrl}
+
+Preencha os seguintes campos no formato JSON estrito:
+{
+  "qualificacao": "Sua classificação (ex: Lead Quente, Lead Médio, etc.)",
+  "comportamento": "Comportamento estimado (ex: Busca automação, Busca visibilidade, etc.)",
+  "sinais": "Sinais de intenção detectados (ex: Alta intenção de compra, etc.)"
+}
+Retorne APENAS o JSON válido.`;
+
+      const llmResponse = await llmRouter.generate({
+        model: 'classification',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: 'Classifique o lead.' }
+        ],
+        temperature: 0.2
+      });
+
+      const parsed = JSON.parse(llmResponse.content.trim());
+      if (parsed.qualificacao) qualificacao = parsed.qualificacao;
+      if (parsed.comportamento) comportamento = parsed.comportamento;
+      if (parsed.sinais) sinais = parsed.sinais;
+    } catch (e) {
+      console.error('Error in LLM classification fallback:', e);
+    }
+
+    // 2. Salva o lead no banco de dados
+    const lead = await prisma.lead.create({
+      data: {
+        name,
+        email,
+        phone,
+        source: 'RAIO_X_GRATUITO',
+        status: 'PROSPECT',
+        metadata: JSON.stringify({ gbpUrl, qualificacao, comportamento, sinais })
+      }
+    });
+
+    // 3. Salva na planilha Excel via Script Python
+    try {
+      const payload = {
+        pousada: name,
+        email: email,
+        whatsapp: phone,
+        quant_quartos: '',
+        local: gbpUrl,
+        cidade: '',
+        uf: 'SC',
+        valores: '',
+        qualificacao: qualificacao,
+        validacao_contato: 'Validado via Form',
+        comportamento: comportamento,
+        sinais: sinais
+      };
+
+      const tmpDir = path.join(process.cwd(), 'tmp');
+      if (!fs.existsSync(tmpDir)) {
+        fs.mkdirSync(tmpDir);
+      }
+      
+      const tmpFilePath = path.join(tmpDir, `lead_${Date.now()}.json`);
+      fs.writeFileSync(tmpFilePath, JSON.stringify(payload, null, 2));
+
+      const scriptPath = path.join(process.cwd(), 'src/app/api/visibility/raiox/append_lead.py');
+      
+      execSync(`python3 "${scriptPath}" "${tmpFilePath}"`);
+      .xlsx');
+      
+      // Limpa o arquivo temporário
+      fs.unlinkSync(tmpFilePath);
+    } catch (excelError) {
+      console.error('Error appending lead to Excel:', excelError);
+      // Não falha a requisição se der erro no Excel
+    }
+
+    return NextResponse.json({
+      success: true,
+      leadId: lead.id,
+      message: 'Solicitação de Raio-X recebida com sucesso!'
+    });
+
+  } catch (error: any) {
+    console.error('Error in raiox endpoint:', error);
+    if (error.code === 'P2002') {
+      return NextResponse.json({ error: 'E-mail ou WhatsApp já cadastrado.' }, { status: 400 });
+    }
+    return NextResponse.json({ error: 'Erro interno do servidor.' }, { status: 500 });
+  }
+}

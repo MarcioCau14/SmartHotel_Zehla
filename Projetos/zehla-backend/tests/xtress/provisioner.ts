@@ -1,7 +1,9 @@
-import { PrismaClient } from '@prisma/client';
-import { VirtualPousada } from './types';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
+import { PrismaClient } from '@prisma/client';
+
+import { VirtualPousada } from './types';
+
 
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 const prisma = new PrismaClient();
@@ -13,7 +15,7 @@ const prisma = new PrismaClient();
 export class Provisioner {
   
   static async provision(pousadas: VirtualPousada[]) {
-    console.log(`  [Provisioner] Sincronizando ${pousadas.length} pousadas com o banco real...`);
+    
     
     // Pegar um ID de usuário real para associar as pousadas
     const user = await prisma.user.findFirst();
@@ -42,12 +44,12 @@ export class Provisioner {
       });
     }
     
-    console.log(`  [Provisioner] Sincronização concluída.`);
+    
   }
 
   static async cleanup(pousadas: VirtualPousada[]) {
     const ids = pousadas.map(p => p.propertyId);
-    console.log(`  [Provisioner] Limpando ${ids.length} pousadas do banco real...`);
+    
     // Opcional: Remover ou marcar como inativas
     // await prisma.property.deleteMany({ where: { id: { in: ids } } });
   }

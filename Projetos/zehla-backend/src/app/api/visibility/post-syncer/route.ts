@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { llmRouter } from '@/lib/ai/llm-router';
 
-export async function POST(req: Request) {
+import { llmRouter } from '@/lib/ai/llm-router';
+import { prisma } from '@/lib/prisma';
+
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+async function _POST(req: Request) : void {
   try {
     const { caption, propertyId } = await req.json();
 
@@ -58,8 +61,10 @@ Siga estas regras estritamente:
       rewritten: llmResponse.content
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in post-syncer:', error);
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 30, windowSeconds: 60 } });
+

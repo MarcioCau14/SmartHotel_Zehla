@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
-import { join } from 'path';
 import * as fs from 'fs';
+import { join } from 'path';
+
 
 const folder = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_';
 const fileName = 'POUSADAS_LITORAL_RS.xlsx';
@@ -24,7 +25,8 @@ const RS_HUBS = [
 ];
 
 async function megaSweepRS() {
-  console.log('🧠 [Secretaria-IA] Iniciando MEGA-VARREDURA Rio Grande do Sul (Meta: 1000 leads)...');
+  try {
+  ...');
   
   const uniqueWhatsapps = new Set();
   const leads = [];
@@ -33,7 +35,7 @@ async function megaSweepRS() {
 
   RS_HUBS.forEach(hub => {
     const countForHub = Math.floor(targetCount * hub.weight);
-    console.log(`📡 Mapeando ${hub.city}...`);
+    
     
     for (let i = 0; i < countForHub; i++) {
       const wa = `(${hub.ddd}) 9${Math.floor(Math.random()*899+100)}-${Math.floor(Math.random()*8999+1000)}`;
@@ -104,9 +106,9 @@ async function megaSweepRS() {
 
   XLSX.writeFile(wb, filePath);
   
-  console.log(`\n✨ [MEGA-VARREDURA RS CONCLUÍDA]`);
-  console.log(`📊 Total de Leads no Rio Grande do Sul: ${leads.length}`);
-  console.log(`📁 Arquivo: ${filePath}`);
+  
+  
+  
 }
 
 megaSweepRS().catch(console.error);

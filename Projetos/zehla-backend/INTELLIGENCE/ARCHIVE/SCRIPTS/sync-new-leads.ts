@@ -1,7 +1,8 @@
-import { PrismaClient } from '@prisma/client';
 import * as XLSX from 'xlsx';
-import { join } from 'path';
 import dotenv from 'dotenv';
+import { PrismaClient } from '@prisma/client';
+import { join } from 'path';
+
 
 dotenv.config();
 const prisma = new PrismaClient();
@@ -13,14 +14,15 @@ const files = [
 ];
 
 async function syncNewLeads() {
-  console.log('🧠 [Neural Mapping] Sincronizando novas planilhas (Litoral Sul SP & Paraná)...');
+  try {
+  ...');
   
   let totalNew = 0;
   let totalSkipped = 0;
 
   for (const file of files) {
     const filePath = join(folder, file);
-    console.log(`📂 Processando: ${file}`);
+    
     const workbook = XLSX.readFile(filePath);
     const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
     
@@ -66,12 +68,13 @@ async function syncNewLeads() {
     }
   }
 
-  console.log(`\n✨ Sincronização Concluída!`);
-  console.log(`✅ Novos Leads no Radar: ${totalNew}`);
-  console.log(`⏭️ Duplicatas Ignoradas: ${totalSkipped}`);
+  
+  
+  
 }
 
 function getRegionFromUF(uf: string): string {
+  try {
   if (['SP', 'RJ', 'MG', 'ES'].includes(uf)) return 'Sudeste';
   if (['PR', 'SC', 'RS'].includes(uf)) return 'Sul';
   return 'Brasil';

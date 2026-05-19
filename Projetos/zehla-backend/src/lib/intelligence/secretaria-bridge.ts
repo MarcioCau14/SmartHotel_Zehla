@@ -1,6 +1,7 @@
+import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import path from 'path';
+
 
 const execAsync = promisify(exec);
 
@@ -9,7 +10,7 @@ export interface SecretariaLead {
   title: string;
   match_explanation?: string;
   personalized_message?: string;
-  metadata?: any;
+  metadata?: unknown;
   validationScore: number; // 0-100
   isValidated: boolean;
 }
@@ -25,7 +26,7 @@ export class SecretariaBridge {
     try {
       // 1. FINOPS CACHE: Verificar se pesquisamos isso nas últimas 24h
       // (Simulação de busca no LIS/Prisma para evitar re-scraping)
-      console.log(`🔍 [SECRETARIA] Verificando cache local para: "${query}"...`);
+      
 
       // 2. Execução da Prospecção
       const env = { 
@@ -67,7 +68,7 @@ export class SecretariaBridge {
       const lead = await prisma.lead.findUnique({ where: { id: leadId } });
       if (!lead) throw new Error(`Lead ${leadId} não encontrado.`);
 
-      console.log(`🧠 [SECRETARIA-IA] Iniciando Raio-X para: ${lead.name} (${lead.whatsapp})`);
+      `);
 
       // 1. Pesquisa Ativa (Google Maps / Social)
       const searchQuery = `${lead.name} ${lead.city !== 'Unknown' ? lead.city : ''}`;

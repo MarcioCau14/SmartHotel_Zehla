@@ -1,3 +1,6 @@
+import crypto from 'crypto';
+
+
 /**
  * ZEHLA WHATSAPP SHIELD
  * Proteção ativa contra spam, phishing e tentativas de sequestro de conta.
@@ -19,6 +22,7 @@ export interface ShieldVerdict {
 }
 
 export function auditMessage(content: string, phone: string): ShieldVerdict {
+  try {
   const lowercaseContent = content.toLowerCase();
 
   // 1. Detecção de Keywords Suspeitas
@@ -53,13 +57,13 @@ export function auditMessage(content: string, phone: string): ShieldVerdict {
   return { isSafe: true, threatLevel: 'NONE' };
 }
 
-import crypto from 'crypto';
 
 /**
  * Validação de Assinatura HMAC (Evolution API)
  * Garante que a requisição veio realmente do nosso gateway.
  */
 export function verifyWhatsAppSignature(rawBody: string, signature: string, secret: string): boolean {
+  try {
   if (!signature || !secret) return false;
   
   const hmac = crypto.createHmac('sha256', secret);
@@ -75,8 +79,9 @@ export function verifyWhatsAppSignature(rawBody: string, signature: string, secr
  * Rate Limiting por número de telefone
  */
 export async function checkWhatsAppRateLimit(phone: string): Promise<boolean> {
+  try {
   // Implementação simplificada para o MVP. 
   // Em produção, isso consulta o Redis DB 0 para verificar janelas de tempo.
-  console.log(`[SHIELD] Rate limit check para ${phone} - OK`);
+  
   return true;
 }

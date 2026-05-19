@@ -1,11 +1,14 @@
-// scripts/health-check-zcc.ts
 import { SignJWT } from 'jose';
 import { performance } from 'perf_hooks';
+
+
+// scripts/health-check-zcc.ts
 
 const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET || 'zehla_super_secret_2026_change_me');
 const BASE = 'http://localhost:3000';
 
 async function generateTestToken() {
+  try {
   return await new SignJWT({
     sub: 'admin-1',
     email: 'security@zehla.io',
@@ -24,7 +27,7 @@ const ENDPOINTS = [
 ];
 
 async function healthCheck() {
-  console.log('🔍 ZCC Security Health Check\n');
+  
   
   const token = await generateTestToken();
 
@@ -37,26 +40,26 @@ async function healthCheck() {
       const latency = (performance.now() - start).toFixed(2);
         
       if (res.status === 403) {
-        console.log(`🔒 ${ep.name}: BLOCKED (403) — Token não é SUPER_ADMIN`);
+         — Token não é SUPER_ADMIN`);
       } else if (res.status === 200) {
-        console.log(`✅ ${ep.name}: OK (${latency}ms)`);
+        `);
       } else {
-        console.log(`❌ ${ep.name}: FAIL ${res.status} (${latency}ms)`);
+        `);
       }
-    } catch (e: any) {
-      console.log(`💥 ${ep.name}: ERROR — ${e.message}`);
+    } catch (e: unknown) {
+      
     }
   }
 
   // Testa acesso não autorizado
-  console.log('\n🧪 Testing unauthorized access...');
+  
   const unauthorized = await fetch(`${BASE}/api/zcc/overview`);
-  console.log(`   Sem token: ${unauthorized.status} ${unauthorized.statusText}`);
+  
     
   const badToken = await fetch(`${BASE}/api/zcc/overview`, {
     headers: { Authorization: 'Bearer token_invalido' },
   });
-  console.log(`   Token inválido: ${badToken.status} ${badToken.statusText}`);
+  
 }
 
 healthCheck();

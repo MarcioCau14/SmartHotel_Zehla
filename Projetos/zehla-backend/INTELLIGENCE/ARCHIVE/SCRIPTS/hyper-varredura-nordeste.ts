@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
-import { join } from 'path';
 import * as fs from 'fs';
+import { join } from 'path';
+
 
 const folder = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_';
 const fileName = 'POUSADAS_NORDESTE_BR.xlsx';
@@ -113,7 +114,8 @@ const leadsData = [
 ];
 
 async function hyperVarreduraNordeste() {
-  console.log('🧠 [Secretaria-IA] Iniciando Hyper-Varredura Nordeste BR (v2.0)...');
+  try {
+  ...');
   
   const leads = leadsData.map((lead, index) => {
     const meshPoint = MESH[lead.city] || MESH['Salvador'];
@@ -147,8 +149,8 @@ async function hyperVarreduraNordeste() {
   XLSX.utils.book_append_sheet(wb, ws, 'Nordeste Leads');
 
   XLSX.writeFile(wb, filePath);
-  console.log(`✅ [Secretaria-IA] Planilha MEGA-SWEEP gerada com sucesso: ${filePath}`);
-  console.log(`📊 Total de leads nordestinos: ${leads.length}`);
+  
+  
 }
 
 hyperVarreduraNordeste().catch(console.error);

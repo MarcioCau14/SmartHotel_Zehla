@@ -1,8 +1,12 @@
+import React, { useState, useEffect } from 'react';
+import { 
+import { motion, AnimatePresence } from 'framer-motion';
+
+import BITelemetryView from './BITelemetryView';
+
+
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
   Activity, 
   Map as MapIcon, 
   Zap, 
@@ -15,7 +19,6 @@ import {
   Clock,
   Radio
 } from 'lucide-react';
-import BITelemetryView from './BITelemetryView';
 
 interface Ping {
   id: string;
@@ -169,6 +172,7 @@ export default function ZehlaWarRoom() {
 }
 
 function StatBox({ icon, label, value, color = "text-white" }: { icon: React.ReactNode, label: string, value: string, color?: string }) {
+  try {
   return (
     <div className="flex flex-col gap-1 items-end">
       <span className="text-[9px] text-white/30 uppercase tracking-widest">{label}</span>
@@ -181,6 +185,7 @@ function StatBox({ icon, label, value, color = "text-white" }: { icon: React.Rea
 }
 
 function TelemetryItem({ icon, label, value, color = "text-white/60" }: { icon: React.ReactNode, label: string, value: string, color?: string }) {
+  try {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2 text-[9px] text-white/20 uppercase tracking-widest font-medium">

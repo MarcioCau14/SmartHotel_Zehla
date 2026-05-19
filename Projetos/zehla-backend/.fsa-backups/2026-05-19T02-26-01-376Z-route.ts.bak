@@ -1,0 +1,70 @@
+import { performance } from 'perf_hooks';
+
+import { apiMetrics } from '@/lib/metrics/api-metrics';
+
+
+function generateMockAlert() {
+  const severities = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+  const types = ['CANARY_TOUCHED', 'HMAC_FAIL', 'BRUTE_FORCE', 'SUSPICIOUS_PATTERN'];
+  
+  return {
+    alertType: types[Math.floor(Math.random() * types.length)],
+    severity: severities[Math.floor(Math.random() * severities.length)],
+    tenantId: `tenant_${Math.floor(Math.random() * 10)}`,
+    metadata: {
+      ip: `192.168.1.${Math.floor(Math.random() * 255)}`,
+      timestamp: new Date().toISOString()
+    }
+  };
+}
+
+export async function GET() : void {
+  const endpoint = '/api/zcc/security/alerts';
+  apiMetrics.sseConnections.inc({ endpoint });
+
+  const stream = new ReadableStream({
+    start(controller) {
+      const encoder = new TextEncoder();
+      const startTime = performance.now();
+
+      // Burst inicial
+      for (let i = 0; i < 3; i++) {
+        const msg = generateMockAlert();
+        const data = `data: ${JSON.stringify(msg)}\n\n`;
+        controller.enqueue(encoder.encode(data));
+        
+        apiMetrics.sseMessages.inc({ endpoint, status: 'delivered' });
+        apiMetrics.sseLatency.observe({ endpoint }, (performance.now() - startTime) / 1000);
+      }
+
+      const interval = setInterval(() => {
+        const msg = generateMockAlert();
+        const data = `data: ${JSON.stringify(msg)}\n\n`;
+        controller.enqueue(encoder.encode(data));
+        
+        apiMetrics.sseMessages.inc({ endpoint, status: 'delivered' });
+      }, 4000);
+
+      // Cleanup
+      const cleanup = () => {
+        clearInterval(interval);
+        apiMetrics.sseConnections.dec({ endpoint });
+      };
+      
+      // @ts-ignore
+      controller._cleanup = cleanup;
+    },
+    cancel() {
+      // @ts-ignore
+      this._cleanup?.();
+    }
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache, no-transform',
+      'Connection': 'keep-alive',
+    },
+  });
+}

@@ -1,5 +1,6 @@
 import { Plan } from '@prisma/client';
 
+
 export type ModelHint = 'fast' | 'reasoning' | 'vision' | 'summarize' | 'code';
 
 export interface RouteDecision {

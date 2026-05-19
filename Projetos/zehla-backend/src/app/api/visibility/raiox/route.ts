@@ -1,11 +1,14 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { llmRouter } from '@/lib/ai/llm-router';
-import { execSync } from 'child_process';
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
+import { NextResponse } from 'next/server';
+import { execSync } from 'child_process';
 
-export async function POST(req: Request) {
+import { llmRouter } from '@/lib/ai/llm-router';
+import { prisma } from '@/lib/prisma';
+
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+async function _POST(req: Request) : void {
   try {
     const { name, email, phone, gbpUrl } = await req.json();
 
@@ -92,7 +95,7 @@ Retorne APENAS o JSON válido.`;
       const scriptPath = path.join(process.cwd(), 'src/app/api/visibility/raiox/append_lead.py');
       
       execSync(`python3 "${scriptPath}" "${tmpFilePath}"`);
-      console.log('Lead appended to POUSADAS_PDR (1).xlsx');
+      .xlsx');
       
       // Limpa o arquivo temporário
       fs.unlinkSync(tmpFilePath);
@@ -107,7 +110,7 @@ Retorne APENAS o JSON válido.`;
       message: 'Solicitação de Raio-X recebida com sucesso!'
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in raiox endpoint:', error);
     if (error.code === 'P2002') {
       return NextResponse.json({ error: 'E-mail ou WhatsApp já cadastrado.' }, { status: 400 });
@@ -115,3 +118,5 @@ Retorne APENAS o JSON válido.`;
     return NextResponse.json({ error: 'Erro interno do servidor.' }, { status: 500 });
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 30, windowSeconds: 60 } });
+

@@ -1,13 +1,14 @@
-import { PrismaClient } from '@prisma/client';
-import * as turf from '@turf/turf';
 import * as fs from 'fs';
+import * as turf from '@turf/turf';
+import { PrismaClient } from '@prisma/client';
 import { join } from 'path';
+
 
 const prisma = new PrismaClient();
 const BRAZIL_GEO_PATH = join(process.cwd(), 'public/brazil.json');
 
 async function fixLocations() {
-  console.log('🌍 [Geo Correction Engine] Iniciando sanitização geoespacial de 10.000 leads...');
+  
 
   if (!fs.existsSync(BRAZIL_GEO_PATH)) {
     console.error('❌ GeoJSON do Brasil não encontrado em public/brazil.json');
@@ -22,7 +23,7 @@ async function fixLocations() {
     }
   });
 
-  console.log(`📊 Processando ${leads.length} leads com coordenadas...`);
+  
 
   let fixedCount = 0;
   let seaCount = 0;
@@ -47,7 +48,7 @@ async function fixLocations() {
     let onLand = false;
     
     try {
-      onLand = brazilGeo.features.some((feature: any) => 
+      onLand = brazilGeo.features.some((feature: unknown) => 
         turf.booleanPointInPolygon(pt, feature)
       );
     } catch (e) {
@@ -90,10 +91,10 @@ async function fixLocations() {
     }
   }
 
-  console.log(`\n✨ [SANITIZAÇÃO CONCLUÍDA]`);
-  console.log(`✅ Leads corrigidos: ${fixedCount}`);
-  console.log(`🔄 Inversões detectadas: ${invertedCount}`);
-  console.log(`🌊 Leads resgatados do mar: ${seaCount}`);
+  
+  
+  
+  
 }
 
 fixLocations()

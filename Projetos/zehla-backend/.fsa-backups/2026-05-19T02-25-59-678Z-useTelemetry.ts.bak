@@ -1,0 +1,36 @@
+import { useCallback } from 'react';
+
+
+'use client';
+
+
+export type EventType = 'PAGE_VIEW' | 'CLICK' | 'FORM_SUBMIT' | 'CONVERSION' | 'ABANDON';
+
+export interface TelemetryEvent {
+  type: EventType;
+  page: string;
+  elementId?: string;
+  metadata?: any;
+}
+
+export function useTelemetry() {
+  const trackEvent = useCallback(async (event: TelemetryEvent) => {
+    try {
+      // In a real scenario, this would use fetch or a WebSocket
+      // For this implementation, we ensure the ZCC Brain can receive these
+      await fetch('/api/telemetry/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...event,
+          timestamp: new Date().toISOString(),
+          userAgent: typeof window !== 'undefined' ? navigator.userAgent : 'unknown',
+        }),
+      });
+    } catch (error) {
+      console.error('[Telemetry Error]:', error);
+    }
+  }, []);
+
+  return { trackEvent };
+}

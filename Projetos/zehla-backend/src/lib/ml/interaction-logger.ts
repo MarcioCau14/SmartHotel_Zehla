@@ -1,5 +1,6 @@
-import { prisma } from '@/lib/prisma';
 import { CognitiveTerminal } from '@/lib/observability/cognitive-terminal';
+import { prisma } from '@/lib/prisma';
+
 
 /**
  * ML INTERACTION LOGGER — Coletor de dados para Machine Learning

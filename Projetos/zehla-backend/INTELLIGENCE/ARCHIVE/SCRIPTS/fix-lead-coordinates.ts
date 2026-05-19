@@ -1,5 +1,6 @@
-import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
+import { PrismaClient } from '@prisma/client';
+
 
 dotenv.config();
 const prisma = new PrismaClient();
@@ -24,13 +25,14 @@ const LAND_COORDINATES: Record<string, { lat: number, lng: number }> = {
 };
 
 async function fixCoordinates() {
-  console.log('🌍 Iniciando Ajuste de Coerência Geográfica (Land-Lock Protocol)...');
+  try {
+  ...');
   
   const leads = await prisma.lead.findMany({
     select: { id: true, city: true }
   });
 
-  console.log(`📊 Analisando ${leads.length} leads...`);
+  
 
   let updated = 0;
 
@@ -52,7 +54,7 @@ async function fixCoordinates() {
     }
   }
 
-  console.log(`✅ Ajuste concluído! ${updated} leads reposicionados em terra firme.`);
+  
 }
 
 fixCoordinates()

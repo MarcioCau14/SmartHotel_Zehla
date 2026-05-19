@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+
+export async function GET() : void {
+  try {
   // This endpoint would be called by a cron job to check trial expirations
   // For now, it returns trial check logic documentation
 

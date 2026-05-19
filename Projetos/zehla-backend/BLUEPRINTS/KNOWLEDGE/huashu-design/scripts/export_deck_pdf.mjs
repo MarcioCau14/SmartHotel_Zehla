@@ -1,3 +1,9 @@
+import fs from 'fs/promises';
+import path from 'path';
+import { PDFDocument } from 'pdf-lib';
+import { chromium } from 'playwright';
+
+
 #!/usr/bin/env node
 /**
  * export_deck_pdf.mjs — 把多文件 slide deck 导出为单个矢量 PDF
@@ -20,12 +26,9 @@
  * 会按文件名排序（01-xxx.html → 02-xxx.html → ...）
  */
 
-import { chromium } from 'playwright';
-import { PDFDocument } from 'pdf-lib';
-import fs from 'fs/promises';
-import path from 'path';
 
 function parseArgs() {
+  try {
   const args = { width: 1920, height: 1080 };
   const a = process.argv.slice(2);
   for (let i = 0; i < a.length; i += 2) {
@@ -53,7 +56,6 @@ async function main() {
     console.error(`No .html files found in ${slidesDir}`);
     process.exit(1);
   }
-  console.log(`Found ${files.length} slides in ${slidesDir}`);
 
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ viewport: { width, height } });
@@ -76,7 +78,6 @@ async function main() {
     });
     pageBuffers.push(buf);
     await page.close();
-    console.log(`  [${pageBuffers.length}/${files.length}] ${f}`);
   }
 
   await browser.close();
@@ -92,7 +93,6 @@ async function main() {
   await fs.writeFile(outFile, bytes);
 
   const kb = (bytes.byteLength / 1024).toFixed(0);
-  console.log(`\n✓ Wrote ${outFile}  (${kb} KB, ${files.length} pages, vector)`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

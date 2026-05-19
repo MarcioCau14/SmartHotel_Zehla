@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { db as prisma } from '@/lib/db';
 import { parseSessionToken } from '@/lib/auth';
 
-export async function GET(request: NextRequest) {
+
+export async function GET(request: NextRequest) : void {
   try {
     const authHeader = request.headers.get('authorization');
     const token = authHeader?.replace('Bearer ', '') || request.cookies.get('zehla_token')?.value;

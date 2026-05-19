@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client'
-import { Redis } from 'ioredis'
 import { Queue } from 'bullmq'
+import { Redis } from 'ioredis'
+
 
 const prisma = new PrismaClient()
 
@@ -15,7 +16,7 @@ const slowLoopQueue = new Queue('zehla-slow-loop', {
 
 export interface EventSignal {
   type: string
-  payload: any
+  payload: unknown
   propertyId: string
   correlationId: string
   contactPhone?: string
@@ -31,7 +32,7 @@ export class EventKernel {
     const startTime = Date.now()
     
     try {
-      console.log(`[EventKernel] Sinal recebido: ${signal.type} | Property: ${signal.propertyId} | Corr: ${signal.correlationId}`)
+      
 
       // 1. Checa a existência de regras estáticas (Menu Fixo, Automação I/O) no Cache
       const cacheKey = `fastloop:rule:${signal.propertyId}:${signal.type}`
@@ -42,7 +43,7 @@ export class EventKernel {
         await this.executeFastAction(signal, ruleData)
         
         const latency = Date.now() - startTime
-        console.log(`[EventKernel] Resolvido no FAST LOOP em ${latency}ms`)
+        
         
         return { success: true, loop: 'FAST_LOOP', latencyMs: latency }
       }
@@ -62,7 +63,7 @@ export class EventKernel {
       )
 
       const latency = Date.now() - startTime
-      console.log(`[EventKernel] Delegado ao SLOW LOOP em ${latency}ms`)
+      
       return { success: true, loop: 'SLOW_LOOP', latencyMs: latency }
 
     } catch (error) {
@@ -74,9 +75,9 @@ export class EventKernel {
   /**
    * Executa a ação da Zona Transacional / Operacional
    */
-  private static async executeFastAction(signal: EventSignal, ruleData: any) {
+  private static async executeFastAction(signal: EventSignal, ruleData: unknown) {
     // Ex: Disparar webhooks, atuar em hardware IoT, responder menu pre-configurado
-    console.log(`[FastAction] Executando regra predefinida:`, ruleData)
+    
     // Opcionalmente podemos registrar o Log do agente
   }
 }

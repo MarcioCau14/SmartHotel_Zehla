@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { getGuardianReport } from '@/lib/security/guardian';
 
-export async function GET() {
+
+export async function GET() : void {
+  try {
   const guardian = getGuardianReport();
   const status = {
     zdr_status: 'active',

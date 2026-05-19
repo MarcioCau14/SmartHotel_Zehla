@@ -1,9 +1,11 @@
-'use client'
-
 import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 
-export const SDEPhysicsNode = memo(({ data, isConnectable }: any) => {
+
+'use client'
+
+
+export const SDEPhysicsNode = memo(({ data, isConnectable }: unknown) => {
   return (
     <div className="bg-[#0A0A0A] border border-zinc-800 rounded-xl shadow-2xl overflow-hidden min-w-[320px]">
       {/* Header do Nó */}

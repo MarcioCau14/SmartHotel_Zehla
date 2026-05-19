@@ -1,5 +1,7 @@
-import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
+
+import { prisma } from '@/lib/prisma';
+
 
 /**
  * ZEHLA AUDIT LOGGING
@@ -30,7 +32,8 @@ export async function logAuditEvent(
 /**
  * Verifica a integridade de um log de auditoria.
  */
-export function verifyAuditIntegrity(log: any): boolean {
+export function verifyAuditIntegrity(log: unknown): boolean {
+  try {
   const payload = JSON.stringify({ 
     tenantId: log.tenantId, 
     action: log.action, 

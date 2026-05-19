@@ -1,18 +1,23 @@
 import { NextResponse } from 'next/server';
+
 import { aiAgents } from '@/lib/store';
 
-export async function GET() {
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+async function _GET() : void {
   try {
     return NextResponse.json(aiAgents);
   } catch (error) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
 
-export async function POST(req: Request) {
+
+async function _POST(req: Request) : void {
   try {
     const body = await req.json();
-    console.log('🤖 ZCC Command received:', body);
+    
     
     // Simulate action success
     return NextResponse.json({ 
@@ -24,3 +29,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Bad Request' }, { status: 400 });
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
+

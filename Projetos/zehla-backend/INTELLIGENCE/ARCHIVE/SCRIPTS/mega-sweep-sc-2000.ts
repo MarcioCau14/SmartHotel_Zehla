@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
-import { join } from 'path';
 import * as fs from 'fs';
+import { join } from 'path';
+
 
 const folder = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_';
 const filePath = join(folder, 'POUSADAS_MARKETING_FASE (1).xlsx');
@@ -26,7 +27,8 @@ const SC_HUBS = [
 ];
 
 async function megaSweepSC() {
-  console.log('🧠 [Secretaria-IA] Iniciando MEGA-VARREDURA Santa Catarina (Meta: 2000 leads)...');
+  try {
+  ...');
   
   const workbook = XLSX.readFile(filePath);
   const sheet = workbook.Sheets[sheetName];
@@ -36,7 +38,7 @@ async function megaSweepSC() {
   const leads = [];
 
   // 1. Manter leads existentes (sem duplicar)
-  currentData.forEach((row: any) => {
+  currentData.forEach((row: unknown) => {
     let wa = String(row.Whatsapp || row.whatsapp || '').replace(/\D/g, '');
     if (!wa || uniqueWhatsapps.has(wa)) return;
     uniqueWhatsapps.add(wa);
@@ -63,11 +65,11 @@ async function megaSweepSC() {
     ]);
   });
 
-  console.log(`📊 Leads atuais em SC: ${leads.length}`);
+  
   const needed = 2000 - leads.length;
 
   if (needed > 0) {
-    console.log(`🚀 Gerando ${needed} novos leads qualificados para SC...`);
+    
     
     SC_HUBS.forEach(hub => {
       const countForHub = Math.floor(needed * hub.weight);
@@ -139,9 +141,9 @@ async function megaSweepSC() {
   workbook.Sheets[sheetName] = ws;
   XLSX.writeFile(workbook, filePath);
   
-  console.log(`✨ [MEGA-VARREDURA SC CONCLUÍDA]`);
-  console.log(`📊 Total de Leads em SC: ${leads.length}`);
-  console.log(`📁 Arquivo: ${filePath} [Tab: ${sheetName}]`);
+  
+  
+  
 }
 
 megaSweepSC().catch(console.error);

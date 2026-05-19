@@ -1,7 +1,8 @@
+import type { AgentTrainingProfile } from './mal-types';
+
 // ZEHLA SmartHotel Cognitive OS — Visibility Agent Profile
 // Agente 09: Especialista em SEO Local e Visibilidade (Google Business Profile)
 
-import type { AgentTrainingProfile } from './mal-types';
 
 export const visibilityAgentProfile: AgentTrainingProfile = {
   agentId: 'agent-9',

@@ -1,5 +1,7 @@
 import { Queue } from 'bullmq';
+
 import { redis } from '@/lib/redis';
+
 
 // Filas ZEHLA Blast
 export const blastSendQueue = new Queue('blast:send', { 

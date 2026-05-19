@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { WhatsappExtractorService } from '@/lib/whatsapp/extractor-service'
-import { prisma } from '@/lib/prisma'
-import { WhatsappPersonaLearner } from '@/lib/brain/whatsapp-persona-learner'
-import { LeadScorer } from '@/lib/brain/lead-scorer'
 
-export async function POST(req: NextRequest) {
+import { LeadScorer } from '@/lib/brain/lead-scorer'
+import { WhatsappExtractorService } from '@/lib/whatsapp/extractor-service'
+import { WhatsappPersonaLearner } from '@/lib/brain/whatsapp-persona-learner'
+import { prisma } from '@/lib/prisma'
+
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+async function _POST(req: NextRequest) : void {
   try {
     const { instanceName, type, groupJid, propertyId } = await req.json()
 
@@ -12,7 +15,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 })
     }
 
-    console.log(`🧠 [Secretaria-IA] Iniciando extração ${type} para property ${propertyId}...`)
+    
 
     let rawContacts = []
 
@@ -74,13 +77,15 @@ export async function POST(req: NextRequest) {
       persona
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ WhatsApp Extraction API Error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
 
-export async function GET(req: NextRequest) {
+
+async function _GET(req: NextRequest) : void {
   const { searchParams } = new URL(req.url)
   const action = searchParams.get('action')
   const instanceName = searchParams.get('instanceName')
@@ -97,7 +102,9 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+

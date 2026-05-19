@@ -1,4 +1,5 @@
-export function VoiceStudioV2() {
+export function VoiceStudioV2() : void {
+  try {
   return (
     <div className="p-4 border rounded-lg bg-gray-50/50">
       <h3 className="font-semibold text-lg">Voice Studio V2</h3>

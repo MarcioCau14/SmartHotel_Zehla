@@ -1,11 +1,13 @@
+import { actWorker } from './actWorker';
+import { captureWorker } from './captureWorker';
+import { classifyWorker } from './classifyWorker';
+import { enrichWorker } from './enrichWorker';
+import { subconsciousWorker } from '../lib/ml/subconscious-worker';
+import { validateWorker } from './validateWorker';
+
+
 // src/workers/index.ts — ZEHLA Brain v4: Worker Orchestrator
 // Inicializa todos os 5 workers + Graceful Shutdown
-import { captureWorker } from './captureWorker';
-import { validateWorker } from './validateWorker';
-import { enrichWorker } from './enrichWorker';
-import { classifyWorker } from './classifyWorker';
-import { actWorker } from './actWorker';
-import { subconsciousWorker } from '../lib/ml/subconscious-worker';
 
 const workers = [
   { name: 'Capture', worker: captureWorker },
@@ -17,14 +19,15 @@ const workers = [
 ];
 
 async function startAllWorkers() {
-  console.log('\n🧠 ═══════════════════════════════════════════════');
-  console.log('   ZEHLA BRAIN v4.0 — Pipeline Cognitiva');
-  console.log('   5 Workers BullMQ Inicializados');
-  console.log('═══════════════════════════════════════════════\n');
+  try {
+  
+  
+  
+  
 
   for (const { name, worker } of workers) {
     worker.on('ready', () => {
-      console.log(`  ✅ [${name}] Worker pronto`);
+      
     });
 
     worker.on('error', (err) => {
@@ -32,25 +35,25 @@ async function startAllWorkers() {
     });
   }
 
-  console.log('📡 Pipeline ativa: Capture → Validate → Enrich → Classify → Act');
-  console.log('🛡️ Graceful Shutdown: SIGTERM / SIGINT\n');
+  
+  
 }
 
 // Graceful Shutdown
 async function shutdown(signal: string) {
-  console.log(`\n🛑 [Brain] Recebido ${signal}. Encerrando workers...`);
+  
 
   const closePromises = workers.map(async ({ name, worker }) => {
     try {
       await worker.close();
-      console.log(`  ✅ [${name}] Encerrado`);
-    } catch (err: any) {
+      
+    } catch (err: unknown) {
       console.error(`  ❌ [${name}] Erro ao encerrar:`, err.message);
     }
   });
 
   await Promise.all(closePromises);
-  console.log('🧠 [Brain] Todos os workers encerrados. Até logo.\n');
+  
   process.exit(0);
 }
 

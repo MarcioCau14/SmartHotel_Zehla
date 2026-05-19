@@ -15,7 +15,7 @@ export class SMSProvider {
       // TODO: Implementar chamada real para Z-API (instância de SMS)
       // O ZMG Blueprint recomenda Z-API pelo custo fixo mensal (ilimitado)
       
-      console.log(`[ZMG:SMS] Sending SMS to ${phone}: ${text}`);
+      
       
       // Simulação de sucesso
       return { 

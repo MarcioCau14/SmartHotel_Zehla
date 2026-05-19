@@ -1,0 +1,105 @@
+import * as XLSX from 'xlsx';
+import * as fs from 'fs';
+import { join } from 'path';
+
+const folder = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_';
+const outputFolder = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_/TRATADAS';
+
+if (!fs.existsSync(outputFolder)) {
+  fs.mkdirSync(outputFolder);
+}
+
+const files = fs.readdirSync(folder).filter(f => f.endsWith('.xlsx'));
+
+// Official Header Protocol (18 Columns)
+const OFFICIAL_HEADER = [
+  '#',
+  'Pousada',
+  'E-mail',
+  'Whatsapp',
+  'Qtd Quartos',
+  'Local / Praia',
+  'Cidade',
+  'UF',
+  'Valores Estimados',
+  'Qualificação',
+  'Validação',
+  'Comportamento de Compra',
+  'Sinais de Intenção',
+  'Redes Sociais',
+  'LATITUDE',
+  'LONGITUDE',
+  'Score Qual.',
+  'Score Valid.'
+];
+
+let globalUniqueContacts = new Set();
+let totalLeadsProcessed = 0;
+let totalDuplicatesRemoved = 0;
+
+files.forEach(file => {
+  console.log(`\n🧠 [Secretaria-IA] Processando: ${file}...`);
+  const workbook = XLSX.readFile(join(folder, file));
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const rawData = XLSX.utils.sheet_to_json(sheet);
+  
+  const treatedData = [];
+  let fileDuplicates = 0;
+
+  rawData.forEach((row, index) => {
+    // Key for duplicate detection: Whatsapp (cleaned)
+    let wa = String(row['Whatsapp'] || row['whatsapp'] || '').replace(/\D/g, '');
+    let name = String(row['Pousada'] || row['pousada'] || '').trim();
+    let city = String(row['Cidade'] || row['cidade'] || '').trim();
+    
+    const duplicateKey = wa ? wa : `${name}-${city}`.toLowerCase();
+
+    if (globalUniqueContacts.has(duplicateKey)) {
+      fileDuplicates++;
+      totalDuplicatesRemoved++;
+      return;
+    }
+    globalUniqueContacts.add(duplicateKey);
+
+    // Map row to official 18-column format
+    const newRow = OFFICIAL_HEADER.map(header => {
+      // Direct mapping
+      if (row[header]) return row[header];
+      
+      // Fallback mappings (case insensitive or variations)
+      const lowerHeader = header.toLowerCase();
+      const match = Object.keys(row).find(k => k.toLowerCase() === lowerHeader || k.toLowerCase().includes(lowerHeader));
+      if (match) return row[match];
+
+      // Specific fallbacks mentioned by user
+      if (header === 'LATITUDE') return row['LATITUDE'] || row['latitude'] || '';
+      if (header === 'LONGITUDE') return row['LONGITUDE'] || row['longitude'] || '';
+      if (header === 'Qualificação') return row['Qualificação'] || row['Qualificacao'] || '';
+      if (header === 'Validação') return row['Validação'] || row['Validacao'] || row['Validação Contato'] || '';
+      
+      return ''; // Empty if not found
+    });
+
+    // Ensure ID is sequential if not present
+    if (!newRow[0]) newRow[0] = treatedData.length + 1;
+
+    treatedData.push(newRow);
+  });
+
+  totalLeadsProcessed += treatedData.length;
+  console.log(`✅ [Secretaria-IA] ${treatedData.length} leads qualificados. (${fileDuplicates} duplicatas removidas neste arquivo)`);
+
+  // Create new Workbook
+  const newSheet = XLSX.utils.aoa_to_sheet([OFFICIAL_HEADER, ...treatedData]);
+  const newWorkbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(newWorkbook, newSheet, 'Leads');
+  
+  XLSX.writeFile(newWorkbook, join(outputFolder, file));
+});
+
+console.log(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+console.log(`📊 [RELATÓRIO FINAL — SECRETARIA-IA]`);
+console.log(`✅ Leads Processados: ${totalLeadsProcessed}`);
+console.log(`🚫 Duplicatas Eliminadas: ${totalDuplicatesRemoved}`);
+console.log(`📂 Arquivos salvos em: ${outputFolder}`);
+console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);

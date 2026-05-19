@@ -1,4 +1,6 @@
 import { 
+
+
   GeneratedMessage, MessageCategory, VirtualPousada, VirtualGuest,
   Formalidade, RegiaoBrasil, GuestProfile 
 } from "./types";
@@ -220,10 +222,12 @@ const MESES = ["janeiro", "fevereiro", "marco", "abril", "maio", "junho", "julho
 const FUNCIONARIOS = ["Joana", "Pedro", "Maria", "Carlos", "Ana", "Lucas", "Fernanda", "Rafael", "Camila", "Thiago"];
 
 function generateId(): string {
+  try {
   return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
 }
 
 function randomInt(min: number, max: number): number {
+  try {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 

@@ -1,9 +1,12 @@
-// scripts/seed-swipes.ts
 import { PrismaClient } from '@prisma/client';
+
+
+// scripts/seed-swipes.ts
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Iniciando semente de ZEHLA Swipes...');
+  try {
+  
 
   const swipes = [
     // --- SAUDAÇÃO (WhatsApp) ---
@@ -105,7 +108,7 @@ async function main() {
     });
   }
 
-  console.log(`✅ ${swipes.length} Swipes semeados com sucesso!`);
+  
 }
 
 main()

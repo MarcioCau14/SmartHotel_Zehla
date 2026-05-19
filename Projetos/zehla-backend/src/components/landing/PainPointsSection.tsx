@@ -1,7 +1,9 @@
+import {
+import { motion } from 'framer-motion';
+
+
 'use client';
 
-import { motion } from 'framer-motion';
-import {
   MessageCircleOff,
   Table,
   DollarSign,
@@ -64,7 +66,8 @@ const colorMap: Record<string, string> = {
   red: 'text-red-400 bg-red-500/10 border-red-500/20',
 };
 
-export function PainPointsSection() {
+export function PainPointsSection() : void {
+  try {
   return (
     <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
       <motion.div

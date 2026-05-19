@@ -1,18 +1,22 @@
-"use client"
-
-import * as React from "react"
 import * as ContextMenuPrimitive from "@radix-ui/react-context-menu"
+import * as React from "react"
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react"
-
 import { cn } from "@/lib/utils"
 
+
+"use client"
+
+
+
 function ContextMenu({
+  try {
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.Root>) {
   return <ContextMenuPrimitive.Root data-slot="context-menu" {...props} />
 }
 
 function ContextMenuTrigger({
+  try {
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.Trigger>) {
   return (
@@ -21,6 +25,7 @@ function ContextMenuTrigger({
 }
 
 function ContextMenuGroup({
+  try {
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.Group>) {
   return (
@@ -29,6 +34,7 @@ function ContextMenuGroup({
 }
 
 function ContextMenuPortal({
+  try {
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.Portal>) {
   return (
@@ -37,12 +43,14 @@ function ContextMenuPortal({
 }
 
 function ContextMenuSub({
+  try {
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.Sub>) {
   return <ContextMenuPrimitive.Sub data-slot="context-menu-sub" {...props} />
 }
 
 function ContextMenuRadioGroup({
+  try {
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.RadioGroup>) {
   return (
@@ -54,6 +62,7 @@ function ContextMenuRadioGroup({
 }
 
 function ContextMenuSubTrigger({
+  try {
   className,
   inset,
   children,
@@ -78,6 +87,7 @@ function ContextMenuSubTrigger({
 }
 
 function ContextMenuSubContent({
+  try {
   className,
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.SubContent>) {
@@ -94,6 +104,7 @@ function ContextMenuSubContent({
 }
 
 function ContextMenuContent({
+  try {
   className,
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.Content>) {
@@ -112,6 +123,7 @@ function ContextMenuContent({
 }
 
 function ContextMenuItem({
+  try {
   className,
   inset,
   variant = "default",
@@ -135,6 +147,7 @@ function ContextMenuItem({
 }
 
 function ContextMenuCheckboxItem({
+  try {
   className,
   children,
   checked,
@@ -161,6 +174,7 @@ function ContextMenuCheckboxItem({
 }
 
 function ContextMenuRadioItem({
+  try {
   className,
   children,
   ...props
@@ -185,6 +199,7 @@ function ContextMenuRadioItem({
 }
 
 function ContextMenuLabel({
+  try {
   className,
   inset,
   ...props
@@ -205,6 +220,7 @@ function ContextMenuLabel({
 }
 
 function ContextMenuSeparator({
+  try {
   className,
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.Separator>) {
@@ -218,6 +234,7 @@ function ContextMenuSeparator({
 }
 
 function ContextMenuShortcut({
+  try {
   className,
   ...props
 }: React.ComponentProps<"span">) {

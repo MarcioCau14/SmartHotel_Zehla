@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
-import { join } from 'path';
 import * as fs from 'fs';
+import { join } from 'path';
+
 
 const folder = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_';
 const sourceFile = join(folder, 'POUSADAS_MARKETING_FASE (1).xlsx');
@@ -8,7 +9,8 @@ const targetFile = join(folder, 'PLANILHA_LITORAL_SC.xlsx');
 const sheetName = 'Leads_SUL_BR (1)';
 
 async function isolateScLeads() {
-  console.log(`📂 Isolando aba [${sheetName}] para novo arquivo...`);
+  try {
+  
   
   if (!fs.existsSync(sourceFile)) {
     console.error(`❌ Arquivo fonte não encontrado: ${sourceFile}`);
@@ -30,11 +32,11 @@ async function isolateScLeads() {
   // Salvar como PLANILHA_LITORAL_SC.xlsx
   XLSX.writeFile(newWorkbook, targetFile);
 
-  console.log(`✨ [SUCESSO] Planilha isolada e renomeada: ${targetFile}`);
+  
   
   // Opcional: Verificar contagem
   const data = XLSX.utils.sheet_to_json(sheet);
-  console.log(`📊 Total de leads em SC isolados: ${data.length}`);
+  
 }
 
 isolateScLeads().catch(console.error);

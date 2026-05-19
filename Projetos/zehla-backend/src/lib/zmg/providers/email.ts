@@ -14,7 +14,7 @@ export class EmailProvider {
     try {
       // TODO: Implementar chamada para Amazon SES ou Listmonk API
       
-      console.log(`[ZMG:EMAIL] Sending Email to ${email}: ${subject}`);
+      
       
       // Simulação de sucesso
       return { 

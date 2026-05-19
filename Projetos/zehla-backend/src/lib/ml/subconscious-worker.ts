@@ -1,11 +1,14 @@
-import { Queue, Worker, Job } from 'bullmq';
-import { prisma } from '@/lib/prisma';
-import { MemoryIngestionService } from './memory-service';
-import { TrialService } from '../billing/trial-service';
-import { SelfHealingEngine } from './self-healing-engine';
-import { CognitiveTerminal } from '@/lib/observability/cognitive-terminal';
-import { SecretariaBridge } from '../intelligence/secretaria-bridge';
 import IORedis from 'ioredis';
+import { Queue, Worker, Job } from 'bullmq';
+
+import { CognitiveTerminal } from '@/lib/observability/cognitive-terminal';
+import { prisma } from '@/lib/prisma';
+
+import { MemoryIngestionService } from './memory-service';
+import { SecretariaBridge } from '../intelligence/secretaria-bridge';
+import { SelfHealingEngine } from './self-healing-engine';
+import { TrialService } from '../billing/trial-service';
+
 
 const connection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', {
   maxRetriesPerRequest: null,
@@ -68,7 +71,7 @@ export const subconsciousWorker = new Worker(
 
 // Monitoramento de eventos do worker
 subconsciousWorker.on('completed', (job) => {
-  console.log(`[ML-BRAIN] Ciclo subconsciente ${job.id} concluído com sucesso.`);
+  
 });
 
 subconsciousWorker.on('failed', (job, err) => {

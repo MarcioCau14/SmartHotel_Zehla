@@ -1,0 +1,109 @@
+'use client';
+
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Send, Loader2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import type { TerminalMessage } from '@/lib/store';
+
+interface ClassificationResult {
+  intent: string;
+  classification: string;
+  response: string;
+  source: string;
+  confidence: number;
+  latency_ms: number;
+}
+
+export function MessageFeed() {
+  const [messages, setMessages] = useState<TerminalMessage[]>([]);
+  const [inputValue, setInputValue] = useState('');
+  const [classifying, setClassifying] = useState(false);
+  const [result, setResult] = useState<ClassificationResult | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch('/api/terminal')
+      .then(r => r.json())
+      .then(data => {
+        setMessages(data.slice(0, 10));
+      });
+  }, []);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, result]);
+
+  const handleClassify = useCallback(async () => {
+    if (!inputValue.trim() || classifying) return;
+    setClassifying(true);
+    setResult(null);
+    try {
+      const res = await fetch('/api/brain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: inputValue }),
+      });
+      const data = await res.json();
+      setResult(data);
+    } catch {
+      setResult({ intent: 'error', classification: 'error', response: 'Erro na classificação', source: 'error', confidence: 0, latency_ms: 0 });
+    } finally {
+      setClassifying(false);
+      setInputValue('');
+    }
+  }, [inputValue, classifying]);
+
+  const colorMap: Record<string, string> = {
+    green: 'text-[#FF5500]',
+    purple: 'text-[#FF5500]',
+    yellow: 'text-[#FF5500]',
+    red: 'text-red-400',
+  };
+
+  return (
+    <div className="glass-card p-4 flex flex-col h-full">
+      <div className="text-xs font-mono text-[#4d4d4d] mb-3 flex items-center gap-2">
+        <span className="status-dot online" /> Atividade ao Vivo
+      </div>
+      <div ref={scrollRef} className="flex-1 overflow-y-auto max-h-64 space-y-1.5 terminal-text zehla-scroll">
+        {messages.map((msg) => (
+          <div key={msg.id} className="flex gap-2">
+            <span className="text-[#363636] text-xs whitespace-nowrap">
+              {new Date(msg.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+            <span className={`${colorMap[msg.color]} text-xs leading-relaxed break-all`}>
+              {msg.content}
+            </span>
+          </div>
+        ))}
+        {result && (
+          <div className="mt-2 p-3 rounded-lg bg-orange-500/5 border border-orange-500/20">
+            <div className="text-xs text-[#FF5500] font-semibold mb-1">
+              Intent: {result.intent} | {result.source} | {result.latency_ms}ms | {(result.confidence * 100).toFixed(1)}%
+            </div>
+            <div className="text-xs text-[#b4b4b4]">{result.response}</div>
+          </div>
+        )}
+      </div>
+      <div className="mt-3 flex gap-2">
+        <Input
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleClassify()}
+          placeholder="Testar classificação de intent..."
+          className="bg-[#242424] border-[#363636] text-sm h-9"
+          disabled={classifying}
+        />
+        <button
+          onClick={handleClassify}
+          disabled={classifying || !inputValue.trim()}
+          className="px-3 h-9 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 rounded-lg transition-colors"
+        >
+          {classifying ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+        </button>
+      </div>
+    </div>
+  );
+}

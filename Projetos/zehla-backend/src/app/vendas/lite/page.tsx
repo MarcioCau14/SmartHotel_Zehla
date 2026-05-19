@@ -1,8 +1,16 @@
-'use client';
-
+import Link from 'next/link';
+import { 
 import { Suspense } from 'react';
 import { motion } from 'framer-motion';
-import { 
+
+import { Button } from '@/components/ui/button';
+import { LandingTracker } from '@/components/sales/LandingTracker';
+import { MainFooter } from '@/components/landing/MainFooter';
+import { PremiumUpsell } from '@/components/sales/PremiumUpsell';
+
+
+'use client';
+
   Check, 
   ArrowRight, 
   ShieldCheck, 
@@ -11,11 +19,6 @@ import {
   TrendingUp,
   Clock,
 } from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { PremiumUpsell } from '@/components/sales/PremiumUpsell';
-import { LandingTracker } from '@/components/sales/LandingTracker';
-import { MainFooter } from '@/components/landing/MainFooter';
 
 export default function LiteSalesPage() {
   return (

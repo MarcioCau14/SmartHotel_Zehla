@@ -1,0 +1,63 @@
+/**
+ * ZMG WhatsApp Provider
+ * Integrates with Evolution API (Current) and Z-API/360dialog (Future)
+ */
+
+import { ZMGStatus } from '../types';
+
+export interface WhatsAppResponse {
+  success: boolean;
+  externalId?: string;
+  error?: string;
+}
+
+export class WhatsAppProvider {
+  static async sendText(phone: string, text: string): Promise<WhatsAppResponse> {
+    try {
+      const evoUrl = process.env.EVOLUTION_API_URL || 'http://localhost:8080';
+      const evoKey = process.env.EVOLUTION_API_KEY || '';
+      
+      // Sanitização básica do número para Evolution API (removendo + se necessário)
+      const number = phone.replace('+', '');
+
+      if (!evoKey) {
+        console.log(`[ZMG:WA] Simulation: Sending to ${phone}: ${text}`);
+        return { success: true, externalId: 'mock-wa-' + Date.now() };
+      }
+
+      const res = await fetch(`${evoUrl}/message/sendText/zehla-bot`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': evoKey
+        },
+        body: JSON.stringify({
+          number,
+          options: {
+            delay: 1200,
+            presence: 'composing'
+          },
+          textMessage: {
+            text: text
+          }
+        })
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        return { success: false, error: errorText };
+      }
+
+      const data = await res.json();
+      return { 
+        success: true, 
+        externalId: data.key?.id || data.messageId || 'sent'
+      };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+}

@@ -1,0 +1,277 @@
+import {
+
+
+  MetricPoint, MetricSnapshot, TestRun, InjectionEvent,
+  ZCCAgent, MessageChannel
+} from "./types";
+
+function generateId(): string {
+  return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+}
+
+/**
+ * MetricsCollector — Captures all metrics during test execution
+ * 
+ * Stores metrics in memory with time-series precision for post-test analysis.
+ * In production, this would persist to SQLite or InfluxDB.
+ */
+export class MetricsCollector {
+  private testRunId: string;
+  private metrics: MetricPoint[] = [];
+  private snapshots: MetricSnapshot[] = [];
+  private startTime: Date;
+  private lastSnapshotTime: Date;
+  private snapshotIntervalMs: number;
+  private responseTimes: number[] = [];
+  private errorCount: number = 0;
+  private totalInjections: number = 0;
+  private firstResponseTime: number | null = null;
+  private lastResponseTime: number | null = null;
+
+  constructor(testRunId: string, snapshotIntervalMs = 5000) {
+    this.testRunId = testRunId;
+    this.startTime = new Date();
+    this.lastSnapshotTime = new Date();
+    this.snapshotIntervalMs = snapshotIntervalMs;
+  }
+
+  /**
+   * Record an injection event (message sent to ZEHLA)
+   */
+  recordInjection(event: InjectionEvent): void {
+    this.totalInjections++;
+
+    if (event.responseTime !== undefined) {
+      this.responseTimes.push(event.responseTime);
+      if (this.firstResponseTime === null) this.firstResponseTime = event.responseTime;
+      this.lastResponseTime = event.responseTime;
+    }
+
+    if (event.error) {
+      this.errorCount++;
+    }
+
+    // Create metric point for this injection
+    this.metrics.push({
+      id: generateId(),
+      testRunId: this.testRunId,
+      timestamp: new Date(),
+      category: "injection",
+      metricName: event.error ? "injection_error" : "injection_success",
+      metricValue: event.responseTime || 0,
+      unit: "ms",
+      metadata: {
+        messageId: event.messageId,
+        statusCode: event.statusCode,
+        error: event.error || null,
+      },
+    });
+  }
+
+  /**
+   * Record a metric from ZEHLA's response
+   */
+  recordAgentMetric(agent: ZCCAgent, metricName: string, value: number, unit: string = "ms"): void {
+    this.metrics.push({
+      id: generateId(),
+      testRunId: this.testRunId,
+      timestamp: new Date(),
+      category: "agent",
+      metricName,
+      metricValue: value,
+      unit,
+      agent,
+      metadata: {},
+    });
+  }
+
+  /**
+   * Record a ZMG metric
+   */
+  recordZmgMetric(metricName: string, value: number, unit: string = "count"): void {
+    this.metrics.push({
+      id: generateId(),
+      testRunId: this.testRunId,
+      timestamp: new Date(),
+      category: "zmg",
+      metricName,
+      metricValue: value,
+      unit,
+      metadata: {},
+    });
+  }
+
+  /**
+   * Record a system metric (CPU, memory, etc.)
+   */
+  recordSystemMetric(metricName: string, value: number, unit: string): void {
+    this.metrics.push({
+      id: generateId(),
+      testRunId: this.testRunId,
+      timestamp: new Date(),
+      category: "system",
+      metricName,
+      metricValue: value,
+      unit,
+      metadata: {},
+    });
+  }
+
+  /**
+   * Take a periodic snapshot of current metrics
+   */
+  takeSnapshot(testRun: TestRun): MetricSnapshot {
+    const snapshot: MetricSnapshot = {
+      timestamp: new Date(),
+      throughput: testRun.throughputAvg,
+      p50: this.calculatePercentile(50),
+      p95: this.calculatePercentile(95),
+      p99: this.calculatePercentile(99),
+      errorRate: this.totalInjections > 0 ? this.errorCount / this.totalInjections : 0,
+      deliveryRate: testRun.deliveryRate || 1.0,
+      activeConnections: testRun.config?.maxConcurrent || 0,
+      memoryUsageMB: process.memoryUsage ? process.memoryUsage().heapUsed / (1024 * 1024) : 0,
+      cpuUsage: testRun.cpuAvg || 0,
+      queueSize: 0,
+    };
+
+    this.snapshots.push(snapshot);
+    this.lastSnapshotTime = new Date();
+
+    return snapshot;
+  }
+
+  /**
+   * Get current statistics
+   */
+  getStats(): {
+    totalInjections: number;
+    totalErrors: number;
+    errorRate: number;
+    avgResponseMs: number;
+    p50Ms: number;
+    p95Ms: number;
+    p99Ms: number;
+    maxResponseMs: number;
+    minResponseMs: number;
+    durationSeconds: number;
+    snapshotsCount: number;
+    memoryUsageMB: number;
+  } {
+    const sorted = [...this.responseTimes].sort((a, b) => a - b);
+    const duration = (Date.now() - this.startTime.getTime()) / 1000;
+
+    return {
+      totalInjections: this.totalInjections,
+      totalErrors: this.errorCount,
+      errorRate: this.totalInjections > 0 ? this.errorCount / this.totalInjections : 0,
+      avgResponseMs: sorted.length > 0 ? sorted.reduce((a, b) => a + b, 0) / sorted.length : 0,
+      p50Ms: this.calculatePercentile(50),
+      p95Ms: this.calculatePercentile(95),
+      p99Ms: this.calculatePercentile(99),
+      maxResponseMs: sorted.length > 0 ? sorted[sorted.length - 1] : 0,
+      minResponseMs: sorted.length > 0 ? sorted[0] : 0,
+      durationSeconds: duration,
+      throughputAvg: duration > 0 ? this.totalInjections / duration : 0,
+      snapshotsCount: this.snapshots.length,
+      memoryUsageMB: process.memoryUsage ? process.memoryUsage().heapUsed / (1024 * 1024) : 0,
+    };
+  }
+
+  /**
+   * Apply collected metrics to the TestRun
+   */
+  applyToTestRun(testRun: TestRun): void {
+    const sorted = [...this.responseTimes].sort((a, b) => a - b);
+    
+    if (sorted.length > 0) {
+      testRun.avgResponseMs = sorted.reduce((a, b) => a + b, 0) / sorted.length;
+      testRun.p95ResponseMs = sorted[Math.floor(sorted.length * 0.95)] || 0;
+      testRun.p99ResponseMs = sorted[Math.floor(sorted.length * 0.99)] || 0;
+    }
+
+    testRun.totalErrors = this.errorCount;
+    testRun.errorRate = this.totalInjections > 0 ? this.errorCount / this.totalInjections : 0;
+
+    // Calculate throughput
+    const duration = (Date.now() - this.startTime.getTime()) / 1000;
+    if (duration > 0) {
+      testRun.throughputAvg = this.totalInjections / duration;
+      testRun.throughputPeak = Math.max(...this.snapshots.map(s => s.throughput), testRun.throughputAvg);
+    }
+
+    // Calculate degradation (compare first 10% vs last 10%)
+    if (sorted.length >= 100) {
+      const first10 = sorted.slice(0, Math.floor(sorted.length * 0.1));
+      const last10 = sorted.slice(-Math.floor(sorted.length * 0.1));
+      const firstAvg = first10.reduce((a, b) => a + b, 0) / first10.length;
+      const lastAvg = last10.reduce((a, b) => a + b, 0) / last10.length;
+      if (firstAvg > 0) {
+        const degradation = (lastAvg - firstAvg) / firstAvg;
+        testRun.memoryGrowthMB = degradation * 100;
+      }
+    }
+
+    // Memory tracking
+    if (process.memoryUsage) {
+      const mem = process.memoryUsage();
+      testRun.memoryGrowthMB = (testRun.memoryGrowthMB || 0) + (mem.heapUsed / (1024 * 1024));
+    }
+  }
+
+  /**
+   * Export metrics as JSON
+   */
+  exportMetrics(): MetricPoint[] {
+    return this.metrics;
+  }
+
+  /**
+   * Export snapshots as JSON
+   */
+  exportSnapshots(): MetricSnapshot[] {
+    return this.snapshots;
+  }
+
+  /**
+   * Generate a live status line for console
+   */
+  getStatusLine(testRun: TestRun): string {
+    const stats = this.getStats();
+    const elapsed = this.formatDuration(stats.durationSeconds);
+    const ratio = Math.min(stats.p95Ms / 10000, 1);
+    const filled = Math.round(ratio * 20);
+    const empty = 20 - filled;
+
+    return [
+      `[${elapsed}]`,
+      `Msgs: ${stats.totalInjections}/${testRun.totalMessages}`,
+      `Err: ${stats.errorRate > 0.05 ? `${(stats.errorRate * 100).toFixed(1)}% !` : `${(stats.errorRate * 100).toFixed(1)}%`}`,
+      `P95: ${stats.p95Ms}ms`,
+      `Avg: ${stats.avgResponseMs.toFixed(0)}ms`,
+      `TP: ${stats.throughputAvg.toFixed(1)}msg/s`,
+      `[${"=".repeat(filled)}${".".repeat(empty)}]`,
+      `Mem: ${stats.memoryUsageMB.toFixed(0)}MB`,
+    ].join(" | ");
+  }
+
+  // ---- PRIVATE METHODS ----
+
+  private calculatePercentile(percentile: number): number {
+    if (this.responseTimes.length === 0) return 0;
+    const sorted = [...this.responseTimes].sort((a, b) => a - b);
+    const index = Math.floor(sorted.length * (percentile / 100));
+    return sorted[index] || 0;
+  }
+
+  private formatDuration(seconds: number): string {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    if (h > 0) return `${h}h${m.toString().padStart(2, "0")}m${s.toString().padStart(2, "0")}s`;
+    if (m > 0) return `${m}m${s.toString().padStart(2, "0")}s`;
+    return `${s}s`;
+  }
+}
+
+export default MetricsCollector;

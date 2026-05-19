@@ -1,15 +1,17 @@
 import { PrismaClient } from '@prisma/client';
 
+
 const prisma = new PrismaClient();
 
 async function categorizeLeads() {
-  console.log('🚀 INICIANDO PROCESSAMENTO PROFUNDO: SECRETARIA-IA');
+  try {
+  
   
   const leads = await prisma.lead.findMany({
     where: { cluster: 'COLD' }
   });
 
-  console.log(`[ANALYSIS] Processando ${leads.length} leads...`);
+  
 
   let countElite = 0;
   let countGargalo = 0;
@@ -18,7 +20,7 @@ async function categorizeLeads() {
 
   for (let i = 0; i < leads.length; i++) {
     const lead = leads[i];
-    if (i % 500 === 0) console.log(`[PROGRESS] Processados: ${i}/${leads.length}`);
+    if (i % 500 === 0) 
     const qual = (lead.qualification || '').toLowerCase();
     const behavior = (lead.buyingBehavior || '').toLowerCase();
     const intent = (lead.intentSignals || '').toLowerCase();
@@ -69,11 +71,11 @@ async function categorizeLeads() {
     });
   }
 
-  console.log('\n✅ PROCESSAMENTO CONCLUÍDO!');
-  console.log(`- ELITE PREMIUM: ${countElite}`);
-  console.log(`- GARGALO OPERACIONAL: ${countGargalo}`);
-  console.log(`- TRAUMA COMISSÃO: ${countTrauma}`);
-  console.log(`- TRADICIONAL/RESISTENTE: ${countResistente}`);
+  
+  
+  
+  
+  
 }
 
 categorizeLeads().catch(console.error).finally(() => prisma.$disconnect());

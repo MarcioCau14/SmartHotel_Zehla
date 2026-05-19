@@ -1,10 +1,13 @@
+import { prisma } from '@/lib/prisma';
+
+import { freeLLMRouter } from './free-llm-router';
+
+
 /**
  * ZEHLA Swipe Generator (Plano MAX)
  * Gera mensagens de prospecção ultra-personalizadas usando Kimi 2.6 / LLMs Gratuitos
  */
 
-import { freeLLMRouter } from './free-llm-router';
-import { prisma } from '@/lib/prisma';
 
 export class SwipeGenerator {
   /**
@@ -15,7 +18,7 @@ export class SwipeGenerator {
     propertyId: string, 
     trendSignalIds: string[] = []
   ) {
-    console.log(`🧠 [SWIPE-GEN] Gerando síntese para lead ${leadId} (Tier MAX)...`);
+    ...`);
     
     try {
       // 1. Buscar dados do Lead

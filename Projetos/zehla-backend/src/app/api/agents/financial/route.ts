@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+
 import { prisma } from '@/lib/prisma'
 
-export async function POST(request: NextRequest) {
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+async function _POST(request: NextRequest) : void {
   try {
     const body = await request.json()
     const { action, propertyId, data } = body
@@ -23,8 +26,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Erro interno' }, { status: 500 })
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
 
-async function createPayment(propertyId: string, data: any) {
+
+async function createPayment(propertyId: string, data: unknown) {
+  try {
   const reservation = await prisma.reservation.findUnique({
     where: { id: data.reservationId },
     include: { payment: true }
@@ -58,6 +64,7 @@ async function createPayment(propertyId: string, data: any) {
 }
 
 async function getPaymentStatus(paymentId: string) {
+  try {
   const payment = await prisma.payment.findUnique({
     where: { id: paymentId },
     include: { reservation: { include: { room: true } } }
@@ -70,7 +77,8 @@ async function getPaymentStatus(paymentId: string) {
   return NextResponse.json({ success: true, data: payment })
 }
 
-async function listPayments(propertyId: string, filters: any) {
+async function listPayments(propertyId: string, filters: unknown) {
+  try {
   const where: any = { propertyId }
 
   if (filters?.status) where.status = filters.status
@@ -94,7 +102,8 @@ async function listPayments(propertyId: string, filters: any) {
   return NextResponse.json({ success: true, data: summary })
 }
 
-async function getRevenue(propertyId: string, period: any) {
+async function getRevenue(propertyId: string, period: unknown) {
+  try {
   const startDate = period?.startDate ? new Date(period.startDate) : new Date(new Date().getFullYear(), 0, 1)
   const endDate = period?.endDate ? new Date(period.endDate) : new Date()
 
@@ -122,7 +131,10 @@ async function getRevenue(propertyId: string, period: any) {
   return NextResponse.json({ success: true, data: revenue })
 }
 
-export async function GET() {
+
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+async function _GET() : void {
+  try {
   return NextResponse.json({
     agent: 'FINANCIAL',
     status: 'online',

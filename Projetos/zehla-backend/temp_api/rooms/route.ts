@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
+
 import { rooms } from '@/lib/store';
 
-export async function GET() {
+
+export async function GET() : void {
+  try {
   const summary = {
     total: rooms.length,
     available: rooms.filter(r => r.status === 'available').length,

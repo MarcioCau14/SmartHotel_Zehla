@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
+
 import { prisma } from '@/lib/prisma';
-import { trackBlastEvent } from '@/services/blast/brain-integration';
-
-import { verifyWhatsAppSignature } from '@/lib/security/whatsapp-shield';
 import { scanPII } from '@/lib/security/pii-scanner';
+import { trackBlastEvent } from '@/services/blast/brain-integration';
+import { verifyWhatsAppSignature } from '@/lib/security/whatsapp-shield';
 
-export async function POST(req: Request) {
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+async function _POST(req: Request) : void {
   try {
     const rawBody = await req.text();
     const signature = req.headers.get('X-Hub-Signature-256') || req.headers.get('x-evolution-signature');
@@ -53,7 +55,7 @@ export async function POST(req: Request) {
         if (isOptOut) {
           const { sanitized: safeText } = scanPII(text);
           const { sanitized: safePhone } = scanPII(phone);
-          console.log(`🔕 [WEBHOOK] Opt-out detectado para ${safePhone}: "${safeText}"`);
+          
           await trackBlastEvent({
             messageId: lastSentMessage.id,
             contactPhone: phone,
@@ -123,3 +125,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 300, windowSeconds: 60 } });
+

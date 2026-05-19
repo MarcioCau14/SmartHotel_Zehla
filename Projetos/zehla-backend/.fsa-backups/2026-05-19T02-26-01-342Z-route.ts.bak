@@ -1,0 +1,133 @@
+import { NextRequest, NextResponse } from 'next/server'
+
+import { prisma } from '@/lib/prisma'
+
+
+export async function POST(request: NextRequest) : void {
+  try {
+    const body = await request.json()
+    const { action, propertyId, data } = body
+
+    switch (action) {
+      case 'CREATE_PAYMENT':
+        return await createPayment(propertyId, data)
+      case 'GET_STATUS':
+        return await getPaymentStatus(data.paymentId)
+      case 'LIST_PAYMENTS':
+        return await listPayments(propertyId, data)
+      case 'GET_REVENUE':
+        return await getRevenue(propertyId, data)
+      default:
+        return NextResponse.json({ success: false, error: 'Ação inválida' }, { status: 400 })
+    }
+  } catch (error) {
+    console.error('❌ Erro em Financeiro:', error)
+    return NextResponse.json({ success: false, error: 'Erro interno' }, { status: 500 })
+  }
+}
+
+async function createPayment(propertyId: string, data: unknown) {
+  const reservation = await prisma.reservation.findUnique({
+    where: { id: data.reservationId },
+    include: { payment: true }
+  })
+
+  if (!reservation) {
+    return NextResponse.json({ success: false, error: 'Reserva não encontrada' }, { status: 404 })
+  }
+
+  if (reservation.payment) {
+    return NextResponse.json({ success: false, error: 'Pagamento já existe para esta reserva' }, { status: 409 })
+  }
+
+  // Simular geração de PIX (integração real com Pagarme viria aqui)
+  const pixCode = `00020126580014BR.GOV.BCB.PIX0136${reservation.propertyId}5204000053039865406${reservation.totalAmount.toFixed(2)}5802BR5913ZEHLA_SMARTHOTEL6009IMBITUBA62070503***6304${Date.now()}`
+
+  const payment = await prisma.payment.create({
+    data: {
+      propertyId,
+      reservationId: data.reservationId,
+      amount: reservation.totalAmount,
+      method: 'PIX',
+      status: 'PENDING',
+      pixCode,
+      pixQrCode: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(pixCode)}`,
+      pixExpiration: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 horas
+    }
+  })
+
+  return NextResponse.json({ success: true, data: payment })
+}
+
+async function getPaymentStatus(paymentId: string) {
+  const payment = await prisma.payment.findUnique({
+    where: { id: paymentId },
+    include: { reservation: { include: { room: true } } }
+  })
+
+  if (!payment) {
+    return NextResponse.json({ success: false, error: 'Pagamento não encontrado' }, { status: 404 })
+  }
+
+  return NextResponse.json({ success: true, data: payment })
+}
+
+async function listPayments(propertyId: string, filters: unknown) {
+  const where: any = { propertyId }
+
+  if (filters?.status) where.status = filters.status
+  if (filters?.startDate) where.createdAt = { gte: new Date(filters.startDate) }
+  if (filters?.endDate) where.createdAt = { ...where.createdAt, lte: new Date(filters.endDate) }
+
+  const payments = await prisma.payment.findMany({
+    where,
+    include: { reservation: { include: { room: true } } },
+    orderBy: { createdAt: 'desc' }
+  })
+
+  const summary = {
+    total: payments.length,
+    totalAmount: payments.reduce((sum, p) => sum + p.amount, 0),
+    paidAmount: payments.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0),
+    pendingAmount: payments.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + p.amount, 0),
+    payments
+  }
+
+  return NextResponse.json({ success: true, data: summary })
+}
+
+async function getRevenue(propertyId: string, period: unknown) {
+  const startDate = period?.startDate ? new Date(period.startDate) : new Date(new Date().getFullYear(), 0, 1)
+  const endDate = period?.endDate ? new Date(period.endDate) : new Date()
+
+  const reservations = await prisma.reservation.findMany({
+    where: {
+      propertyId,
+      status: { in: ['CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT'] },
+      createdAt: { gte: startDate, lte: endDate }
+    },
+    include: { payment: true }
+  })
+
+  const revenue = {
+    period: { startDate, endDate },
+    totalReservations: reservations.length,
+    totalRevenue: reservations.reduce((sum, r) => sum + r.totalAmount, 0),
+    totalPaid: reservations.filter(r => r.payment?.status === 'PAID').reduce((sum, r) => sum + r.paidAmount, 0),
+    totalPending: reservations.filter(r => !r.payment || r.payment.status === 'PENDING').reduce((sum, r) => sum + r.totalAmount, 0),
+    averageNightlyRate: reservations.length > 0 
+      ? reservations.reduce((sum, r) => sum + r.roomPrice, 0) / reservations.length 
+      : 0,
+    occupancyRate: 0 // Calcular baseado em quartos disponíveis
+  }
+
+  return NextResponse.json({ success: true, data: revenue })
+}
+
+export async function GET() : void {
+  return NextResponse.json({
+    agent: 'FINANCIAL',
+    status: 'online',
+    description: 'Gestão de pagamentos PIX e relatórios financeiros'
+  })
+}

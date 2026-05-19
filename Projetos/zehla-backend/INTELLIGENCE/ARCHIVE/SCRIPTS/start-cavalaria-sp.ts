@@ -1,14 +1,17 @@
-import { Queue } from 'bullmq';
-import { PrismaClient } from '@prisma/client';
-import { redisConfig } from '../src/lib/delivery/redis-connection';
 import dotenv from 'dotenv';
+import { PrismaClient } from '@prisma/client';
+import { Queue } from 'bullmq';
+
+import { redisConfig } from '../src/lib/delivery/redis-connection';
+
 
 dotenv.config();
 const prisma = new PrismaClient();
 const marketingQueue = new Queue('marketing', { connection: redisConfig });
 
 async function startCavalariaSP() {
-  console.log('🚀 [CAVALARIA ZEHLA] Iniciando Operação Bandeirante (SP)...');
+  try {
+  ...');
   
   const topLeads = await prisma.lead.findMany({
     where: { state: 'SP', status: 'PROSPECT' },
@@ -16,10 +19,10 @@ async function startCavalariaSP() {
     take: 10
   });
 
-  console.log(`🎯 Alvos Identificados: ${topLeads.length} leads de luxo e alto impacto em SP.`);
+  
 
   for (const lead of topLeads) {
-    console.log(`➡️ [FILA] Adicionando: ${lead.name} (${lead.city} - ${lead.location})`);
+    `);
     
     await marketingQueue.add('campaign-trigger', {
       id: lead.id,
@@ -31,7 +34,7 @@ async function startCavalariaSP() {
     });
   }
 
-  console.log('\n✅ [CAVALARIA] Operação Bandeirante iniciada com sucesso! Processando via Marketing Worker.');
+  
 }
 
 startCavalariaSP()

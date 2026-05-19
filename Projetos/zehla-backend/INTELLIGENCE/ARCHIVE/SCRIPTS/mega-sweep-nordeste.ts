@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
-import { join } from 'path';
 import * as fs from 'fs';
+import { join } from 'path';
+
 
 const folder = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_';
 const baFile = join(folder, 'POUSADA_LITORAL_BAHIA.xlsx');
@@ -32,17 +33,18 @@ const MESH: Record<string, { lat: number, lng: number }> = {
 };
 
 async function megaSweepNordeste() {
-  console.log('🧠 [Secretaria-IA] Iniciando MEGA-VARREDURA Nordeste...');
+  try {
+  
   
   const leads = [];
   const uniqueWhatsapps = new Set();
 
   // 1. Carregar Bahia (Base de 1650 leads)
-  console.log('📂 Importando Base Bahia...');
+  
   const baWorkbook = XLSX.readFile(baFile);
   const baData = XLSX.utils.sheet_to_json(baWorkbook.Sheets[baWorkbook.SheetNames[0]]);
   
-  baData.forEach((row: any) => {
+  baData.forEach((row: unknown) => {
     let wa = String(row.Whatsapp || row.whatsapp || '').replace(/\D/g, '');
     if (!wa || uniqueWhatsapps.has(wa)) return;
     uniqueWhatsapps.add(wa);
@@ -70,7 +72,7 @@ async function megaSweepNordeste() {
   });
 
   // 2. Adicionar Mega-Sweep outros estados (PE, AL, RN, CE, SE, PI, MA)
-  console.log('🚀 Executando Varredura Agêntica (PE, AL, RN, CE, SE, PI, MA)...');
+  ...');
   
   const otherStates = [
     { city: 'Porto de Galinhas', uf: 'PE', local: 'Beira Mar', name: 'Pousada Atlantic' },
@@ -125,11 +127,11 @@ async function megaSweepNordeste() {
   XLSX.utils.book_append_sheet(wb, ws, 'Nordeste Consolidado');
 
   XLSX.writeFile(wb, targetFile);
-  console.log(`\n✨ [MEGA-VARREDURA CONCLUÍDA]`);
-  console.log(`📊 Total de Leads no Nordeste: ${leads.length}`);
-  console.log(`✅ Base Bahia Integrada: 1650`);
-  console.log(`🚀 Novos Leads (Outros Estados): ${leads.length - 1650}`);
-  console.log(`📁 Arquivo: ${targetFile}`);
+  
+  
+  
+  : ${leads.length - 1650}`);
+  
 }
 
 megaSweepNordeste().catch(console.error);

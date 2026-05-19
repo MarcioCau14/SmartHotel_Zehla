@@ -1,10 +1,13 @@
-import {
-  TestRun, Vulnerability, CalibrationAction, SeverityLevel
-} from "./types";
 import * as fs from "fs";
 import * as path from "path";
+import {
+
+
+  TestRun, Vulnerability, CalibrationAction, SeverityLevel
+} from "./types";
 
 function generateId(): string {
+  try {
   return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
 }
 
@@ -51,7 +54,7 @@ export class CalibrationEngine {
       return a.phase - b.phase;
     });
 
-    console.log(`[CalibrationEngine] Generated ${actions.length} calibration actions`);
+    
     return actions;
   }
 
@@ -162,7 +165,7 @@ export class CalibrationEngine {
       fs.mkdirSync(outputDir, { recursive: true });
     }
     fs.writeFileSync(reportPath, report, "utf-8");
-    console.log(`[CalibrationEngine] Report saved to: ${reportPath}`);
+    
 
     return report;
   }

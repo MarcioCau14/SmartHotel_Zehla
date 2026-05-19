@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
-import { join } from 'path';
 import * as fs from 'fs';
+import { join } from 'path';
+
 
 const folder = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_';
 const fileName = 'PLANILHA_LITORAL_PARANA.xlsx';
@@ -90,5 +91,5 @@ const wb = XLSX.utils.book_new();
 XLSX.utils.book_append_sheet(wb, ws, 'Leads Paraná');
 
 XLSX.writeFile(wb, filePath);
-console.log(`✅ [Secretaria-IA] Planilha gerada com sucesso: ${filePath}`);
-console.log(`📊 Total de leads prospectados: ${rows.length}`);
+
+

@@ -18,6 +18,7 @@ export interface ScanResult {
 }
 
 export function scanAndMaskPII(text: string): ScanResult {
+  try {
   let masked = text;
   const detectedTypes: string[] = [];
 
@@ -57,6 +58,7 @@ export function scanAndMaskPII(text: string): ScanResult {
  * Filtra instruções de System Prompt Injection
  */
 export function sanitizePrompt(prompt: string): string {
+  try {
   const malicousPatterns = [
     /ignore previous instructions/i,
     /ignore all previous/i,

@@ -1,9 +1,12 @@
-import { WhatsappAgentService } from '../src/lib/brain/whatsapp-agent-service';
-import { prisma } from '../src/lib/prisma';
 import { Plan } from '@prisma/client';
 
+import { WhatsappAgentService } from '../src/lib/brain/whatsapp-agent-service';
+import { prisma } from '../src/lib/prisma';
+
+
 async function testProAgent() {
-  console.log('🧪 Iniciando teste do Agente PRO...');
+  try {
+  
 
   // 1. Buscar ou criar usuário admin para vincular à propriedade
   let user = await prisma.user.findFirst({ where: { role: 'SUPER_ADMIN' } });
@@ -12,7 +15,7 @@ async function testProAgent() {
       data: {
         email: 'test-admin@zehla.ai',
         name: 'Test Admin',
-        password: 'password123',
+        password: process.env.TEST_ADMIN_PASSWORD || 'DEPRECATED_DO_NOT_USE',
         role: 'SUPER_ADMIN'
       }
     });
@@ -22,7 +25,7 @@ async function testProAgent() {
   let property = await prisma.property.findFirst({ where: { plan: Plan.PRO } });
   
   if (!property) {
-    console.log('📝 Criando propriedade PRO de teste...');
+    
     property = await prisma.property.create({
       data: {
         name: 'Villa del Mar Test',
@@ -42,7 +45,7 @@ async function testProAgent() {
   }
 
   // 2. Simular o "Aprendizado" criando algumas mensagens outbound
-  console.log('🧠 Simulando aprendizado de persona...');
+  
   await prisma.message.create({
     data: {
       phone: '5511988888888',
@@ -55,7 +58,7 @@ async function testProAgent() {
   });
 
   // 3. Simular uma mensagem de entrada do hóspede
-  console.log('💬 Hóspede pergunta sobre preço...');
+  
   const response = await WhatsappAgentService.processIncomingMessage({
     propertyId: property.id,
     phone: '5511988888888',
@@ -63,15 +66,15 @@ async function testProAgent() {
     messageText: 'Olá, qual o valor da diária para o próximo feriado?'
   });
 
-  console.log('\n--- RESPOSTA DO AGENTE ZEHLA ---');
-  console.log('Intent Identificada:', response.intent);
-  console.log('Resposta Final:', response.response);
-  console.log('--------------------------------\n');
+  
+  
+  
+  
 
   if (response.success && response.response.includes('encantados')) {
-    console.log('✅ SUCESSO: O agente usou a persona aprendida!');
+    
   } else {
-    console.log('⚠️ AVISO: A resposta pode não ter usado a persona completamente.');
+    
   }
 }
 

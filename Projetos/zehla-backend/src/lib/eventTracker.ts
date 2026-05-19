@@ -72,6 +72,7 @@ export async function trackEvent(
  * Gera/recupera ID de sessão persistente
  */
 function getSessionId(): string {
+  try {
   if (typeof window === 'undefined') return 'server';
   
   const key = 'zehla_session_id';

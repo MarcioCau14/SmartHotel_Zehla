@@ -7,7 +7,17 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "fsa": "node full-stack-agent/src/index.js",
+    "fsa:review": "node full-stack-agent/src/index.js review . --deep",
+    "fsa:fix": "node full-stack-agent/src/index.js fix . --fix",
+    "fsa:full": "node full-stack-agent/src/index.js full . --report md",
+    "fsa:test": "node --test full-stack-agent/tests/**/*.test.js",
+    "secure:seal": "tsx scripts/secure-env.ts seal",
+    "secure:unseal": "tsx scripts/secure-env.ts unseal",
+    "secure:harden": "bash scripts/harden.sh",
+    "secure:rotate": "tsx scripts/secure-env.ts rotate",
+    "secure:check": "tsx scripts/secure-env.ts validate"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

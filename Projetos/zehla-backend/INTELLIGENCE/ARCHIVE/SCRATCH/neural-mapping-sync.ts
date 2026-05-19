@@ -1,8 +1,9 @@
-import { PrismaClient } from '@prisma/client';
 import * as XLSX from 'xlsx';
 import * as fs from 'fs';
-import { join } from 'path';
 import dotenv from 'dotenv';
+import { PrismaClient } from '@prisma/client';
+import { join } from 'path';
+
 
 dotenv.config();
 const prisma = new PrismaClient();
@@ -52,14 +53,15 @@ const NEURAL_MESH: Record<string, { lat: number, lng: number }> = {
 };
 
 async function syncLeads() {
-  console.log('🧠 [Neural Mapping] Iniciando Sincronização de 2.593 Leads...');
+  try {
+  
   
   const files = fs.readdirSync(TRATADAS_FOLDER).filter(f => f.endsWith('.xlsx'));
   let totalNewLeads = 0;
   let totalSkipped = 0;
 
   for (const file of files) {
-    console.log(`📂 Lendo arquivo: ${file}`);
+    
     const workbook = XLSX.readFile(join(TRATADAS_FOLDER, file));
     const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
     
@@ -119,12 +121,13 @@ async function syncLeads() {
     }
   }
 
-  console.log(`\n✨ [SUCESSO] Sincronização concluída!`);
-  console.log(`✅ Novos Leads Inseridos: ${totalNewLeads}`);
-  console.log(`⏭️ Leads Pulados (Duplicatas): ${totalSkipped}`);
+  
+  
+  : ${totalSkipped}`);
 }
 
 function getRegionFromUF(uf: string): string {
+  try {
   const nordeste = ['BA', 'PE', 'CE', 'RN', 'AL', 'PB', 'SE', 'MA', 'PI'];
   const sudeste = ['SP', 'RJ', 'MG', 'ES'];
   const sul = ['SC', 'PR', 'RS'];

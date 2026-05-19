@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
-import { join } from 'path';
 import * as fs from 'fs';
+import { join } from 'path';
+
 
 const filePath = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_/POUSADAS_MARKETING_FASE (1).xlsx';
 const tabName = 'Leads_SUL_BR (1)';
@@ -65,7 +66,8 @@ const newScLeads = [
 ];
 
 async function updateScDeepSweep() {
-  console.log(`🧠 [Secretaria-IA] Iniciando Varredura Profunda em Santa Catarina...`);
+  try {
+  
   
   const workbook = XLSX.readFile(filePath);
   const sheet = workbook.Sheets[tabName];
@@ -75,7 +77,7 @@ async function updateScDeepSweep() {
   const leads = [];
 
   // 1. Process existing (and avoid duplicates)
-  currentData.forEach((row: any) => {
+  currentData.forEach((row: unknown) => {
     let wa = String(row.Whatsapp || row.whatsapp || '').replace(/\D/g, '');
     if (!wa || uniqueWhatsapps.has(wa)) return;
     uniqueWhatsapps.add(wa);
@@ -142,9 +144,9 @@ async function updateScDeepSweep() {
   workbook.Sheets[tabName] = newSheet;
   XLSX.writeFile(workbook, filePath);
   
-  console.log(`✨ [SUCESSO] Varredura Concluída!`);
-  console.log(`✅ Leads totais na aba: ${leads.length}`);
-  console.log(`🚀 Novos leads adicionados: ${leads.length - currentData.length}`);
+  
+  
+  
 }
 
 updateScDeepSweep().catch(console.error);

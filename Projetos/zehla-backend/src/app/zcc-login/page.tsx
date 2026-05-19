@@ -1,9 +1,11 @@
+import { Shield, Mail, Lock, Eye, EyeOff, Loader2, ArrowLeft, Building2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
+
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Shield, Mail, Lock, Eye, EyeOff, Loader2, ArrowLeft, Building2 } from 'lucide-react';
 
 // Admin credentials (env-based in production)
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ZCC_ADMIN_EMAIL || 'admin@smarthotel.com';
@@ -18,6 +20,7 @@ export default function ZCCLoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
+    try {
     e.preventDefault();
     if (!email.trim() || !senha.trim()) {
       setError('Preencha todos os campos');

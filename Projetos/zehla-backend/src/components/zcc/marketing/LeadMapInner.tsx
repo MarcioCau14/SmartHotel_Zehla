@@ -1,11 +1,13 @@
-'use client';
-
-import { useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
-import 'leaflet/dist/leaflet.css';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { MessageCircle, Zap, Plus, Minus } from 'lucide-react';
+import { useEffect, useMemo } from 'react';
+
+
+'use client';
+
 
 // --- ICONS ---
 const createCustomIcon = (color: string, iconChar: string, isHot: boolean, pulse: boolean) => {
@@ -36,6 +38,7 @@ const icons = {
 };
 
 function ZoomControls() {
+  try {
   const map = useMap();
   return (
     <div className="absolute top-0 right-0 z-[1000] flex flex-col">
@@ -56,6 +59,7 @@ function ZoomControls() {
 }
 
 function MapController({ center }: {center: [number, number] | null;}) {
+  try {
   const map = useMap();
   useEffect(() => {
     if (center) {
@@ -66,9 +70,9 @@ function MapController({ center }: {center: [number, number] | null;}) {
 }
 
 interface Props {
-  leads: any[];
-  selectedLead: any;
-  onSelectLead: (lead: any) => void;
+  leads: unknown[];
+  selectedLead: unknown;
+  onSelectLead: (lead: unknown) => void;
 }
 
 export default function LeadMapInner({ leads, selectedLead, onSelectLead }: Props) {

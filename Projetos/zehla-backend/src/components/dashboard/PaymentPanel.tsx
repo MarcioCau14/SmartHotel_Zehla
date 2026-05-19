@@ -1,6 +1,8 @@
+import { QrCode, ArrowDownUp, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+
+
 'use client';
 
-import { QrCode, ArrowDownUp, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 
 const pixTransactions = [
   { id: '1', guest: 'Ana Carolina Silva', amount: 2140.00, method: 'pix', status: 'confirmed', time: '14:23', property: 'Pousada Maravilha' },
@@ -15,7 +17,8 @@ const splitConfig = [
   { label: 'Pousada', percent: 'Líquido Total', color: 'text-[#FF5500]' },
 ];
 
-export function PaymentPanel() {
+export function PaymentPanel() : void {
+  try {
   return (
     <div className="space-y-6">
       {/* Pagar.me Integration */}

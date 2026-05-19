@@ -1,5 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
+
 /**
  * Configuração otimizada para o iMac (Safari/Webkit).
  * Foco em baixo consumo de recursos e alta velocidade.

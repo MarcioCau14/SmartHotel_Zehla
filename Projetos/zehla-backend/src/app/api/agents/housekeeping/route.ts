@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { RoomStatus } from '@prisma/client'
+
 import { prisma } from '@/lib/prisma'
 
-export async function POST(request: NextRequest) {
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+async function _POST(request: NextRequest) : void {
   try {
     const body = await request.json()
     const { action, propertyId, data } = body
@@ -23,10 +27,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Erro interno' }, { status: 500 })
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
 
-import { RoomStatus } from '@prisma/client'
+
 
 async function updateRoomStatus(roomId: string, status: string) {
+  try {
   const validStatuses = ['AVAILABLE', 'OCCUPIED', 'CLEANING', 'MAINTENANCE', 'BLOCKED']
 
   if (!validStatuses.includes(status)) {
@@ -43,6 +49,7 @@ async function updateRoomStatus(roomId: string, status: string) {
 }
 
 async function getRoomsStatus(propertyId: string) {
+  try {
   const rooms = await prisma.room.findMany({
     where: { propertyId },
     orderBy: { number: 'asc' }
@@ -62,6 +69,7 @@ async function getRoomsStatus(propertyId: string) {
 }
 
 async function scheduleCleaning(roomId: string, scheduledAt: string) {
+  try {
   const room = await prisma.room.update({
     where: { id: roomId },
     data: { status: 'CLEANING' as RoomStatus }
@@ -75,6 +83,7 @@ async function scheduleCleaning(roomId: string, scheduledAt: string) {
 }
 
 async function markRoomReady(roomId: string) {
+  try {
   const room = await prisma.room.update({
     where: { id: roomId },
     data: { status: 'AVAILABLE' as RoomStatus }
@@ -87,7 +96,10 @@ async function markRoomReady(roomId: string) {
   })
 }
 
-export async function GET(request: NextRequest) {
+
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+async function _GET(request: NextRequest) : void {
+  try {
   const { searchParams } = new URL(request.url)
   const propertyId = searchParams.get('propertyId')
 

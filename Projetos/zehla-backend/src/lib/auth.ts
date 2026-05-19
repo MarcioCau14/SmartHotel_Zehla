@@ -19,10 +19,10 @@ export interface SessionData {
   exp: number;
 }
 
-const SALT_ROUNDS = 10;
 
 // Simple hash function for MVP (use bcrypt in production with PostgreSQL)
 export async function hashPassword(password: string): Promise<string> {
+  try {
   const encoder = new TextEncoder();
   const data = encoder.encode(password + 'zehla_salt_2026');
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
@@ -31,12 +31,14 @@ export async function hashPassword(password: string): Promise<string> {
 }
 
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  try {
   const computedHash = await hashPassword(password);
   return computedHash === hash;
 }
 
 // Simple JWT-like token for session management
 export function generateSessionToken(tenantId: string, email: string): string {
+  try {
   const payload = JSON.stringify({
     tid: tenantId,
     email,
@@ -60,6 +62,7 @@ export function parseSessionToken(token: string): SessionData | null {
  * Verifica se o usuário tem permissão para acessar a área administrativa (ZCC).
  */
 export function isZccAuthorized(role: UserRole): boolean {
+  try {
   return [UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.TEAM].includes(role);
 }
 
@@ -67,6 +70,7 @@ export function isZccAuthorized(role: UserRole): boolean {
  * Verifica se o usuário tem acesso a um tenant específico (Isolamento RLS).
  */
 export function hasTenantAccess(session: SessionData, targetTenantId: string): boolean {
+  try {
   // Admins podem acessar qualquer tenant, Clientes apenas o seu próprio tid.
   if (isZccAuthorized(session.role)) return true;
   return session.tid === targetTenantId;
@@ -74,6 +78,7 @@ export function hasTenantAccess(session: SessionData, targetTenantId: string): b
 
 // Simple password strength checker
 export function checkPasswordStrength(password: string): {
+  try {
   score: number;
   feedback: string[];
   isValid: boolean;

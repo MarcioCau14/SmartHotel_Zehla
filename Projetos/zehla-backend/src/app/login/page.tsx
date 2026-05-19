@@ -1,7 +1,10 @@
+import { useRouter } from 'next/navigation';
+
+import { LoginPage } from '@/components/auth/LoginPage';
+
+
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { LoginPage } from '@/components/auth/LoginPage';
 
 export default function LoginPageRoute() {
   const router = useRouter();

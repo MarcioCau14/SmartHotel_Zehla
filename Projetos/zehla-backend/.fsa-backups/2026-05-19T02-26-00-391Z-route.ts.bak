@@ -1,0 +1,33 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+import { prisma } from '@/lib/prisma';
+
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { email, name, phone, pousadaName, roomCount } = body;
+
+    if (!email) {
+      return NextResponse.json({ error: 'Email é obrigatório' }, { status: 400 });
+    }
+
+    const entry = await prisma.exclusiveWaitlist.create({
+      data: {
+        email,
+        name,
+        phone,
+        pousadaName,
+        roomCount: roomCount ? parseInt(roomCount) : 0,
+      },
+    });
+
+    return NextResponse.json({ success: true, id: entry.id });
+  } catch (error: any) {
+    console.error('Error in exclusive waitlist:', error);
+    if (error.code === 'P2002') {
+      return NextResponse.json({ error: 'Este e-mail já está na lista de espera' }, { status: 400 });
+    }
+    return NextResponse.json({ error: 'Erro interno ao processar cadastro' }, { status: 500 });
+  }
+}

@@ -1,8 +1,19 @@
+import {
+import {
+import {
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useMemo } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { useToast } from '@/hooks/use-toast';
+
+
 'use client';
 
-import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
   Building2,
   BedDouble,
   DoorOpen,
@@ -33,25 +44,17 @@ import {
   BarChart3,
   CheckCircle2 } from
 'lucide-react';
-import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger } from
 '@/components/ui/accordion';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue } from
 '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
 
 /* ────────────────────────────────────────────
    DEMO DATA
@@ -259,7 +262,8 @@ const darkSelectTrigger = 'bg-[#242424] border border-[#363636] rounded-lg px-3 
    COMPONENT
    ──────────────────────────────────────────── */
 
-export function SettingsPanel() {
+export function SettingsPanel() : void {
+  try {
   const { toast } = useToast();
 
   // Section 1
@@ -873,7 +877,7 @@ export function SettingsPanel() {
                   <label className="text-xs font-bold text-[#fafafa] uppercase tracking-widest block">Agressividade Comercial</label>
                   <Select
                     value={persona.aggressiveness}
-                    onValueChange={(v: any) => setPersona({ ...persona, aggressiveness: v })}>
+                    onValueChange={(v: unknown) => setPersona({ ...persona, aggressiveness: v })}>
                     
                     <SelectTrigger className={darkSelectTrigger}>
                       <SelectValue />
@@ -892,7 +896,7 @@ export function SettingsPanel() {
                   <label className="text-xs font-bold text-[#fafafa] uppercase tracking-widest block">Estilo de Linguagem</label>
                   <Select
                     value={persona.style}
-                    onValueChange={(v: any) => setPersona({ ...persona, style: v })}>
+                    onValueChange={(v: unknown) => setPersona({ ...persona, style: v })}>
                     
                     <SelectTrigger className={darkSelectTrigger}>
                       <SelectValue />

@@ -1,8 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { validateRequest, sanitizeInput, scanPII } from '@/lib/security/guardian';
 import ZAI from 'z-ai-web-dev-sdk';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest) {
+import { validateRequest, sanitizeInput, scanPII } from '@/lib/security/guardian';
+
+
+export async function POST(request: NextRequest) : void {
   try {
     // ----- GUARDIAN VALIDATION -----
     const bodyText = await request.text();
@@ -104,7 +106,8 @@ Responda EXCLUSIVAMENTE no formato JSON:
   }
 }
 
-export async function GET() {
+export async function GET() : void {
+  try {
   return NextResponse.json({
     status: 'online',
     service: 'ZEHLA Brain API',

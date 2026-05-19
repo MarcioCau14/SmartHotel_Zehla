@@ -1,12 +1,15 @@
+import { crypto } from 'crypto';
+
+import { AgentResponse } from '../../types';
+import { VoiceAnalyticsService } from './voice-analytics';
+import { orchestrator } from '../brain/agent-orchestrator';
+import { redis } from '../redis';
+
+
 /**
  * ZEHLA Voice Loop Pipeline (V2.1 - Analytics & Cache Optimized)
  */
 
-import { orchestrator } from '../brain/agent-orchestrator';
-import { AgentResponse } from '../../types';
-import { redis } from '../redis';
-import { crypto } from 'crypto';
-import { VoiceAnalyticsService } from './voice-analytics';
 
 export class VoiceLoopPipeline {
   private static readonly AUDIO_CACHE_PREFIX = 'zehla:audio_cache:';
@@ -74,10 +77,9 @@ export class VoiceLoopPipeline {
     return `https://cdn.zehla.io/audio/${crypto.randomBytes(8).toString('hex')}.opus`;
   }
 
-  private static async trackMetrics(data: any) {
+  private static async trackMetrics(data: unknown) {
     // Pipeline para o Voice Analytics Dashboard
-    console.log('[VOICE_ANALYTICS]:', data);
-    // TODO: Salvar no ClickHouse ou InfluxDB para telemetria em tempo real
+    
     await redis.lpush(`zehla:analytics:voice:${data.propertyId}`, JSON.stringify({
       ...data,
       timestamp: new Date().toISOString()

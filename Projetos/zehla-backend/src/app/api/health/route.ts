@@ -1,8 +1,11 @@
-// 📍 Checkpoint: Veja o arquivo Z_LAST_SESSION.md na raiz para o status da última sessão.
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-export async function GET() {
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+// 📍 Checkpoint: Veja o arquivo Z_LAST_SESSION.md na raiz para o status da última sessão.
+
+async function _GET() : void {
   try {
     await prisma.$queryRaw`SELECT 1`
     return NextResponse.json({ 
@@ -17,3 +20,5 @@ export async function GET() {
     )
   }
 }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+

@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
+
 import { prisma } from '@/lib/prisma';
 
-export async function GET(request: Request) {
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+async function _GET(request: Request) : void {
   try {
     const { searchParams } = new URL(request.url);
     const region = searchParams.get('region');
@@ -36,8 +39,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
 
-export async function POST(request: Request) {
+
+async function _POST(request: Request) : void {
   try {
     const body = await request.json();
     const { leads, region } = body;
@@ -88,3 +93,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to process leads' }, { status: 500 });
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
+

@@ -1,10 +1,12 @@
+import { Search, CheckCircle, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
+
+
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Search, CheckCircle, AlertCircle } from 'lucide-react';
 
-export function RaioXForm() {
+export function RaioXForm() : void {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -33,7 +35,7 @@ export function RaioXForm() {
 
       setStatus('success');
       setFormData({ name: '', email: '', phone: '', gbpUrl: '' });
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus('error');
       setMessage(err.message || 'Erro de conexão.');
     }

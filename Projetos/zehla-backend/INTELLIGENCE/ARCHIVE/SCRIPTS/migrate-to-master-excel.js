@@ -51,5 +51,5 @@ if (fs.existsSync(oldFilePath)) {
     fs.unlinkSync(oldFilePath);
 }
 
-console.log(`Planilha Mestra atualizada: ${newFilePath}`);
-console.log(`Aba 'POUSADAS_SAQUAREMA' com 15 leads pronta.`);
+
+

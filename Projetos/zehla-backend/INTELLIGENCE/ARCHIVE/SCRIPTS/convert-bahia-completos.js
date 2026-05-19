@@ -30,7 +30,7 @@ try {
                 "Região": region.name
             }));
             allLeads = allLeads.concat(leadsWithRegion);
-            console.log(`Region ${region.name} loaded successfully.`);
+            
         }
     });
 
@@ -44,8 +44,8 @@ try {
     xlsx.utils.book_append_sheet(workbook, worksheet, 'LEADS_BAHIA');
 
     xlsx.writeFile(workbook, outputFilePath);
-    console.log(`\nSuccess: POUSADA_LITORAL_BAHIA.xlsx created with ${allLeads.length} leads.`);
-    console.log(`Path: ${outputFilePath}`);
+    
+    
 
 } catch (error) {
     console.error("Error during consolidation:", error.message);

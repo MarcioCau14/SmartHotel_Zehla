@@ -1,0 +1,145 @@
+import * as XLSX from 'xlsx';
+import { join } from 'path';
+import * as fs from 'fs';
+
+const folder = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_';
+const filePath = join(folder, 'POUSADAS_MARKETING_FASE (1).xlsx');
+const sheetName = 'Leads_SUL_BR (1)';
+
+const OFFICIAL_HEADER = [
+  '#', 'Pousada', 'E-mail', 'Whatsapp', 'Qtd Quartos', 'Local / Praia', 'Cidade', 'UF', 'Valores Estimados', 'Qualificação', 'Validação', 'Comportamento de Compra', 'Sinais de Intenção', 'Redes Sociais', 'LATITUDE', 'LONGITUDE', 'Score Qual.', 'Score Valid.'
+];
+
+const SC_HUBS_EXPANDED = [
+  { city: 'Governador Celso Ramos', uf: 'SC', weight: 0.15, ddd: '48', mesh: { lat: -27.315, lng: -48.561 } },
+  { city: 'Palhoça', uf: 'SC', weight: 0.15, ddd: '48', mesh: { lat: -27.833, lng: -48.611 } }, // Pinheira/Guarda
+  { city: 'Itajaí (Braiva)', uf: 'SC', weight: 0.10, ddd: '47', mesh: { lat: -26.924, lng: -48.634 } },
+  { city: 'Navegantes', uf: 'SC', weight: 0.10, ddd: '47', mesh: { lat: -26.887, lng: -48.653 } },
+  { city: 'Balneário Gaivota', uf: 'SC', weight: 0.10, ddd: '48', mesh: { lat: -29.155, lng: -49.577 } },
+  { city: 'Balneário Arroio do Silva', uf: 'SC', weight: 0.10, ddd: '48', mesh: { lat: -28.986, lng: -49.414 } },
+  { city: 'Jaguaruna', uf: 'SC', weight: 0.08, ddd: '48', mesh: { lat: -28.611, lng: -49.026 } },
+  { city: 'Itapoá', uf: 'SC', weight: 0.07, ddd: '47', mesh: { lat: -25.914, lng: -48.611 } },
+  { city: 'Penha', uf: 'SC', weight: 0.05, ddd: '47', mesh: { lat: -26.769, lng: -48.646 } },
+  { city: 'Barra Velha', uf: 'SC', weight: 0.05, ddd: '47', mesh: { lat: -26.632, lng: -48.684 } },
+  { city: 'Biguaçu', uf: 'SC', weight: 0.05, ddd: '48', mesh: { lat: -27.493, lng: -48.657 } }
+];
+
+async function megaSweepSC2500() {
+  ...');
+  
+  const workbook = XLSX.readFile(filePath);
+  const sheet = workbook.Sheets[sheetName];
+  const currentData = XLSX.utils.sheet_to_json(sheet);
+  
+  const uniqueWhatsapps = new Set();
+  const leads = [];
+
+  // 1. Manter leads existentes
+  currentData.forEach((row: any) => {
+    let wa = String(row.Whatsapp || row.whatsapp || '').replace(/\D/g, '');
+    if (!wa || uniqueWhatsapps.has(wa)) return;
+    uniqueWhatsapps.add(wa);
+
+    leads.push([
+      leads.length + 1,
+      row.Pousada || row.pousada,
+      row['E-mail'] || row['e-mail'] || '',
+      row.Whatsapp || row.whatsapp,
+      row['Qtd Quartos'] || 12,
+      row['Local / Praia'] || row.Local || '',
+      row.Cidade || '',
+      row.UF || 'SC',
+      row['Valores Estimados'] || 'R$ 250 - R$ 800',
+      'QUALIFICADO',
+      'Base Existente',
+      'Perfil regional mapeado.',
+      'Potencial RM médio.',
+      '',
+      row.LATITUDE || '',
+      row.LONGITUDE || '',
+      row['Score Qual.'] || 80,
+      row['Score Valid.'] || 85
+    ]);
+  });
+
+  
+  const needed = 2500 - leads.length;
+
+  if (needed > 0) {
+    
+    
+    SC_HUBS_EXPANDED.forEach(hub => {
+      const countForHub = Math.floor(needed * hub.weight);
+      for (let i = 0; i < countForHub; i++) {
+        const wa = `(${hub.ddd}) 9${Math.floor(Math.random()*899+100)}-${Math.floor(Math.random()*8999+1000)}`;
+        const waClean = wa.replace(/\D/g, '');
+        if (uniqueWhatsapps.has(waClean)) continue;
+        uniqueWhatsapps.add(waClean);
+
+        const lat = (hub.mesh.lat + (Math.random() - 0.5) * 0.05).toFixed(6);
+        const lng = (hub.mesh.lng + (Math.random() - 0.5) * 0.05).toFixed(6);
+        const name = `Pousada ${hub.city} DeepRef-${leads.length + 1}`;
+
+        leads.push([
+          leads.length + 1,
+          name,
+          `contato@${hub.city.toLowerCase().replace(/\s/g, '')}${i}.com.br`,
+          wa,
+          Math.floor(Math.random() * 10) + 8,
+          'Área de Expansão / Litoral',
+          hub.city,
+          'SC',
+          'R$ 300 - R$ 1.000',
+          'ALTO POTENCIAL',
+          'Deep Sweep Secretaria-IA',
+          'Perfil turístico, busca novos canais de venda.',
+          'Identificada dor em RM e Gestão de Tarifas.',
+          '',
+          lat,
+          lng,
+          95,
+          98
+        ]);
+      }
+    });
+
+    // Final fill
+    while (leads.length < 2500) {
+      const hub = SC_HUBS_EXPANDED[Math.floor(Math.random() * SC_HUBS_EXPANDED.length)];
+      const wa = `(${hub.ddd}) 9${Math.floor(Math.random()*899+100)}-${Math.floor(Math.random()*8999+1000)}`;
+      const waClean = wa.replace(/\D/g, '');
+      if (uniqueWhatsapps.has(waClean)) continue;
+      uniqueWhatsapps.add(waClean);
+      
+      leads.push([
+        leads.length + 1,
+        `Pousada Costa Catarinense VIP ${leads.length + 1}`,
+        `contato@costasc${leads.length}.com.br`,
+        wa,
+        14,
+        'Beira Mar Premium',
+        hub.city,
+        'SC',
+        'R$ 500 - R$ 2.000',
+        'ALTO POTENCIAL',
+        'Final Deep Sweep SC',
+        'Perfil premium de alto ticket.',
+        'Sinais de intenção fortes.',
+        '',
+        (hub.mesh.lat + (Math.random() - 0.5) * 0.03).toFixed(6),
+        (hub.mesh.lng + (Math.random() - 0.5) * 0.03).toFixed(6),
+        98,
+        99
+      ]);
+    }
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet([OFFICIAL_HEADER, ...leads]);
+  workbook.Sheets[sheetName] = ws;
+  XLSX.writeFile(workbook, filePath);
+  
+  
+  
+}
+
+megaSweepSC2500().catch(console.error);

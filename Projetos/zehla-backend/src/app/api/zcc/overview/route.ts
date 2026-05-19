@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
+
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+async function _GET() : void {
   try {
     const activeProperties = await prisma.property.count({ where: { status: 'ACTIVE' } });
     const trials = await prisma.property.count({ where: { isTrial: true } });
@@ -26,3 +29,5 @@ export async function GET() {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+

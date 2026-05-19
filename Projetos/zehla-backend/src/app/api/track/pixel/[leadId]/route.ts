@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { prisma } from '@/lib/prisma';
+
+import { withApiSecurity } from '@/lib/server/with-api-security';
 
 // 1x1 Transparent GIF
 const TRANSPARENT_GIF = Buffer.from(
@@ -7,9 +10,11 @@ const TRANSPARENT_GIF = Buffer.from(
   'base64'
 );
 
-export async function GET(
+async function _GET(
   req: NextRequest,
-  { params }: { params: { leadId: string } }
+  { params }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+: { params: { leadId: string } }
 ) {
   const { leadId } = params;
 

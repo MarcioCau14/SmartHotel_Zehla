@@ -1,5 +1,6 @@
 import { prisma } from '../../prisma';
 
+
 export class TrialValidator {
   static async validate(propertyId: string) {
     const property = await prisma.property.findUnique({

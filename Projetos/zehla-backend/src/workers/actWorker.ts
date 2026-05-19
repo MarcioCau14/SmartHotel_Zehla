@@ -1,9 +1,12 @@
-// src/workers/actWorker.ts — ZEHLA Brain v4: Estágio 5 (Action Dispatcher)
-// Dispara ações automáticas baseadas em transições de cluster
 import { Worker, Job } from 'bullmq';
-import { redis } from '@/lib/redis';
+
 import { QUEUE_NAMES, WORKER_CONFIG, CLUSTER_ACTIONS } from '@/lib/queues';
 import { prisma } from '@/lib/prisma';
+import { redis } from '@/lib/redis';
+
+
+// src/workers/actWorker.ts — ZEHLA Brain v4: Estágio 5 (Action Dispatcher)
+// Dispara ações automáticas baseadas em transições de cluster
 
 interface TransitionPayload {
   leadId: string;
@@ -14,7 +17,7 @@ interface TransitionPayload {
   previousScore: number;
   newScore: number;
   eventType: string;
-  enrichedMetadata?: any;
+  enrichedMetadata?: unknown;
 }
 
 export const actWorker = new Worker(
@@ -23,12 +26,12 @@ export const actWorker = new Worker(
     const payload: TransitionPayload = job.data;
     const transitionKey = `${payload.previousCluster}->${payload.newCluster}`;
 
-    console.log(`[Act] Processando transição: ${transitionKey} para lead ${payload.leadEmail}`);
+    
 
     const actions = CLUSTER_ACTIONS[transitionKey] || [];
 
     if (actions.length === 0) {
-      console.log(`[Act] Nenhuma ação definida para transição: ${transitionKey}`);
+      
       return { status: 'no_actions', transition: transitionKey };
     }
 
@@ -56,9 +59,9 @@ export const actWorker = new Worker(
           },
         });
 
-        console.log(`[Act] ${actionType}: OK`);
+        
         successCount++;
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Registrar falha no ActionLog
         await prisma.actionLog.create({
           data: {
@@ -77,7 +80,7 @@ export const actWorker = new Worker(
       }
     }
 
-    console.log(`[Act] Transição ${transitionKey}: ${successCount} OK, ${failCount} FAIL`);
+    
 
     return {
       status: 'processed',
@@ -96,6 +99,7 @@ export const actWorker = new Worker(
 // === ACTION EXECUTORS ===
 
 async function executeAction(actionType: string, payload: TransitionPayload): Promise<any> {
+  try {
   switch (actionType) {
     case 'send_nurture_email_welcome':
       return await sendNurtureEmail(payload, 'welcome');
@@ -137,7 +141,7 @@ async function executeAction(actionType: string, payload: TransitionPayload): Pr
   }
 }
 
-async function sendSwipeSuggestionAlert(payload: any): Promise<any> {
+async function sendSwipeSuggestionAlert(payload: unknown): Promise<any> {
   const { tierRecommendation, topSwipes, aiJustification } = payload;
   
   const alertMsg = `🎯 RECOMENDAÇÃO ZEHLA BRAIN:\n` +
@@ -145,9 +149,9 @@ async function sendSwipeSuggestionAlert(payload: any): Promise<any> {
                   `Plano Sugerido: ${tierRecommendation?.tier?.toUpperCase()} (${(tierRecommendation?.confidence * 100).toFixed(0)}%)\n` +
                   `Justificativa IA: ${aiJustification || 'Análise de similaridade.'}\n\n` +
                   `TOP 3 RESPOSTAS (SWIPES):\n` +
-                  (topSwipes || []).map((s: any, i: number) => `${i+1}. ${s.title}\n"${s.content.substring(0, 50)}..."`).join('\n\n');
+                  (topSwipes || []).map((s: unknown, i: number) => `${i+1}. ${s.title}\n"${s.content.substring(0, 50)}..."`).join('\n\n');
 
-  console.log(`[Act] SWIPE SUGGESTION: ${alertMsg}`);
+  
 
   // Enviar para o time comercial
   const salesPhone = process.env.SALES_TEAM_PHONE;
@@ -174,7 +178,7 @@ async function sendNurtureEmail(payload: TransitionPayload, template: string): P
     const resendKey = process.env.RESEND_API_KEY;
 
     if (!resendKey || resendKey === 'sua-chave-aqui') {
-      console.log(`[Act] Resend não configurado. Email ${template} para ${payload.leadEmail} simulado.`);
+      
       return { status: 'simulated', template, email: payload.leadEmail };
     }
 
@@ -188,7 +192,7 @@ async function sendNurtureEmail(payload: TransitionPayload, template: string): P
 
     if (error) throw error;
     return { status: 'sent', template, messageId: data?.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`[Act] Erro Resend (${template}):`, error.message);
     return { status: 'error', error: error.message };
   }
@@ -205,7 +209,7 @@ async function sendWhatsAppSequence(payload: TransitionPayload): Promise<any> {
     });
 
     if (!instance) {
-      console.log(`[Act] Nenhuma instância Evolution ativa. WhatsApp para ${payload.leadEmail} simulado.`);
+      
       return { status: 'simulated', channel: 'whatsapp' };
     }
 
@@ -223,7 +227,7 @@ async function sendWhatsAppSequence(payload: TransitionPayload): Promise<any> {
 
     await client.sendText(cleanNumber, message);
     return { status: 'sent', channel: 'whatsapp', instance: instance.instanceName };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`[Act] Erro WhatsApp:`, error.message);
     return { status: 'error', error: error.message };
   }
@@ -237,7 +241,7 @@ async function sendSalesAlert(payload: TransitionPayload, urgent: boolean): Prom
                   `Score: ${payload.newScore}\n` +
                   `Pousada: ${payload.enrichedMetadata?.pousada_name || 'N/A'}`;
 
-  console.log(`[Act] SALES ALERT: ${alertMsg}`);
+  
 
   // Enviar para o WhatsApp da equipe (se configurado)
   const salesPhone = process.env.SALES_TEAM_PHONE;
@@ -260,6 +264,7 @@ async function sendSalesAlert(payload: TransitionPayload, urgent: boolean): Prom
 
 // Templates Helpers
 function getEmailSubject(template: string, name: string): string {
+  try {
   const subjects: Record<string, string> = {
     welcome: `${name}, bem-vindo à elite da hospitalidade`,
     conversion: `${name}, como aumentar suas reservas diretas hoje`,
@@ -271,6 +276,7 @@ function getEmailSubject(template: string, name: string): string {
 }
 
 function getEmailBody(template: string, payload: TransitionPayload): string {
+  try {
   return `
     <div style="font-family: sans-serif; padding: 20px; color: #333;">
       <h2>Olá, ${payload.leadName}!</h2>

@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
-import { join } from 'path';
 import * as fs from 'fs';
+import { join } from 'path';
+
 
 const folder = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_';
 const fileName = 'PLANILHA_LITORAL_ES.xlsx';
@@ -25,7 +26,8 @@ const ES_HUBS = [
 ];
 
 async function megaSweepES() {
-  console.log('🧠 [Secretaria-IA] Iniciando MEGA-VARREDURA Espírito Santo (Meta: 1500 leads)...');
+  try {
+  ...');
   
   const uniqueWhatsapps = new Set();
   const leads = [];
@@ -34,7 +36,7 @@ async function megaSweepES() {
 
   ES_HUBS.forEach(hub => {
     const countForHub = Math.floor(targetCount * hub.weight);
-    console.log(`📡 Mapeando ${hub.city}...`);
+    
     
     for (let i = 0; i < countForHub; i++) {
       const wa = `(${hub.ddd}) 9${Math.floor(Math.random()*899+100)}-${Math.floor(Math.random()*8999+1000)}`;
@@ -105,9 +107,9 @@ async function megaSweepES() {
 
   XLSX.writeFile(wb, filePath);
   
-  console.log(`\n✨ [MEGA-VARREDURA ES CONCLUÍDA]`);
-  console.log(`📊 Total de Leads no Espírito Santo: ${leads.length}`);
-  console.log(`📁 Arquivo: ${filePath}`);
+  
+  
+  
 }
 
 megaSweepES().catch(console.error);

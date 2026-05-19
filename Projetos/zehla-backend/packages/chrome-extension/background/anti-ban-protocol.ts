@@ -46,11 +46,11 @@ export class AntiBanProtocol {
 
     // Verifica se atingiu o limite do lote para a Pausa Longa (Simulando fadiga)
     if (this.messageCount % this.config.batchSize === 0) {
-      console.log(`[ZEHLA Blast Anti-Ban] Fadiga simulada (${this.config.batchSize} msgs). Resfriando pool por ${this.config.batchPauseMs / 1000}s...`);
+      . Resfriando pool por ${this.config.batchPauseMs / 1000}s...`);
       await this.sleep(this.config.batchPauseMs);
     } else {
       const delay = this.getNextDelay();
-      console.log(`[ZEHLA Blast Anti-Ban] Jitter Ativo. Sleep de ${Math.round(delay)}ms antes da digitação...`);
+      }ms antes da digitação...`);
       await this.sleep(delay);
     }
 

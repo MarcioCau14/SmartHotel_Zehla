@@ -1,9 +1,13 @@
-// src/app/api/events/webhook/route.ts — ZEHLA Brain v4: Webhook Receiver
-// Recebe eventos de plataformas externas (n8n, Make, Segment, Z-API)
+import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
+
 import { captureQueue } from '@/lib/queues';
 import { prisma } from '@/lib/prisma';
-import crypto from 'crypto';
+
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+// src/app/api/events/webhook/route.ts — ZEHLA Brain v4: Webhook Receiver
+// Recebe eventos de plataformas externas (n8n, Make, Segment, Z-API)
 
 // Mapeamento de eventos externos para internos
 const EXTERNAL_EVENT_MAP: Record<string, string> = {
@@ -21,7 +25,7 @@ const EXTERNAL_EVENT_MAP: Record<string, string> = {
   'MessageStatusCallback': 'WHATSAPP_OPEN',
 };
 
-export async function POST(req: NextRequest) {
+async function _POST(req: NextRequest) : void {
   try {
     const body = await req.json();
     const source = req.headers.get('x-webhook-source') || 'unknown';
@@ -109,8 +113,10 @@ export async function POST(req: NextRequest) {
       webhookLogId: webhookLog.id,
     }, { status: 202 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Webhook] Erro:', error.message);
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 30, windowSeconds: 60 } });
+

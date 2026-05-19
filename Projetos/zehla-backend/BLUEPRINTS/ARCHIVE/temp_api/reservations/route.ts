@@ -1,15 +1,19 @@
 import { NextResponse } from 'next/server';
+
 import { reservations } from '@/lib/store';
+
 import type { ReservationStatus } from '@/lib/store';
 
-export async function GET(request: Request) {
+export async function GET(request: Request) : void {
+  try {
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status');
   const filtered = status ? reservations.filter(r => r.status === status) : reservations;
   return NextResponse.json(filtered);
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request) : void {
+  try {
   const body = await request.json();
   const newRes = {
     id: `res-${String(reservations.length + 1).padStart(3, '0')}`,
@@ -29,7 +33,8 @@ export async function POST(request: Request) {
   return NextResponse.json(newRes, { status: 201 });
 }
 
-export async function PATCH(request: Request) {
+export async function PATCH(request: Request) : void {
+  try {
   const body = await request.json();
   const { id, status } = body;
   const res = reservations.find(r => r.id === id);

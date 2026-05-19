@@ -1,7 +1,8 @@
 import { prisma } from '../src/lib/prisma';
 
+
 async function cleanup() {
-  console.log('🧹 [CLEANUP] Starting log cleanup...');
+  
   
   // Keep only the last 7 days of agent logs to preserve DB performance
   const sevenDaysAgo = new Date();
@@ -13,7 +14,7 @@ async function cleanup() {
     }
   });
 
-  console.log(`✅ [CLEANUP] Deleted ${deleted.count} old agent logs.`);
+  
 
   // Keep only the last 30 days of telemetry to avoid bloat
   const thirtyDaysAgo = new Date();
@@ -25,7 +26,7 @@ async function cleanup() {
     }
   });
 
-  console.log(`✅ [CLEANUP] Deleted ${deletedTelemetry.count} old telemetry records.`);
+  
 }
 
 cleanup()

@@ -1,5 +1,7 @@
-// src/lib/auth/jwt.ts
 import { jwtVerify, SignJWT } from 'jose';
+
+
+// src/lib/auth/jwt.ts
 
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'zehla_super_secret_2026_change_me');
 
@@ -14,6 +16,7 @@ export interface ZehlaJWTPayload {
 }
 
 export async function verifyToken(token: string): Promise<ZehlaJWTPayload> {
+  try {
   const { payload } = await jwtVerify(token, SECRET, {
     clockTolerance: 60,
   });  

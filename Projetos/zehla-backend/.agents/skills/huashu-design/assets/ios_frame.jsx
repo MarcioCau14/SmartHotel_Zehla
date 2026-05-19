@@ -121,6 +121,7 @@ const iosFrameStyles = {
 };
 
 function IosFrame({
+  try {
   children,
   width = 393,
   height = 852,

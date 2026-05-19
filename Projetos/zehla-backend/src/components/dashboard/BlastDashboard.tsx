@@ -1,18 +1,21 @@
+import {
+import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import { useState, useEffect, useMemo } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
+
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import {
   Zap, Megaphone, Users, Smartphone, Plus, Search,
   Play, Pause, Trash2, CheckCircle2, Clock, MessageSquare,
   ExternalLink, QrCode, RefreshCw, Loader2, AlertCircle, TrendingUp } from
 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
 
-export function BlastPanel() {
+export function BlastPanel() : void {
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [instances, setInstances] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

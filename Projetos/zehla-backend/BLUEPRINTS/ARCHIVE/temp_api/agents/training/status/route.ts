@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+
+export async function GET() : void {
+  try {
   const statuses = [
     { agentId: 'agent-1', status: 'ready', progress: 100, activeTask: null },
     { agentId: 'agent-2', status: 'ready', progress: 100, activeTask: null },

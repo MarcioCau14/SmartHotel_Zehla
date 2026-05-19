@@ -1,7 +1,9 @@
 import { LeadScorer } from '../src/lib/brain/lead-scorer';
 
+
 async function testNeuralScoring() {
-  console.log('🧠 ZEHLA BRAIN — NEURAL SCORING DEBUG\n');
+  try {
+  
 
   const leads = [
     {
@@ -25,14 +27,14 @@ async function testNeuralScoring() {
   ];
 
   for (const lead of leads) {
-    console.log(`--- Testando Pesos: ${lead.name} (${lead.location}) ---`);
+     ---`);
     const weight = LeadScorer.getGeographicWeight(lead.location, lead.qualification);
-    console.log(`Peso Calculado: ${weight}`);
+    
     
     // Simulação de Score Base 60
     const finalScore = Math.min(100, Math.round(60 * weight));
-    console.log(`Score Final Simulado (Base 60): ${finalScore}`);
-    console.log('\n');
+    : ${finalScore}`);
+    
   }
 }
 

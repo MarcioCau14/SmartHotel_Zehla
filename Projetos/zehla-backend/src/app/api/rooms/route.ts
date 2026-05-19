@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+
 import { prisma } from '@/lib/prisma'
 
-export async function GET(request: NextRequest) {
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+async function _GET(request: NextRequest) : void {
   try {
     const { searchParams } = new URL(request.url)
     const propertyId = searchParams.get('propertyId')
@@ -20,8 +23,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Erro interno' }, { status: 500 })
   }
 }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
 
-export async function POST(request: NextRequest) {
+
+async function _POST(request: NextRequest) : void {
   try {
     const body = await request.json()
     const room = await prisma.room.create({ data: body })
@@ -30,3 +35,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Erro ao criar quarto' }, { status: 500 })
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
+

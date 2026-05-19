@@ -1,12 +1,15 @@
+import { ZMG } from './core';
+
+
 /**
  * ZMG flow test script
  * Run with: npx tsx src/lib/zmg/test-zmg.ts
  */
 
-import { ZMG } from './core';
 
 async function test() {
-  console.log('🚀 Starting ZMG Flow Test...');
+  try {
+  
   
   const result = await ZMG.receive({
     agentId: 'ZCC-FALLBACK-TEST',
@@ -23,7 +26,7 @@ async function test() {
     }
   });
 
-  console.log('✅ ZMG Flow Test Result:', JSON.stringify(result, null, 2));
+  );
 }
 
 test().catch(console.error);

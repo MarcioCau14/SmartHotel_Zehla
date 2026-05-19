@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 
+
 /**
  * ZEHLA WEBHOOK SIGNER (HMAC-SHA256)
  * Blindagem de segurança para comunicação entre Dispatcher e ZCC.
@@ -12,7 +13,7 @@ export class WebhookSigner {
    * Gera uma assinatura HMAC-SHA256 para o payload.
    * Inclui timestamp para prevenir Replay Attacks.
    */
-  static sign(payload: any, timestamp: number): string {
+  static sign(payload: unknown, timestamp: number): string {
     const data = `${timestamp}.${JSON.stringify(payload)}`;
     return createHmac('sha256', this.SECRET)
       .update(data)
@@ -23,7 +24,7 @@ export class WebhookSigner {
    * Valida a assinatura recebida.
    * Utiliza comparação em tempo constante para mitigar Timing Attacks.
    */
-  static verify(payload: any, timestamp: number, signature: string): boolean {
+  static verify(payload: unknown, timestamp: number, signature: string): boolean {
     // 1. Previne Replay Attacks (limite de 5 minutos)
     const now = Date.now();
     if (Math.abs(now - timestamp) > 300000) {

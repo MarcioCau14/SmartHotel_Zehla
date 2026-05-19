@@ -1,0 +1,12 @@
+import { useEffect } from 'react';
+
+
+"use client";
+
+export function LandingTracker() {
+  useEffect(() => {
+    
+  }, []);
+  
+  return null;
+}

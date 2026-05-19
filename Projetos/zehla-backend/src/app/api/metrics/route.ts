@@ -1,9 +1,12 @@
-// src/app/api/metrics/route.ts
 import { apiRegister } from '@/lib/metrics/api-metrics';
+
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+// src/app/api/metrics/route.ts
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {  
+async function _GET() : void {  
   const metrics = await apiRegister.metrics();  
     
   return new Response(metrics, {  
@@ -14,3 +17,5 @@ export async function GET() {
     },  
   });
 }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+

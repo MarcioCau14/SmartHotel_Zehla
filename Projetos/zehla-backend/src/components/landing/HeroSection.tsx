@@ -1,14 +1,17 @@
+import { Brain, Zap, ChevronRight, ChevronDown, Hotel, Star, Clock } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+
 'use client';
 
-import { motion } from 'framer-motion';
-import { Brain, Zap, ChevronRight, ChevronDown, Hotel, Star, Clock } from 'lucide-react';
 
 interface HeroSectionProps {
   onNavigate?: () => void;
   styleOption?: string;
 }
 
-export function HeroSection({ onNavigate, styleOption = '2' }: HeroSectionProps) {
+export function HeroSection(: void { onNavigate, styleOption = '2' }: HeroSectionProps) {
+  try {
   // Styles mapping
   if (styleOption === '1') {
     return (

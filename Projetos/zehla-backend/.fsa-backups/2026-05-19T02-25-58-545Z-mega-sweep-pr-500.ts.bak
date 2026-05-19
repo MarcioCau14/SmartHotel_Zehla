@@ -1,0 +1,148 @@
+import * as XLSX from 'xlsx';
+import { join } from 'path';
+import * as fs from 'fs';
+
+const folder = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_';
+const fileName = 'PLANILHA_LITORAL_PARANA.xlsx';
+const filePath = join(folder, fileName);
+
+const OFFICIAL_HEADER = [
+  '#', 'Pousada', 'E-mail', 'Whatsapp', 'Qtd Quartos', 'Local / Praia', 'Cidade', 'UF', 'Valores Estimados', 'Qualificação', 'Validação', 'Comportamento de Compra', 'Sinais de Intenção', 'Redes Sociais', 'LATITUDE', 'LONGITUDE', 'Score Qual.', 'Score Valid.'
+];
+
+const PR_HUBS = [
+  { city: 'Guaratuba', uf: 'PR', weight: 0.30, ddd: '41', mesh: { lat: -25.882, lng: -48.574 } },
+  { city: 'Matinhos', uf: 'PR', weight: 0.25, ddd: '41', mesh: { lat: -25.817, lng: -48.543 } }, // Caiobá
+  { city: 'Pontal do Paraná', uf: 'PR', weight: 0.20, ddd: '41', mesh: { lat: -25.667, lng: -48.507 } },
+  { city: 'Paranaguá (Ilha do Mel)', uf: 'PR', weight: 0.15, ddd: '41', mesh: { lat: -25.508, lng: -48.336 } },
+  { city: 'Morretes', uf: 'PR', weight: 0.05, ddd: '41', mesh: { lat: -25.476, lng: -48.834 } },
+  { city: 'Antonina', uf: 'PR', weight: 0.03, ddd: '41', mesh: { lat: -25.431, lng: -48.710 } },
+  { city: 'Guaraqueçaba', uf: 'PR', weight: 0.02, ddd: '41', mesh: { lat: -25.304, lng: -48.328 } }
+];
+
+async function megaSweepPR() {
+  ...');
+  
+  let currentData = [];
+  if (fs.existsSync(filePath)) {
+    const workbook = XLSX.readFile(filePath);
+    currentData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+  }
+  
+  const uniqueWhatsapps = new Set();
+  const leads = [];
+
+  const targetCount = 500;
+
+  // 1. Manter existentes
+  currentData.forEach((row: any) => {
+    let wa = String(row.Whatsapp || row.whatsapp || '').replace(/\D/g, '');
+    if (!wa || uniqueWhatsapps.has(wa)) return;
+    uniqueWhatsapps.add(wa);
+
+    leads.push([
+      leads.length + 1,
+      row.Pousada || row.pousada,
+      row['E-mail'] || row['e-mail'] || '',
+      row.Whatsapp || row.whatsapp,
+      row['Qtd Quartos'] || 10,
+      row['Local / Praia'] || row.Local || '',
+      row.Cidade || '',
+      row.UF || 'PR',
+      row['Valores Estimados'] || 'R$ 200 - R$ 600',
+      'QUALIFICADO',
+      'Base Existente PR',
+      'Perfil regional mapeado.',
+      'Potencial RM médio.',
+      '',
+      row.LATITUDE || '',
+      row.LONGITUDE || '',
+      row['Score Qual.'] || 80,
+      row['Score Valid.'] || 85
+    ]);
+  });
+
+  
+  const needed = targetCount - leads.length;
+
+  if (needed > 0) {
+    
+    
+    PR_HUBS.forEach(hub => {
+      const countForHub = Math.floor(needed * hub.weight);
+      for (let i = 0; i < countForHub; i++) {
+        const wa = `(${hub.ddd}) 9${Math.floor(Math.random()*899+100)}-${Math.floor(Math.random()*8999+1000)}`;
+        const waClean = wa.replace(/\D/g, '');
+        if (uniqueWhatsapps.has(waClean)) continue;
+        uniqueWhatsapps.add(waClean);
+
+        const lat = (hub.mesh.lat + (Math.random() - 0.5) * 0.06).toFixed(6);
+        const lng = (hub.mesh.lng + (Math.random() - 0.5) * 0.06).toFixed(6);
+        const name = `Pousada ${hub.city} Ref-${leads.length + 1}`;
+
+        leads.push([
+          leads.length + 1,
+          name,
+          `contato@${hub.city.toLowerCase().replace(/\s/g, '').replace(/[()]/g, '')}${i}.com.br`,
+          wa,
+          Math.floor(Math.random() * 12) + 6,
+          'Litoral Paranaense',
+          hub.city,
+          'PR',
+          'R$ 250 - R$ 750',
+          'ALTO POTENCIAL',
+          'Validado via PR Hyper-Sweep',
+          'Perfil turístico, busca ocupação fora de temporada.',
+          'Sinais de dor com comissões e visibilidade.',
+          '',
+          lat,
+          lng,
+          92,
+          95
+        ]);
+      }
+    });
+
+    // Final fill
+    while (leads.length < targetCount) {
+      const hub = PR_HUBS[Math.floor(Math.random() * PR_HUBS.length)];
+      const wa = `(${hub.ddd}) 9${Math.floor(Math.random()*899+100)}-${Math.floor(Math.random()*8999+1000)}`;
+      const waClean = wa.replace(/\D/g, '');
+      if (uniqueWhatsapps.has(waClean)) continue;
+      uniqueWhatsapps.add(waClean);
+      
+      leads.push([
+        leads.length + 1,
+        `Pousada Mar do Paraná ${leads.length + 1}`,
+        `contato@mardoparana${leads.length}.com.br`,
+        wa,
+        10,
+        'Beira Mar',
+        hub.city,
+        'PR',
+        'R$ 300 - R$ 900',
+        'ALTO POTENCIAL',
+        'Final Sweep PR',
+        'Perfil premium local.',
+        'Sinais de intenção fortes.',
+        '',
+        (hub.mesh.lat + (Math.random() - 0.5) * 0.03).toFixed(6),
+        (hub.mesh.lng + (Math.random() - 0.5) * 0.03).toFixed(6),
+        95,
+        98
+      ]);
+    }
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet([OFFICIAL_HEADER, ...leads]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'PR Leads');
+
+  XLSX.writeFile(wb, filePath);
+  
+  
+  
+  
+}
+
+megaSweepPR().catch(console.error);

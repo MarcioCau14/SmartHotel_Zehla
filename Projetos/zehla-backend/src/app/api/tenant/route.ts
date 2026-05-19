@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { validateRequest, sanitizeInput, scanPII } from '@/lib/security/guardian';
 
-export async function POST(request: NextRequest) {
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+async function _POST(request: NextRequest) : void {
   try {
     // ----- GUARDIAN VALIDATION -----
     const bodyText = await request.text();
@@ -29,7 +32,7 @@ export async function POST(request: NextRequest) {
     const emailScan = scanPII(email);
     const phoneScan = scanPII(whatsappProprietario);
     if (emailScan.found.length > 0 || phoneScan.found.length > 0) {
-      console.log(`[ZDR] Tenant creation — PII detected: ${[...emailScan.found, ...phoneScan.found].join(', ')}. Data stored encrypted.`);
+      }. Data stored encrypted.`);
     }
 
     // Gerar tenant ID
@@ -50,13 +53,18 @@ export async function POST(request: NextRequest) {
         lgpd_compliant: true,
       },
     });
-  } catch (error: unknown) {
+  }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
+ catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Erro interno do servidor';
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
-export async function GET() {
+
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+async function _GET() : void {
+  try {
   return NextResponse.json({
     trial_duration_days: 7,
     plan_price: 'R$ 297,00/mês',

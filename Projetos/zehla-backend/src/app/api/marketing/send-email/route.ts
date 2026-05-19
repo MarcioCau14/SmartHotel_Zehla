@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
 import { Queue } from 'bullmq';
-import { redisConfig } from '@/lib/delivery/redis-connection';
+
 import { prisma } from '@/lib/prisma';
+import { redisConfig } from '@/lib/delivery/redis-connection';
+
+import { withApiSecurity } from '@/lib/server/with-api-security';
 
 const deliveryQueue = new Queue('delivery', { connection: redisConfig });
 
-export async function POST(req: Request) {
+async function _POST(req: Request) : void {
   try {
     const { leadIds, campaignType } = await req.json();
 
@@ -17,7 +20,7 @@ export async function POST(req: Request) {
       where: { id: { in: leadIds } }
     });
 
-    console.log(`🚀 [SECRETARIA-IA] Enfileirando ${leads.length} leads para campanha: ${campaignType}`);
+    
 
     // Adicionar cada lead à fila de processamento
     const jobs = leads.map(lead => ({
@@ -48,3 +51,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Falha ao iniciar campanha' }, { status: 500 });
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 30, windowSeconds: 60 } });
+

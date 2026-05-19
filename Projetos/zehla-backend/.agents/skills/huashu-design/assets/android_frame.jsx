@@ -90,6 +90,7 @@ const androidFrameStyles = {
 };
 
 function AndroidFrame({
+  try {
   children,
   width = 412,
   height = 892,

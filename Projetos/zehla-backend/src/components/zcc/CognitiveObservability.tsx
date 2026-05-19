@@ -1,8 +1,11 @@
+import { Shield, Eye, FileCheck, AlertTriangle, Brain } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+import { Skeleton } from '@/components/ui/skeleton';
+
+
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Shield, Eye, FileCheck, AlertTriangle, Brain } from 'lucide-react';
 
 const mlMetrics = {
   toneAlignmentScore: 92.4,
@@ -33,7 +36,7 @@ const attestations = [
   { id: 'a-4', type: 'Data Encryption', result: 'PASS', details: 'AES-256-GCM at-rest, TLS 1.3 in-transit', tenant: 'global' },
 ];
 
-export function CognitiveObservability() {
+export function CognitiveObservability() : void {
   const [security, setSecurity] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
 

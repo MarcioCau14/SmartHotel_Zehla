@@ -24,7 +24,7 @@ try {
         if (fs.existsSync(filePath)) {
             const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
             allLeads = allLeads.concat(data);
-            console.log(`Region ${region.name} loaded successfully.`);
+            
         } else {
             console.warn(`Warning: File ${region.file} for ${region.name} not found.`);
         }
@@ -42,8 +42,8 @@ try {
     const outputPath = '/Users/marciocau/Downloads/POUSADA_LITORAL_SP_NORTE.xlsx';
     XLSX.writeFile(workbook, outputPath);
 
-    console.log(`\nSuccess: POUSADA_LITORAL_SP_NORTE.xlsx created with ${allLeads.length} leads.`);
-    console.log(`Path: ${outputPath}`);
+    
+    
 
 } catch (err) {
     console.error('Critical Error during conversion:', err.message);

@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 
+
 export interface BlastEventData {
   messageId: string;
   leadId?: string;
@@ -16,7 +17,8 @@ export interface BlastEventData {
   content?: string;
 }
 
-export async function trackBlastEvent(data: BlastEventData) {
+export async function trackBlastEvent(data: BlastEventData) : void {
+  try {
   const { messageId, leadId, contactPhone, eventType, campaignId, content } = data;
 
   // 1. Localizar o Lead (se ainda não tiver leadId)
@@ -34,7 +36,7 @@ export async function trackBlastEvent(data: BlastEventData) {
   }
 
   // 2. Mapeamento de Eventos e Impacto no Score (Blueprint Section 5.1)
-  const eventMapping: Record<string, { type: any, score: number, funnel?: string }> = {
+  const eventMapping: Record<string, { type: unknown, score: number, funnel?: string }> = {
     whatsapp_sent: { type: 'WHATSAPP_SENT', score: 0 },
     whatsapp_delivered: { type: 'WHATSAPP_DELIVERED', score: 0 },
     whatsapp_open: { type: 'WHATSAPP_OPEN', score: 5 },
@@ -147,5 +149,5 @@ export async function trackBlastEvent(data: BlastEventData) {
     data: campaignUpdate
   });
 
-  console.log(`🧠 [BRAIN] Evento ${eventType} registrado para lead ${contactPhone}. Score impact: ${mapping.score}`);
+  
 }

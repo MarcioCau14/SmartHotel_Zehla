@@ -1,0 +1,6 @@
+import { NextResponse } from 'next/server';
+import { aiAgents } from '@/lib/store';
+
+export async function GET() {
+  return NextResponse.json(aiAgents);
+}

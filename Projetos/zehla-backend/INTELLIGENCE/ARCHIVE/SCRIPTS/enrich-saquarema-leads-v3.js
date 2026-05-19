@@ -49,4 +49,4 @@ const ws = XLSX.utils.json_to_sheet(saquaremaData);
 XLSX.utils.book_append_sheet(wb, ws, "POUSADAS_SAQUAREMA");
 
 XLSX.writeFile(wb, filePath);
-console.log('Final Success: POUSADAS_MARKETING_FASE.xlsx updated.');
+

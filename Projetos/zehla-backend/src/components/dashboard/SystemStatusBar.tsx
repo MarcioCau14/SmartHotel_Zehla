@@ -1,7 +1,9 @@
+import { Activity, Wifi, Brain, Shield, Database, Cpu } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Activity, Wifi, Brain, Shield, Database, Cpu } from 'lucide-react';
 
 interface BrainHealth {
   edge_latency: number;
@@ -13,7 +15,7 @@ interface BrainHealth {
   tokens_today: number;
 }
 
-export function SystemStatusBar() {
+export function SystemStatusBar() : void {
   const [health, setHealth] = useState<BrainHealth | null>(null);
   const [now, setNow] = useState(new Date());
 

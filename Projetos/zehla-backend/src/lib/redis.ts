@@ -1,6 +1,7 @@
-import Redis from 'ioredis';
 import * as dotenv from 'dotenv';
+import Redis from 'ioredis';
 import path from 'path';
+
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
@@ -12,6 +13,7 @@ const isDev = NODE_ENV === 'development';
  * Helper para construir a URL com o banco lógico específico.
  */
 function getRedisUrlForDb(base: string | undefined, dbIndex: number): string | undefined {
+  try {
   if (!base) return undefined;
   const cleanBase = base.replace(/\/$/, '');
   const baseWithoutDb = cleanBase.replace(/\/\d+$/, '');
@@ -53,8 +55,8 @@ function createRedisInstance(name: string, dbIndex: number) {
       };
     }
 
-    client.on('connect', () => console.log(`✅ [${name}] UP (DB ${dbIndex})`));
-    client.on('error', (err: any) => {
+    client.on('connect', () => `));
+    client.on('error', (err: unknown) => {
       if (!isDev) {
         console.error(`❌ [${name}] Fail-Fast Triggered:`, err.message);
       }
@@ -62,13 +64,13 @@ function createRedisInstance(name: string, dbIndex: number) {
 
     if (isDev) {
       return new Proxy(client, {
-        get: (target: any, prop: string) => {
+        get: (target: unknown, prop: string) => {
           const value = target[prop];
           if (typeof value === 'function') {
-            return (...args: any[]) => {
+            return (...args: unknown[]) => {
               const result = value.apply(target, args);
               return result && typeof result.catch === 'function' 
-                ? result.catch((err: any) => {
+                ? result.catch((err: unknown) => {
                     const degradedCodes = ['ECONNREFUSED', 'ETIMEDOUT', 'ECONNRESET'];
                     if (degradedCodes.includes(err.code)) {
                       const cmd = prop.toLowerCase();
@@ -98,6 +100,7 @@ function createRedisInstance(name: string, dbIndex: number) {
 }
 
 function createMockRedis() {
+  try {
   return {
     get: async () => null,
     set: async () => 'OK',

@@ -1,0 +1,232 @@
+import { QrCode, CreditCard, CheckCircle, ArrowDownUp, TrendingUp, Shield, Building, ArrowUpRight } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+
+
+'use client';
+
+
+interface PaymentOption {
+  name: string;
+  type: 'pix' | 'bank' | 'gateway';
+  status: 'active' | 'pending';
+  icon: string;
+  description: string;
+}
+
+const paymentOptions: PaymentOption[] = [
+{ name: 'PIX', type: 'pix', status: 'active', icon: '⚡', description: 'Qualquer banco — Instantâneo' },
+{ name: 'Banco do Brasil', type: 'bank', status: 'active', icon: '🏦', description: 'Conta BB — PIX e TED' },
+{ name: 'Itaú', type: 'bank', status: 'active', icon: '🏛️', description: 'Conta Itaú — PIX e TED' },
+{ name: 'Bradesco', type: 'bank', status: 'pending', icon: '💳', description: 'Configuração pendente' },
+{ name: 'Santander', type: 'bank', status: 'pending', icon: '🏦', description: 'Configuração pendente' },
+{ name: 'Caixa Econômica', type: 'bank', status: 'pending', icon: '🏛️', description: 'Configuração pendente' },
+{ name: 'Nubank', type: 'bank', status: 'active', icon: '💜', description: 'Conta Nu — PIX automático' },
+{ name: 'Mercado Pago', type: 'gateway', status: 'pending', icon: '🛒', description: 'Configuração pendente' },
+{ name: 'PagSeguro', type: 'gateway', status: 'pending', icon: '🔒', description: 'Configuração pendente' },
+{ name: 'Pagar.me', type: 'gateway', status: 'active', icon: '💳', description: 'Gateway ativo — Split configurado' }];
+
+
+const dailyVolume = [
+{ day: 'Seg', pix: 4200, card: 1800 },
+{ day: 'Ter', pix: 3800, card: 2100 },
+{ day: 'Qua', pix: 5100, card: 1600 },
+{ day: 'Qui', pix: 6300, card: 2400 },
+{ day: 'Sex', pix: 7200, card: 3200 },
+{ day: 'Sáb', pix: 8500, card: 2800 },
+{ day: 'Dom', pix: 5900, card: 1500 }];
+
+
+const statusConfig = {
+  active: { color: 'bg-[#FF5500]/20 text-[#FF5500] border-[#FF5500]/30', label: 'Ativo' },
+  pending: { color: 'bg-[#FF5500]/10 text-[#FF5500] border-[#FF5500]/20', label: 'Pendente' }
+};
+
+const typeLabels = {
+  pix: 'PIX Direto',
+  bank: 'Banco',
+  gateway: 'Gateway'
+};
+
+export function FintechHub() {
+  const [payments, setPayments] = useState<any[]>([]);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+
+  useEffect(() => {
+    fetch('/api/zcc/financeiro').
+    then((res) => res.json()).
+    then((data) => {
+      setPayments(data.payments || []);
+      setTotalRevenue(data.totalRevenue || 0);
+    });
+  }, []);
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold text-[#fafafa]">Fintech Hub & Revenue</h2>
+        <button
+          onClick={async () => {
+            const res = await fetch('/api/webhooks/stripe', { method: 'POST', body: 'SIMULATE' });
+            if (res.ok) alert('Webhook Simulado! Verifique seu WhatsApp.');
+          }}
+          className="bg-[#0f0f0f] text-[#fafafa] border border-[#fafafa] rounded-full px-6 py-2 text-sm font-medium hover:bg-[#1a1a1a] transition-all shadow-[0_0_10px_rgba(255,85,0,0.15)] hover:shadow-[0_0_15px_rgba(255,85,0,0.3)]">
+          
+          Simular Venda (Stripe)
+        </button>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="glass-card p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] text-[#4d4d4d] font-mono">Total Volume</span>
+            <span className="text-[10px] text-[#FF5500] font-bold bg-[#FF5500]/10 px-1.5 py-0.5 rounded">+14.2%</span>
+          </div>
+          <div className="text-2xl font-bold text-[#fafafa]">
+            R$ {totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          </div>
+          <div className="text-[10px] text-[#363636] mt-1">Acumulado mês atual</div>
+        </div>
+        <div className="glass-card p-4">
+          <CheckCircle className="w-5 h-5 text-[#FF5500] mb-2" />
+          <div className="text-xl font-bold text-[#efefef]">98.4%</div>
+          <div className="text-xs text-[#4d4d4d]">Sucesso Pagamento</div>
+        </div>
+        <div className="glass-card p-4">
+          <CreditCard className="w-5 h-5 text-[#FF5500] mb-2" />
+          <div className="text-xl font-bold text-[#efefef]">R$ 15.400</div>
+          <div className="text-xs text-[#4d4d4d]">Cartão Semanal</div>
+        </div>
+        <div className="glass-card p-4">
+          <TrendingUp className="w-5 h-5 text-[#FF5500] mb-2" />
+          <div className="text-xl font-bold text-[#efefef]">R$ 2.340</div>
+          <div className="text-xs text-[#4d4d4d]">Receita Platforma (mês)</div>
+        </div>
+      </div>
+
+      {/* Payment Options — All Banks */}
+      <div className="glass-card p-5">
+        <h3 className="text-sm font-semibold text-[#b4b4b4] mb-4 flex items-center gap-2">
+          <Building className="w-4 h-4 text-[#FF5500]" />
+          Opções de Pagamento — Bancos & Gateways
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {payments.slice(0, 8).map((tx) =>
+          <div key={tx.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-white/[0.02] transition-colors border border-transparent hover:border-[#2e2e2e]">
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-[#FF5500]/10 text-[#FF5500]`}>
+                  <ArrowUpRight className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-[#efefef]">
+                    R$ {tx.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </div>
+                  <div className="text-[10px] text-[#4d4d4d]">
+                    {tx.reservation?.property?.name || 'Sistema'} • {tx.method}
+                  </div>
+                </div>
+              </div>
+              <div className="text-right flex items-center gap-3">
+                <div className="hidden sm:block">
+                  <div className="text-[10px] text-[#898989] font-mono">#{tx.id.substring(0, 8)}</div>
+                  <div className="text-[9px] text-[#363636]">{new Date(tx.createdAt).toLocaleString()}</div>
+                </div>
+                <Badge className={`border-0 text-[9px] ${
+              tx.status === 'PAID' ? 'bg-[#FF5500]/20 text-[#FF5500]' :
+              tx.status === 'PENDING' ? 'bg-[#FF5500]/10 text-[#FF5500]' :
+              'bg-red-500/20 text-red-400'}`
+              }>
+                  {tx.status}
+                </Badge>
+              </div>
+            </div>
+          )}
+          {payments.length === 0 &&
+          <div className="text-center text-xs text-[#4d4d4d] py-6">Nenhum pagamento registrado.</div>
+          }
+        </div>
+        <div className="mt-3 text-[10px] text-[#363636] flex items-center gap-1">
+          <Shield className="w-3 h-3" />
+          {useMemo(() => paymentOptions.filter((o) => o.status === 'active'), []).length} de {paymentOptions.length} integrações ativas. PIX via QR Code disponível para qualquer banco.
+        </div>
+      </div>
+
+      {/* Pagar.me Status */}
+      <div className="glass-card p-5">
+        <h3 className="text-sm font-semibold text-[#b4b4b4] mb-4 flex items-center gap-2">
+          <ArrowDownUp className="w-4 h-4 text-[#FF5500]" />
+          Gateway Pagar.me — Status
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          {[
+          { label: 'Status', value: 'Conectado', ok: true },
+          { label: 'API Key', value: 'sk_live_***7f2d', ok: true },
+          { label: 'Webhook', value: 'Ativo', ok: true },
+          { label: 'Split Config', value: '4 regras', ok: true }].
+          map((item, i) =>
+          <div key={i} className="bg-white/[0.02] rounded-lg p-3">
+              <div className="text-[10px] text-[#4d4d4d]">{item.label}</div>
+              <div className={`text-xs font-mono ${item.ok ? 'text-[#FF5500]' : 'text-red-400'}`}>{item.value}</div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Split Rules */}
+      <div className="glass-card p-5">
+        <h3 className="text-sm font-semibold text-[#b4b4b4] mb-4">Regras de Split</h3>
+        <div className="space-y-2">
+          {[
+          { recipient: 'Pousada', percent: 85, amount: 'R$ 12.070,00', color: 'bg-purple-500' },
+          { recipient: 'ZEHLA SaaS', percent: 5, amount: 'R$ 710,00', color: 'bg-orange-500' },
+          { recipient: 'Pagar.me Gateway', percent: 2.99, amount: 'R$ 424,60', color: 'bg-cyan-500' },
+          { recipient: 'IA Processing Fee', percent: 3.01, amount: 'R$ 427,04', color: 'bg-amber-500' },
+          { recipient: 'Tributos ISS/PIS/COFINS', percent: 4.0, amount: 'R$ 568,00', color: 'bg-red-500' }].
+          map((rule, i) =>
+          <div key={i} className="flex items-center gap-3">
+              <div className={`w-2 h-8 rounded-full ${rule.color}`} />
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#b4b4b4]">{rule.recipient}</span>
+                  <span className="text-sm font-mono text-[#efefef]">{rule.amount}</span>
+                </div>
+                <div className="w-full bg-[#242424] rounded-full h-1 mt-1">
+                  <div className="h-1 rounded-full" style={{ width: `${rule.percent}%`, backgroundColor: rule.color.replace('bg-', '') }} />
+                </div>
+              </div>
+              <span className="text-xs font-mono text-[#4d4d4d] w-12 text-right">{rule.percent}%</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Weekly volume table */}
+      <div className="glass-card p-5">
+        <h3 className="text-sm font-semibold text-[#b4b4b4] mb-4">Volume Semanal</h3>
+        <div className="overflow-x-auto zehla-scroll-x">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#2e2e2e]">
+                <th className="text-left text-xs text-[#4d4d4d] px-3 py-2">Dia</th>
+                <th className="text-right text-xs text-[#4d4d4d] px-3 py-2">PIX</th>
+                <th className="text-right text-xs text-[#4d4d4d] px-3 py-2">Cartão</th>
+                <th className="text-right text-xs text-[#4d4d4d] px-3 py-2">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dailyVolume.map((d) =>
+              <tr key={d.day} className="border-b border-white/[0.03]">
+                  <td className="px-3 py-2 text-[#b4b4b4]">{d.day}</td>
+                  <td className="px-3 py-2 text-right text-[#FF5500] font-mono">R$ {d.pix.toLocaleString('pt-BR')}</td>
+                  <td className="px-3 py-2 text-right text-[#FF5500] font-mono">R$ {d.card.toLocaleString('pt-BR')}</td>
+                  <td className="px-3 py-2 text-right text-[#efefef] font-mono font-semibold">R$ {(d.pix + d.card).toLocaleString('pt-BR')}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>);
+
+}

@@ -1,7 +1,8 @@
-import { PrismaClient } from '@prisma/client';
 import * as XLSX from 'xlsx';
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
+import { PrismaClient } from '@prisma/client';
+
 
 const prisma = new PrismaClient();
 
@@ -14,7 +15,7 @@ async function ingestLeads() {
     return;
   }
 
-  console.log('📊 Iniciando ingestão de leads da planilha...');
+  
 
   const workbook = XLSX.readFile(filePath);
 
@@ -24,7 +25,7 @@ async function ingestLeads() {
   const worksheet = workbook.Sheets[sheetName];
   const data = XLSX.utils.sheet_to_json(worksheet);
 
-  console.log(`📑 Lendo aba: ${sheetName} (${data.length} linhas encontradas)`);
+  `);
 
   let count = 0;
   for (const row of data as any[]) {
@@ -68,7 +69,7 @@ async function ingestLeads() {
     }
   }
 
-  console.log(`✅ Ingestão finalizada: ${count} leads processados.`);
+  
 }
 
 ingestLeads()

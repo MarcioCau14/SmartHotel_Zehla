@@ -38,15 +38,15 @@ try {
             }
 
             XLSX.utils.book_append_sheet(wb, ws, region.name);
-            console.log(`Region ${region.name} loaded successfully.`);
+            
         } else {
             console.warn(`Warning: ${region.file} not found. Skipping...`);
         }
     });
 
     XLSX.writeFile(wb, filePath);
-    console.log(`\nSuccess: POUSADAS_LAGOS_RJ.xlsx updated with ${regions.length} regions.`);
-    console.log(`Path: ${filePath}`);
+    
+    
 
 } catch (err) {
     console.error('Error consolidating Lagos RJ Excel:', err);

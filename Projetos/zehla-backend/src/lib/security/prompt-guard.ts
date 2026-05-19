@@ -1,5 +1,6 @@
 import { createHash } from 'crypto';
 
+
 // Padrões de injection em PORTUGUÊS (contexto BR)
 const INJECTION_PATTERNS = [
   // Override de instruções
@@ -43,6 +44,7 @@ interface InjectionScanResult {
 }
 
 export function scanForInjection(text: string): InjectionScanResult {
+  try {
   const matches: Array<{ pattern: string; severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' }> = [];
   let score = 0;
   let sanitized = text;
@@ -81,7 +83,8 @@ export function scanForInjection(text: string): InjectionScanResult {
   return { clean, score: Math.min(score, 100), matches, sanitized };
 }
 
-export function validateLearnedPersona(raw: any): { valid: boolean; persona?: any; reason?: string } {
+export function validateLearnedPersona(raw: unknown): { valid: boolean; persona?: unknown; reason?: string } {
+  try {
   const fieldsToScan = [
     raw?.tone,
     ...(raw?.commonExpressions || []),
@@ -90,7 +93,7 @@ export function validateLearnedPersona(raw: any): { valid: boolean; persona?: an
   ].filter(Boolean);
 
   let totalScore = 0;
-  const allMatches: any[] = [];
+  const allMatches: unknown[] = [];
 
   for (const field of fieldsToScan) {
     const scan = scanForInjection(field);

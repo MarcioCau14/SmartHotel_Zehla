@@ -1,0 +1,92 @@
+import { prisma } from '@/lib/prisma';
+import { Plan } from '@prisma/client';
+
+export type ActionCategory = 'MARKETING' | 'FINANCE' | 'GUEST_DATA' | 'SYSTEM_CONFIG';
+export type ActionSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+export interface IntentRequest {
+  agentId: string;
+  userId: string;
+  action: string;
+  category: ActionCategory;
+  severity: ActionSeverity;
+  payload: any;
+  context?: string;
+}
+
+export interface IntentVerdict {
+  allowed: boolean;
+  reason: string;
+  requiresHITL: boolean; // Human-In-The-Loop
+  remediation?: string;
+}
+
+/**
+ * ZEHLA Intent Validator
+ * Based on the "Blindagem de Projetos IA" Security Protocol.
+ * Acts as a runtime guardrail to validate AI agent intentions before execution.
+ */
+export class IntentValidator {
+  
+  /**
+   * Validates if an agent's intended action is safe and authorized.
+   */
+  static async validate(request: IntentRequest): Promise<IntentVerdict> {
+    
+
+    // 1. Fetch User Info
+    const user = await prisma.user.findUnique({
+      where: { id: request.userId },
+      select: { role: true }
+    });
+
+    if (!user) {
+      return { allowed: false, reason: 'User not found', requiresHITL: false };
+    }
+
+    // 2. Rule: Critical Actions require Admin Role
+    if (request.severity === 'CRITICAL' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+      return {
+        allowed: false,
+        reason: 'CRITICAL actions are restricted to ADMINISTRATORS.',
+        requiresHITL: true,
+        remediation: 'Escalate to ZCC Admin for manual approval.'
+      };
+    }
+
+    // 3. Rule: Placeholder for Plan-Based Access Control (Property-Linked)
+    // In a real scenario, we check the property context
+    // const planVerdict = await this.validatePropertyPlan(request.userId, request.category);
+
+    // 4. Rule: Marketing Leads Protection
+    if (request.category === 'MARKETING' && request.action.includes('DELETE')) {
+      if (user.role !== 'ADMIN') {
+        return {
+          allowed: false,
+          reason: 'Mass deletion of leads is restricted to Admin role.',
+          requiresHITL: true
+        };
+      }
+    }
+
+    // 5. Placeholder for LLM Judge (Deep Semantic Analysis)
+    // In a production environment, we would send the prompt/response to a secondary LLM 
+    // to detect hidden malicious intentions (Indirect Prompt Injection).
+    
+    return {
+      allowed: true,
+      reason: 'Action validated against security policies.',
+      requiresHITL: request.severity === 'HIGH'
+    };
+  }
+
+  private static validatePlanAccess(category: ActionCategory, plan: Plan): IntentVerdict {
+    // Basic rules for Beta/Early Adopter
+    if (category === 'FINANCE' && plan === 'FREE') {
+       return { allowed: false, reason: 'Finance module requires a PAID plan.', requiresHITL: false };
+    }
+
+    // Add more granular plan rules here
+    return { allowed: true, reason: 'Plan access verified', requiresHITL: false };
+  }
+}

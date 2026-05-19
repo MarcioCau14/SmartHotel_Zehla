@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
+
 import { prisma } from '@/lib/prisma'
+
+import { withApiSecurity } from '@/lib/server/with-api-security';
 
 // Rate limiting simples (em memória — em produção usar Redis)
 const requestCounts = new Map<string, { count: number; resetTime: number }>()
 const RATE_LIMIT = 100 // requests per minute
 const RATE_WINDOW = 60 * 1000 // 1 minute
 
-export async function POST(request: NextRequest) {
+async function _POST(request: NextRequest) : void {
   try {
     const body = await request.json()
     const { action, data } = body
@@ -28,8 +31,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Erro interno' }, { status: 500 })
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
+
 
 async function checkRateLimit(ip: string, endpoint: string) {
+  try {
   const now = Date.now()
   const key = `${ip}:${endpoint}`
   const record = requestCounts.get(key)
@@ -53,7 +59,8 @@ async function checkRateLimit(ip: string, endpoint: string) {
   return NextResponse.json({ success: true, allowed: true, remaining: RATE_LIMIT - record.count })
 }
 
-async function logSecurityEvent(data: any) {
+async function logSecurityEvent(data: unknown) {
+  try {
   const log = await prisma.systemLog.create({
     data: {
       level: data.level || 'INFO',
@@ -66,7 +73,8 @@ async function logSecurityEvent(data: any) {
   return NextResponse.json({ success: true, data: log })
 }
 
-async function getThreats(filters: any) {
+async function getThreats(filters: unknown) {
+  try {
   const where: any = { component: 'GUARDIAN' }
 
   if (filters?.level) where.level = filters.level
@@ -89,6 +97,7 @@ async function getThreats(filters: any) {
 }
 
 async function blockIp(ip: string, reason: string) {
+  try {
   // Em produção, isso atualizaria firewall/iptables
   const log = await prisma.systemLog.create({
     data: {
@@ -102,7 +111,10 @@ async function blockIp(ip: string, reason: string) {
   return NextResponse.json({ success: true, data: log, message: `IP ${ip} bloqueado` })
 }
 
-export async function GET() {
+
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+async function _GET() : void {
+  try {
   return NextResponse.json({
     agent: 'GUARDIAN',
     status: 'online',

@@ -1,8 +1,11 @@
-import { llmRouter } from '../src/lib/ai/llm-router';
-import { readFileSync } from 'fs';
 import { join } from 'path';
+import { readFileSync } from 'fs';
+
+import { llmRouter } from '../src/lib/ai/llm-router';
+
 
 async function runAudit() {
+  try {
   const blueprint = readFileSync(join(process.cwd(), 'BLUEPRINTS/AGENTS/secretaria_ia_auditor.md'), 'utf-8');
   
   // Dados Reais do Lead extraídos do banco
@@ -16,7 +19,7 @@ async function runAudit() {
     site: "http://pousadadoriomorro.com.br" // URL Simulada para o teste
   };
 
-  console.log("🕵️ Agente 09 (Auditor) analisando lead...");
+   analisando lead...");
 
   const response = await llmRouter.generate({
     model: 'general',
@@ -27,8 +30,8 @@ async function runAudit() {
     temperature: 0.3
   });
 
-  console.log("\n=== RELATÓRIO DE AUDITORIA ADVERSÁRIA ===");
-  console.log(response.content);
+  
+  
 }
 
 runAudit();

@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ZMG } from '@/lib/zmg/core';
-import { MessagingIntent } from '@/lib/zmg/types';
+
 import { CognitiveTerminal } from '@/lib/observability/cognitive-terminal';
+import { MessagingIntent } from '@/lib/zmg/types';
+import { ZMG } from '@/lib/zmg/core';
+
+import { withApiSecurity } from '@/lib/server/with-api-security';
 
 /**
  * ZMG API GATEWAY — Interface para XTRESS_TEST e Agentes Externos
  * Recebe intenções de mensagens e as processa através do pipeline ZMG
  */
-export async function POST(req: NextRequest) {
+async function _POST(req: NextRequest) : void {
   try {
     // 1. Validação de API KEY (Segurança ZEHLA)
     const apiKeyHeader = req.headers.get('x-api-key');
@@ -17,7 +20,7 @@ export async function POST(req: NextRequest) {
     const apiKey = apiKeyHeader || bearerToken;
     const systemKey = process.env.ZEHLA_API_KEY || 'zehla_xtress_2026';
     
-    console.log(`🔑 [Auth Debug] Received Key: "${apiKey}", Expected: "${systemKey}"`);
+    
 
     if (!apiKey || apiKey !== systemKey) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
@@ -50,11 +53,16 @@ export async function POST(req: NextRequest) {
     }, { status: 500 });
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
+
 
 /**
  * Endpoint de Monitoramento (Health Check)
  */
-export async function GET() {
+
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+async function _GET() : void {
+  try {
   return NextResponse.json({ 
     status: 'ONLINE', 
     service: 'ZEHLA Messaging Gateway',

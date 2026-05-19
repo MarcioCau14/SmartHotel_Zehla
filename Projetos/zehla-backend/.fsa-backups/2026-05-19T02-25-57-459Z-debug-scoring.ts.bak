@@ -1,0 +1,39 @@
+import { LeadScorer } from '../src/lib/brain/lead-scorer';
+
+async function testNeuralScoring() {
+  console.log('🧠 ZEHLA BRAIN — NEURAL SCORING DEBUG\n');
+
+  const leads = [
+    {
+      name: 'Pousada Aloha',
+      location: 'Ubatuba, SP - Praia de Itamambuca',
+      qualification: 'Pousada focada em surf e natureza.',
+      about: 'Vagas para o próximo feriado. Melhor pico de surf da região.'
+    },
+    {
+      name: 'Residencial Elite',
+      location: 'Balneário Camboriú, SC',
+      qualification: 'Apartamentos de luxo de frente para o mar.',
+      about: 'Experiência exclusiva. Atendimento personalizado para investidores.'
+    },
+    {
+      name: 'Pousada Simples',
+      location: 'Interior de Minas',
+      qualification: 'Pousada rural.',
+      about: 'Café da manhã caseiro.'
+    }
+  ];
+
+  for (const lead of leads) {
+    console.log(`--- Testando Pesos: ${lead.name} (${lead.location}) ---`);
+    const weight = LeadScorer.getGeographicWeight(lead.location, lead.qualification);
+    console.log(`Peso Calculado: ${weight}`);
+    
+    // Simulação de Score Base 60
+    const finalScore = Math.min(100, Math.round(60 * weight));
+    console.log(`Score Final Simulado (Base 60): ${finalScore}`);
+    console.log('\n');
+  }
+}
+
+testNeuralScoring().catch(console.error);

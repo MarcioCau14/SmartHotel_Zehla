@@ -1,6 +1,8 @@
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+
+
 'use client';
 
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 const tokensByTenant = [
   { tenant: 'Maravilha', tokens: 42000 },
@@ -31,7 +33,8 @@ const scaleMetrics = [
   { label: 'Queue Depth', value: '7', trend: '-3', ok: true },
 ];
 
-export function ScaleMetrics() {
+export function ScaleMetrics() : void {
+  try {
   return (
     <div className="space-y-6">
       {/* Scale overview */}

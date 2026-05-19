@@ -1,5 +1,7 @@
-// src/lib/metrics/api-metrics.ts
 import { Counter, Histogram, Gauge, register } from 'prom-client';
+
+
+// src/lib/metrics/api-metrics.ts
 
 // Coleta métricas default (GC, event loop, etc.)
 register.setDefaultLabels({ service: 'zehla-api' });

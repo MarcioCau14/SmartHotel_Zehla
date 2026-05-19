@@ -1,9 +1,12 @@
+import { Bed, User, Wrench, AlertTriangle, Lock, X } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+
+import { Skeleton } from '@/components/ui/skeleton';
+
+import type { Room } from '@/lib/store';
+
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Bed, User, Wrench, AlertTriangle, Lock, X } from 'lucide-react';
-import type { Room } from '@/lib/store';
 
 const statusConfig: Record<string, {color: string;label: string;icon: typeof Bed;borderColor: string;}> = {
   available: { color: 'text-[#FF5500]', label: 'Disponível', icon: Bed, borderColor: 'border-orange-500/20' },
@@ -33,7 +36,8 @@ interface RoomData {
   };
 }
 
-export function RoomBoard() {
+export function RoomBoard() : void {
+  try {
   const [data, setData] = useState<RoomData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);

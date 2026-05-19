@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
-import { join } from 'path';
 import * as fs from 'fs';
+import { join } from 'path';
+
 
 const filePath = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_/POUSADAS_LAGOS_RJ.xlsx';
 
@@ -39,7 +40,8 @@ const newRjLeads = [
 ];
 
 async function updateRjLeads() {
-  console.log(`🧠 [Secretaria-IA] Varredura Fluminense em andamento...`);
+  try {
+  
   
   const workbook = XLSX.readFile(filePath);
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -49,7 +51,7 @@ async function updateRjLeads() {
   const leads = [];
 
   // 1. Process existing
-  currentData.forEach((row: any) => {
+  currentData.forEach((row: unknown) => {
     let wa = String(row.Whatsapp || row.whatsapp || '').replace(/\D/g, '');
     if (!wa || uniqueWhatsapps.has(wa)) return;
     uniqueWhatsapps.add(wa);
@@ -116,8 +118,8 @@ async function updateRjLeads() {
   workbook.Sheets[workbook.SheetNames[0]] = newSheet;
   XLSX.writeFile(workbook, filePath);
   
-  console.log(`✨ [RJ SWEEP] Concluído!`);
-  console.log(`✅ Total de leads RJ: ${leads.length}`);
+  
+  
 }
 
 updateRjLeads().catch(console.error);

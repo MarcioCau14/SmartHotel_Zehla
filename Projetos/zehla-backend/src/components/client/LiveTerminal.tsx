@@ -1,10 +1,13 @@
+import { MessageSquare, Users, HardHat, Truck, AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef, useMemo } from 'react';
+
+import { Skeleton } from '@/components/ui/skeleton';
+
+import type { TerminalMessage } from '@/lib/store';
+
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Users, HardHat, Truck, AlertTriangle } from 'lucide-react';
-import type { TerminalMessage } from '@/lib/store';
 
 // Category configuration with colors and labels
 const categoryConfig = {
@@ -52,7 +55,7 @@ const categoryConfig = {
 
 type CategoryKey = keyof typeof categoryConfig;
 
-export function LiveTerminal() {
+export function LiveTerminal() : void {
   const [messages, setMessages] = useState<TerminalMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategories, setActiveCategories] = useState<Set<CategoryKey>>(

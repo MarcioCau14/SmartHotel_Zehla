@@ -1,7 +1,9 @@
 import { prisma } from '../src/lib/prisma';
 
+
 async function seedHoneypots() {
-  console.log('🛡️  [ZEHLA FORTRESS] Semeando Honeypots (Dados Isca)...');
+  try {
+  ...');
 
   // 1. Canary Lead (Lead Isca)
   const canaryLead = await prisma.lead.upsert({
@@ -24,7 +26,7 @@ async function seedHoneypots() {
   const admin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
   
   if (!admin) {
-    console.log('⚠️  Nenhum admin encontrado para vincular o Honeypot. Pulando Property Canary.');
+    
   } else {
     const canaryProperty = await prisma.property.upsert({
       where: { slug: 'canary-pousada' },
@@ -38,10 +40,10 @@ async function seedHoneypots() {
         userId: admin.id
       }
     });
-    console.log('✅ Property Honeypot semeada.');
+    
   }
 
-  console.log('✅ Honeypots semeados com sucesso.');
+  
 }
 
 seedHoneypots().catch(console.error);

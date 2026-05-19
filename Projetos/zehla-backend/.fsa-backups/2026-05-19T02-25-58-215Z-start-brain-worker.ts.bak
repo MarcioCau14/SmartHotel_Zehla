@@ -1,0 +1,14 @@
+import { subconsciousWorker } from './src/lib/ml/subconscious-worker';
+import { CognitiveTerminal } from './src/lib/observability/cognitive-terminal';
+
+
+
+subconsciousWorker.on('ready', () => {
+  
+});
+
+// Mantém o processo vivo
+process.on('SIGINT', async () => {
+  await subconsciousWorker.close();
+  process.exit(0);
+});

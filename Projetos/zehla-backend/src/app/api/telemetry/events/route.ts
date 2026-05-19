@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
+
 import { redis } from '@/lib/redis';
 
-export async function POST(req: Request) {
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+async function _POST(req: Request) : void {
   try {
     const event = await req.json();
     
@@ -26,8 +29,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false }, { status: 500 });
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
 
-export async function GET() {
+
+async function _GET() : void {
   try {
     const events = await redis.lrange('zehla:telemetry:feed', 0, 49);
     const parsedEvents = events.map((e: string) => JSON.parse(e));
@@ -37,3 +42,5 @@ export async function GET() {
     return NextResponse.json([], { status: 500 });
   }
 }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+

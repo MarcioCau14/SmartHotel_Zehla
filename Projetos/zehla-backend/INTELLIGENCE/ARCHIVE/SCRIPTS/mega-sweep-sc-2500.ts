@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
-import { join } from 'path';
 import * as fs from 'fs';
+import { join } from 'path';
+
 
 const folder = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_';
 const filePath = join(folder, 'POUSADAS_MARKETING_FASE (1).xlsx');
@@ -25,7 +26,8 @@ const SC_HUBS_EXPANDED = [
 ];
 
 async function megaSweepSC2500() {
-  console.log('🧠 [Secretaria-IA] Iniciando Varredura Final SC (Meta: +500 leads)...');
+  try {
+  ...');
   
   const workbook = XLSX.readFile(filePath);
   const sheet = workbook.Sheets[sheetName];
@@ -35,7 +37,7 @@ async function megaSweepSC2500() {
   const leads = [];
 
   // 1. Manter leads existentes
-  currentData.forEach((row: any) => {
+  currentData.forEach((row: unknown) => {
     let wa = String(row.Whatsapp || row.whatsapp || '').replace(/\D/g, '');
     if (!wa || uniqueWhatsapps.has(wa)) return;
     uniqueWhatsapps.add(wa);
@@ -62,11 +64,11 @@ async function megaSweepSC2500() {
     ]);
   });
 
-  console.log(`📊 Leads atuais em SC: ${leads.length}`);
+  
   const needed = 2500 - leads.length;
 
   if (needed > 0) {
-    console.log(`🚀 Gerando ${needed} novos leads qualificados via Secretaria-IA Deep Search...`);
+    
     
     SC_HUBS_EXPANDED.forEach(hub => {
       const countForHub = Math.floor(needed * hub.weight);
@@ -138,8 +140,8 @@ async function megaSweepSC2500() {
   workbook.Sheets[sheetName] = ws;
   XLSX.writeFile(workbook, filePath);
   
-  console.log(`✨ [DEEP-SWEEP SC 2500 CONCLUÍDO]`);
-  console.log(`📊 Total de Leads em SC: ${leads.length}`);
+  
+  
 }
 
 megaSweepSC2500().catch(console.error);

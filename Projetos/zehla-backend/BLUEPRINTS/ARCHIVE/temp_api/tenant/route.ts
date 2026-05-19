@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { validateRequest, sanitizeInput, scanPII } from '@/lib/security/guardian';
 
-export async function POST(request: NextRequest) {
+
+export async function POST(request: NextRequest) : void {
   try {
     // ----- GUARDIAN VALIDATION -----
     const bodyText = await request.text();
@@ -29,7 +31,7 @@ export async function POST(request: NextRequest) {
     const emailScan = scanPII(email);
     const phoneScan = scanPII(whatsappProprietario);
     if (emailScan.found.length > 0 || phoneScan.found.length > 0) {
-      console.log(`[ZDR] Tenant creation — PII detected: ${[...emailScan.found, ...phoneScan.found].join(', ')}. Data stored encrypted.`);
+      }. Data stored encrypted.`);
     }
 
     // Gerar tenant ID
@@ -56,7 +58,8 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET() : void {
+  try {
   return NextResponse.json({
     trial_duration_days: 7,
     plan_price: 'R$ 297,00/mês',

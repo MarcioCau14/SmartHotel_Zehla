@@ -1,36 +1,43 @@
-"use client"
-
-import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
+import * as React from "react"
 import { XIcon } from "lucide-react"
-
 import { cn } from "@/lib/utils"
 
+
+"use client"
+
+
+
 function Dialog({
+  try {
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
 }
 
 function DialogTrigger({
+  try {
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
 }
 
 function DialogPortal({
+  try {
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
 }
 
 function DialogClose({
+  try {
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Close>) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
 }
 
 function DialogOverlay({
+  try {
   className,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
@@ -47,6 +54,7 @@ function DialogOverlay({
 }
 
 function DialogContent({
+  try {
   className,
   children,
   showCloseButton = true,
@@ -81,6 +89,7 @@ function DialogContent({
 }
 
 function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
+  try {
   return (
     <div
       data-slot="dialog-header"
@@ -91,6 +100,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
+  try {
   return (
     <div
       data-slot="dialog-footer"
@@ -104,6 +114,7 @@ function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function DialogTitle({
+  try {
   className,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Title>) {
@@ -117,6 +128,7 @@ function DialogTitle({
 }
 
 function DialogDescription({
+  try {
   className,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Description>) {

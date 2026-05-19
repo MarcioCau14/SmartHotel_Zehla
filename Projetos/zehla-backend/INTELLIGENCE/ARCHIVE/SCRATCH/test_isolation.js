@@ -31,7 +31,8 @@ const prisma = prismaBase.$extends({
 });
 
 async function runTest() {
-  console.log('🚀 Iniciando Teste de Isolamento Militarizado...');
+  try {
+  
 
   const TENANT_A = 'tenant_alpha_123';
   const TENANT_B = 'tenant_beta_456';
@@ -53,7 +54,7 @@ async function runTest() {
     await prisma.lead.create({
       data: { name: 'Pousada do Alpha', whatsapp: '5511999999999' }
     });
-    console.log('✅ Lead criado para TENANT A');
+    
   });
 
   // 2. Criar Lead para Tenant B
@@ -61,15 +62,15 @@ async function runTest() {
     await prisma.lead.create({
       data: { name: 'Hotel do Beta', whatsapp: '5511888888888' }
     });
-    console.log('✅ Lead criado para TENANT B');
+    
   });
 
   // 3. Tentar ler leads do Tenant A (Não deve ver o do B)
   await tenantStorage.run({ tenantId: TENANT_A }, async () => {
     const leads = await prisma.lead.findMany();
-    console.log(`📊 Tenant A vê ${leads.length} leads. (Esperado: 1)`);
+    `);
     if (leads.length === 1 && leads[0].name === 'Pousada do Alpha') {
-      console.log('🛡️ ISOLAMENTO TENANT A: OK');
+      
     } else {
       console.error('❌ FALHA NO ISOLAMENTO TENANT A');
     }
@@ -78,9 +79,9 @@ async function runTest() {
   // 4. Tentar ler leads do Tenant B (Não deve ver o do A)
   await tenantStorage.run({ tenantId: TENANT_B }, async () => {
     const leads = await prisma.lead.findMany();
-    console.log(`📊 Tenant B vê ${leads.length} leads. (Esperado: 1)`);
+    `);
     if (leads.length === 1 && leads[0].name === 'Hotel do Beta') {
-      console.log('🛡️ ISOLAMENTO TENANT B: OK');
+      
     } else {
       console.error('❌ FALHA NO ISOLAMENTO TENANT B');
     }

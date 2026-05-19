@@ -1,0 +1,51 @@
+import { prisma } from '@/lib/prisma';
+
+import { gerarJustificativaIA } from '../swipe/analyzer';
+import { matchSwipes } from '../swipe/matcher';
+
+import { type LeadProfile } from '../swipe/types';
+
+// src/lib/events/swipeWorker.ts
+
+export async function processSwipeStage(jobData: any) {
+  const { leadId } = jobData;
+  const lead = await prisma.lead.findUnique({
+    where: { id: leadId },
+    include: { events: { take: 10 } }
+  });
+
+  if (!lead) return;
+
+  const profile: LeadProfile = {
+    id: lead.id,
+    email: lead.email || '',
+    pousada: lead.property || '',
+    score: lead.conversionScore || 0,
+    cluster: (lead.cluster as any) || 'COLD',
+    dor: (lead.painPoints as any) || 'desconhecida',
+    funnelStage: (lead.funnelStage as any) || 'NEUTRAL',
+    qtdQuartos: lead.roomsCount,
+    regiao: lead.region,
+    uf: lead.state,
+    totalEventos: lead.events.length,
+    canaisUsados: [...new Set(lead.events.map(e => e.eventSource))]
+  };
+
+  const result = await matchSwipes(profile);
+  
+  let aiJustification = "";
+  if (result.matches.length > 0) {
+    aiJustification = await gerarJustificativaIA(profile, result.matches[0], result.tierRecommendation);
+  }
+
+  await prisma.lead.update({
+    where: { id: leadId },
+    data: {
+      tierSugerido: result.tierRecommendation.tier,
+      tierConfidence: result.tierRecommendation.confidence,
+      tierSugeridoEm: new Date()
+    }
+  });
+
+  return { ...result, aiJustification };
+}

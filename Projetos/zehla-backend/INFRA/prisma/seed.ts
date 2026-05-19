@@ -1,10 +1,11 @@
-import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import { PrismaClient } from '@prisma/client'
+
 
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🌱 Iniciando seed...\n')
+  
 
   // Limpa dados antigos (opcional)
   await prisma.payment.deleteMany().catch(() => {})
@@ -29,7 +30,7 @@ async function main() {
       isActive: true
     }
   })
-  console.log('✅ Admin:', admin.email)
+  
 
   // 2. CLIENTE
   const clientPass = await bcrypt.hash('pousada123', 10)
@@ -44,7 +45,7 @@ async function main() {
       isActive: true
     }
   })
-  console.log('✅ Cliente:', client.email)
+  
 
   // 3. PROPRIEDADE
   const property = await prisma.property.create({
@@ -72,7 +73,7 @@ async function main() {
       pixKeyType: 'EMAIL'
     }
   })
-  console.log('✅ Propriedade:', property.name)
+  
 
   // 4. QUARTOS
   const rooms = await prisma.room.createMany({
@@ -87,7 +88,7 @@ async function main() {
       { propertyId: property.id, number: '108', name: 'Lua de Mel', type: 'SUITE', capacity: 2, basePrice: 420, description: 'Romântico, champagne', amenities: ['Wi-Fi','Ar','TV','Hidro','Champagne'], status: 'BLOCKED' }
     ]
   })
-  console.log('✅ Quartos:', 8)
+  
 
   // 5. SERVIÇOS
   await prisma.service.createMany({
@@ -102,7 +103,7 @@ async function main() {
       { propertyId: property.id, name: 'Massagem', description: 'Relaxante', price: 180, isIncluded: false, icon: 'heart' }
     ]
   })
-  console.log('✅ Serviços:', 8)
+  
 
   // 6. RESERVAS
   const today = new Date()
@@ -119,7 +120,7 @@ async function main() {
       { propertyId: property.id, roomId: allRooms[1].id, code: 'ZEH-2026-004', guestName: 'Fernanda Costa', guestEmail: 'fernanda@email.com', guestPhone: '48944444444', guestCpf: '32165498700', guestCount: 1, checkIn: new Date(today.getTime() - 2*86400000), checkOut: today, nights: 2, roomPrice: 180, totalAmount: 360, paidAmount: 360, status: 'CHECKED_OUT', checkInStatus: 'DONE', source: 'WHATSAPP', notes: 'Viajante solo' }
     ]
   })
-  console.log('✅ Reservas:', 4)
+  
 
   // 7. PAGAMENTOS
   const reservations = await prisma.reservation.findMany({ where: { propertyId: property.id } })
@@ -138,7 +139,7 @@ async function main() {
       }
     })
   }
-  console.log('✅ Pagamentos:', 4)
+  
 
   // 8. LOGS
   await prisma.agentLog.createMany({
@@ -155,7 +156,7 @@ async function main() {
       { propertyId: property.id, agentName: 'RECEPTIONIST', action: 'RESPOND', intent: 'CANCELATION_POLICY', confidence: 0.93, input: 'Política?', output: 'Cancelamento >7 dias = integral ✅', tokensUsed: 175, cost: 0.007, duration: 410, status: 'SUCCESS' }
     ]
   })
-  console.log('✅ Logs:', 10)
+  
 
   // 9. MENSAGENS
   await prisma.message.createMany({
@@ -168,7 +169,7 @@ async function main() {
       { propertyId: property.id, phone: '48955555555', name: 'Roberto Lima', content: 'Surf, trilhas, paddle! 🏄♂️', direction: 'OUTBOUND', type: 'TEXT', status: 'DELIVERED', agentHandled: 'CONCIERGE' }
     ]
   })
-  console.log('✅ Mensagens:', 6)
+  
 
   // 10. REGRAS DE PREÇO
   await prisma.pricingRule.createMany({
@@ -179,9 +180,9 @@ async function main() {
       { propertyId: property.id, name: 'Feriado', description: '+25%', startDate: new Date('2026-04-17'), endDate: new Date('2026-04-21'), multiplier: 1.25, isActive: true }
     ]
   })
-  console.log('✅ Regras de preço:', 4)
+  
 
-  console.log('\n🎉 SEED CONCLUÍDO!')
+  
 }
 
 main()

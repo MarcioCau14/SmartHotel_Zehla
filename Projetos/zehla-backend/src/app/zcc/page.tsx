@@ -1,10 +1,34 @@
+import Link from 'next/link';
+import {
+import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+
+import { APIStatus } from '@/components/dashboard/APIStatus';
+import { AgentManagementPanel } from '@/components/zcc/AgentManagementPanel';
+import { ApiKeysPanel } from '@/components/zcc/ApiKeysPanel';
+import { Badge } from '@/components/ui/badge';
+import { CognitiveObservability } from '@/components/zcc/CognitiveObservability';
+import { CognitivePanel } from '@/components/dashboard/CognitivePanel';
+import { FintechHub } from '@/components/zcc/FintechHub';
+import { MarketingLeads } from '@/components/dashboard/MarketingLeads';
+import { PaymentPanel } from '@/components/dashboard/PaymentPanel';
+import { ScaleMetrics } from '@/components/zcc/ScaleMetrics';
+import { SecurityPanel } from '@/components/zcc/SecurityPanel';
+import { Skeleton } from '@/components/ui/skeleton';
+import { SwarmOverview } from '@/components/zcc/SwarmOverview';
+import { SystemStatusBar } from '@/components/dashboard/SystemStatusBar';
+import { TeamManagementTab } from '@/components/zcc/TeamManagementTab';
+import { TenantManagement } from '@/components/zcc/TenantManagement';
+import { TerminalPanel } from '@/components/dashboard/TerminalPanel';
+import { VisibilityDashboard } from '@/components/dashboard/VisibilityDashboard';
+import { WhatsAppPanel } from '@/components/dashboard/WhatsAppPanel';
+import { ZccAutoHealer } from '@/components/zcc/ZccAutoHealer';
+
+import type { AIAgent } from '@/lib/store';
+
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import {
   ArrowLeft,
   Command,
   Brain,
@@ -48,28 +72,10 @@ import {
 } from 'lucide-react';
 
 // Dashboard components to reuse
-import { TerminalPanel } from '@/components/dashboard/TerminalPanel';
-import { CognitivePanel } from '@/components/dashboard/CognitivePanel';
-import { MarketingLeads } from '@/components/dashboard/MarketingLeads';
-import { WhatsAppPanel } from '@/components/dashboard/WhatsAppPanel';
-import { APIStatus } from '@/components/dashboard/APIStatus';
-import { PaymentPanel } from '@/components/dashboard/PaymentPanel';
-import { SystemStatusBar } from '@/components/dashboard/SystemStatusBar';
-import { VisibilityDashboard } from '@/components/dashboard/VisibilityDashboard';
 
 // ZCC components to reuse
-import { SwarmOverview } from '@/components/zcc/SwarmOverview';
-import { ZccAutoHealer } from '@/components/zcc/ZccAutoHealer';
-import { TenantManagement } from '@/components/zcc/TenantManagement';
-import { FintechHub } from '@/components/zcc/FintechHub';
-import { CognitiveObservability } from '@/components/zcc/CognitiveObservability';
-import { ScaleMetrics } from '@/components/zcc/ScaleMetrics';
-import { ApiKeysPanel } from '@/components/zcc/ApiKeysPanel';
 
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 
-import type { AIAgent } from '@/lib/store';
 
 // ===== TAB CONFIGURATION =====
 
@@ -110,9 +116,6 @@ const tabs: TabConfig[] = [
   { id: 'seguranca', label: 'Segurança', shortLabel: 'Segurança', icon: Shield, permission: 'view_security' },
 ];
 
-import { AgentManagementPanel } from '@/components/zcc/AgentManagementPanel';
-import { SecurityPanel } from '@/components/zcc/SecurityPanel';
-import { TeamManagementTab } from '@/components/zcc/TeamManagementTab';
 
 // ===== MAIN PAGE COMPONENT =====
 

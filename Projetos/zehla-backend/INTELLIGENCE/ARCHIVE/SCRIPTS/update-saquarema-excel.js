@@ -220,4 +220,4 @@ const wb = XLSX.utils.book_new();
 XLSX.utils.book_append_sheet(wb, ws, "Leads");
 
 XLSX.writeFile(wb, filePath);
-console.log(`Planilha ATUALIZADA com 15 leads em: ${filePath}`);
+

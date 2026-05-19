@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import * as fs from 'fs';
 import { join } from 'path';
 
+
 const folder = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_';
 const outputFolder = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_/TRATADAS';
 
@@ -38,7 +39,7 @@ let totalLeadsProcessed = 0;
 let totalDuplicatesRemoved = 0;
 
 files.forEach(file => {
-  console.log(`\n🧠 [Secretaria-IA] Processando: ${file}...`);
+  
   const workbook = XLSX.readFile(join(folder, file));
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
   const rawData = XLSX.utils.sheet_to_json(sheet);
@@ -87,7 +88,7 @@ files.forEach(file => {
   });
 
   totalLeadsProcessed += treatedData.length;
-  console.log(`✅ [Secretaria-IA] ${treatedData.length} leads qualificados. (${fileDuplicates} duplicatas removidas neste arquivo)`);
+  `);
 
   // Create new Workbook
   const newSheet = XLSX.utils.aoa_to_sheet([OFFICIAL_HEADER, ...treatedData]);
@@ -97,9 +98,9 @@ files.forEach(file => {
   XLSX.writeFile(newWorkbook, join(outputFolder, file));
 });
 
-console.log(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-console.log(`📊 [RELATÓRIO FINAL — SECRETARIA-IA]`);
-console.log(`✅ Leads Processados: ${totalLeadsProcessed}`);
-console.log(`🚫 Duplicatas Eliminadas: ${totalDuplicatesRemoved}`);
-console.log(`📂 Arquivos salvos em: ${outputFolder}`);
-console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+
+
+
+
+
+

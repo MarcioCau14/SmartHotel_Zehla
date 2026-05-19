@@ -1,7 +1,9 @@
-import { prisma } from '@/lib/prisma';
-import { ZMG } from '@/lib/zmg/core';
-import { CognitiveTerminal } from '@/lib/observability/cognitive-terminal';
 import { addDays, isBefore, subDays } from 'date-fns';
+
+import { CognitiveTerminal } from '@/lib/observability/cognitive-terminal';
+import { ZMG } from '@/lib/zmg/core';
+import { prisma } from '@/lib/prisma';
+
 
 /**
  * TrialManager — Gestor de Ciclo de Vida do Trial ZEHLA

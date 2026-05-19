@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { Queue } from 'bullmq'
+
+import { prisma } from '@/lib/prisma'
 import { redisWorker } from '@/lib/redis'
 import { verifyWhatsAppSignature, checkWhatsAppRateLimit } from '@/lib/security/whatsapp-shield'
+
+import { withApiSecurity } from '@/lib/server/with-api-security';
 
 // Inicialização da Fila Inbound (Redis DB 1)
 const inboundQueue = new Queue('whatsapp-inbound', { 
@@ -14,7 +17,7 @@ const inboundQueue = new Queue('whatsapp-inbound', {
   }
 });
 
-export async function POST(request: NextRequest) {
+async function _POST(request: NextRequest) : void {
   try {
     const rawBody = await request.text()
     const signature = request.headers.get('X-Hub-Signature-256') || ''
@@ -85,7 +88,7 @@ export async function POST(request: NextRequest) {
       } : null
     });
 
-    console.log(`📥 [QUEUED] Mensagem ${savedMessage.id} (${hasMedia ? 'MÍDIA' : 'TEXTO'}) de ${phone}`);
+     de ${phone}`);
 
     return NextResponse.json({ success: true, status: 'queued' })
 
@@ -94,3 +97,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Internal Error' }, { status: 500 })
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 300, windowSeconds: 60 } });
+

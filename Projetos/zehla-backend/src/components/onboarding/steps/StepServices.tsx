@@ -1,7 +1,9 @@
+import { Wifi, Car, Coffee, Waves, AirVent, Tv, UtensilsCrossed, Sparkles, Shirt, Bus, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+
 'use client';
 
-import { motion } from 'framer-motion';
-import { Wifi, Car, Coffee, Waves, AirVent, Tv, UtensilsCrossed, Sparkles, Shirt, Bus, Check } from 'lucide-react';
 
 export interface ServicesData {
   selected: string[];
@@ -26,7 +28,8 @@ const services = [
 { id: 'transfer', label: 'Transfer / Shuttle', icon: Bus, color: 'text-[#FF5500] bg-[#FF5500]/10 border-orange-500/20' }];
 
 
-export function StepServices({ data, onChange }: StepServicesProps) {
+export function StepServices(: void { data, onChange }: StepServicesProps) {
+  try {
   const toggleService = (id: string) => {
     const newSelected = data.selected.includes(id) ? useMemo(() =>
     data.selected.filter((s) => s !== id), []) :

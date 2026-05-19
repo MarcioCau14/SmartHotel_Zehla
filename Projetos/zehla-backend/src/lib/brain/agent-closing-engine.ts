@@ -1,7 +1,9 @@
-import { prisma } from '@/lib/prisma';
-import { llmRouter } from '@/lib/ai/llm-router';
-import { WhatsappPersonaLearner } from './whatsapp-persona-learner';
 import { CognitiveTerminal } from '@/lib/observability/cognitive-terminal';
+import { llmRouter } from '@/lib/ai/llm-router';
+import { prisma } from '@/lib/prisma';
+
+import { WhatsappPersonaLearner } from './whatsapp-persona-learner';
+
 
 export type ClosingState = 'IDLE' | 'QUALIFYING' | 'AVAILABILITY' | 'QUOTATION' | 'OBJECTION' | 'CLOSING' | 'HANDOVER'
 
@@ -10,7 +12,7 @@ export class AgentClosingEngine {
    * MÁQUINA DE CONVERSÃO (Jornada do Hóspede)
    * Processa a negociação e gera uma resposta focada em FECHAMENTO.
    */
-  static async processNegotiation(propertyId: string, leadId: string, lastMessages: any[]) {
+  static async processNegotiation(propertyId: string, leadId: string, lastMessages: unknown[]) {
     try {
       // 1. CARGA DE CONTEXTO (Bancada de Inox)
       const [property, persona, trends, lead] = await Promise.all([
@@ -60,9 +62,9 @@ export class AgentClosingEngine {
     }
   }
 
-  private static calculateRealAvailability(property: any) {
+  private static calculateRealAvailability(property: unknown) {
     const totalRooms = property.rooms.length;
-    const occupiedRooms = property.rooms.filter((r: any) => r.reservations.length > 0).length;
+    const occupiedRooms = property.rooms.filter((r: unknown) => r.reservations.length > 0).length;
     const available = totalRooms - occupiedRooms;
     
     return {
@@ -82,7 +84,7 @@ export class AgentClosingEngine {
     return { weather, holidays };
   }
 
-  private static detectHandoverNeed(messages: any[]): boolean {
+  private static detectHandoverNeed(messages: unknown[]): boolean {
     const lastMessage = messages[messages.length - 1]?.content?.toLowerCase() || '';
     const triggers = ['falar com humano', 'atendente', 'gerente', 'reclamação', 'estou bravo', 'ruim', 'não gostei', 'falar com o dono'];
     return triggers.some(t => lastMessage.includes(t));
@@ -100,7 +102,7 @@ export class AgentClosingEngine {
     await CognitiveTerminal.warn('SECURITY', `Handover ativado para ${phone}: ${reason}`, { propertyId });
   }
 
-  private static buildClosingPrompt(property: any, persona: any, availability: any, trends: any, lead: any, history: any[]) {
+  private static buildClosingPrompt(property: unknown, persona: unknown, availability: unknown, trends: unknown, lead: unknown, history: unknown[]) {
     const historyText = history.map(m => `${m.role === 'user' ? 'Hóspede' : 'Pousada'}: ${m.content}`).join('\n');
     
     let trendContext = '';

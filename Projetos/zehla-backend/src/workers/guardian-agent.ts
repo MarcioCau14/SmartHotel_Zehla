@@ -1,8 +1,11 @@
-// src/workers/guardian-agent.ts
 import { Redis } from 'ioredis';
-import { prisma } from '../lib/prisma';
-import { guardianMetrics, register } from '../lib/metrics/guardian-metrics';
 import { createServer } from 'http';
+
+import { guardianMetrics, register } from '../lib/metrics/guardian-metrics';
+import { prisma } from '../lib/prisma';
+
+
+// src/workers/guardian-agent.ts
 
 type Severity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 type Action = 'LOG' | 'ALERT' | 'CHALLENGE' | 'BLOCK' | 'ISOLATE';
@@ -74,12 +77,12 @@ class GuardianAgent {
         res.end();
       }
     }).listen(9091, () => {
-      console.log('📊 Guardian metrics on :9091/metrics');
+      
     });
   }
 
   async start() {
-    console.log('🛡️ Guardian Agent iniciado');
+    
     this.isRunning = true;
 
     while (this.isRunning) {
@@ -108,7 +111,7 @@ class GuardianAgent {
     }
   }
 
-  private async processAlert(alert: any) {
+  private async processAlert(alert: unknown) {
     const { alertType, tenantId, metadata } = alert;
     const rule = RULES.find(r => r.alertType === alertType);
       
@@ -156,17 +159,17 @@ class GuardianAgent {
     endTimer();
   }
 
-  private async executeActions(rule: GuardianRule, alert: any) {
+  private async executeActions(rule: GuardianRule, alert: unknown) {
     const { tenantId, metadata } = alert;
       
     for (const action of rule.actions) {
       switch (action) {
         case 'LOG':
-          console.log(`[Guardian] LOG: ${rule.alertType} for ${tenantId}`);
+          
           break;
 
         case 'ALERT':
-          console.log(`[Guardian] ALERT: ${rule.alertType} severity ${rule.severity}`);
+          
           break;
 
         case 'CHALLENGE':
@@ -192,7 +195,7 @@ class GuardianAgent {
 
   private async blockIP(ip: string, durationSeconds: number) {
     await this.redis.setex(`block:ip:${ip}`, durationSeconds, '1');
-    console.log(`🚫 IP ${ip} bloqueado por ${durationSeconds}s`);
+    
   }
 
   private async isolateTenant(tenantId: string) {
@@ -211,7 +214,7 @@ class GuardianAgent {
       console.error('[Guardian] Failed to persist incident:', e);
     }
 
-    console.log(`🔒 Tenant ${tenantId} ISOLADO`);
+    
   }
 
   private async updateIsolatedGauge() {
@@ -224,10 +227,10 @@ class GuardianAgent {
       required: 'MFA',
       expiresAt: Date.now() + 900000,
     }));
-    console.log(`⚠️ Desafio (MFA) imposto ao IP ${ip}`);
+     imposto ao IP ${ip}`);
   }
 
-  private async persistAlert(alert: any, rule: GuardianRule) {
+  private async persistAlert(alert: unknown, rule: GuardianRule) {
     try {
       await prisma.securityAlert.create({
         data: {

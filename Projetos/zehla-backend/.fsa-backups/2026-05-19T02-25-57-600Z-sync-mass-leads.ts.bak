@@ -1,0 +1,90 @@
+import { PrismaClient } from '@prisma/client';
+import * as XLSX from 'xlsx';
+import { join } from 'path';
+import dotenv from 'dotenv';
+
+dotenv.config();
+const prisma = new PrismaClient();
+
+const folder = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_';
+
+const dataSources = [
+  { file: 'PLANILHA_LITORAL_SUL_SP.xlsx', sheet: null },
+  { file: 'POUSADA_LITORAL_SP_NORTE.xlsx', sheet: null },
+  { file: 'PLANILHA_LITORAL_PARANA.xlsx', sheet: null },
+  { file: 'PLANILHA_LITORAL_SC.xlsx', sheet: null },
+  { file: 'POUSADAS_LAGOS_RJ.xlsx', sheet: null },
+  { file: 'POUSADAS_NORDESTE_BR.xlsx', sheet: null },
+  { file: 'PLANILHA_LITORAL_ES.xlsx', sheet: null },
+  { file: 'POUSADAS_LITORAL_RS.xlsx', sheet: null }
+];
+
+async function syncAllNewLeads() {
+  console.log('🧠 [Neural Mapping] Sincronização Massiva: SP Sul + PR + SC...');
+  
+  let totalNew = 0;
+  let totalSkipped = 0;
+
+  for (const source of dataSources) {
+    const filePath = join(folder, source.file);
+    console.log(`📂 Processando: ${source.file}${source.sheet ? ` [Tab: ${source.sheet}]` : ''}`);
+    const workbook = XLSX.readFile(filePath);
+    const sheetName = source.sheet || workbook.SheetNames[0];
+    const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+    
+    for (const row of data as any[]) {
+      const wa = String(row.Whatsapp || row.whatsapp || '').replace(/\D/g, '');
+      if (!wa) continue;
+
+      const existing = await prisma.lead.findUnique({
+        where: { whatsapp: wa }
+      });
+
+      if (existing) {
+        totalSkipped++;
+        continue;
+      }
+
+      await prisma.lead.create({
+        data: {
+          name: row.Pousada || row.pousada || 'Pousada sem Nome',
+          email: row['E-mail'] || row['e-mail'] || null,
+          whatsapp: wa,
+          city: row.Cidade || null,
+          state: row.UF || null,
+          region: getRegionFromUF(row.UF),
+          latitude: parseFloat(row.LATITUDE) || null,
+          longitude: parseFloat(row.LONGITUDE) || null,
+          category: 'pousada',
+          roomsCount: parseInt(row['Qtd Quartos'] || row['Quant. quartos']) || 0,
+          location: row['Local / Praia'] || row.Local || null,
+          estimatedValues: row['Valores Estimados'] || row.VALORES || null,
+          qualification: row['Qualificação'] || null,
+          validationStatus: row['Validação'] || row['Validação Contato'] || null,
+          buyingBehavior: row['Comportamento de Compra'] || null,
+          intentSignals: row['Sinais de Intenção'] || null,
+          socialMedia: row['Redes Sociais'] || null,
+          score: parseInt(row['Score Qual.']) || 0,
+          validationScore: parseInt(row['Score Valid.']) || 0,
+          status: 'PROSPECT',
+          source: 'SECRETARIA_AI'
+        }
+      });
+      totalNew++;
+    }
+  }
+
+  console.log(`\n✨ Sincronização Concluída!`);
+  console.log(`✅ Novos Leads no Radar: ${totalNew}`);
+  console.log(`⏭️ Duplicatas Ignoradas: ${totalSkipped}`);
+}
+
+function getRegionFromUF(uf: string): string {
+  if (['SP', 'RJ', 'MG', 'ES'].includes(uf)) return 'Sudeste';
+  if (['PR', 'SC', 'RS'].includes(uf)) return 'Sul';
+  return 'Brasil';
+}
+
+syncAllNewLeads()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect());

@@ -1,7 +1,9 @@
 import { Worker, Queue, QueueEvents } from 'bullmq';
-import { redis } from '../lib/delivery/redis-connection';
-import { prisma } from '../lib/prisma';
+
 import { TelemetryEngine } from '../lib/ai/engine/telemetry-engine';
+import { prisma } from '../lib/prisma';
+import { redis } from '../lib/delivery/redis-connection';
+
 
 const TELEMETRY_QUEUE = 'business-telemetry';
 
@@ -21,7 +23,7 @@ export const telemetryQueue = new Queue(TELEMETRY_QUEUE, {
 export const telemetryWorker = new Worker(
   TELEMETRY_QUEUE,
   async (job) => {
-    console.log(`📊 [TELEMETRY-WORKER] Iniciando agregação para: ${job.name}`);
+    
 
     if (job.name === 'AGGREGATE_ALL') {
       const properties = await prisma.property.findMany({
@@ -29,7 +31,7 @@ export const telemetryWorker = new Worker(
         select: { id: true }
       });
 
-      console.log(`🔍 [TELEMETRY-WORKER] Processando ${properties.length} propriedades`);
+      
 
       const startDate = new Date();
       startDate.setHours(startDate.getHours() - 1);
@@ -39,7 +41,7 @@ export const telemetryWorker = new Worker(
         try {
           const metrics = await TelemetryEngine.calculateMetrics(prop.id, startDate, endDate);
           await TelemetryEngine.saveTelemetry(prop.id, metrics);
-          console.log(`✅ [TELEMETRY-WORKER] Métricas salvas para ${prop.id}`);
+          
         } catch (error) {
           console.error(`❌ [TELEMETRY-WORKER] Erro na propriedade ${prop.id}:`, error);
         }
@@ -53,7 +55,8 @@ export const telemetryWorker = new Worker(
 );
 
 // Schedule the job (Run every hour)
-export async function scheduleTelemetry() {
+export async function scheduleTelemetry() : void {
+  try {
   const jobs = await telemetryQueue.getRepeatableJobs();
   
   // Clean existing repeatable jobs to avoid duplicates during dev
@@ -71,7 +74,7 @@ export async function scheduleTelemetry() {
     }
   );
 
-  console.log('📅 [TELEMETRY-WORKER] Agendamento de telemetria concluído (1h)');
+  ');
 }
 
 // Start scheduling if this file is run directly or imported

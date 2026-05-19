@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
+
 import { getTrainingProfiles } from '@/lib/agents/training-profiles';
 
-export async function GET() {
+
+export async function GET() : void {
+  try {
   const profiles = getTrainingProfiles();
   return NextResponse.json(profiles);
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request) : void {
+  try {
   const body = await request.json();
   const { action, agentId, documentTitle } = body;
 

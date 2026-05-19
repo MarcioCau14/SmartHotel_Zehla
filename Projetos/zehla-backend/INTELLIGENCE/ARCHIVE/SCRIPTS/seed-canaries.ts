@@ -1,12 +1,14 @@
 import { prisma } from '../src/lib/prisma';
 
+
 /**
  * ZEHLA Canary Seeder
  * Planta "iscas" (Honeypots) no banco de dados para detectar intrusos.
  */
 
 async function seedCanaries() {
-  console.log('🍯 Plantando Canaries no ecossistema ZEHLA...');
+  try {
+  
 
   const properties = await prisma.property.findMany({
     select: { id: true, userId: true, name: true }
@@ -51,7 +53,7 @@ async function seedCanaries() {
     });
   }
 
-  console.log('✅ Canaries plantados com sucesso!');
+  
 }
 
 seedCanaries()

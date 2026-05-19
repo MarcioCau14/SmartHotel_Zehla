@@ -1,0 +1,16 @@
+import { matchSwipes } from '../swipe/matcher';
+
+
+// src/lib/events/pipeline.ts
+
+export async function runPipeline(leadId: string) : void {
+  
+  
+  // Estágio 4.5: Swipe Match
+  // Integrando o matcher para fundamentar a decisão com dados e IA
+  const result = await matchSwipes({ id: leadId } as any);
+  
+  
+  
+  return result;
+}

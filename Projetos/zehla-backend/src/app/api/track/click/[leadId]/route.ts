@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { prisma } from '@/lib/prisma';
 
-export async function GET(
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+async function _GET(
   req: NextRequest,
-  { params }: { params: { leadId: string } }
+  { params }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+: { params: { leadId: string } }
 ) {
   const { leadId } = params;
   const targetUrl = req.nextUrl.searchParams.get('url') || '/';

@@ -1,8 +1,10 @@
-import { Guardian } from '@/lib/security/guardian';
 import { getServerSession } from 'next-auth';
+
+import { Guardian } from '@/lib/security/guardian';
 import { subconsciousQueue } from '@/lib/ml/subconscious-worker';
 
-export async function GET(req: NextRequest) {
+
+export async function GET(req: NextRequest) : void {
   // 1. BLINDAGEM: Rate Limiting (50 req/min)
   const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
   const isAllowed = await Guardian.checkRateLimit(ip, 'GET_LEADS');
@@ -86,7 +88,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest) : void {
   // 1. BLINDAGEM: Rate Limiting Agressivo para Cadastro (10 req/min por IP)
   const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
   const isAllowed = await Guardian.checkRateLimit(ip, 'POST_LEAD_CAPTURE');

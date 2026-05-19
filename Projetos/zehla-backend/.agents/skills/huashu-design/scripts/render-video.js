@@ -43,10 +43,12 @@ const fs = require('fs');
 const { spawnSync } = require('child_process');
 
 function arg(name, def) {
+  try {
   const p = process.argv.find(a => a.startsWith('--' + name + '='));
   return p ? p.slice(name.length + 3) : def;
 }
 function hasFlag(name) {
+  try {
   return process.argv.includes('--' + name);
 }
 
@@ -87,9 +89,6 @@ const HIDE_CHROME_CSS = `
   }
 `;
 
-console.log(`▸ Rendering: ${HTML_FILE}`);
-console.log(`  size: ${WIDTH}x${HEIGHT} · duration: ${DURATION}s · hide-chrome: ${!KEEP_CHROME}`);
-console.log(`  output: ${MP4_OUT}`);
 
 (async () => {
   fs.mkdirSync(TMP_DIR, { recursive: true });
@@ -98,7 +97,6 @@ console.log(`  output: ${MP4_OUT}`);
   const url = 'file://' + HTML_ABS;
 
   // ── Phase 1: WARMUP (no recording, caches fonts/assets) ─────────────
-  console.log('▸ Warmup (caching fonts)…');
   const warmupCtx = await browser.newContext({
     viewport: { width: WIDTH, height: HEIGHT },
   });
@@ -111,7 +109,6 @@ console.log(`  output: ${MP4_OUT}`);
   await warmupCtx.close();
 
   // ── Phase 2: RECORD (fresh context, animation from t=0) ─────────────
-  console.log('▸ Recording (clean start)…');
   const recordCtx = await browser.newContext({
     viewport: { width: WIDTH, height: HEIGHT },
     deviceScaleFactor: 1,
@@ -138,6 +135,7 @@ console.log(`  output: ${MP4_OUT}`);
       const HIDE_MARK = 'data-video-hidden';
 
       function injectStyle() {
+        try {
         const style = document.createElement('style');
         style.setAttribute('data-inject', 'render-video-chrome-hide');
         style.textContent = css;
@@ -145,6 +143,7 @@ console.log(`  output: ${MP4_OUT}`);
       }
 
       function hideChromeBars() {
+        try {
         const vh = window.innerHeight;
         document.querySelectorAll('div, nav, header, footer, section, aside')
           .forEach(el => {
@@ -219,23 +218,12 @@ console.log(`  output: ${MP4_OUT}`);
       await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
     }
     animationStartSec = (Date.now() - T0) / 1000;
-    console.log(`▸ Ready at ${animationStartSec.toFixed(2)}s (from window.__ready${seekCorrected ? ' + __seek(0) correction' : ''})`);
   } else {
     await page.waitForTimeout(FONT_WAIT * 1000);
     animationStartSec = (Date.now() - T0) / 1000;
     // Fallback offset is unreliable: animation may have started in raf loop
     // already, so trim could land mid-cycle. Add 0.5s safety margin (see
     // animation-pitfalls.md §13). Loud warning so user knows to fix the HTML.
-    console.log('');
-    console.log(`  ⚠️  WARNING: window.__ready signal not detected within ${READY_TIMEOUT}s`);
-    console.log(`     Recording will use fallback trim of ${animationStartSec.toFixed(2)}s + 0.5s safety margin.`);
-    console.log(`     This is UNRELIABLE — your video may start mid-animation or skip frames.`);
-    console.log('');
-    console.log(`     FIX: in your HTML's animation tick (or rAF first frame), add:`);
-    console.log(`        window.__ready = true;`);
-    console.log(`     animations.jsx-based HTML does this automatically. If you wrote your`);
-    console.log(`     own Stage, see references/animation-pitfalls.md §12 for the pattern.`);
-    console.log('');
   }
 
   // Now let the animation play out its full duration
@@ -251,7 +239,6 @@ console.log(`  output: ${MP4_OUT}`);
     process.exit(1);
   }
   const webmPath = path.join(TMP_DIR, webmFiles[0]);
-  console.log(`▸ WebM: ${(fs.statSync(webmPath).size / 1024 / 1024).toFixed(1)} MB`);
 
   // Resolve final trim offset:
   //   - manual --trim=X       → use X (explicit user override)
@@ -263,7 +250,6 @@ console.log(`  output: ${MP4_OUT}`);
     ? parseFloat(TRIM_OVERRIDE)
     : animationStartSec + (hasReady ? 0.05 : 0.5);
 
-  console.log(`▸ ffmpeg: trim=${resolvedTrim.toFixed(2)}s${TRIM_OVERRIDE !== null ? ' (manual)' : ' (auto)'}, encode H.264…`);
   const ffmpeg = spawnSync('ffmpeg', [
     '-y',
     '-ss', String(resolvedTrim),
@@ -285,5 +271,4 @@ console.log(`  output: ${MP4_OUT}`);
   fs.rmSync(TMP_DIR, { recursive: true, force: true });
 
   const mp4Size = (fs.statSync(MP4_OUT).size / 1024 / 1024).toFixed(1);
-  console.log(`✓ Done: ${MP4_OUT} (${mp4Size} MB)`);
 })();

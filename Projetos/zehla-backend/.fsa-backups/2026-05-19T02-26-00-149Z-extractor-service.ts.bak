@@ -1,0 +1,101 @@
+import axios from 'axios'
+
+
+const EVOLUTION_API_URL = process.env.EVOLUTION_API_URL || 'http://localhost:8080'
+const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY || 'zehla-evolution-key'
+
+export interface WAContact {
+  id: string
+  name?: string
+  pushName?: string
+  number: string
+  profilePicUrl?: string
+}
+
+export interface WAGroup {
+  id: string
+  subject: string
+  size: number
+}
+
+export class WhatsappExtractorService {
+  private static headers = {
+    'apikey': EVOLUTION_API_KEY,
+    'Content-Type': 'application/json'
+  }
+
+  static async listInstances() {
+    try {
+      const res = await axios.get(`${EVOLUTION_API_URL}/instance/fetchInstances`, { headers: this.headers })
+      return res.data
+    } catch (error) {
+      console.error('❌ Error listing WA instances:', error)
+      return []
+    }
+  }
+
+  static async fetchContacts(instanceName: string): Promise<WAContact[]> {
+    try {
+      const res = await axios.get(`${EVOLUTION_API_URL}/contact/fetchContacts/${instanceName}`, { headers: this.headers })
+      return res.data.map((c: any) => ({
+        id: c.id,
+        name: c.name || c.pushname || 'Sem Nome',
+        pushName: c.pushname,
+        number: c.id.split('@')[0],
+        profilePicUrl: c.profilePicUrl
+      }))
+    } catch (error) {
+      console.error(`❌ Error fetching contacts for instance ${instanceName}:`, error)
+      return []
+    }
+  }
+
+  static async fetchContactAbout(instanceName: string, number: string): Promise<string> {
+    try {
+      const res = await axios.get(`${EVOLUTION_API_URL}/contact/about/${instanceName}?number=${number}`, { headers: this.headers })
+      return res.data.about || ''
+    } catch {
+      return ''
+    }
+  }
+
+  static async fetchGroups(instanceName: string): Promise<WAGroup[]> {
+    try {
+      const res = await axios.get(`${EVOLUTION_API_URL}/group/fetchAllGroups/${instanceName}`, { headers: this.headers })
+      return res.data.map((g: any) => ({
+        id: g.id,
+        subject: g.subject,
+        size: g.size || 0
+      }))
+    } catch (error) {
+      console.error(`❌ Error fetching groups for instance ${instanceName}:`, error)
+      return []
+    }
+  }
+
+  static async fetchGroupParticipants(instanceName: string, groupJid: string): Promise<WAContact[]> {
+    try {
+      const res = await axios.get(`${EVOLUTION_API_URL}/group/getParticipants/${instanceName}?groupJid=${groupJid}`, { headers: this.headers })
+      return res.data.map((p: any) => ({
+        id: p.id,
+        name: p.name || p.pushname || 'Participante',
+        number: p.id.split('@')[0]
+      }))
+    } catch (error) {
+      console.error(`❌ Error fetching participants for group ${groupJid}:`, error)
+      return []
+    }
+  }
+
+  static generateVCard(contacts: WAContact[]): string {
+    return contacts.map(c => {
+      return [
+        'BEGIN:VCARD',
+        'VERSION:3.0',
+        `FN:${c.name || c.number}`,
+        `TEL;TYPE=CELL;TYPE=VOICE;TYPE=pref:+${c.number}`,
+        'END:VCARD'
+      ].join('\n')
+    }).join('\n')
+  }
+}

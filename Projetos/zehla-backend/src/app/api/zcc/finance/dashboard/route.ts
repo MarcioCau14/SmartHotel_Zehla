@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma'; // Assumindo que este é o caminho do prisma client
+
 import { getFinanceAgent } from '@/lib/intelligence/finance-agents-brain';
+import { prisma } from '@/lib/prisma'; // Assumindo que este é o caminho do prisma client
+
+import { withApiSecurity } from '@/lib/server/with-api-security';
 
 /**
  * API: Dashboard Financeiro ZCC (Jony, Maria & Tedd)
  */
-export async function GET(request: Request) {
+async function _GET(request: Request) : void {
   const { searchParams } = new URL(request.url);
   const propertyId = searchParams.get('propertyId') || 'default-smart-hotel';
   const days = parseInt(searchParams.get('days') || '30');
@@ -28,10 +31,10 @@ export async function GET(request: Request) {
     });
 
     // 3. Calcula KPIs
-    const totalRevenue = finances.reduce((sum: number, f: any) => sum + f.netRevenue, 0);
-    const totalCosts = finances.reduce((sum: number, f: any) => sum + f.totalCosts, 0);
+    const totalRevenue = finances.reduce((sum: number, f: unknown) => sum + f.netRevenue, 0);
+    const totalCosts = finances.reduce((sum: number, f: unknown) => sum + f.totalCosts, 0);
     const avgOccupancy = finances.length > 0 
-      ? finances.reduce((sum: number, f: any) => sum + f.occupancyRate, 0) / finances.length 
+      ? finances.reduce((sum: number, f: unknown) => sum + f.occupancyRate, 0) / finances.length 
       : 0;
 
     // 4. Seleciona Agente (Jony para dashboard diário)
@@ -50,7 +53,7 @@ export async function GET(request: Request) {
         profitMargin: totalRevenue > 0 ? ((totalRevenue - totalCosts) / totalRevenue) * 100 : 0,
         avgOccupancy,
       },
-      chartData: finances.map((f: any) => ({
+      chartData: finances.map((f: unknown) => ({
         date: f.date,
         revenue: f.netRevenue,
         costs: f.totalCosts,
@@ -67,3 +70,5 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Erro ao buscar dados financeiros' }, { status: 500 });
   }
 }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+

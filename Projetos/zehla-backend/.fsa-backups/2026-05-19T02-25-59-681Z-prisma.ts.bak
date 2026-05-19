@@ -1,0 +1,75 @@
+import { PrismaClient } from '@prisma/client'
+
+import { detectCanary } from './security/canary-detector'
+import { getTenantId } from './security/tenant-context'
+
+
+const globalForPrisma = global as unknown as { prisma: PrismaClient }
+
+const basePrisma = globalForPrisma.prisma || new PrismaClient()
+
+export const prisma = basePrisma.$extends({
+  query: {
+    $allModels: {
+      async $allOperations({ model, operation, args, query }) {
+        const tenantId = await getTenantId()
+
+        // --- CAMADA 1: ISOLAMENTO MILITARIZADO (MULTI-TENANT DINÂMICO) ---
+        // Se houver um tenantId no contexto, aplicamos a blindagem
+        if (tenantId) {
+          // Filtramos operações que aceitam 'where'
+          const writeOps = ['update', 'updateMany', 'delete', 'deleteMany', 'upsert'];
+          const readOps = ['findUnique', 'findFirst', 'findMany', 'count', 'aggregate', 'groupBy'];
+          
+          if ([...readOps, ...writeOps].includes(operation)) {
+            const findArgs = args as any;
+            
+            // Injeção Recursiva/Dinâmica de Tenant
+            // Se o model suporta propertyId (verificado via schema ou tentativa segura)
+            // Nota: Para máxima segurança, forçamos o filtro. Se o model não tiver propertyId, 
+            // o Prisma gerará um erro de tipagem no build, o que é um sinal de alerta (Fail-Fast).
+            findArgs.where = {
+              ...findArgs.where,
+              propertyId: tenantId
+            }
+          }
+
+          // Proteção Extra: Impedir criação de dados para outros tenants
+          if (operation === 'create' || operation === 'createMany') {
+            const createArgs = args as any;
+            if (Array.isArray(createArgs.data)) {
+              createArgs.data = createArgs.data.map((item: any) => ({ ...item, propertyId: tenantId }));
+            } else {
+              createArgs.data = { ...createArgs.data, propertyId: tenantId };
+            }
+          }
+        }
+
+        // --- CAMADA 2: BUNKER FINANCEIRO (WORM - Write Once Read Many) ---
+        const immutableModels = ['FinancialAudit', 'PaymentAudit'];
+        if (immutableModels.includes(model) && ['update', 'updateMany', 'delete', 'deleteMany'].includes(operation)) {
+          throw new Error(`🚨 [ZEHLA FORTRESS] Tentativa de alteração em registro imutável: ${model}. Operação bloqueada.`);
+        }
+
+        // --- CAMADA 3: LEAD CANARY (HONEYPOT) ---
+        if (model === 'Lead' && ['findMany', 'findFirst'].includes(operation)) {
+           const findArgs = args as any;
+           if (!findArgs.where?.isCanary) {
+             findArgs.where = { ...findArgs.where, isCanary: false };
+           }
+        }
+
+        const result = await query(args);
+        
+        // --- CAMADA 4: AUDITORIA DE CANÁRIO ---
+        if (['findUnique', 'findFirst', 'findMany'].includes(operation)) {
+          detectCanary(result, model, operation);
+        }
+        
+        return result;
+      },
+    },
+  },
+})
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = basePrisma

@@ -1,0 +1,96 @@
+import { prisma } from '@/lib/prisma';
+import { scanAndMask } from '../security/pii-scanner';
+import { addEmailJob } from '../queue/client';
+
+export interface RawLeadData {
+  name: string;
+  phone?: string;
+  email?: string;
+  whatsapp?: string;
+  city?: string;
+  state?: string;
+  roomsCount?: number;
+  painPoints?: string;
+}
+
+/**
+ * ZEHLA LEAD SERVICE
+ * Orquestrador de ingestão e inteligência de leads.
+ */
+export class LeadService {
+  /**
+   * Ingestão de lead via Secretaria-IA
+   */
+  static async ingest(data: RawLeadData, propertyId: string) {
+    // 1. PII Scan & Masking (Segurança)
+    const { maskedText: maskedName } = scanAndMask(data.name);
+    
+    // 2. Cálculo de Score Inicial (Zehla Brain Intelligence Layer)
+    let initialScore = 50;
+    if (data.roomsCount && data.roomsCount > 10) initialScore += 20;
+    if (data.painPoints?.toLowerCase().includes('booking')) initialScore += 15;
+
+    // Integração Camada 0: ZCC-TRENDS (Ajuste de Score por Demanda Real)
+    if (data.city) {
+      const activeSignals = await prisma.trendSignal.findMany({
+        where: {
+          keyword: { contains: data.city, mode: 'insensitive' },
+          createdAt: { gte: new Date(Date.now() - 48 * 60 * 60 * 1000) },
+          severity: { in: ['alta', 'critica'] }
+        }
+      });
+
+      const boomSignal = activeSignals.find(s => s.type === 'destino_boom');
+      const crashSignal = activeSignals.find(s => s.type === 'destino_crash');
+
+      if (boomSignal) {
+        initialScore += 25;
+         devido ao boom em ${data.city}`);
+      } else if (crashSignal) {
+        initialScore -= 10;
+         devido à queda em ${data.city}`);
+      }
+    }
+
+    // 3. Persistência no PostgreSQL
+    const lead = await prisma.lead.create({
+      data: {
+        name: data.name, // Nome real para operação, mas logs são mascarados
+        email: data.email,
+        phone: data.phone,
+        whatsapp: data.whatsapp,
+        city: data.city,
+        state: data.state || 'SC',
+        roomsCount: data.roomsCount || 0,
+        painPoints: data.painPoints,
+        score: initialScore,
+        propertyId: propertyId,
+        status: 'PROSPECT',
+        funnelStage: 'AWARE',
+      },
+    });
+
+    // 4. Agendar Sincronização Assíncrona (BullMQ)
+    await addEmailJob('TRANSACTIONAL', {
+      email: lead.email,
+      name: lead.name,
+      city: lead.city,
+      score: lead.score,
+      roomsCount: lead.roomsCount,
+      painPoints: lead.painPoints,
+      propertyId: lead.propertyId
+    });
+
+    return lead;
+  }
+
+  /**
+   * Busca leads isolados por Tenant
+   */
+  static async getLeads() {
+    // O Prisma Middleware em src/lib/prisma.ts já filtrará por tenantId automaticamente
+    return await prisma.lead.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+}

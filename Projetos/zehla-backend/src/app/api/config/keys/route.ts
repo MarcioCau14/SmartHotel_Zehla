@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { db as prisma } from '@/lib/db';
 
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
 // GET: List all API configs for the default tenant
-export async function GET() {
+async function _GET() : void {
   try {
     // For MVP, get configs from the first tenant
     const tenant = await prisma.tenant.findFirst({ include: { apiConfigs: true } });
@@ -38,9 +41,11 @@ export async function GET() {
     return NextResponse.json({ success: false, error: 'Erro ao carregar configurações' }, { status: 500 });
   }
 }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+
 
 // PUT: Save API key for a provider
-export async function PUT(request: NextRequest) {
+async function _PUT(request: NextRequest) : void {
   try {
     const { provider, apiKey, model } = await request.json();
 
@@ -79,9 +84,11 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: 'Erro ao salvar chave' }, { status: 500 });
   }
 }
+  export const PUT = withApiSecurity(_PUT, { rateLimit: { limit: 100, windowSeconds: 60 } });
+
 
 // PATCH: Toggle provider active/inactive
-export async function PATCH(request: NextRequest) {
+async function _PATCH(request: NextRequest) : void {
   try {
     const { provider, isActive } = await request.json();
 
@@ -110,3 +117,5 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: 'Erro ao atualizar provedor' }, { status: 500 });
   }
 }
+  export const PATCH = withApiSecurity(_PATCH, { rateLimit: { limit: 100, windowSeconds: 60 } });
+

@@ -1,6 +1,7 @@
 import 'dotenv/config'
-import { PrismaClient, Role, PropertyStatus, Plan, RoomType, RoomStatus, ReservationStatus, CheckInStatus, PaymentMethod, PaymentStatus } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import { PrismaClient, Role, PropertyStatus, Plan, RoomType, RoomStatus, ReservationStatus, CheckInStatus, PaymentMethod, PaymentStatus } from '@prisma/client'
+
 
 const prisma = new PrismaClient({
   datasources: {
@@ -13,12 +14,13 @@ const prisma = new PrismaClient({
 
 
 async function main() {
-  console.log('🌱 Iniciando seed de dados de teste...\n')
+  try {
+  
 
   // ============================================================
   // 1. CRIAR USUÁRIO ADMIN
   // ============================================================
-  console.log('👤 Criando usuário admin...')
+  
 
   const adminPassword = await bcrypt.hash('admin123', 10)
 
@@ -34,12 +36,12 @@ async function main() {
       isActive: true
     }
   })
-  console.log(`   ✅ Admin criado: ${admin.email}`)
+  
 
   // ============================================================
   // 2. CRIAR USUÁRIO CLIENTE (DONO DE POUSADA)
   // ============================================================
-  console.log('\n👤 Criando usuário cliente (dono de pousada)...')
+  ...')
 
   const clientPassword = await bcrypt.hash('pousada123', 10)
 
@@ -56,12 +58,12 @@ async function main() {
       isActive: true
     }
   })
-  console.log(`   ✅ Cliente criado: ${client.email}`)
+  
 
   // ============================================================
   // 3. CRIAR PROPRIEDADE (POUSADA DO SOL — PRAIA DO ROSA)
   // ============================================================
-  console.log('\n🏨 Criando propriedade: Pousada do Sol...')
+  
 
   const property = await prisma.property.upsert({
     where: { slug: 'pousada-do-sol-praia-do-rosa' },
@@ -90,13 +92,13 @@ async function main() {
       pixKeyType: 'EMAIL'
     }
   })
-  console.log(`   ✅ Propriedade criada: ${property.name}`)
-  console.log(`   📍 Endereço: ${property.address}, ${property.city}/${property.state}`)
+  
+  
 
   // ============================================================
   // 4. CRIAR QUARTOS
   // ============================================================
-  console.log('\n🛏️  Criando quartos...')
+  
 
   const roomsData = [
     {
@@ -205,13 +207,13 @@ async function main() {
       }
     })
     createdRooms.push(room)
-    console.log(`   ✅ Quarto ${room.number}: ${room.name} — R$ ${room.basePrice}/noite`)
+    
   }
 
   // ============================================================
   // 5. CRIAR SERVIÇOS
   // ============================================================
-  console.log('\n🛎️  Criando serviços...')
+  
 
   const servicesData = [
     { name: 'Café da Manhã', description: 'Café da manhã caseiro com pães, bolos, frutas e sucos naturais', price: 0, isIncluded: true, icon: 'coffee' },
@@ -233,13 +235,13 @@ async function main() {
         ...serviceData
       }
     })
-    console.log(`   ✅ Serviço: ${serviceData.name} ${serviceData.isIncluded ? '(incluso)' : `— R$ ${serviceData.price}`}`)
+    ' : `— R$ ${serviceData.price}`}`)
   }
 
   // ============================================================
   // 6. CRIAR RESERVAS DE TESTE
   // ============================================================
-  console.log('\n📅 Criando reservas de teste...')
+  
 
   const today = new Date()
   const tomorrow = new Date(today)
@@ -344,13 +346,13 @@ async function main() {
         notes: resData.notes
       }
     })
-    console.log(`   ✅ Reserva ${reservation.code}: ${reservation.guestName} — Quarto ${room.number} — ${reservation.nights} noites — R$ ${totalAmount}`)
+    
   }
 
   // ============================================================
   // 7. CRIAR PAGAMENTOS
   // ============================================================
-  console.log('\n💰 Criando pagamentos...')
+  
 
   const reservations = await prisma.reservation.findMany({
     where: { propertyId: property.id }
@@ -374,13 +376,13 @@ async function main() {
         paidAt: reservation.status === ReservationStatus.CHECKED_OUT ? new Date() : null
       }
     })
-    console.log(`   ✅ Pagamento para reserva ${reservation.code}: R$ ${reservation.totalAmount}`)
+    
   }
 
   // ============================================================
   // 8. CRIAR LOGS DE AGENTES
   // ============================================================
-  console.log('\n🤖 Criando logs de agentes...')
+  
 
   const agentLogsData = [
     { agentName: 'RECEPTIONIST', action: 'RESPOND', intent: 'GREETING', confidence: 0.98, input: 'Olá, boa tarde!', output: 'Olá! Bem-vindo à Pousada do Sol! ☀️ Como posso ajudar você hoje?', tokensUsed: 45, cost: 0.002, duration: 120, status: 'SUCCESS' },
@@ -402,13 +404,13 @@ async function main() {
         ...logData
       }
     })
-    console.log(`   ✅ Log: ${logData.agentName} — ${logData.intent} (${logData.status})`)
+    `)
   }
 
   // ============================================================
   // 9. CRIAR MENSAGENS DE TESTE (WHATSAPP)
   // ============================================================
-  console.log('\n💬 Criando mensagens de teste (WhatsApp)...')
+  ...')
 
   const messagesData = [
     { phone: '48977777777', name: 'João Pereira', content: 'Olá, boa tarde! Quanto custa um quarto para o fim de semana?', direction: 'INBOUND', type: 'TEXT', status: 'READ', agentHandled: 'RECEPTIONIST' },
@@ -428,13 +430,13 @@ async function main() {
         ...msgData
       }
     })
-    console.log(`   ✅ Mensagem: ${msgData.direction} — ${msgData.content.substring(0, 50)}...`)
+    }...`)
   }
 
   // ============================================================
   // 10. CRIAR REGRAS DE PRECIFICAÇÃO
   // ============================================================
-  console.log('\n💰 Criando regras de precificação...')
+  
 
   const pricingRulesData = [
     {
@@ -486,10 +488,10 @@ async function main() {
         ...ruleData
       }
     })
-    console.log(`   ✅ Regra: ${ruleData.name} — ${ruleData.multiplier}x`)
+    
   }
 
-  console.log('\n🚀 SEED CONCLUÍDO COM SUCESSO!')
+  
 }
 
 main()

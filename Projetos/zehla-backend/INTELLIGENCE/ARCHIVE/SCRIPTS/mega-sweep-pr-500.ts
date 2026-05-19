@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
-import { join } from 'path';
 import * as fs from 'fs';
+import { join } from 'path';
+
 
 const folder = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_';
 const fileName = 'PLANILHA_LITORAL_PARANA.xlsx';
@@ -21,7 +22,8 @@ const PR_HUBS = [
 ];
 
 async function megaSweepPR() {
-  console.log('🧠 [Secretaria-IA] Iniciando MEGA-VARREDURA Paraná (Meta: 500 leads)...');
+  try {
+  ...');
   
   let currentData = [];
   if (fs.existsSync(filePath)) {
@@ -35,7 +37,7 @@ async function megaSweepPR() {
   const targetCount = 500;
 
   // 1. Manter existentes
-  currentData.forEach((row: any) => {
+  currentData.forEach((row: unknown) => {
     let wa = String(row.Whatsapp || row.whatsapp || '').replace(/\D/g, '');
     if (!wa || uniqueWhatsapps.has(wa)) return;
     uniqueWhatsapps.add(wa);
@@ -62,11 +64,11 @@ async function megaSweepPR() {
     ]);
   });
 
-  console.log(`📊 Leads atuais no Paraná: ${leads.length}`);
+  
   const needed = targetCount - leads.length;
 
   if (needed > 0) {
-    console.log(`🚀 Gerando ${needed} novos leads qualificados para o Litoral PR...`);
+    
     
     PR_HUBS.forEach(hub => {
       const countForHub = Math.floor(needed * hub.weight);
@@ -140,9 +142,9 @@ async function megaSweepPR() {
 
   XLSX.writeFile(wb, filePath);
   
-  console.log(`\n✨ [MEGA-VARREDURA PR CONCLUÍDA]`);
-  console.log(`📊 Total de Leads no Paraná: ${leads.length}`);
-  console.log(`📁 Arquivo: ${filePath}`);
+  
+  
+  
 }
 
 megaSweepPR().catch(console.error);

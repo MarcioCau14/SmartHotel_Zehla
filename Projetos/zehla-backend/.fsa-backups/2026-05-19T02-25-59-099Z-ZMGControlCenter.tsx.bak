@@ -1,0 +1,244 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { 
+  Share, 
+  Send, 
+  AlertCircle, 
+  CheckCircle2, 
+  TrendingUp, 
+  Clock, 
+  Zap, 
+  Smartphone, 
+  Mail, 
+  MessageSquare,
+  ArrowRightLeft,
+  ChevronRight,
+  Filter,
+  BarChart3
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+
+export function ZMGControlCenter() {
+  const [activeTab, setActiveTab] = useState<'realtime' | 'analytics' | 'config'>('realtime');
+  const [stats, setStats] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [statsRes, messagesRes] = await Promise.all([
+          fetch('/api/zmg/stats'),
+          fetch('/api/zmg/messages')
+        ]);
+        
+        const statsData = await statsRes.json();
+        const messagesData = await messagesRes.json();
+
+        setStats([
+          { label: 'Mensagens/Dia', value: statsData.total24h || '0', change: '+100%', icon: Send, color: 'text-orange-500' },
+          { label: 'Taxa de Entrega', value: statsData.deliveryRate || '0%', change: 'N/A', icon: CheckCircle2, color: 'text-emerald-500' },
+          { label: 'Fallback Ativado', value: statsData.fallbackCount || '0', change: 'N/A', icon: ArrowRightLeft, color: 'text-blue-500' },
+          { label: 'Economia ZMG', value: statsData.economy || 'R$ 0', change: 'N/A', icon: Zap, color: 'text-yellow-500' },
+        ]);
+
+        setMessages(messagesData);
+      } catch (error) {
+        console.error('Failed to load ZMG data', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
+    const interval = setInterval(loadData, 10000); // Auto-refresh a cada 10s
+    return () => clearInterval(interval);
+  }, []);
+
+  if (loading && stats.length === 0) {
+    return <div className="p-8 text-center text-zinc-500">Iniciando ZMG Control Center...</div>;
+  }
+
+  return (
+    <div className="space-y-8 p-1">
+      {/* Header & Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat, i) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="bg-zinc-900/50 border border-zinc-800 p-5 rounded-2xl flex items-center justify-between group hover:border-orange-500/30 transition-all duration-300"
+          >
+            <div>
+              <p className="text-zinc-500 text-sm font-medium">{stat.label}</p>
+              <h3 className="text-2xl font-bold mt-1 tracking-tight">{stat.value}</h3>
+              <span className={`text-xs ${stat.change.startsWith('+') ? 'text-emerald-500' : 'text-zinc-500'} font-medium`}>
+                {stat.change} vs ontem
+              </span>
+            </div>
+            <div className={`p-3 rounded-xl bg-zinc-950 border border-zinc-800 ${stat.color} group-hover:scale-110 transition-transform`}>
+              <stat.icon className="w-5 h-5" />
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Real-time Activity */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-zinc-900/30 border border-zinc-800 rounded-2xl overflow-hidden backdrop-blur-sm">
+            <div className="p-6 border-b border-zinc-800 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                <h3 className="font-semibold text-lg">Atividade em Tempo Real</h3>
+              </div>
+              <button className="text-sm text-zinc-400 hover:text-white flex items-center gap-2">
+                <Filter className="w-4 h-4" /> Filtros
+              </button>
+            </div>
+            
+            <div className="divide-y divide-zinc-800/50">
+              {messages.map((msg) => (
+                <div key={msg.id} className="p-4 hover:bg-zinc-800/20 transition-colors flex items-center justify-between group">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center">
+                      {msg.sentChannel === 'whatsapp' && <MessageSquare className="w-5 h-5 text-emerald-500" />}
+                      {msg.sentChannel === 'sms' && <Smartphone className="w-5 h-5 text-blue-500" />}
+                      {msg.sentChannel === 'email' && <Mail className="w-5 h-5 text-orange-500" />}
+                    </div>
+                    <div>
+                      <p className="font-medium text-zinc-200">{msg.contact?.name || 'Hóspede'}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline" className="text-[10px] uppercase py-0 px-1.5 border-zinc-700 text-zinc-400">
+                          {msg.objective || 'Mensagem'}
+                        </Badge>
+                        <span className="text-xs text-zinc-500">{new Date(msg.createdAt).toLocaleTimeString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <div className="text-right hidden sm:block">
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                        msg.status === 'SENT' || msg.status === 'DELIVERED' || msg.status === 'READ' 
+                          ? 'bg-emerald-500/10 text-emerald-500' 
+                          : 'bg-red-500/10 text-red-500'
+                      }`}>
+                        {msg.status}
+                      </span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-300 transition-colors" />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="p-4 bg-zinc-900/50 text-center">
+              <button className="text-sm font-medium text-orange-500 hover:text-orange-400 transition-colors">
+                Ver todo o histórico do gateway
+              </button>
+            </div>
+          </div>
+
+          {/* Fallback Analytics */}
+          <div className="bg-zinc-900/30 border border-zinc-800 rounded-2xl p-6">
+            <h3 className="font-semibold text-lg mb-6 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-blue-500" /> Eficiência de Canais (Fallback)
+            </h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-zinc-400">WhatsApp (Sucesso Direto)</span>
+                  <span className="text-zinc-200 font-medium">92%</span>
+                </div>
+                <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: '92%' }}
+                    className="h-full bg-emerald-500" 
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-zinc-400">Recuperado via SMS (Fallback)</span>
+                  <span className="text-zinc-200 font-medium">6.5%</span>
+                </div>
+                <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: '65%' }}
+                    className="h-full bg-blue-500" 
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-zinc-400">Falha Irrecuperável</span>
+                  <span className="text-zinc-200 font-medium text-red-500">1.5%</span>
+                </div>
+                <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: '15%' }}
+                    className="h-full bg-red-500" 
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Intelligence Sidebar */}
+        <div className="space-y-6">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <TrendingUp className="w-24 h-24 text-orange-500" />
+            </div>
+            <h4 className="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-4">ZCC-TRENDS Ativo</h4>
+            <div className="space-y-4 relative">
+              <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl">
+                <h5 className="text-orange-500 font-semibold text-sm">Corpus Christi 2026</h5>
+                <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+                  Alta de 85% em buscas para o Litoral Gaúcho e Norte de SP.
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <Badge className="bg-orange-500 text-black border-none hover:bg-orange-600 text-[10px]">ALTA PRIORIDADE</Badge>
+                </div>
+              </div>
+              <div className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl">
+                <h5 className="text-zinc-200 font-semibold text-sm">Frente Fria Sudeste</h5>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Oportunidade para pacotes de "Inverno Aconchegante" na Serra da Mantiqueira.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-zinc-900/30 border border-zinc-800 rounded-2xl p-6">
+            <h4 className="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-4">Configuração ZMG</h4>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm">
+                <span className="text-zinc-400">Instância WhatsApp</span>
+                <span className="text-emerald-500 font-medium">zehla-bot (Active)</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm">
+                <span className="text-zinc-400">Z-API (SMS)</span>
+                <span className="text-blue-500 font-medium">Connected</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm">
+                <span className="text-zinc-400">Amazon SES</span>
+                <span className="text-emerald-500 font-medium">Verified</span>
+              </div>
+            </div>
+            <button className="w-full mt-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-sm font-semibold transition-all">
+              Configurações Avançadas
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

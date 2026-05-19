@@ -1,16 +1,19 @@
-// src/workers/enrichWorker.ts — ZEHLA Brain v4: Estágio 3 (Enrich)
-// Geo enrichment, device parsing, histórico do lead
 import { Worker, Job } from 'bullmq';
-import { redis } from '@/lib/redis';
+
 import { QUEUE_NAMES, WORKER_CONFIG, classifyQueue, scraperQueue } from '@/lib/queues';
 import { prisma } from '@/lib/prisma';
+import { redis } from '@/lib/redis';
+
+
+// src/workers/enrichWorker.ts — ZEHLA Brain v4: Estágio 3 (Enrich)
+// Geo enrichment, device parsing, histórico do lead
 
 export const enrichWorker = new Worker(
   QUEUE_NAMES.ENRICH,
   async (job: Job) => {
     const { eventId, leadId, eventType, metadata, sessionId, fingerprint } = job.data;
 
-    console.log(`[Enrich] Enriquecendo evento: ${eventId}`);
+    
 
     // 1. Buscar dados existentes do lead
     const lead = await prisma.lead.findUnique({
@@ -44,7 +47,7 @@ export const enrichWorker = new Worker(
     // NEW: Web Scraping 2.0 Hook
     // Se o lead tem site mas falta WhatsApp ou Email, dispara Deep Scrape
     if (lead.site && (!lead.whatsapp || !lead.email)) {
-      console.log(`🕵️ [Enrich] Detectado site para Deep Scrape: ${lead.site}`);
+      
       await scraperQueue.add('deep-scrape-lead', {
         leadId: lead.id,
         url: lead.site
@@ -95,7 +98,7 @@ export const enrichWorker = new Worker(
       enrichedMetadata: enrichedData,
     });
 
-    console.log(`[Enrich] Evento enriquecido: ${eventId} (${Object.keys(enrichedData).length} campos adicionados)`);
+    .length} campos adicionados)`);
 
     return { status: 'enriched', eventId, enrichmentsApplied: Object.keys(enrichedData).length };
   },
@@ -108,6 +111,7 @@ export const enrichWorker = new Worker(
 
 // Helpers de parsing
 function parseBrowser(ua: string): string {
+  try {
   if (ua.includes('Chrome') && !ua.includes('Edg')) return 'Chrome';
   if (ua.includes('Firefox')) return 'Firefox';
   if (ua.includes('Safari') && !ua.includes('Chrome')) return 'Safari';
@@ -116,6 +120,7 @@ function parseBrowser(ua: string): string {
 }
 
 function parseOS(ua: string): string {
+  try {
   if (ua.includes('Windows')) return 'Windows';
   if (ua.includes('Mac OS')) return 'macOS';
   if (ua.includes('Android')) return 'Android';

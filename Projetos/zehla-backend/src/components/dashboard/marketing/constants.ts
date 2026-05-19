@@ -1,5 +1,6 @@
 import { Building2, Brain } from 'lucide-react';
 
+
 export const statusColors: Record<string, string> = {
   new: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   contacted: 'bg-[#FF5500]/10 text-[#FF5500] border-[#FF5500]/30',

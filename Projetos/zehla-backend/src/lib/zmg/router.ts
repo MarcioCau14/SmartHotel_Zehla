@@ -1,10 +1,13 @@
+import { ContactProfile } from '@prisma/client';
+
+import { RoutingDecision, ZMGChannel, ZMGMessageType } from './types';
+
+
 /**
  * ZMG Intelligent Router
  * Decides the best channel based on cost, delivery and availability
  */
 
-import { ContactProfile } from '@prisma/client';
-import { RoutingDecision, ZMGChannel, ZMGMessageType } from './types';
 
 export class ZMGRouter {
   static route(

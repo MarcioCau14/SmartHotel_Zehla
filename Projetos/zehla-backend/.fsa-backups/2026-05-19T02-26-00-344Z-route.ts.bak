@@ -1,0 +1,16 @@
+import { NextResponse } from 'next/server';
+
+
+export async function GET() {
+  const statuses = [
+    { agentId: 'agent-1', status: 'ready', progress: 100, activeTask: null },
+    { agentId: 'agent-2', status: 'ready', progress: 100, activeTask: null },
+    { agentId: 'agent-3', status: 'ready', progress: 100, activeTask: null },
+    { agentId: 'agent-4', status: 'ready', progress: 100, activeTask: null },
+    { agentId: 'agent-5', status: 'ready', progress: 100, activeTask: null },
+    { agentId: 'agent-6', status: 'ready', progress: 100, activeTask: null },
+    { agentId: 'agent-7', status: 'training', progress: 67, activeTask: 'Processando padrões de campanha de alta temporada...' },
+    { agentId: 'agent-8', status: 'learning', progress: 82, activeTask: 'Sintetizando conhecimento cross-agent de 6 propriedades...' },
+  ];
+  return NextResponse.json(statuses);
+}

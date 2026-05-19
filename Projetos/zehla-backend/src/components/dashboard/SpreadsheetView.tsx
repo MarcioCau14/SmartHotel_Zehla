@@ -1,6 +1,8 @@
-"use client";
-import { useState } from 'react';
 import { 
+import { useState } from 'react';
+
+
+"use client";
   FileSpreadsheet, 
   BedDouble, 
   CalendarDays, 
@@ -9,11 +11,12 @@ import {
 } from 'lucide-react';
 
 interface TenantData {
-  rooms: any[];
+  rooms: unknown[];
   // ... outros campos se necessário
 }
 
-export function SpreadsheetView({ tenantData }: { tenantData: TenantData | null }) {
+export function SpreadsheetView(: void { tenantData }: { tenantData: TenantData | null }) {
+  try {
   const [activeSheet, setActiveSheet] = useState<'quartos' | 'reservas' | 'financeiro'>('quartos');
 
   const sheets = [
@@ -100,7 +103,7 @@ export function SpreadsheetView({ tenantData }: { tenantData: TenantData | null 
                     </tr>
                   </thead>
                   <tbody>
-                    {roomsData.map((room: any, i: number) => (
+                    {roomsData.map((room: unknown, i: number) => (
                       <tr
                         key={room.id}
                         className={`border-b border-white/5 last:border-b-0 ${
@@ -199,6 +202,7 @@ export function SpreadsheetView({ tenantData }: { tenantData: TenantData | null 
 }
 
 function EmptySpreadsheet() {
+  try {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
       <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">

@@ -1,8 +1,12 @@
-// src/app/api/events/stats/route.ts — ZEHLA Brain v4: Cognitive Analytics
 import { NextRequest, NextResponse } from 'next/server';
+
 import { prisma } from '@/lib/prisma';
 
-export async function GET(req: NextRequest) {
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+// src/app/api/events/stats/route.ts — ZEHLA Brain v4: Cognitive Analytics
+
+async function _GET(req: NextRequest) : void {
   try {
     const [
       totalEvents,
@@ -101,7 +105,7 @@ export async function GET(req: NextRequest) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Brain Stats] Erro:', error.message);
     return NextResponse.json(
       { success: false, error: 'Erro ao buscar métricas do Brain' },
@@ -109,3 +113,5 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+

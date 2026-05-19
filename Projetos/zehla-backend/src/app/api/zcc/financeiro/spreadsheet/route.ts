@@ -1,11 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
-import path from 'path';
-import fs from 'fs';
 import * as XLSX from 'xlsx';
+import fs from 'fs';
+import path from 'path';
+import { NextRequest, NextResponse } from 'next/server';
+
+import { withApiSecurity } from '@/lib/server/with-api-security';
 
 const BASE_DIR = '/Users/marciocau/Downloads/ENTREGÁVEIS ZEHLA FULL STACK';
 
-export async function GET(req: NextRequest) {
+async function _GET(req: NextRequest) : void {
   try {
     const { searchParams } = new URL(req.url);
     const fileName = searchParams.get('file');
@@ -55,12 +57,14 @@ export async function GET(req: NextRequest) {
       data: data,
       lastModified: fs.statSync(filePath).mtime
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
 
-export async function POST(req: NextRequest) {
+
+async function _POST(req: NextRequest) : void {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File;
@@ -95,12 +99,14 @@ export async function POST(req: NextRequest) {
       XLSX.writeFile(workbook, filePath);
       return NextResponse.json({ success: true, message: 'Arquivo atualizado!' });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
 
-export async function PATCH(req: NextRequest) {
+
+async function _PATCH(req: NextRequest) : void {
   try {
     const { action, fileName, oldSheetName, newSheetName, newFileName } = await req.json();
     const filePath = path.join(BASE_DIR, fileName);
@@ -123,7 +129,9 @@ export async function PATCH(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+  export const PATCH = withApiSecurity(_PATCH, { rateLimit: { limit: 100, windowSeconds: 60 } });
+

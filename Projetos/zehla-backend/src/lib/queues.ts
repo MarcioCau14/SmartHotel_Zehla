@@ -1,7 +1,10 @@
+import { Queue } from 'bullmq';
+
+import { redis } from './redis';
+
+
 // src/lib/queues.ts — ZEHLA Brain v4: Central Queue Orchestration
 // 5 filas BullMQ dedicadas para o Pipeline Cognitivo
-import { Queue } from 'bullmq';
-import { redis } from './redis';
 
 // Queue names para cada estágio da pipeline
 export const QUEUE_NAMES = {
@@ -55,6 +58,7 @@ export const CLUSTER_THRESHOLDS = {
 export type Cluster = 'HOT' | 'WARM' | 'COLD';
 
 export function determineCluster(score: number): Cluster {
+  try {
   if (score >= CLUSTER_THRESHOLDS.HOT) return 'HOT';
   if (score >= CLUSTER_THRESHOLDS.WARM) return 'WARM';
   return 'COLD';
@@ -118,4 +122,4 @@ export const actQueue      = new Queue(QUEUE_NAMES.ACT,      queueOptions);
 export const swipeMatchQueue = new Queue(QUEUE_NAMES.SWIPE_MATCH, queueOptions);
 export const scraperQueue  = new Queue(QUEUE_NAMES.DEEP_SCRAPE, queueOptions);
 
-console.log('🧠 [ZEHLA Brain] 6 filas BullMQ inicializadas: capture → validate → enrich → classify → act → deep-scrape');
+

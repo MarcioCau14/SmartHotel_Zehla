@@ -1,8 +1,11 @@
+import { Users, DollarSign, Clock, TicketCheck, Percent, TrendingUp, RefreshCw } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+
+import { Skeleton } from '@/components/ui/skeleton';
+
+
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Users, DollarSign, Clock, TicketCheck, Percent, TrendingUp, RefreshCw } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface KPI {
   active_guests: number;
@@ -24,7 +27,7 @@ const kpiConfig = [
   { key: 'avg_daily_rate', label: 'ADR Médio', icon: TrendingUp, format: (v: number) => `R$ ${v.toLocaleString('pt-BR')}`, color: 'text-rose-400', bg: 'bg-rose-500/10' },
 ];
 
-export function KPICards() {
+export function KPICards() : void {
   const [data, setData] = useState<KPI | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -1,19 +1,22 @@
+import { detectSignal } from "./detector";
+import { fetchHolidays } from "./holiday-collector";
+import { fetchRSSFeeds } from "./rss-parser";
+import { fetchWeatherForecast } from "./weather-collector";
+import { fetchWikipediaPageviews } from "./wikipedia-api";
+import { prisma } from "@/lib/prisma";
+
+import { type TrendSignalInput } from "./types";
+
 // src/lib/trends/collector.ts
 
-import { prisma } from "@/lib/prisma";
-import { fetchRSSFeeds } from "./rss-parser";
-import { fetchWikipediaPageviews } from "./wikipedia-api";
-import { fetchWeatherForecast } from "./weather-collector";
-import { fetchHolidays } from "./holiday-collector";
-import { detectSignal } from "./detector";
-import { type TrendSignalInput } from "./types";
 
 /**
  * Orquestrador Central ZCC-TRENDS.
  * Executa a coleta de todas as fontes de custo zero e sincroniza com o banco.
  */
-export async function collectAllTrends(tierFilter?: string) {
-  console.log("🕒 [ZCC-TRENDS] Iniciando coleta de tendências...");
+export async function collectAllTrends(tierFilter?: string) : void {
+  try {
+  
   
   const keywords = await prisma.trendKeyword.findMany({
     where: { isActive: true, ...(tierFilter ? { tier: tierFilter } : {}) },
@@ -55,20 +58,19 @@ export async function collectAllTrends(tierFilter?: string) {
 
   // 2. Wikipedia (Proxy de Demanda — 50 Destinos)
   const wikiDestinations = keywords.filter(k => k.category === "destino");
+  const wikiEntries = [];
+  const signalEntries = [];
   for (const kw of wikiDestinations) {
-    // Remover "pousada em " para buscar o artigo da cidade na Wikipedia
     const articleTitle = kw.keyword.replace(/^pousada em /i, "").trim();
     const wikiData = await fetchWikipediaPageviews(articleTitle);
     
     if (wikiData) {
-      await prisma.trendDataPoint.create({
-        data: {
-          keywordId: kw.id,
-          interestScore: wikiData.pageviews,
-          interestDelta: wikiData.deltaPercent,
-          date: new Date(),
-          source: "wikipedia",
-        },
+      wikiEntries.push({
+        keywordId: kw.id,
+        interestScore: wikiData.pageviews,
+        interestDelta: wikiData.deltaPercent,
+        date: new Date(),
+        source: "wikipedia",
       });
 
       const signal = detectSignal(kw, {
@@ -76,47 +78,51 @@ export async function collectAllTrends(tierFilter?: string) {
         interestDelta: wikiData.deltaPercent,
       });
 
-      if (signal) {
-        await createTrendSignal(signal);
-        results.signals++;
-      }
+      if (signal) signalEntries.push(signal);
       results.wikipedia++;
-      console.log(`📑 [WIKI] ${articleTitle}: ${wikiData.pageviews} views (${wikiData.deltaPercent}%)`);
     }
     await new Promise(r => setTimeout(r, 200));
+  }
+  if (wikiEntries.length > 0) {
+    await prisma.$transaction(wikiEntries.map(data =>
+      prisma.trendDataPoint.create({ data })
+    ));
+    results.signals += signalEntries.length;
+    for (const s of signalEntries) await createTrendSignal(s);
   }
 
   // 3. Feriados (Programático)
   const holidays = await fetchHolidays();
-  for (const h of holidays) {
-    await prisma.holidaySignal.upsert({
-      where: { id: `holiday-${h.name}-${h.date}` }, // ID determinístico para evitar duplicatas
-      update: { daysUntil: h.daysUntil, isExtended: h.isExtended },
-      create: {
-        id: `holiday-${h.name}-${h.date}`,
-        name: h.name,
-        date: new Date(h.date),
-        type: h.type,
-        isExtended: h.isExtended,
-        daysUntil: h.daysUntil
-      }
-    });
-    results.holidays++;
+  if (holidays.length > 0) {
+    await prisma.$transaction(holidays.map(h =>
+      prisma.holidaySignal.upsert({
+        where: { id: `holiday-${h.name}-${h.date}` },
+        update: { daysUntil: h.daysUntil, isExtended: h.isExtended },
+        create: {
+          id: `holiday-${h.name}-${h.date}`,
+          name: h.name,
+          date: new Date(h.date),
+          type: h.type,
+          isExtended: h.isExtended,
+          daysUntil: h.daysUntil
+        }
+      })
+    ));
+    results.holidays = holidays.length;
   }
 
   // 4. Clima (Apenas para destinos ativos com coordenadas)
-  // Nota: Isso seria expandido conforme tivermos as coordenadas das propriedades
-  // Por enquanto, faremos para cidades polo (ex: Imbituba, Paraty, Gramado)
   const cities = [
     { name: "Imbituba", lat: -28.24, lon: -48.67, state: "SC" },
     { name: "Paraty", lat: -23.22, lon: -44.71, state: "RJ" },
     { name: "Gramado", lat: -29.37, lon: -50.87, state: "RS" }
   ];
 
+  const weatherWrites = [];
   for (const city of cities) {
     const weatherSignals = await fetchWeatherForecast(city.lat, city.lon, city.name);
     for (const ws of weatherSignals) {
-      await prisma.weatherSignal.create({
+      weatherWrites.push(prisma.weatherSignal.create({
         data: {
           city: city.name,
           state: city.state,
@@ -126,16 +132,20 @@ export async function collectAllTrends(tierFilter?: string) {
           condition: ws.condition,
           impactScore: ws.impactScore
         }
-      });
-      results.weather++;
+      }));
     }
   }
+  if (weatherWrites.length > 0) {
+    await prisma.$transaction(weatherWrites);
+    results.weather = weatherWrites.length;
+  }
 
-  console.log(`✅ [ZCC-TRENDS] Coleta concluída: ${results.signals} sinais gerados.`);
+  
   return results;
 }
 
 async function createTrendSignal(input: TrendSignalInput) {
+  try {
   // Evitar sinais duplicados para a mesma keyword no mesmo dia
   const today = new Date();
   today.setHours(0, 0, 0, 0);

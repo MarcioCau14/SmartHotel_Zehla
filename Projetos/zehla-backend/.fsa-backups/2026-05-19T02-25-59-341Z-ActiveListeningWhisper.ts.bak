@@ -1,0 +1,42 @@
+import fs from 'fs';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export class ActiveListeningWhisper {
+  /**
+   * ZEHLA Neural Voice: Active Listening (ASR - Automatic Speech Recognition)
+   * 
+   * Recebe um áudio do WhatsApp, transcreve usando Whisper (ou API compatível)
+   * e envia o texto como "input" para o ZEHLA Brain.
+   */
+  public async transcribeAudio(audioBuffer: Buffer, propertyId: string, leadId: string): Promise<string> {
+    try {
+      
+      
+      // 1. Simulação: Enviar áudio para um modelo Whisper local ou OpenAI
+      // const response = await openai.audio.transcriptions.create({ file: audioBuffer, model: 'whisper-1' });
+      // const text = response.text;
+      const text = "[Transcrição Mock via Whisper]: Olá, gostaria de saber se tem vaga pro feriado.";
+      
+      // 2. Salva o registro no Log Cognitivo do Brain
+      await prisma.agentLog.create({
+        data: {
+          propertyId,
+          agentName: "Active_Listening_Whisper",
+          action: "AUDIO_TRANSCRIPTION",
+          input: "binary_audio_buffer",
+          output: text,
+          status: "SUCCESS"
+        }
+      });
+      
+      
+      return text;
+      
+    } catch (error: any) {
+      console.error(`[ActiveListening] Falha na transcrição: ${error.message}`);
+      throw new Error('Falha na decodificação do áudio do hóspede.');
+    }
+  }
+}

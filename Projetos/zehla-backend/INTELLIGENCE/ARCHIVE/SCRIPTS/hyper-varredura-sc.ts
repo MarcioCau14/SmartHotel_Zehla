@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
-import { join } from 'path';
 import * as fs from 'fs';
+import { join } from 'path';
+
 
 const filePath = '/Users/marciocau/Downloads/PLANILHAS_MARKETING_BR_/POUSADAS_MARKETING_FASE (1).xlsx';
 const tabName = 'Leads_SUL_BR (1)';
@@ -76,7 +77,8 @@ const hyperSweepLeads = [
 ];
 
 async function hyperVarreduraSC() {
-  console.log(`🧠 [Secretaria-IA] Iniciando Hyper-Varredura SC (PR -> RS Border)...`);
+  try {
+  ...`);
   
   const workbook = XLSX.readFile(filePath);
   const sheet = workbook.Sheets[tabName];
@@ -86,7 +88,7 @@ async function hyperVarreduraSC() {
   const leads = [];
 
   // 1. Re-process and Clean current leads
-  currentData.forEach((row: any) => {
+  currentData.forEach((row: unknown) => {
     let wa = String(row.Whatsapp || row.whatsapp || '').replace(/\D/g, '');
     if (!wa || uniqueWhatsapps.has(wa)) return;
     uniqueWhatsapps.add(wa);
@@ -154,9 +156,9 @@ async function hyperVarreduraSC() {
   workbook.Sheets[tabName] = newSheet;
   XLSX.writeFile(workbook, filePath);
   
-  console.log(`✨ [SUCESSO] Hyper-Varredura Concluída!`);
-  console.log(`✅ Leads Totais em SC (Litoral): ${leads.length}`);
-  console.log(`🚀 Novos leads integrados: ${leads.length - currentData.length}`);
+  
+  : ${leads.length}`);
+  
 }
 
 hyperVarreduraSC().catch(console.error);

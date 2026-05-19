@@ -1,7 +1,9 @@
+import {
+import { motion } from 'framer-motion';
+
+
 'use client';
 
-import { motion } from 'framer-motion';
-import {
   MessageSquare,
   Terminal,
   BarChart3,
@@ -77,7 +79,8 @@ const borderMap: Record<string, string> = {
   teal: 'hover:border-teal-500/30',
 };
 
-export function FeaturesSection() {
+export function FeaturesSection() : void {
+  try {
   return (
     <section id="funcionalidades" className="py-24 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
       <motion.div

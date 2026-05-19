@@ -1,8 +1,13 @@
-'use client';
-
+import Link from 'next/link';
+import { 
 import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { 
+import { signOut, useSession } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
+
+
+'use client';
+
   LayoutDashboard, 
   Users, 
   Calendar, 
@@ -15,15 +20,13 @@ import {
   Zap,
   ChevronDown
 } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { signOut, useSession } from 'next-auth/react';
 
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+export function DashboardLayout(: void { children }: DashboardLayoutProps) {
+  try {
   const pathname = usePathname();
   const { data: session } = useSession();
 

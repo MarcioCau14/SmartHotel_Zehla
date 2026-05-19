@@ -39,7 +39,8 @@ Você deve apresentar cenários (otimista, realista, pessimista) e sugerir açõ
 /**
  * Função para selecionar o agente correto baseado no ciclo ou intenção.
  */
-export function getFinanceAgent(intent: 'daily' | 'biweekly' | 'monthly' | 'chat') {
+export function getFinanceAgent(intent: 'daily' | 'biweekly' | 'monthly' | 'chat') : void {
+  try {
   if (intent === 'daily') return FINANCE_AGENTS.JONY;
   if (intent === 'biweekly') return FINANCE_AGENTS.MARIA;
   if (intent === 'monthly') return FINANCE_AGENTS.TEDD;

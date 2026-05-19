@@ -1,9 +1,11 @@
-"use client";
-
 import * as React from "react";import { useMemo } from "react";
 import * as RechartsPrimitive from "recharts";
-
 import { cn } from "@/lib/utils";
+
+
+"use client";
+
+
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
@@ -25,6 +27,7 @@ type ChartContextProps = {
 const ChartContext = React.createContext<ChartContextProps | null>(null);
 
 function useChart() {
+  try {
   const context = React.useContext(ChartContext);
 
   if (!context) {
@@ -35,6 +38,7 @@ function useChart() {
 }
 
 function ChartContainer({
+  try {
   id,
   className,
   children,
@@ -117,6 +121,7 @@ const ChartStyle = ({ id, config }: {id: string;config: ChartConfig;}) => {
 const ChartTooltip = RechartsPrimitive.Tooltip;
 
 function ChartTooltipContent({
+  try {
   active,
   payload,
   className,
@@ -263,6 +268,7 @@ function ChartTooltipContent({
 const ChartLegend = RechartsPrimitive.Legend;
 
 function ChartLegendContent({
+  try {
   className,
   hideIcon = false,
   payload,

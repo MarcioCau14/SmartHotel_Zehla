@@ -1,5 +1,7 @@
 import { Queue } from 'bullmq';
+
 import { redisConfig } from './src/lib/delivery/redis-connection';
+
 
 /**
  * ZEHLA WAR MACHINE: LOAD TESTER
@@ -9,7 +11,8 @@ import { redisConfig } from './src/lib/delivery/redis-connection';
 const campaignQueue = new Queue('campaign', { connection: redisConfig });
 
 async function runLoadTest(count: number = 100) {
-  console.log(`🔥 [TEST] Iniciando Simulação de Carga: ${count} leads...`);
+  try {
+  
 
   for (let i = 1; i <= count; i++) {
     const lead = {
@@ -24,10 +27,10 @@ async function runLoadTest(count: number = 100) {
       jobId: `job_lead_${i}` // Garantia de Idempotência no BullMQ
     });
 
-    if (i % 10 === 0) console.log(`🚀 [TEST] ${i} leads injetados na fila...`);
+    if (i % 10 === 0) 
   }
 
-  console.log('✅ [TEST] Carga injetada com sucesso. Monitore os logs dos Workers.');
+  
 }
 
 // Executa se chamado diretamente

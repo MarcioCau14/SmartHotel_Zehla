@@ -1,12 +1,15 @@
+import { 
+import { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
+
 'use client';
 
-import { useState } from 'react';
-import { 
   Check, CreditCard, Sparkles, Zap, ShieldCheck, 
   ChevronRight, Calendar, MessageSquare, BarChart3 
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 const plans = [
   {
@@ -53,7 +56,8 @@ const plans = [
   }
 ];
 
-export function SubscriptionSelector() {
+export function SubscriptionSelector() : void {
+  try {
   const [selectedPlan, setSelectedPlan] = useState('PRO');
   const [step, setStep] = useState<'plans' | 'payment'>('plans');
 

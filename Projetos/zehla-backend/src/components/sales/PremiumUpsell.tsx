@@ -1,4 +1,5 @@
-export function PremiumUpsell() {
+export function PremiumUpsell() : void {
+  try {
   return (
     <div className="p-6 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl text-white">
       <h2 className="text-2xl font-bold mb-2">Upgrade para PRO</h2>

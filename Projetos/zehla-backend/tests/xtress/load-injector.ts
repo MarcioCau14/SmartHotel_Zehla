@@ -1,9 +1,12 @@
 import {
+
+
   LoadConfig, InjectionEvent, GeneratedMessage, TestRun, 
   TestRunStatus, ChaosType, XtressConfig
 } from "./types";
 
 function generateId(): string {
+  try {
   return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
 }
 
@@ -42,10 +45,10 @@ export class LoadInjector {
     const startTime = Date.now();
     let messageIndex = 0;
 
-    console.log(`[LoadInjector] Starting injection: ${messages.length} messages`);
-    console.log(`[LoadInjector] Profile: ${this.config.profile}`);
-    console.log(`[LoadInjector] Target: ${this.config.requestsPerSecond} msgs/sec`);
-    console.log(`[LoadInjector] Duration: ${totalDuration}s (ramp-up: ${this.config.rampUpDuration}s, sustained: ${this.config.sustainedDuration}s, ramp-down: ${this.config.rampDownDuration}s)`);
+    
+    
+    
+    `);
 
     try {
       while (this.isRunning && messageIndex < messages.length) {
@@ -93,7 +96,7 @@ export class LoadInjector {
         await this.sleep(delayMs);
       }
 
-      console.log(`[LoadInjector] Injection complete: ${messageIndex} messages sent, ${this.testRun.totalErrors} errors`);
+      
 
     } catch (error) {
       console.error(`[LoadInjector] Fatal error:`, error);
@@ -111,7 +114,7 @@ export class LoadInjector {
     if (this.abortController) {
       this.abortController.abort();
     }
-    console.log("[LoadInjector] Stopped");
+    
   }
 
   /**
@@ -143,7 +146,7 @@ export class LoadInjector {
   private async injectMessage(message: GeneratedMessage, delayMs: number = 0): Promise<void> {
     // Apply chaos engineering if enabled
     if (this.config.chaosEnabled && Math.random() < this.config.chaosProbability) {
-      console.log(`[LoadInjector] Applying chaos to message for ${message.pousadaId}`);
+      
       const chaosType = this.applyChaos(message);
       if (chaosType === "skip") return; // Message intentionally not sent
     }

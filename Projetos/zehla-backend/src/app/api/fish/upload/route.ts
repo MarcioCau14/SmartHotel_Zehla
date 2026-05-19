@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+
 import { Guardian } from '@/lib/security/guardian';
+import { prisma } from '@/lib/prisma';
+
 
 // Helper to normalize phone to Brazilian DDI standard
-function normalizeWhatsapp(phone: any): string | null {
+function normalizeWhatsapp(phone: unknown): string | null {
+  try {
   if (!phone) return null;
   let cleaned = String(phone).replace(/\D/g, '');
   if (cleaned.length === 0) return null;
@@ -15,7 +18,7 @@ function normalizeWhatsapp(phone: any): string | null {
   return cleaned;
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest) : void {
   // Rate limiting protection
   const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
   const isAllowed = await Guardian.checkRateLimit(ip, 'UPLOAD_FISH_LEADS');
@@ -96,7 +99,7 @@ export async function POST(req: NextRequest) {
       message: `${importedCount} leads importados com sucesso! (${skippedCount} ignorados por falta de WhatsApp).`
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ [FISH-UPLOAD] Ingestion failed:', error);
     return NextResponse.json({ error: 'Erro interno ao processar a importação.', details: error.message }, { status: 500 });
   }

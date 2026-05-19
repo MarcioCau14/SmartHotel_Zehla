@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+async function _GET() : void {
   try {
     const [totalLeads, hotLeads, byState, recentActivity] = await Promise.all([
       prisma.lead.count(),
@@ -28,3 +31,5 @@ export async function GET() {
     return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 });
   }
 }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+

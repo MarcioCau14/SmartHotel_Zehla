@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
 import ZAI from 'z-ai-web-dev-sdk';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest) {
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+async function _POST(request: NextRequest) : void {
   try {
     const { prompt } = await request.json();
     if (!prompt) return NextResponse.json({ error: 'Prompt obrigatório' }, { status: 400 });
@@ -28,3 +30,5 @@ Responda em português brasileiro com formato estruturado usando emojis e tópic
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 30, windowSeconds: 60 } });
+

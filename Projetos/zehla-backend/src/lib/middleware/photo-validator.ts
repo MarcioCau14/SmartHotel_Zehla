@@ -1,5 +1,6 @@
 import sharp from 'sharp';
 
+
 export interface PhotoValidationResult {
   valid: boolean;
   errors: string[];

@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { redis } from '@/lib/redis';
 import { jwtVerify } from 'jose';
+
+import { redis } from '@/lib/redis';
+
+import type { NextRequest } from 'next/server';
 
 // Using resilient redis client from @/lib/redis
 
@@ -16,7 +18,7 @@ const ZCC_PATHS = ['/zcc', '/api/zcc'];
 const PROTECTED_ROUTES = ['/dashboard'];
 const ADMIN_ONLY_ROUTES = ['/api/admin'];
 
-export async function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) : void {
   // BYPASS TOTAL EM DESENVOLVIMENTO: Elimina redirecionamentos para login/zcc-login durante os testes
   if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
     return NextResponse.next();

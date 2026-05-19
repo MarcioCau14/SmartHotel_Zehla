@@ -1,9 +1,19 @@
-"use client";
 import dynamic from 'next/dynamic';
-import { useState, useEffect, Suspense } from 'react';
-import { useSession } from 'next-auth/react';
-import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
+import {
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSession } from 'next-auth/react';
+import { useState, useEffect, Suspense } from 'react';
+
+import { ChartsSection } from '@/components/dashboard/ChartsSection';
+import { ClientTopNav } from '@/components/client/ClientTopNav';
+import { KPICards } from '@/components/dashboard/KPICards';
+import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
+import { PaymentPanel } from '@/components/dashboard/PaymentPanel';
+import { SpreadsheetView } from '@/components/dashboard/SpreadsheetView';
+import { SubscriptionSelector } from '@/components/subscription/SubscriptionSelector';
+
+
+"use client";
 
 // Componente de Carregamento (Pitch-Black Skeleton)
 const DashboardSkeleton = () => (
@@ -29,7 +39,6 @@ const FNRHCheckinProvider = dynamic(() => import('@/components/dashboard/FNRHChe
 const VoiceStudioV2 = dynamic(() => import('@/components/VoiceStudio/VoiceStudioV2').then(m => m.VoiceStudioV2), { ssr: false, loading: () => <DashboardSkeleton /> });
 const BrainDashboard = dynamic(() => import('@/components/dashboard/BrainDashboard').then(m => m.BrainDashboard), { ssr: false, loading: () => <DashboardSkeleton /> });
 
-import {
   LayoutDashboard,
   Terminal,
   Brain,
@@ -59,11 +68,6 @@ import {
   Globe,
   Mic
 } from 'lucide-react';
-import { ClientTopNav } from '@/components/client/ClientTopNav';
-import { KPICards } from '@/components/dashboard/KPICards';
-import { ChartsSection } from '@/components/dashboard/ChartsSection';
-import { PaymentPanel } from '@/components/dashboard/PaymentPanel';
-import { SubscriptionSelector } from '@/components/subscription/SubscriptionSelector';
 
 type TabKey = 'painel' | 'sala-de-guerra' | 'marketing' | 'visibilidade' | 'check-in' | 'terminal' | 'quartos' | 'reservas' | 'financeiro' | 'relatorios' | 'planilhas' | 'promocoes' | 'configuracoes' | 'voice-studio';
 
@@ -154,7 +158,8 @@ interface TenantData {
 // Removidos helpers de localStorage (Migrado para Database/Prisma)
 
 // Zero-state rooms display from database data
-function ZeroStateRooms({ rooms }: { rooms: any[] }) {
+function ZeroStateRooms({ rooms }: { rooms: unknown[] }) {
+  try {
   const tipoLabels: Record<string, string> = {
     STANDARD: 'Standard',
     LUXO: 'Luxo',
@@ -190,7 +195,6 @@ function ZeroStateRooms({ rooms }: { rooms: any[] }) {
   );
 }
 
-import { SpreadsheetView } from '@/components/dashboard/SpreadsheetView';
 
 function DashboardContent() {
   const { data: session, status: authStatus } = useSession();

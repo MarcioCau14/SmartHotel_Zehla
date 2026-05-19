@@ -1,5 +1,6 @@
 import { llmRouter } from '../ai/llm-router'
 
+
 export interface GroupSearchResult {
   title: string
   url: string
@@ -12,7 +13,7 @@ export class GroupSearcher {
    * relacionados a pousadas no litoral de SC.
    */
   static async findGroups(region: string): Promise<GroupSearchResult[]> {
-    console.log(`🔍 [Secretaria-IA] Iniciando varredura de grupos para: ${region}`)
+    
     
     // Na vida real, usaríamos o Google Search API ou um Scraper
     // Aqui simulamos a inteligência de busca descrita no documento técnico

@@ -1,26 +1,27 @@
 import { PrismaClient } from '@prisma/client';
 
+
 const prisma = new PrismaClient();
 
 async function debugCreation() {
-  console.log('🧪 [DEBUG] Tentando criar administrador e propriedade...');
+  
   
   try {
     let admin = await prisma.user.findFirst({ where: { role: 'SUPER_ADMIN' } });
     if (!admin) {
-      console.log('- Criando admin...');
+      
       admin = await prisma.user.create({
         data: {
           email: 'admin@smarthotel.ai',
           name: 'Marcio Cau (ZCC Admin)',
-          password: 'zehla_master_key',
+          password: process.env.ZEHLA_ADMIN_PASSWORD || 'DEPRECATED_DO_NOT_USE',
           role: 'SUPER_ADMIN',
         }
       });
     }
-    console.log('✅ Admin OK:', admin.id);
+    
 
-    console.log('- Tentando criar propriedade...');
+    
     const prop = await prisma.property.create({
       data: {
         name: 'Pousada Debug',
@@ -34,9 +35,9 @@ async function debugCreation() {
         status: 'ACTIVE'
       }
     });
-    console.log('✅ Propriedade OK:', prop.id);
+    
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ [ERRO CRÍTICO]:', error);
     if (error.code) console.error('Código do Prisma:', error.code);
     if (error.meta) console.error('Metadados:', error.meta);

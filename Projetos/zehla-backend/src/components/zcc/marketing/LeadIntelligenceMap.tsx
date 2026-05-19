@@ -1,8 +1,10 @@
-'use client';
-
-import { useState, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import {
+import { useState, useEffect, useCallback, useMemo } from 'react';
+
+
+'use client';
+
   Zap,
   Search,
   Filter,
@@ -31,7 +33,7 @@ const LeadMapInner = dynamic(() => import('./LeadMapInner'), {
 
 });
 
-export function LeadIntelligenceMap() {
+export function LeadIntelligenceMap() : void {
   const [leads, setLeads] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -178,7 +180,7 @@ export function LeadIntelligenceMap() {
               <div className="space-y-4">
                 <h4 className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold">Densidade Regional</h4>
                 <div className="space-y-3">
-                  {stats.byRegion.map((r: any) =>
+                  {stats.byRegion.map((r: unknown) =>
                 <div key={r.name} className="space-y-1.5">
                       <div className="flex justify-between text-[10px] font-medium text-zinc-400">
                         <span className="tracking-tight">{r.name}</span>

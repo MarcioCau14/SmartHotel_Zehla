@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+
 import { matchSwipes } from '@/lib/swipe/matcher';
+import { prisma } from '@/lib/prisma';
+
+import { withApiSecurity } from '@/lib/server/with-api-security';
 
 /**
  * GET /api/zcc/swipes/match?leadId=xxx
  * Retorna os melhores swipes para um lead específico.
  */
-export async function GET(req: NextRequest) {
+async function _GET(req: NextRequest) : void {
   try {
     const { searchParams } = new URL(req.url);
     const leadId = searchParams.get('leadId');
@@ -40,8 +43,10 @@ export async function GET(req: NextRequest) {
     const result = await matchSwipes(profile as any, { limit, channel });
 
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ [SWIPE API] Error:', error);
     return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
   }
 }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
+

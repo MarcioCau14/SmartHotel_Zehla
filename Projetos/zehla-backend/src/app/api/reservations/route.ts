@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
-export async function GET(request: NextRequest) {
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
+
+import { withApiSecurity } from '@/lib/server/with-api-security';
+
+async function _GET(request: NextRequest) : void {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -38,13 +41,15 @@ export async function GET(request: NextRequest) {
     }));
 
     return NextResponse.json(formatted);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ [RESERVATIONS API] Error:', error);
     return NextResponse.json({ error: 'Erro interno', details: error.message }, { status: 500 });
   }
 }
+  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
 
-export async function PATCH(request: NextRequest) {
+
+async function _PATCH(request: NextRequest) : void {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -59,7 +64,9 @@ export async function PATCH(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true, data: updated });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json({ success: false, error: 'Erro ao atualizar reserva', details: error.message }, { status: 500 });
   }
 }
+  export const PATCH = withApiSecurity(_PATCH, { rateLimit: { limit: 100, windowSeconds: 60 } });
+

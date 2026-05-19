@@ -1,3 +1,9 @@
+import fs from 'fs/promises';
+import path from 'path';
+import pptxgen from 'pptxgenjs';
+import { fileURLToPath } from 'url';
+
+
 #!/usr/bin/env node
 /**
  * export_deck_pptx.mjs — 把多文件 slide deck 导出为可编辑 PPTX
@@ -25,14 +31,11 @@
  * 按文件名排序（01-xxx.html → 02-xxx.html → ...）。
  */
 
-import pptxgen from 'pptxgenjs';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function parseArgs() {
+  try {
   const args = {};
   const a = process.argv.slice(2);
   for (let i = 0; i < a.length; i += 2) {
@@ -62,7 +65,6 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`Converting ${files.length} slides via html2pptx...`);
 
   const { createRequire } = await import('module');
   const require = createRequire(import.meta.url);
@@ -84,7 +86,6 @@ async function main() {
     const fullPath = path.join(slidesDir, f);
     try {
       await html2pptx(fullPath, pres);
-      console.log(`  [${i + 1}/${files.length}] ${f} ✓`);
     } catch (e) {
       console.error(`  [${i + 1}/${files.length}] ${f} ✗  ${e.message}`);
       errors.push({ file: f, error: e.message });
@@ -101,7 +102,6 @@ async function main() {
   }
 
   await pres.writeFile({ fileName: outFile });
-  console.log(`\n✓ Wrote ${outFile}  (${files.length - errors.length}/${files.length} slides, 可编辑 PPTX)`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

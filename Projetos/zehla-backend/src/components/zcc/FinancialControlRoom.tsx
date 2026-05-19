@@ -1,8 +1,13 @@
+import { 
+import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
+import { useState, useEffect, useRef } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+
+
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
   Save, 
   FileSpreadsheet, 
   Lock, 
@@ -20,8 +25,6 @@ import {
   X,
   Check
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
 
 interface SpreadsheetFile {
   name: string;
@@ -36,7 +39,7 @@ interface SpreadsheetData {
   lastModified: string;
 }
 
-export function FinancialControlRoom() {
+export function FinancialControlRoom() : void {
   const [fileList, setFileList] = useState<SpreadsheetFile[]>([]);
   const [data, setData] = useState<SpreadsheetData | null>(null);
   const [activeSheet, setActiveSheet] = useState<string>('');
@@ -73,7 +76,7 @@ export function FinancialControlRoom() {
       const json = await res.json();
       setFileList(json.files || []);
       // Auto-load master if exists
-      const master = json.files?.find((f: any) => f.name.includes('Cronograma Geral'));
+      const master = json.files?.find((f: unknown) => f.name.includes('Cronograma Geral'));
       if (master && !data) loadFile(master.name);
     } catch (err) {
       console.error(err);
@@ -88,7 +91,7 @@ export function FinancialControlRoom() {
       const json = await res.json();
       setData(json);
       if (json.sheets.length > 0) setActiveSheet(json.sheets[0]);
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(err.message);
     } finally {
       setLoading(false);
@@ -111,7 +114,7 @@ export function FinancialControlRoom() {
       if (!res.ok) throw new Error('Falha no upload');
       toast.success('Arquivo enviado com sucesso!');
       loadFileList();
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(err.message);
     } finally {
       setLoading(false);
@@ -139,7 +142,7 @@ export function FinancialControlRoom() {
       if (!res.ok) throw new Error('Falha ao salvar');
       toast.success('Planilha salva!');
       loadFileList();
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(err.message);
     } finally {
       setSaving(false);
@@ -163,7 +166,7 @@ export function FinancialControlRoom() {
       toast.success('Aba renomeada!');
       loadFile(data.fileName);
       setEditingSheet(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(err.message);
     }
   };

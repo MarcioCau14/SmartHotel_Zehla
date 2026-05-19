@@ -1,0 +1,73 @@
+import { prisma } from '@/lib/prisma';
+
+import { assertSanitized } from '../security/pii-sanitizer';
+import { subconsciousQueue } from '../ml/subconscious-worker';
+
+
+export type TerminalLevel = 'info' | 'warn' | 'error' | 'success' | 'insight';
+
+/**
+ * COGNITIVE TERMINAL — Sistema de Telemetria em Tempo Real
+ * Envia logs estruturados para o Dashboard ZCC e persiste para auditoria.
+ */
+export class CognitiveTerminal {
+  /**
+   * Loga uma mensagem no terminal cognitivo
+   */
+  static async log(
+    level: TerminalLevel,
+    component: string,
+    message: string,
+    metadata: any = {},
+    tenantId?: string
+  ) {
+    try {
+      // 🛡️ BARREIRA PII (ZDR Guardian): Sanitizar antes de qualquer persistência
+      const sanitizedMessage = assertSanitized(message);
+      const sanitizedMetadata = metadata 
+        ? JSON.parse(assertSanitized(JSON.stringify(metadata))) 
+        : {};
+
+      // 1. Persistir no banco para histórico
+      const entry = await prisma.cognitiveTerminalLog.create({
+        data: {
+          level,
+          component,
+          message: sanitizedMessage,
+          metadata: sanitizedMetadata,
+          tenantId,
+        },
+      });
+
+      // 2. Log no console para debug imediato
+      const icons: Record<TerminalLevel, string> = {
+        info: 'ℹ️',
+        warn: '⚠️',
+        error: '❌',
+        success: '✅',
+        insight: '🧠',
+      };
+
+      }] ${sanitizedMessage}`, sanitizedMetadata);
+
+      // 3. Auto-Healing Trigger
+      if (level === 'error') {
+        await subconsciousQueue.add('HEAL_SYSTEM', { type: 'HEAL_SYSTEM' }, { 
+          jobId: `heal-${Date.now()}`,
+          removeOnComplete: true 
+        });
+      }
+
+      return entry;
+    } catch (error) {
+      console.error('🛑 [Terminal] Erro ao registrar log cognitivo:', error);
+    }
+  }
+
+  // Atalhos úteis
+  static info(comp: string, msg: string, meta?: any, tid?: string) { return this.log('info', comp, msg, meta, tid); }
+  static warn(comp: string, msg: string, meta?: any, tid?: string) { return this.log('warn', comp, msg, meta, tid); }
+  static error(comp: string, msg: string, meta?: any, tid?: string) { return this.log('error', comp, msg, meta, tid); }
+  static success(comp: string, msg: string, meta?: any, tid?: string) { return this.log('success', comp, msg, meta, tid); }
+  static insight(comp: string, msg: string, meta?: any, tid?: string) { return this.log('insight', comp, msg, meta, tid); }
+}

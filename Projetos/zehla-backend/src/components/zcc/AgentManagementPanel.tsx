@@ -1,11 +1,14 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Database, TrendingUp, BarChart3, Lock, Loader2, Zap, AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
+
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+
 import type { AIAgent } from '@/lib/store';
+
+'use client';
+
 
 // ===== TYPES =====
 interface AgentLearningState {
@@ -60,6 +63,7 @@ interface TrainingProfile {
 
 // ===== MINI COMPONENTS =====
 function MiniSparkline({ data, color, width = 120, height = 32 }: { data: number[]; color: string; width?: number; height?: number }) {
+  try {
   if (data.length < 2) return null;
   const min = Math.min(...data);
   const max = Math.max(...data);
@@ -77,6 +81,7 @@ function MiniSparkline({ data, color, width = 120, height = 32 }: { data: number
 }
 
 function MiniBarChart({ data, width = 280, height = 48 }: { data: { period: string; rate: number }[]; width?: number; height?: number }) {
+  try {
   const barWidth = Math.max(4, (width / data.length) - 4);
   const maxRate = 100;
   return (
@@ -97,7 +102,7 @@ function MiniBarChart({ data, width = 280, height = 48 }: { data: { period: stri
   );
 }
 
-export function AgentManagementPanel() {
+export function AgentManagementPanel() : void {
   const [agents, setAgents] = useState<AIAgent[]>([]);
   const [profiles, setProfiles] = useState<TrainingProfile[]>([]);
   const [trainingStatuses, setTrainingStatuses] = useState<AgentLearningState[]>([]);

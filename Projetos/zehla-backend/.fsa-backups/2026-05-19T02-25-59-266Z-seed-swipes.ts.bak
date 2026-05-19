@@ -1,0 +1,27 @@
+// src/lib/swipe/seed-swipes.ts
+import { prisma } from '@/lib/prisma';
+
+export async function seedSwipes() {
+  const templates = [
+    {
+      title: "Saudação Concierge PRO",
+      content: "Olá {{NOME}}, sou o concierge digital da {{POUSADA}}. Vi que você tem {{QUARTOS}} suítes e busca otimizar sua operação...",
+      channel: "whatsapp",
+      category: "saudacao",
+      tier: "pro",
+      tone: "concierge"
+    }
+  ];
+
+  for (const t of templates) {
+    await prisma.swipeTemplate.upsert({
+      where: { id: t.title }, // Simplified for seed
+      update: {},
+      create: {
+        ...t,
+        variables: "['NOME','POUSADA','QUARTOS']",
+        tags: "['premium','saudacao']"
+      }
+    });
+  }
+}
