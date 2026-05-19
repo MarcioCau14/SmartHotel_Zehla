@@ -7,7 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "fsa": "node full-stack-agent/src/index.js",
+    "fsa:review": "node full-stack-agent/src/index.js review . --deep",
+    "fsa:fix": "node full-stack-agent/src/index.js fix . --fix",
+    "fsa:full": "node full-stack-agent/src/index.js full . --report md",
+    "fsa:test": "node --test full-stack-agent/tests/**/*.test.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
