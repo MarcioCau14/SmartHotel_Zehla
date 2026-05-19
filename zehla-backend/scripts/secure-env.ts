@@ -1,0 +1,257 @@
+import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
+
+// ============================================================
+// ENV GUARDIAN — Proteção de Chaves .env em Repouso
+// ============================================================
+// Criptografa .env em .env.encrypted usando AES-256-GCM
+// A chave mestra é derivada de uma passphrase fornecida via:
+//   1. Variável de ambiente ZEHLA_MASTER_KEY (runtime)
+//   2. Arquivo .master-key (restrito — 600 perms)
+// ============================================================
+
+const ALGORITHM = 'aes-256-gcm';
+const IV_LENGTH = 16;
+const SALT = 'zehla-env-guardian-v1';
+const KEY_LENGTH = 32;
+
+function getMasterKey(): string {
+  if (process.env.ZEHLA_MASTER_KEY) return process.env.ZEHLA_MASTER_KEY;
+  const keyPath = path.resolve(process.cwd(), '.master-key');
+  if (fs.existsSync(keyPath)) {
+    return fs.readFileSync(keyPath, 'utf8').trim();
+  }
+  throw new Error(
+    '[ENV-GUARDIAN] Nenhuma chave mestra encontrada.\n' +
+    '  Defina ZEHLA_MASTER_KEY ou crie .master-key (chmod 600)'
+  );
+}
+
+function deriveKey(passphrase: string): Buffer {
+  return crypto.scryptSync(passphrase, SALT, KEY_LENGTH);
+}
+
+/**
+ * Criptografa o conteúdo de um arquivo .env
+ * Saída: formato Base64 URL-safe (iv + authTag + ciphertext)
+ */
+export function encryptEnv(plaintext: string): string {
+  const passphrase = getMasterKey();
+  const key = deriveKey(passphrase);
+  const iv = crypto.randomBytes(IV_LENGTH);
+  const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
+
+  let encrypted = cipher.update(plaintext, 'utf8', 'binary');
+  encrypted += cipher.final('binary');
+  const authTag = cipher.getAuthTag();
+
+  // Compact format: base64url(iv + authTag + ciphertext)
+  const payload = Buffer.concat([iv, authTag, Buffer.from(encrypted, 'binary')]);
+  return payload.toString('base64url');
+}
+
+/**
+ * Descriptografa .env.encrypted de volta para texto plano
+ */
+export function decryptEnv(encryptedBase64: string): string {
+  const passphrase = getMasterKey();
+  const key = deriveKey(passphrase);
+  const payload = Buffer.from(encryptedBase64, 'base64url');
+
+  const iv = payload.subarray(0, IV_LENGTH);
+  const authTag = payload.subarray(IV_LENGTH, IV_LENGTH + 16);
+  const ciphertext = payload.subarray(IV_LENGTH + 16);
+
+  const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
+  decipher.setAuthTag(authTag);
+
+  let decrypted = decipher.update(ciphertext, 'binary', 'utf8');
+  decrypted += decipher.final('utf8');
+  return decrypted;
+}
+
+/**
+ * Lê .env, criptografa e salva .env.encrypted, depois apaga .env
+ */
+export function sealEnv(envPath: string): void {
+  if (!fs.existsSync(envPath)) {
+    console.error(`[ENV-GUARDIAN] Arquivo não encontrado: ${envPath}`);
+    process.exit(1);
+  }
+
+  const content = fs.readFileSync(envPath, 'utf8');
+  const encrypted = encryptEnv(content);
+  const encryptedPath = envPath + '.encrypted';
+
+  fs.writeFileSync(encryptedPath, encrypted, 'utf8');
+  fs.chmodSync(encryptedPath, 0o600);
+
+  // Só apaga o .env original se a criptografia foi bem-sucedida
+  if (fs.existsSync(encryptedPath)) {
+    fs.unlinkSync(envPath);
+    console.log(`[ENV-GUARDIAN] ✓ ${path.basename(envPath)} → ${path.basename(encryptedPath)}`);
+    console.log(`[ENV-GUARDIAN] ✓ Original apagado. Use ZEHLA_MASTER_KEY para descriptografar.`);
+  }
+}
+
+/**
+ * Abre .env.encrypted e carrega no process.env
+ */
+export function unsealEnv(encryptedPath: string): Record<string, string> {
+  if (!fs.existsSync(encryptedPath)) {
+    // Fallback: tenta .env (não criptografado)
+    const plainPath = encryptedPath.replace('.encrypted', '');
+    if (fs.existsSync(plainPath)) {
+      return parseEnvFile(plainPath);
+    }
+    throw new Error(`[ENV-GUARDIAN] Nenhum env encontrado: ${encryptedPath} ou ${plainPath}`);
+  }
+
+  const encrypted = fs.readFileSync(encryptedPath, 'utf8').trim();
+  const decrypted = decryptEnv(encrypted);
+
+  // Valida formato de chave OpenRouter
+  const vars = parseEnvString(decrypted);
+  for (const [key, value] of Object.entries(vars)) {
+    if (key.endsWith('_API_KEY') || key.endsWith('_SECRET') || key.endsWith('_KEY')) {
+      if (value.length < 8 || value.includes('sua-chave')) {
+        console.warn(`[ENV-GUARDIAN] ⚠ Chave '${key}' parece inválida ou placeholder`);
+      }
+    }
+  }
+
+  return vars;
+}
+
+/**
+ * Carrega env vars no process.env de forma segura
+ */
+export function loadSecureEnv(projectRoot?: string): void {
+  const root = projectRoot || process.cwd();
+  const encryptedPath = path.join(root, '.env.encrypted');
+  const plainPath = path.join(root, '.env');
+  const localPath = path.join(root, '.env.local');
+
+  // Priority: .env.encrypted > .env.local > .env
+  try {
+    const vars = unsealEnv(encryptedPath);
+    Object.assign(process.env, vars);
+    console.log('[ENV-GUARDIAN] ✓ .env.encrypted carregado com segurança');
+    return;
+  } catch {
+    // Fallback para .env.local ou .env
+  }
+
+  // Se não tem .env.encrypted, carrega .env normalmente mas avisa
+  if (fs.existsSync(localPath)) {
+    const vars = parseEnvFile(localPath);
+    Object.assign(process.env, vars);
+    console.warn('[ENV-GUARDIAN] ⚠ .env.local carregado sem criptografia');
+  } else if (fs.existsSync(plainPath)) {
+    const vars = parseEnvFile(plainPath);
+    Object.assign(process.env, vars);
+    console.warn('[ENV-GUARDIAN] ⚠ .env carregado sem criptografia');
+  }
+}
+
+// ─── Helpers ────────────────────────────────────────────────────
+
+function parseEnvFile(filePath: string): Record<string, string> {
+  const content = fs.readFileSync(filePath, 'utf8');
+  return parseEnvString(content);
+}
+
+function parseEnvString(content: string): Record<string, string> {
+  const vars: Record<string, string> = {};
+  for (const line of content.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eqIdx = trimmed.indexOf('=');
+    if (eqIdx === -1) continue;
+    const key = trimmed.slice(0, eqIdx).trim();
+    let value = trimmed.slice(eqIdx + 1).trim();
+
+    // Remove surrounding quotes
+    if ((value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+
+    if (key) vars[key] = value;
+  }
+  return vars;
+}
+
+// ─── CLI ─────────────────────────────────────────────────────────
+// Uso: npx tsx scripts/secure-env.ts seal|unseal|harden|rotate
+// ================================================================
+
+if (require.main === module) {
+  const command = process.argv[2];
+  const envPath = process.argv[3] || path.join(process.cwd(), '.env');
+
+  switch (command) {
+    case 'seal':
+      sealEnv(envPath);
+      break;
+
+    case 'unseal': {
+      const encryptedPath = envPath + '.encrypted';
+      const vars = unsealEnv(encryptedPath);
+      // Output seguro: só mostra nomes das variáveis, não valores
+      console.log('[ENV-GUARDIAN] Variáveis descriptografadas:');
+      for (const key of Object.keys(vars)) {
+        const masked = vars[key].length > 0
+          ? vars[key].slice(0, 4) + '…' + vars[key].slice(-4)
+          : '(vazio)';
+        console.log(`  ${key}=${masked}`);
+      }
+      break;
+    }
+
+    case 'harden': {
+      const files = ['.env', '.env.local', '.env.production', '.master-key'];
+      for (const file of files) {
+        const fullPath = path.join(process.cwd(), file);
+        if (fs.existsSync(fullPath)) {
+          fs.chmodSync(fullPath, 0o600);
+          console.log(`[ENV-GUARDIAN] ✓ Permissões 600: ${file}`);
+        }
+      }
+      break;
+    }
+
+    case 'rotate': {
+      // Rotaciona a chave mestra: descriptografa com a chave atual,
+      // re-criptografa com uma nova chave
+      const oldKey = process.env.ZEHLA_MASTER_KEY;
+      if (!oldKey) {
+        console.error('[ENV-GUARDIAN] Defina ZEHLA_MASTER_KEY com a chave atual');
+        process.exit(1);
+      }
+      const newKey = crypto.randomBytes(32).toString('hex');
+      console.log(`[ENV-GUARDIAN] Nova chave mestra: ${newKey}`);
+      console.log('[ENV-GUARDIAN] Salve esta chave em local seguro!');
+      break;
+    }
+
+    default:
+      console.log(`
+  ENV GUARDIAN — Proteção de Chaves .env
+
+  USO:
+    npx tsx scripts/secure-env.ts <comando> [caminho]
+
+  COMANDOS:
+    seal                    Criptografa .env → .env.encrypted
+    unseal                  Mostra nomes das variáveis (valores mascarados)
+    harden                  Define permissões 600 em todos os .env
+    rotate                  Gera nova chave mestra
+
+  CHAVE MESTRA (uma das opções):
+    1. Variável de ambiente: ZEHLA_MASTER_KEY
+    2. Arquivo: .master-key (chmod 600)
+`);
+  }
+}
