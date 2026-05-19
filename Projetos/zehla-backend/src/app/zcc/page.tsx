@@ -42,11 +42,13 @@ import {
   Edit3,
   Trash2,
   LayoutDashboard,
+  HeartPulse,
+  Network,
 } from 'lucide-react';
 
-// Dashboard components to reuse
-
-// ZCC components to reuse
+import { SwarmOverview } from '@/components/zcc/SwarmOverview';
+import ZccAutoHealer from '@/components/zcc/ZccAutoHealer';
+import { ZccErrorBoundary } from '@/components/zcc/ZccErrorBoundary';
 
 
 
@@ -57,6 +59,7 @@ type ZCCTab =
   | 'cognitivo'
   | 'terminal'
   | 'agentes'
+  | 'swarm'
   | 'propriedades'
   | 'marketing'
   | 'visibilidade'
@@ -66,7 +69,8 @@ type ZCCTab =
   | 'equipe'
   | 'seguranca'
   | 'connect'
-  | 'crm';
+  | 'crm'
+  | 'autohealer';
 
 interface TabConfig {
   id: ZCCTab;
@@ -81,6 +85,7 @@ const tabs: TabConfig[] = [
   { id: 'cognitivo', label: 'Cognitivo', shortLabel: 'Cognitivo', icon: Brain, permission: 'view_cognitivo' },
   { id: 'terminal', label: 'Terminal', shortLabel: 'Terminal', icon: Terminal, permission: 'view_terminal' },
   { id: 'agentes', label: 'Agentes', shortLabel: 'Agentes', icon: Bot, permission: 'view_agents' },
+  { id: 'swarm', label: 'Swarm', shortLabel: 'Swarm', icon: Network, permission: 'view_agents' },
   { id: 'propriedades', label: 'Propriedades', shortLabel: 'Props', icon: Building2, permission: 'view_properties' },
   { id: 'marketing', label: 'Marketing', shortLabel: 'Marketing', icon: Megaphone, permission: 'view_marketing' },
   { id: 'visibilidade', label: 'Visibilidade', shortLabel: 'Visibilidade', icon: Eye, permission: 'view_marketing' },
@@ -91,6 +96,7 @@ const tabs: TabConfig[] = [
   { id: 'seguranca', label: 'Segurança', shortLabel: 'Segurança', icon: Shield, permission: 'view_security' },
   { id: 'connect', label: 'Connect', shortLabel: 'Connect', icon: Link2, permission: 'view_marketing' },
   { id: 'crm', label: 'CRM', shortLabel: 'CRM', icon: LayoutDashboard, permission: 'view_marketing' },
+  { id: 'autohealer', label: 'Auto-Healer', shortLabel: 'Healer', icon: HeartPulse, permission: 'view_security' },
 ];
 
 
@@ -289,7 +295,7 @@ export default function ZCCPage() {
               >
             {/* Tab 1: Overview */}
             {activeTab === 'overview' && (
-              <ZccAutoHealer fallbackName="Visão Global (SwarmOverview)">
+              <ZccErrorBoundary fallbackName="Visão Global (SwarmOverview)">
                 {brainHealth ? (
                   <SwarmOverview brainHealth={brainHealth} />
                 ) : (
@@ -302,55 +308,69 @@ export default function ZCCPage() {
                     </div>
                   </div>
                 )}
-              </ZccAutoHealer>
+              </ZccErrorBoundary>
             )}
 
             {/* Tab 2: Cognitivo */}
-            {activeTab === 'cognitivo' && <ZccAutoHealer fallbackName="Painel Cognitivo"><CognitivePanel /></ZccAutoHealer>}
+            {activeTab === 'cognitivo' && <ZccErrorBoundary fallbackName="Painel Cognitivo"><CognitivePanel /></ZccErrorBoundary>}
 
             {/* Tab 3: Terminal */}
-            {activeTab === 'terminal' && <ZccAutoHealer fallbackName="Terminal Principal"><TerminalPanel /></ZccAutoHealer>}
+            {activeTab === 'terminal' && <ZccErrorBoundary fallbackName="Terminal Principal"><TerminalPanel /></ZccErrorBoundary>}
 
             {/* Tab 4: Agentes */}
-            {activeTab === 'agentes' && <ZccAutoHealer fallbackName="Gestão de Agentes"><AgentManagementPanel /></ZccAutoHealer>}
+            {activeTab === 'agentes' && <ZccErrorBoundary fallbackName="Gestão de Agentes"><AgentManagementPanel /></ZccErrorBoundary>}
+
+            {/* Tab 4.5: Swarm */}
+            {activeTab === 'swarm' && (
+              <ZccErrorBoundary fallbackName="Swarm Overview">
+                <SwarmOverview />
+              </ZccErrorBoundary>
+            )}
 
             {/* Tab 5: Propriedades */}
-            {activeTab === 'propriedades' && <ZccAutoHealer fallbackName="Gestão de Propriedades"><TenantManagement /></ZccAutoHealer>}
+            {activeTab === 'propriedades' && <ZccErrorBoundary fallbackName="Gestão de Propriedades"><TenantManagement /></ZccErrorBoundary>}
 
             {/* Tab 6: Marketing */}
-            {activeTab === 'marketing' && <ZccAutoHealer fallbackName="Marketing Leads"><MarketingLeads /></ZccAutoHealer>}
+            {activeTab === 'marketing' && <ZccErrorBoundary fallbackName="Marketing Leads"><MarketingLeads /></ZccErrorBoundary>}
 
             {/* Tab 6.5: Visibilidade */}
-            {activeTab === 'visibilidade' && <ZccAutoHealer fallbackName="Visibilidade SEO"><VisibilityDashboard /></ZccAutoHealer>}
+            {activeTab === 'visibilidade' && <ZccErrorBoundary fallbackName="Visibilidade SEO"><VisibilityDashboard /></ZccErrorBoundary>}
 
             {/* Tab 7: Financeiro */}
-            {activeTab === 'financeiro' && <ZccAutoHealer fallbackName="Fintech Hub"><FintechHub /></ZccAutoHealer>}
+            {activeTab === 'financeiro' && <ZccErrorBoundary fallbackName="Fintech Hub"><FintechHub /></ZccErrorBoundary>}
 
             {/* Tab 8: WhatsApp */}
-            {activeTab === 'whatsapp' && <ZccAutoHealer fallbackName="Painel WhatsApp"><WhatsAppPanel /></ZccAutoHealer>}
+            {activeTab === 'whatsapp' && <ZccErrorBoundary fallbackName="Painel WhatsApp"><WhatsAppPanel /></ZccErrorBoundary>}
 
             {/* Tab 9: APIs */}
             {activeTab === 'apis' && (
-              <ZccAutoHealer fallbackName="Gestão de APIs">
+              <ZccErrorBoundary fallbackName="Gestão de APIs">
                 <ApiKeysPanel />
                 <div className="mt-6" />
                 <APIStatus />
-              </ZccAutoHealer>
+              </ZccErrorBoundary>
             )}
 
 
 
             {/* Tab 11: Equipe */}
-            {activeTab === 'equipe' && <ZccAutoHealer fallbackName="Equipe Operacional"><TeamManagementTab /></ZccAutoHealer>}
+            {activeTab === 'equipe' && <ZccErrorBoundary fallbackName="Equipe Operacional"><TeamManagementTab /></ZccErrorBoundary>}
 
             {/* Tab 12: Segurança */}
-            {activeTab === 'seguranca' && <ZccAutoHealer fallbackName="Painel de Segurança"><SecurityPanel /></ZccAutoHealer>}
+            {activeTab === 'seguranca' && <ZccErrorBoundary fallbackName="Painel de Segurança"><SecurityPanel /></ZccErrorBoundary>}
 
             {/* Tab 13: Connect */}
-            {activeTab === 'connect' && <ZccAutoHealer fallbackName="Connect Profile"><ConnectEditor /></ZccAutoHealer>}
+            {activeTab === 'connect' && <ZccErrorBoundary fallbackName="Connect Profile"><ConnectEditor /></ZccErrorBoundary>}
 
             {/* Tab 14: CRM */}
             {activeTab === 'crm' && <CRMModule />}
+
+            {/* Tab 15: Auto-Healer */}
+            {activeTab === 'autohealer' && (
+              <ZccErrorBoundary fallbackName="Auto-Healer Dashboard">
+                <ZccAutoHealer />
+              </ZccErrorBoundary>
+            )}
           </motion.div>
         </AnimatePresence>
         </div>
