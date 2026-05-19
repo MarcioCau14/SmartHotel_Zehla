@@ -5,7 +5,7 @@ import { jwtVerify } from 'jose';
 import type { NextRequest } from 'next/server';
 
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
-const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET || 'zehla_super_secret_2026_change_me');
+const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET!);
 const ZCC_PATHS = ['/zcc', '/api/zcc'];
 
 /**
@@ -58,17 +58,6 @@ export async function proxy(request: NextRequest) : void {
     const token = request.cookies.get('__session')?.value 
       ?? request.cookies.get('zehla-token')?.value
       ?? request.headers.get('Authorization')?.replace('Bearer ', '');
-
-    if (token === 'fake-admin-token') {
-      const requestHeaders = new Headers(request.headers);
-      requestHeaders.set('x-zcc-user-id', 'admin-id');
-      requestHeaders.set('x-zcc-role', 'SUPER_ADMIN');
-      requestHeaders.set('x-zcc-tenant-id', 'global');
-
-      return NextResponse.next({
-        request: { headers: requestHeaders },
-      });
-    }
 
     if (!token) {
       if (pathname.startsWith('/api')) {

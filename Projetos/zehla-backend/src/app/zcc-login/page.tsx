@@ -176,7 +176,7 @@ export default function ZCCLoginPage() {
               Painel exclusivo SMARTHOTEL / ZEHLA Technologies
             </p>
             <p className="text-[10px] text-neutral-700">
-              Credenciais padrão: admin@smarthotel.com / zehla2026 (alterar em produção)
+              Acesso restrito a administradores autorizados
             </p>
           </div>
         </motion.div>

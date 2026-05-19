@@ -27,6 +27,9 @@
 # reports
 .fsa-reports/
 
+# FSA backups
+.fsa-backups/
+
 # encrypted env
 *.env.encrypted
 
