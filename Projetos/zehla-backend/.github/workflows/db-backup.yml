@@ -1,0 +1,55 @@
+name: ZEHLA Daily DB Backup
+
+on:
+  schedule:
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Reason for manual backup
+        required: false
+        default: 'manual trigger'
+
+jobs:
+  backup:
+    name: PostgreSQL Dump & Upload
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
+
+      - name: Run pg_dump
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          chmod +x ./scripts/backup-db.sh
+          ./scripts/backup-db.sh
+        shell: bash
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zehla-db-backup-${{ github.run_id }}
+          path: /tmp/zehla-backups/*.sql.gz
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Database backup failed — ${new Date().toISOString().slice(0, 10)}`,
+              body: 'The daily PostgreSQL backup job failed. Check the workflow logs for details.',
+              labels: ['ops', 'automated']
+            });

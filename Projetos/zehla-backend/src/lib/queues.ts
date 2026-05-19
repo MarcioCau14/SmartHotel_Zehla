@@ -1,6 +1,6 @@
 import { Queue } from 'bullmq';
 
-import { redis } from './redis';
+import { redisWorker } from './redis';
 
 
 // src/lib/queues.ts — ZEHLA Brain v4: Central Queue Orchestration
@@ -102,7 +102,7 @@ export const CLUSTER_ACTIONS: Record<string, string[]> = {
 
 // Criação das 5 filas (lazy — só conectam quando usadas)
 const queueOptions = {
-  connection: redis,
+  connection: redisWorker,
   defaultJobOptions: {
     removeOnComplete: { count: 1000 },
     removeOnFail: { count: 500 },

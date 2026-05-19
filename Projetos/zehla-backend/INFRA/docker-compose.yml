@@ -97,5 +97,27 @@ services:
         condition: service_healthy
     restart: always
 
+  # --- HERMES BRAIN (ZEHLA Cognitive Engine) ---
+  hermes-brain:
+    build:
+      context: ../humans-zehla
+      dockerfile: Dockerfile
+    container_name: zehla-hermes-brain
+    ports:
+      - "8000:8000"
+    environment:
+      - HERMES_API_KEY=${HERMES_API_KEY:-zehla-brain-secret-2026}
+      - HERMES_MODEL=${HERMES_MODEL:-openrouter/anthropic/claude-sonnet-4}
+      - HERMES_BASE_URL=${HERMES_BASE_URL:-https://openrouter.ai/api/v1}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - HERMES_PORT=8000
+      - HERMES_MAX_ITERATIONS=30
+      - HERMES_TIMEOUT=120
+      - HERMES_MAX_SESSIONS=100
+    volumes:
+      - hermes_brain_data:/app/data
+    restart: unless-stopped
+
 volumes:
   redis_master_data:
+  hermes_brain_data:

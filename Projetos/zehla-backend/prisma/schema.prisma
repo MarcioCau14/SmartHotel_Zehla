@@ -115,6 +115,8 @@ model Property {
   transactions FinanceTransaction[]
   financeAlerts FinanceAlert[]
 
+  connectProfile ConnectProfile?
+
   @@map("properties")
 }
 
@@ -612,5 +614,134 @@ model FinanceAlert {
   
   @@index([propertyId, createdAt])
   @@map("finance_alerts")
+}
+
+// ============================================================
+// ZEHLA CONNECT — Link-in-Bio Models
+// ============================================================
+
+model ConnectProfile {
+  id             String    @id @default(cuid())
+  slug           String    @unique
+  bio            String    @default("")
+  avatarUrl      String?
+  coverUrl       String?
+  whatsappNumber String?
+  status         String    @default("draft")
+  isVerified     Boolean   @default(false)
+  seoTitle       String?
+  seoDescription String?
+  totalViews     Int       @default(0)
+  totalClicks    Int       @default(0)
+  publishedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  propertyId String   @unique
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  links     ConnectLink[]
+  theme     ConnectTheme?
+  analytics ConnectAnalytics[]
+  reviews   ConnectReview[]
+  media     ConnectMedia[]
+
+  @@index([slug])
+  @@index([status])
+  @@map("connect_profiles")
+}
+
+model ConnectLink {
+  id         String  @id @default(cuid())
+  label      String
+  url        String
+  icon       String  @default("link")
+  type       String  @default("external")
+  order      Int     @default(0)
+  clickCount Int     @default(0)
+  isActive   Boolean @default(true)
+
+  profileId String
+  profile   ConnectProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileId, order])
+  @@index([profileId, isActive])
+  @@map("connect_links")
+}
+
+model ConnectTheme {
+  id            String @id @default(cuid())
+  layout        String @default("centered")
+  fontFamily    String @default("inter")
+  colors        Json   @default("{\"primary\":\"#10B981\",\"secondary\":\"#0F172A\",\"accent\":\"#F59E0B\",\"background\":\"#FFFFFF\",\"text\":\"#1F2937\"}")
+  buttonStyle   String @default("rounded")
+  galleryLayout String @default("carousel")
+
+  profileId String  @unique
+  profile   ConnectProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("connect_themes")
+}
+
+model ConnectAnalytics {
+  id        String   @id @default(cuid())
+  date      DateTime @db.Date
+  views     Int      @default(0)
+  clicks    Int      @default(0)
+  ctr       Float    @default(0)
+  geo       Json     @default("{}")
+  device    Json     @default("{}")
+  source    Json     @default("{}")
+
+  profileId String
+  profile   ConnectProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([profileId, date])
+  @@index([profileId, date(sort: Desc)])
+  @@map("connect_analytics")
+}
+
+model ConnectReview {
+  id         String  @id @default(cuid())
+  authorName String
+  rating     Int
+  text       String  @default("")
+  source     String  @default("manual")
+  isApproved Boolean @default(true)
+
+  profileId String
+  profile   ConnectProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileId, isApproved])
+  @@map("connect_reviews")
+}
+
+model ConnectMedia {
+  id        String @id @default(cuid())
+  type      String @default("image")
+  url       String
+  publicId  String
+  alt       String @default("")
+  order     Int    @default(0)
+
+  profileId String
+  profile   ConnectProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileId, order])
+  @@map("connect_media")
 }
 

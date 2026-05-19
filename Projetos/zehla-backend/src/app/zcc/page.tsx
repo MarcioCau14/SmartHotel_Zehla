@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { APIStatus } from '@/components/dashboard/APIStatus';
 import { AgentManagementPanel } from '@/components/zcc/AgentManagementPanel';
 import { ApiKeysPanel } from '@/components/zcc/ApiKeysPanel';
+import { ConnectEditor } from '@/components/connect/ConnectEditor';
 import { Badge } from '@/components/ui/badge';
 import { CognitiveObservability } from '@/components/zcc/CognitiveObservability';
 import { CognitivePanel } from '@/components/dashboard/CognitivePanel';
@@ -60,6 +61,7 @@ import type { AIAgent } from '@/lib/store';
   FileCheck,
   Users,
   LockKeyhole,
+  Link2,
   Sparkles,
   RefreshCw,
   Menu,
@@ -91,7 +93,8 @@ type ZCCTab =
   | 'whatsapp'
   | 'apis'
   | 'equipe'
-  | 'seguranca';
+  | 'seguranca'
+  | 'connect';
 
 interface TabConfig {
   id: ZCCTab;
@@ -114,6 +117,7 @@ const tabs: TabConfig[] = [
   { id: 'apis', label: 'APIs', shortLabel: 'APIs', icon: Plug, permission: 'view_apis' },
   { id: 'equipe', label: 'Equipe', shortLabel: 'Equipe', icon: Users, permission: 'manage_team' },
   { id: 'seguranca', label: 'Segurança', shortLabel: 'Segurança', icon: Shield, permission: 'view_security' },
+  { id: 'connect', label: 'Connect', shortLabel: 'Connect', icon: Link2, permission: 'view_marketing' },
 ];
 
 
@@ -368,6 +372,9 @@ export default function ZCCPage() {
 
             {/* Tab 12: Segurança */}
             {activeTab === 'seguranca' && <ZccAutoHealer fallbackName="Painel de Segurança"><SecurityPanel /></ZccAutoHealer>}
+
+            {/* Tab 13: Connect */}
+            {activeTab === 'connect' && <ZccAutoHealer fallbackName="Connect Profile"><ConnectEditor /></ZccAutoHealer>}
           </motion.div>
         </AnimatePresence>
         </div>
