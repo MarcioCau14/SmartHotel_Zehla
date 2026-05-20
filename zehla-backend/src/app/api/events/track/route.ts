@@ -1,0 +1,68 @@
+// src/app/api/events/track/route.ts — ZEHLA Brain v4: Endpoint Genérico de Captura
+// POST /api/events/track — Aceita qualquer tipo de evento com score mapping
+import { NextRequest, NextResponse } from 'next/server';
+import { captureQueue, EVENT_SCORES } from '@/lib/queues';
+import { v4 as uuidv4 } from 'uuid';
+
+const VALID_EVENTS = Object.keys(EVENT_SCORES);
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { email, eventType, sessionId, fingerprint, metadata } = body;
+
+    // Validação básica
+    if (!eventType) {
+      return NextResponse.json(
+        { error: 'eventType é obrigatório' },
+        { status: 400 }
+      );
+    }
+
+    // Permitir LANDING_VISIT sem e-mail (usando fingerprint/session)
+    if (!email && eventType !== 'LANDING_VISIT') {
+      return NextResponse.json(
+        { error: 'email é obrigatório para este tipo de evento' },
+        { status: 400 }
+      );
+    }
+
+    if (!VALID_EVENTS.includes(eventType)) {
+      return NextResponse.json(
+        { error: `eventType inválido. Tipos válidos: ${VALID_EVENTS.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    // Gerar tracking ID
+    const trackingId = uuidv4();
+
+    // Enfileirar na pipeline (resposta imediata 202)
+    await captureQueue.add('capture-event', {
+      trackingId,
+      email: email.toLowerCase().trim(),
+      eventType,
+      sessionId: sessionId || null,
+      fingerprint: fingerprint || null,
+      eventSource: 'api',
+      metadata: metadata || {},
+    }, {
+      attempts: 1,
+      removeOnComplete: { count: 1000 },
+      removeOnFail: { count: 500 },
+    });
+
+    return NextResponse.json({
+      success: true,
+      trackingId,
+      message: 'Evento enfileirado para processamento',
+    }, { status: 202 });
+
+  } catch (error: any) {
+    console.error('[Track] Erro:', error.message);
+    return NextResponse.json(
+      { error: 'Erro interno do servidor' },
+      { status: 500 }
+    );
+  }
+}

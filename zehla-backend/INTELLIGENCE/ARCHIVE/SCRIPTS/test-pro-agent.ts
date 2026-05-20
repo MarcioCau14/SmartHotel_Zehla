@@ -1,0 +1,81 @@
+import { Plan } from '@prisma/client';
+
+import { WhatsappAgentService } from '../src/lib/brain/whatsapp-agent-service';
+import { prisma } from '../src/lib/prisma';
+
+
+async function testProAgent() {
+  try {
+  
+
+  // 1. Buscar ou criar usuário admin para vincular à propriedade
+  let user = await prisma.user.findFirst({ where: { role: 'SUPER_ADMIN' } });
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        email: 'test-admin@zehla.ai',
+        name: 'Test Admin',
+        password: process.env.TEST_ADMIN_PASSWORD || 'DEPRECATED_DO_NOT_USE',
+        role: 'SUPER_ADMIN'
+      }
+    });
+  }
+
+  // 2. Criar ou buscar uma propriedade PRO para teste
+  let property = await prisma.property.findFirst({ where: { plan: Plan.PRO } });
+  
+  if (!property) {
+    
+    property = await prisma.property.create({
+      data: {
+        name: 'Villa del Mar Test',
+        slug: 'villa-test-' + Date.now(),
+        city: 'Praia do Rosa',
+        state: 'SC',
+        address: 'Rua das Baleias, 123',
+        plan: Plan.PRO,
+        whatsapp: '554899999999',
+        email: 'contato@villatest.com',
+        registrationNumber: 'TEST/PRO/SC',
+        status: 'ACTIVE',
+        isTrial: true,
+        userId: user.id
+      }
+    });
+  }
+
+  // 2. Simular o "Aprendizado" criando algumas mensagens outbound
+  
+  await prisma.message.create({
+    data: {
+      phone: '5511988888888',
+      content: 'Seja muito bem-vindo ao nosso paraíso! Ficaremos encantados em receber vocês.',
+      direction: 'OUTBOUND',
+      propertyId: property.id,
+      type: 'TEXT',
+      status: 'SENT'
+    }
+  });
+
+  // 3. Simular uma mensagem de entrada do hóspede
+  
+  const response = await WhatsappAgentService.processIncomingMessage({
+    propertyId: property.id,
+    phone: '5511988888888',
+    pushName: 'Ricardo',
+    messageText: 'Olá, qual o valor da diária para o próximo feriado?'
+  });
+
+  
+  
+  
+  
+
+  if (response.success && response.response.includes('encantados')) {
+    
+  } else {
+    
+  }
+}
+
+testProAgent().catch(console.error);

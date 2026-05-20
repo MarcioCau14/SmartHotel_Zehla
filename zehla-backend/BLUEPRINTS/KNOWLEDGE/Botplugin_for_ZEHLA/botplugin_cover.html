@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+@page { size: 794px 1123px; margin: 0; }
+html, body { margin: 0; padding: 0; width: 794px; height: 1123px; background: #f1f2f4; }
+.cover { position: relative; width: 794px; height: 1123px; background: #ffffff; overflow: hidden; }
+.bg-fill { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 0; }
+.deco-circle-1 { position: absolute; top: -100px; right: -60px; width: 360px; height: 360px; border-radius: 50%; background: rgba(29,119,148,0.06); z-index: 1; }
+.deco-circle-2 { position: absolute; bottom: 200px; left: -80px; width: 280px; height: 280px; border-radius: 50%; background: rgba(29,119,148,0.04); z-index: 1; }
+.deco-line-v { position: absolute; top: 130px; left: 80px; width: 2px; height: 320px; background: linear-gradient(to bottom, #1d7794, transparent); opacity: 0.3; z-index: 2; }
+.deco-line-h { position: absolute; bottom: 190px; left: 80px; width: 180px; height: 2px; background: #1d7794; opacity: 0.25; z-index: 2; }
+.deco-grid { position: absolute; top: 90px; right: 60px; width: 100px; height: 100px; z-index: 1; opacity: 0.07; }
+.deco-grid div { position: absolute; background: #1d7794; }
+.deco-grid .h1 { top: 0; left: 0; width: 100%; height: 1px; }
+.deco-grid .h2 { top: 33px; left: 0; width: 100%; height: 1px; }
+.deco-grid .h3 { top: 66px; left: 0; width: 100%; height: 1px; }
+.deco-grid .v1 { top: 0; left: 0; width: 1px; height: 100%; }
+.deco-grid .v2 { top: 0; left: 33px; width: 1px; height: 100%; }
+.deco-grid .v3 { top: 0; left: 66px; width: 1px; height: 100%; }
+.content { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; padding: 80px; box-sizing: border-box; }
+.kicker { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: #1d7794; margin-bottom: 24px; }
+.hero-title { font-family: 'Inter', sans-serif; font-size: 46px; font-weight: 800; color: #242627; line-height: 1.12; max-width: 500px; margin-bottom: 16px; }
+.hero-title .accent { color: #1d7794; }
+.meta-subtitle { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 400; color: #7a8086; line-height: 1.6; max-width: 460px; margin-top: 6px; }
+.badge-row { margin-top: 28px; display: flex; gap: 10px; flex-wrap: wrap; }
+.badge { font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600; padding: 5px 12px; border: 1px solid #dce2e6; border-radius: 4px; color: #7a8086; letter-spacing: 0.5px; }
+.summary-block { margin-top: 36px; padding: 20px 24px; background: rgba(29,119,148,0.05); border-left: 3px solid #1d7794; max-width: 480px; }
+.summary-text { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 400; color: #242627; line-height: 1.7; }
+.watermark { position: absolute; bottom: 110px; right: 80px; font-family: 'Inter', sans-serif; font-size: 68px; font-weight: 800; color: rgba(29,119,148,0.04); letter-spacing: 6px; text-transform: uppercase; z-index: 1; }
+.footer-line { position: absolute; bottom: 50px; left: 80px; width: 634px; height: 1px; background: #dce2e6; }
+.footer-meta { position: absolute; bottom: 60px; left: 80px; font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 400; color: #7a8086; letter-spacing: 2px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="cover">
+  <div class="bg-fill"></div>
+  <div class="deco-circle-1"></div>
+  <div class="deco-circle-2"></div>
+  <div class="deco-line-v"></div>
+  <div class="deco-line-h"></div>
+  <div class="deco-grid"><div class="h1"></div><div class="h2"></div><div class="h3"></div><div class="v1"></div><div class="v2"></div><div class="v3"></div></div>
+  <div class="watermark">BOTPLUGIN</div>
+  <div class="content">
+    <div class="kicker">ZEHLA ECOSYSTEM // INTELLIGENCE RESEARCH</div>
+    <h1 class="hero-title">BotPlugin<br>Analysis &<br><span class="accent">ZEHLA Integration</span></h1>
+    <p class="meta-subtitle">
+      Raspagem completa, analise tecnica e blueprint de adaptacao<br>
+      da plataforma BotPlugin para o ecossistema ZEHLA SMARTHOTEL.<br>
+      Blocos visuais, IAs, workflows e modelo de funcionamento.
+    </p>
+    <div class="badge-row">
+      <span class="badge">FLOW BUILDER</span>
+      <span class="badge">VOICE CLONING</span>
+      <span class="badge">PROMPT-TO-FLOW</span>
+      <span class="badge">CHROME EXTENSION</span>
+      <span class="badge">ML-POWERED</span>
+    </div>
+    <div class="summary-block">
+      <p class="summary-text">
+        Documento de pesquisa tecnica com blueprint completo de adaptacao. Analisa os blocos visuais,
+        integracoes de IA, tipos de workflows, modelo de precos e estrategia de Chrome Extension do BotPlugin,
+        propondo evolucoes com ML continuo, Voice Cloning e DNA Pre-Load para o ZEHLA.
+      </p>
+    </div>
+  </div>
+  <div class="footer-line"></div>
+  <div class="footer-meta">Maio 2026 &nbsp;&nbsp;|&nbsp;&nbsp; Confidencial</div>
+</div>
+</body>
+</html>

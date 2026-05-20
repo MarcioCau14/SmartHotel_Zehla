@@ -15,6 +15,10 @@ function getRedisUrlForDb(base: string | undefined, dbIndex: number): string | u
   if (!base) return undefined;
   const cleanBase = base.replace(/\/$/, '');
   const baseWithoutDb = cleanBase.replace(/\/\d+$/, '');
+  const isUpstash = cleanBase.includes('upstash.io');
+  if (isUpstash) {
+    return `${baseWithoutDb}/0`;
+  }
   return `${baseWithoutDb}/${dbIndex}`;
 }
 
@@ -26,16 +30,25 @@ function createRedisInstance(name: string, dbIndex: number) {
     return createMockRedis();
   }
 
+  if (process.env.NEXT_PHASE) {
+    return createMockRedis();
+  }
+
   try {
-    const redisOptions = {
+    const isTls = url.startsWith('rediss://');
+    const redisOptions: any = {
       maxRetriesPerRequest: null,
       lazyConnect: true,
-      enableOfflineQueue: !isDev,
+      enableOfflineQueue: false,
       retryStrategy: (times: number) => {
-        if (isDev && times > 3) return null;
+        if (times > 2) return null;
         return Math.min(times * 50, 2000);
       },
     };
+
+    if (isTls) {
+      redisOptions.tls = {};
+    }
 
     const client = new Redis(url, redisOptions);
 

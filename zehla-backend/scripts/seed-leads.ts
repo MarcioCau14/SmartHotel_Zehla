@@ -1,8 +1,9 @@
 import { PrismaClient } from '@prisma/client';
+
+
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Iniciando Seed de Leads Reais (~120 leads)...\n');
   
   await prisma.lead.deleteMany().catch(() => {});
 
@@ -26,7 +27,6 @@ async function main() {
   }
 
   await prisma.lead.createMany({ data: leads });
-  console.log(`✅ Foram inseridos ${leads.length} leads na base de prospecção.`);
 }
 
 main()

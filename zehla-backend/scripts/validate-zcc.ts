@@ -12,7 +12,7 @@ const endpoints = [
 
 const PORT = process.env.PORT || 3000;
 
-async function checkEndpoint(endpoint: any) {
+async function checkEndpoint(endpoint: unknown) {
   const start = Date.now();
   try {
     const res = await fetch(`http://localhost:${PORT}${endpoint.path}`);
@@ -27,29 +27,23 @@ async function checkEndpoint(endpoint: any) {
     }
 
     if (res.status === 200 && isJson) {
-      console.log(`✅ [PASS] ${endpoint.name} (${endpoint.path}) - ${latency}ms`);
       if (endpoint.name === 'Leads') {
-        console.log(`   └─ 📊 Encontrados ${parsed.stats?.total || 0} leads reais no DB`);
       }
       if (endpoint.name === 'Propriedades') {
-        console.log(`   └─ 🏨 ${(parsed || []).length} propriedades lidas`);
       }
       return true;
     } else {
-      console.log(`❌ [FAIL] ${endpoint.name} (${endpoint.path}) - Status: ${res.status} | JSON? ${isJson}`);
       if (res.status === 500) {
-        console.log(`   └─ Error Output: ${text}`);
       }
       return false;
     }
-  } catch (err: any) {
-    console.log(`🔴 [ERROR] ${endpoint.name} (${endpoint.path}): Failed to connect (${err.message}). Is dev server running?`);
+  } catch (err: unknown) {
     return false;
   }
 }
 
 async function runTests() {
-  console.log('🛡️ ZEHLA VALIDATOR - INICIANDO QA DAS APIs...\n');
+  try {
   let passed = 0;
   
   for (const ep of endpoints) {
@@ -57,11 +51,8 @@ async function runTests() {
     if (success) passed++;
   }
   
-  console.log(`\n🏁 Resultado: ${passed}/${endpoints.length} endpoints passaram.`);
   if (passed === endpoints.length) {
-    console.log('🚀 SUCESSO TOTAL! O ZCC está conectado aos dados reais.');
   } else {
-    console.log('⚠️ ALERTA: Algumas conexões falharam. Revise os logs.');
   }
 }
 

@@ -1,6 +1,8 @@
-import { SecretariaBridge, SecretariaLead } from '../src/lib/intelligence/secretaria-bridge';
 import * as dotenv from 'dotenv';
 import path from 'path';
+
+import { SecretariaBridge, SecretariaLead } from '../src/lib/intelligence/secretaria-bridge';
+
 
 // Carrega variáveis de ambiente
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
@@ -13,9 +15,6 @@ async function runSecretariaAction() {
   const query = process.argv[2] || 'Pousadas Premium em Imbituba SC';
   const limit = parseInt(process.argv[3]) || 3;
 
-  console.log(`\n🧠 [SECRETARIA-IA] Ativando Módulo de Inteligência...`);
-  console.log(`🔍 [PROSPECÇÃO] Buscando por: "${query}" (Limite: ${limit})`);
-  console.log(`🛡️ [STATUS] Protocolo de Auditoria Cética: ATIVO\n`);
 
   try {
     // Tenta rodar a prospecção real. 
@@ -25,7 +24,6 @@ async function runSecretariaAction() {
     let results: SecretariaLead[] = [];
     
     if (process.env.NODE_ENV === 'test' || !process.env.PYTHON_AVAILABLE) {
-      console.log('⚠️ [MOCK MODE] Ambiente de teste detectado. Gerando leads simulados...');
       results = [
         {
           name: 'Pousada do Rosa VIP',
@@ -48,19 +46,13 @@ async function runSecretariaAction() {
       results = await SecretariaBridge.searchLeads(query, limit);
     }
 
-    console.log(`📊 [RESULTADOS] Encontrados ${results.length} alvos potenciais:\n`);
 
     results.forEach((lead, index) => {
       const icon = lead.validationScore > 80 ? '⭐' : '📍';
-      console.log(`${index + 1}. ${icon} ${lead.name.toUpperCase()}`);
-      console.log(`   - Qualificação: ${lead.match_explanation}`);
-      console.log(`   - Score de Confiança: ${lead.validationScore}/100`);
-      console.log(`   - Status: ${lead.isValidated ? 'VALIDADO ✅' : 'REVISÃO NECESSÁRIA ⚠️'}\n`);
     });
 
-    console.log(`✅ [FINALIZADO] Rodada de inteligência concluída. Dados prontos para o ZCC.`);
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`\n💥 [ERRO] A Secretaria encontrou um obstáculo: ${error.message}`);
     process.exit(1);
   }

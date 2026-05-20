@@ -1,0 +1,60 @@
+name: ZEHLA OPERATIONAL SWARM
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # A cada 6 horas
+  workflow_dispatch:
+    inputs:
+      batch_leads:
+        description: 'JSON de leads brutos para ingestão (Opcional)'
+        required: false
+        default: '[]'
+      secretaria_query:
+        description: 'Termo de busca para a Secretaria-IA (Ex: Pousadas em Praia do Rosa)'
+        required: false
+        default: ''
+
+jobs:
+  operational-pulse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📦 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Install PNPM
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+          run_install: true
+
+      - name: 🛠️ System Pulse Check (Warmup)
+        env:
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          OPERATIONAL_API_KEY: ${{ secrets.OPERATIONAL_API_KEY }}
+        run: npx ts-node ./scripts/operational-warmup.ts
+
+      - name: 🚀 Batch Lead Ingestion
+        if: github.event.inputs.batch_leads != '[]'
+        env:
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          OPERATIONAL_API_KEY: ${{ secrets.OPERATIONAL_API_KEY }}
+        run: |
+          curl -X POST "${{ secrets.NEXTAUTH_URL }}/api/leads/batch" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "apiKey": "${{ secrets.OPERATIONAL_API_KEY }}",
+            "leads": ${{ github.event.inputs.batch_leads }}
+          }'
+
+      - name: 🧠 Secretaria-IA: Deep Search Intelligence
+        if: github.event.inputs.secretaria_query != ''
+        env:
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          OPERATIONAL_API_KEY: ${{ secrets.OPERATIONAL_API_KEY }}
+          NODE_ENV: test # Usamos test para mockar se o backend Python não estiver no GitHub
+        run: npx ts-node ./scripts/secretaria-deep-search.ts "${{ github.event.inputs.secretaria_query }}"

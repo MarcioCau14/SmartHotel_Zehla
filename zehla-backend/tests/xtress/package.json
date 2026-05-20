@@ -1,0 +1,27 @@
+{
+  "name": "xtress-test",
+  "version": "1.0.0",
+  "description": "Ecosystema de Teste de Estresse para ZEHLA SMARTHOTEL — Simula centenas de pousadas e milhares de mensagens WhatsApp",
+  "main": "cli.ts",
+  "scripts": {
+    "xtress": "npx ts-node cli.ts",
+    "smoke": "npx ts-node cli.ts smoke",
+    "list": "npx ts-node cli.ts list",
+    "run:baseline": "npx ts-node cli.ts dry-run domingo-a-noite",
+    "run:feriado": "npx ts-node cli.ts run feriado-bomba",
+    "run:crush": "npx ts-node cli.ts run crush-test",
+    "run:chaos": "npx ts-node cli.ts run chaos-monkey",
+    "dry": "npx ts-node cli.ts dry-run",
+    "help": "npx ts-node cli.ts help"
+  },
+  "keywords": ["stress-test", "zebla", "smarthotel", "pousadas", "whatsapp", "load-testing"],
+  "author": "ZEHLA SMARTHOTEL",
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^5.4.0",
+    "ts-node": "^10.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}

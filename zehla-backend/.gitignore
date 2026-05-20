@@ -24,6 +24,15 @@
 .DS_Store
 *.pem
 
+# reports
+.fsa-reports/
+
+# FSA backups
+.fsa-backups/
+
+# encrypted env
+*.env.encrypted
+
 # debug
 npm-debug.log*
 yarn-debug.log*

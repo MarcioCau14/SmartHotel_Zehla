@@ -1,0 +1,49 @@
+import { PrismaClient } from '@prisma/client';
+
+
+const prisma = new PrismaClient();
+
+async function debugCreation() {
+  
+  
+  try {
+    let admin = await prisma.user.findFirst({ where: { role: 'SUPER_ADMIN' } });
+    if (!admin) {
+      
+      admin = await prisma.user.create({
+        data: {
+          email: 'admin@smarthotel.ai',
+          name: 'Marcio Cau (ZCC Admin)',
+          password: process.env.ZEHLA_ADMIN_PASSWORD || 'DEPRECATED_DO_NOT_USE',
+          role: 'SUPER_ADMIN',
+        }
+      });
+    }
+    
+
+    
+    const prop = await prisma.property.create({
+      data: {
+        name: 'Pousada Debug',
+        slug: 'pousada-debug-' + Date.now(),
+        city: 'Imbituba',
+        state: 'SC',
+        address: 'Rua de Teste, 123',
+        plan: 'BETA_TESTER',
+        userId: admin.id,
+        registrationNumber: 'DEBUG/' + Date.now(),
+        status: 'ACTIVE'
+      }
+    });
+    
+
+  } catch (error: unknown) {
+    console.error('❌ [ERRO CRÍTICO]:', error);
+    if (error.code) console.error('Código do Prisma:', error.code);
+    if (error.meta) console.error('Metadados:', error.meta);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+debugCreation();

@@ -1,0 +1,31 @@
+import { PrismaClient } from '@prisma/client';
+
+
+const prisma = new PrismaClient();
+
+async function check() {
+  try {
+  const terminalLogs = await prisma.cognitiveTerminalLog.count();
+  const mlLogs = await prisma.mLInteractionLog.count();
+  const zmgMessages = await prisma.zMGMessage.count();
+  const memoryNodes = await prisma.memoryNode.count();
+  const guestProfiles = await prisma.guestProfile.count();
+
+  
+  
+  
+  
+  
+  
+  
+  if (terminalLogs > 0) {
+    const latest = await prisma.cognitiveTerminalLog.findMany({
+      orderBy: { timestamp: 'desc' },
+      take: 5
+    });
+    
+    latest.forEach(l => );
+  }
+}
+
+check().catch(console.error).finally(() => prisma.$disconnect());

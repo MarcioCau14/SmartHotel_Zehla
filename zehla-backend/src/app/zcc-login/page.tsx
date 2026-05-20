@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
 import { Shield, Mail, Lock, Eye, EyeOff, Loader2, ArrowLeft, Building2 } from 'lucide-react';
-
-// Admin credentials (env-based in production)
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ZCC_ADMIN_EMAIL || 'admin@smarthotel.com';
 const ADMIN_PASSWORD_HASH = process.env.NEXT_PUBLIC_ZCC_ADMIN_PASSWORD || 'zehla2026';
 
@@ -18,7 +16,7 @@ export default function ZCCLoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+e.preventDefault();
     if (!email.trim() || !senha.trim()) {
       setError('Preencha todos os campos');
       return;
@@ -173,7 +171,7 @@ export default function ZCCLoginPage() {
               Painel exclusivo SMARTHOTEL / ZEHLA Technologies
             </p>
             <p className="text-[10px] text-neutral-700">
-              Credenciais padrão: admin@smarthotel.com / zehla2026 (alterar em produção)
+              Acesso restrito a administradores autorizados
             </p>
           </div>
         </motion.div>

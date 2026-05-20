@@ -100,3 +100,7 @@ export function checkPasswordStrength(password: string): {
 
   return { score: Math.min(score, 100), feedback, isValid: password.length >= 6 };
 }
+
+export const authOptions = {
+  providers: [],
+};

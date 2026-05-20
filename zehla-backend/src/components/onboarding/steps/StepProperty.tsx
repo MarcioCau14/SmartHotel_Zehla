@@ -38,8 +38,8 @@ const tiposPropriedade = [
 ];
 
 const paymentMethods = [
-  { id: 'pix', label: 'PIX', icon: QrCode, description: 'Pagamento instantâneo' },
-  { id: 'cartao', label: 'Cartão de Crédito', icon: CreditCard, description: 'Visa, Master, Elo' },
+  { id: 'pix', label: 'PIX', icon: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><rect width="5" height="5" x="16" y="16" rx="1"/></svg>, description: 'Pagamento instantâneo' },
+  { id: 'cartao', label: 'Cartão de Crédito', icon: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>, description: 'Visa, Master, Elo' },
 ];
 
 export function StepProperty({ data, onChange }: StepPropertyProps) {

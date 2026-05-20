@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+@page {
+  size: 794px 1123px;
+  margin: 0;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 794px;
+  height: 1123px;
+  background: #f5f5f4;
+  overflow: visible;
+}
+
+.cover-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Layer 0 - Background */
+.layer-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: #f5f5f4;
+}
+
+/* Layer 1 - Background decorative */
+.layer-bg-decor {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.grid-pattern {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(99,90,62,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,90,62,0.04) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Layer 2 - Structure */
+.layer-structure {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.anchor-line {
+  position: absolute;
+  left: 12%;
+  top: 10%;
+  width: 6px;
+  height: 80%;
+  background: #635a3e;
+  border-radius: 3px;
+}
+
+.meta-line {
+  position: absolute;
+  left: calc(12% + 30pt);
+  top: 74%;
+  width: 380px;
+  height: 1px;
+  background: rgba(99,90,62,0.4);
+}
+
+/* Layer 3 - Content */
+.layer-content {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  padding: 0;
+}
+
+.content-area {
+  position: absolute;
+  left: calc(12% + 30pt);
+  right: 12%;
+  top: 0;
+  bottom: 0;
+}
+
+.kicker {
+  position: absolute;
+  top: 15%;
+  left: 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 13pt;
+  font-weight: 400;
+  letter-spacing: 3pt;
+  text-transform: uppercase;
+  color: rgba(32,32,29,0.55);
+  white-space: nowrap;
+}
+
+.hero-title {
+  position: absolute;
+  top: 28%;
+  left: 0;
+  right: 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 52pt;
+  font-weight: 800;
+  line-height: 1.12;
+  color: #20201d;
+  letter-spacing: -1pt;
+}
+
+.hero-title .accent {
+  color: #2d92b4;
+}
+
+.summary {
+  position: absolute;
+  top: 52%;
+  left: 0;
+  right: 40px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15pt;
+  font-weight: 300;
+  line-height: 1.65;
+  color: rgba(32,32,29,0.7);
+}
+
+.meta-block {
+  position: absolute;
+  top: 76%;
+  left: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.meta-block .label {
+  font-size: 11pt;
+  font-weight: 600;
+  color: #2d92b4;
+  letter-spacing: 1pt;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.meta-block .value {
+  font-size: 16pt;
+  font-weight: 400;
+  color: #20201d;
+}
+
+.footer-line {
+  position: absolute;
+  bottom: 5%;
+  left: calc(12% + 30pt);
+  right: 12%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-line span {
+  font-family: 'Inter', sans-serif;
+  font-size: 10pt;
+  font-weight: 400;
+  letter-spacing: 2pt;
+  text-transform: uppercase;
+  color: rgba(32,32,29,0.4);
+}
+
+.badge {
+  position: absolute;
+  top: 15%;
+  right: 12%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2d92b4;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.badge-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 10pt;
+  font-weight: 600;
+  letter-spacing: 1.5pt;
+  text-transform: uppercase;
+  color: #2d92b4;
+}
+</style>
+</head>
+<body>
+<div class="cover-container">
+  <div class="layer-bg"></div>
+  <div class="layer-bg-decor">
+    <div class="grid-pattern"></div>
+  </div>
+  <div class="layer-structure">
+    <div class="anchor-line"></div>
+    <div class="meta-line"></div>
+  </div>
+  <div class="layer-content">
+    <div class="content-area">
+      <div class="kicker">Blueprint de Arquitetura Tecnica</div>
+      <div class="hero-title">
+        <span class="accent">ZEHLA</span><br/>
+        Voice<br/>
+        Intelligence
+      </div>
+      <div class="summary">
+        Evolucao 2: DNA-Driven Voice Adaptation + Evolucao 4: Voice Loop em Tempo Real.
+        Arquitetura completa de comunicacao vocal contextual e bidirecional para o primeiro
+        PMS hoteleiro com inteligencia de voz integrada ao WhatsApp.
+      </div>
+      <div class="meta-block">
+        <div class="label">Documento</div>
+        <div class="value">Arquitetura de Referencia v2.0</div>
+      </div>
+    </div>
+    <div class="badge">
+      <div class="badge-dot"></div>
+      <div class="badge-text">SmHotel</div>
+    </div>
+    <div class="footer-line">
+      <span>Zehla AI Ecosystem</span>
+      <span>Maio 2026</span>
+      <span>Confidencial</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

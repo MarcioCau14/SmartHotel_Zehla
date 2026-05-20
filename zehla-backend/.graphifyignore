@@ -1,0 +1,36 @@
+# Assets Binários e Mídia
+*.mp3
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.gif
+*.wav
+*.mp4
+*.mov
+
+# Documentos Pesados
+*.pdf
+
+# Pastas de Sistema/Build
+node_modules/
+.next/
+dist/
+build/
+.vscode/
+.DS_Store
+.agent/
+.agents/
+.brain/
+INFRA/prisma/migrations/
+
+# Git Internos
+**/.git/
+
+# Mocks e Temporários
+INTELLIGENCE/ARCHIVE/
+BLUEPRINTS/ARCHIVE/
+scratch/
+scripts/
+**/mocks/
+**/tests/data/

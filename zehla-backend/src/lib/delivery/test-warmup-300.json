@@ -1,0 +1,20 @@
+[
+  {
+    "id": "lead_001",
+    "pousadaName": "Pousada Beira Mar",
+    "email": "contato@beiramar.com.br",
+    "whatsapp": "5511999990001",
+    "notes": "Reclamação sobre taxa de 15% do Booking. Trauma de comissão.",
+    "qtdQuartos": 12,
+    "score": 70
+  },
+  {
+    "id": "lead_002",
+    "pousadaName": "Eco Lodge Pipa",
+    "email": "reservas@ecopipa.com",
+    "whatsapp": "5511999990002",
+    "notes": "Baixa ocupação no meio da semana. Precisa de reservas diretas.",
+    "qtdQuartos": 25,
+    "score": 85
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://github.com/fishaudio/fish-speech",
+    "name": "fishaudio/fish-speech: SOTA Open Source TTS",
+    "snippet": "Fish Audio S2 Pro is the most advanced multimodal model developed by Fish Audio. Trained on over 10 million hours of audio data covering more than 80 languages, ...",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.bentoml.com/blog/exploring-the-world-of-open-source-text-to-speech-models",
+    "name": "The Best Open-Source Text-to-Speech Models in 2026",
+    "snippet": "Apr 5, 2026 — SOTA voice cloning with cross-lingual generalization: Fish Audio S2 can clone any voice from a short reference sample and generate speech in a ...",
+    "host_name": "www.bentoml.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://findskill.ai/blog/best-open-source-tts-2026",
+    "name": "Best Open-Source TTS in 2026: 5 Models, Ranked by Quality",
+    "snippet": "Mar 28, 2026 — Vo xtral TTS just beat ElevenLabs in blind tests. The 5 best open-source text-to-speech models you can self-host in 2026, ranked by quality and",
+    "host_name": "findskill.ai",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/wildminder/awesome-ai-voice",
+    "name": "wildminder/awesome-ai-voice: List of open-source TTS,",
+    "snippet": "Mar 30, 2026 — A curated list of open-source Text-to-Speech (TTS), voice cloning, and music generation models . Models are sorted by release date (newest first) ...",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.siliconflow.com/articles/en/best-open-source-models-for-voice-cloning",
+    "name": "The Best Open Source Models for Voice Cloning in 2026",
+    "snippet": "Discover 2026's best open source voice cloning models: Fish Speech V1.5 , CosyVoice2-0.5B, and IndexTTS-2. Compare performance, latency, and multilingual ...",
+    "host_name": "www.siliconflow.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.befreed.ai/blog/best-tts-model-2026",
+    "name": "Best TTS Model 2026: Top 9 AI Voice Generators Ranked",
+    "snippet": "Mar 22, 2026 — Compare the best TTS models in 2026 . From Fish Audio to ElevenLabs and open-source picks, find the right AI voice generator for your needs.",
+    "host_name": "www.befreed.ai",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/LocalLLaMA/comments/1lnejb6/what_is_the_best_open_source_tts_model_with_multi",
+    "name": "What is the best open source TTS model with multi",
+    "snippet": "I'm currently developing an addon for Anki (an open source flashcard software). One part of my plan is to integrate an option to generate audio samples ...",
+    "host_name": "www.reddit.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/machine-learns/xtts-open-source-tts-in-13-languages-e05c19782a03",
+    "name": "open-source TTS in 13 languages with voice-cloning.",
+    "snippet": "XTTS uses the latest generative AI techniques to deliver faster, higher-quality speech in 13 different languages. It is now accessible with 🐸TTS.",
+    "host_name": "medium.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.codesota.com/guides/tts-models",
+    "name": "Best Open-Source TTS Models Compared | 2026 Guide",
+    "snippet": "In-depth comparison of 8 leading open - source text-to-speech models : Kokoro, XTTS v2, Bark, Piper, Fish Speech , Dia, F5- TTS , and Parler- TTS .",
+    "host_name": "www.codesota.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.resemble.ai/resources/best-open-source-ai-voice-cloning-tools",
+    "name": "Best Open Source AI Voice Cloning Tools in 2026",
+    "snippet": "Nov 28, 2025 — Top open-source voice cloning tools in 2026 include Chatterbox , Coqui XTTS, OpenVoice, Bark, RVC, VITS variants, and Mozilla TTS—each offering ...",
+    "host_name": "www.resemble.ai",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

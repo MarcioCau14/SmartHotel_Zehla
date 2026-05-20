@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 import { Redis } from 'ioredis';
 import { jwtVerify } from 'jose';
 
+import type { NextRequest } from 'next/server';
+
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
-const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET || 'zehla_super_secret_2026_change_me');
+const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET!);
 const ZCC_PATHS = ['/zcc', '/api/zcc'];
 
 /**
@@ -15,7 +16,7 @@ const ZCC_PATHS = ['/zcc', '/api/zcc'];
 const PROTECTED_ROUTES = ['/dashboard'];
 const ADMIN_ONLY_ROUTES = ['/api/admin'];
 
-export async function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) : void {
   const ip = request.ip ?? request.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown';
   const tenantId = request.headers.get('x-tenant-id') || 'global';
 
@@ -58,17 +59,6 @@ export async function proxy(request: NextRequest) {
       ?? request.cookies.get('zehla-token')?.value
       ?? request.headers.get('Authorization')?.replace('Bearer ', '');
 
-    if (token === 'fake-admin-token') {
-      const requestHeaders = new Headers(request.headers);
-      requestHeaders.set('x-zcc-user-id', 'admin-id');
-      requestHeaders.set('x-zcc-role', 'SUPER_ADMIN');
-      requestHeaders.set('x-zcc-tenant-id', 'global');
-
-      return NextResponse.next({
-        request: { headers: requestHeaders },
-      });
-    }
-
     if (!token) {
       if (pathname.startsWith('/api')) {
         return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -76,8 +66,7 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL('/zcc-login', request.url));
     }
 
-    try {
-      const { payload } = await jwtVerify(token, SECRET_KEY, { clockTolerance: 60 });
+  const { payload } = await jwtVerify(token, SECRET_KEY, { clockTolerance: 60 });
       
       if (payload.role !== 'SUPER_ADMIN') {
         const url = request.nextUrl.clone();

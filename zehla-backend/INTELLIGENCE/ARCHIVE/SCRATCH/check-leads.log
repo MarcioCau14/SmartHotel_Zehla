@@ -1,0 +1,79 @@
+PrismaClientValidationError: 
+Invalid `prisma.lead.groupBy()` invocation in
+/Users/marciocau/zehla-backend/scratch/check-leads.ts:17:39
+
+  14   }
+  15 });
+  16 
+→ 17 const topCities = await prisma.lead.groupBy({
+       select: {
+         _count: {
+           select: {
+             _all: true
+           }
+         },
+         city: true,
+         state: true
+       },
+       by: [
+         "city",
+         "state"
+       ],
+       where: {
+         state: "SC"
+       },
+       orderBy: {
+         _count: {
+           _all: "desc",
+           ~~~~
+     ?     id?: SortOrder,
+     ?     name?: SortOrder,
+     ?     email?: SortOrder,
+     ?     phone?: SortOrder,
+     ?     whatsapp?: SortOrder,
+     ?     property?: SortOrder,
+     ?     category?: SortOrder,
+     ?     city?: SortOrder,
+     ?     state?: SortOrder,
+     ?     region?: SortOrder,
+     ?     latitude?: SortOrder,
+     ?     longitude?: SortOrder,
+     ?     googleRating?: SortOrder,
+     ?     roomsCount?: SortOrder,
+     ?     location?: SortOrder,
+     ?     estimatedValues?: SortOrder,
+     ?     qualification?: SortOrder,
+     ?     validationStatus?: SortOrder,
+     ?     buyingBehavior?: SortOrder,
+     ?     intentSignals?: SortOrder,
+     ?     socialMedia?: SortOrder,
+     ?     site?: SortOrder,
+     ?     phoneSecondary?: SortOrder,
+     ?     validationScore?: SortOrder,
+     ?     score?: SortOrder,
+     ?     conversionScore?: SortOrder,
+     ?     funnelStage?: SortOrder,
+     ?     behavioralProfile?: SortOrder,
+     ?     lastInteractionAt?: SortOrder,
+     ?     painPoints?: SortOrder,
+     ?     source?: SortOrder,
+     ?     status?: SortOrder,
+     ?     metadata?: SortOrder,
+     ?     isCanary?: SortOrder,
+     ?     createdAt?: SortOrder,
+     ?     updatedAt?: SortOrder,
+     ?     propertyId?: SortOrder
+         }
+       },
+       take: 10
+     })
+
+Unknown argument `_all`. Did you mean `name`? Available options are marked with ?.
+    at wn (/Users/marciocau/zehla-backend/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js:29:1363)
+    at $n.handleRequestError (/Users/marciocau/zehla-backend/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js:121:6958)
+    at $n.handleAndLogRequestError (/Users/marciocau/zehla-backend/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js:121:6623)
+    at $n.request (/Users/marciocau/zehla-backend/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js:121:6307)
+    at async l (/Users/marciocau/zehla-backend/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js:130:9633)
+    at async main (/Users/marciocau/zehla-backend/scratch/check-leads.ts:17:21) {
+  clientVersion: '5.22.0'
+}

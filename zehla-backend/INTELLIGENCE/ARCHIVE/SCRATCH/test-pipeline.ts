@@ -1,0 +1,88 @@
+import { v4 as uuidv4 } from 'uuid';
+
+import { captureQueue, CLUSTER_THRESHOLDS } from '../src/lib/queues';
+import { prisma } from '../src/lib/prisma';
+
+
+// scratch/test-pipeline.ts — Teste de Stress do ZEHLA Brain v4
+
+async function testPipeline() {
+  try {
+  const testEmail = `test_lead_${Date.now()}@example.com`;
+  
+
+  // 1. Simular Evento AWARE (+5 pts)
+  
+  await captureQueue.add('capture-event', {
+    trackingId: uuidv4(),
+    email: testEmail,
+    eventType: 'EMAIL_OPEN',
+    eventSource: 'test_suite',
+    metadata: { campaign: 'welcome_series' }
+  });
+
+  // 2. Simular Evento INTERESTED (+15 pts)
+  
+  await captureQueue.add('capture-event', {
+    trackingId: uuidv4(),
+    email: testEmail,
+    eventType: 'LINK_CLICK',
+    eventSource: 'test_suite',
+    metadata: { url: 'https://zehla.com/pricing' }
+  });
+
+  // 3. Simular Evento ENGAGED (+30 pts)
+  
+  await captureQueue.add('capture-event', {
+    trackingId: uuidv4(),
+    email: testEmail,
+    eventType: 'WHATSAPP_REPLY',
+    eventSource: 'test_suite',
+    metadata: { message: 'Quero saber mais sobre o plano PRO' }
+  });
+
+  // 4. Simular Evento HOT (+50 pts) -> Total deve passar de 60
+  
+  await captureQueue.add('capture-event', {
+    trackingId: uuidv4(),
+    email: testEmail,
+    eventType: 'TRIAL_STARTED',
+    eventSource: 'test_suite',
+    metadata: { plan: 'PRO' }
+  });
+
+  
+  await new Promise(r => setTimeout(r, 10000));
+
+  // 5. Verificar Resultado no Banco
+  const lead = await prisma.lead.findFirst({
+    where: { email: testEmail },
+    include: { events: true, actionLogs: true }
+  }) as any;
+
+  if (!lead) {
+    console.error('❌ Lead não encontrado no banco após processamento!');
+    return;
+  }
+
+  
+  `);
+  
+  
+  
+  
+
+  lead.actionLogs.forEach(log => {
+    `);
+  });
+
+  if (lead.cluster === 'HOT' && lead.conversionScore >= CLUSTER_THRESHOLDS.HOT) {
+    
+  } else {
+    
+  }
+}
+
+testPipeline()
+  .catch(console.error)
+  .finally(() => process.exit(0));

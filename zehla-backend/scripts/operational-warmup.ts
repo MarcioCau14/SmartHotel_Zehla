@@ -1,6 +1,7 @@
-import axios from 'axios';
 import * as dotenv from 'dotenv';
+import axios from 'axios';
 import path from 'path';
+
 
 // Carrega variáveis de ambiente do .env na raiz
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
@@ -13,7 +14,6 @@ const OPERATIONAL_KEY = process.env.OPERATIONAL_API_KEY || 'zehla_swarm_secret';
  * Script para "abrir" o sistema via HTTP (Pulse Check) e processar leads.
  */
 async function runWarmup() {
-  console.log('⚡ [OPERATIONAL] Iniciando Pulso do Ecossistema...');
 
   const targets = [
     { name: 'ZCC (Central)', path: '/zcc' },
@@ -23,21 +23,18 @@ async function runWarmup() {
   ];
 
   // 1. SYSTEM PULSE (Zero Browser "Opening")
-  console.log('\n🔍 [PULSE CHECK] Validando atividade das instâncias:');
   for (const target of targets) {
     try {
       const start = Date.now();
       const res = await axios.get(`${BASE_URL}${target.path}`, { timeout: 10000 });
       const duration = Date.now() - start;
-      console.log(`✅ ${target.name}: Status ${res.status} em ${duration}ms`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`❌ ${target.name}: FALHA (${error.message})`);
     }
   }
 
   // 2. LEAD INGESTION (Se houver lote pendente)
   // Nota: Em GHA, este script pode ser estendido para ler um JSON de arquivo.
-  console.log('\n🚀 [WARMUP] Sistema pronto para operações cloud.');
 }
 
 runWarmup().catch(err => {

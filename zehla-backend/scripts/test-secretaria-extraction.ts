@@ -1,6 +1,8 @@
-import { WhatsappPersonaLearner } from '../src/lib/brain/whatsapp-persona-learner'
-import { writeFileSync, mkdirSync, existsSync } from 'fs'
 import { join } from 'path'
+import { writeFileSync, mkdirSync, existsSync } from 'fs'
+
+import { WhatsappPersonaLearner } from '../src/lib/brain/whatsapp-persona-learner'
+
 
 async function testSecretariaExtraction() {
   const targetNumber = '13 98166-7069'
@@ -8,8 +10,6 @@ async function testSecretariaExtraction() {
   const csvFileName = 'contatos_whatsapp_zehla.csv'
   const csvPath = join(downloadPath, csvFileName)
 
-  console.log(`🧠 [Secretaria-IA] Iniciando extração para o número: ${targetNumber}...`)
-  console.log(`🔗 [Evolution API] Conectando à instância de Marcio...`)
 
   // Simulação de contatos extraídos
   const mockContacts = [
@@ -19,7 +19,6 @@ async function testSecretariaExtraction() {
     { nome: 'Chalé Eco', telefone: '13 99988-7766', categoria: 'pousada', status: 'QUALIFIED' },
   ]
 
-  console.log(`✅ [Evolution API] ${mockContacts.length} contatos extraídos com sucesso.`)
 
   // Simulação de histórico de mensagens para extração de tom de voz
   const mockHistory = [
@@ -30,7 +29,6 @@ async function testSecretariaExtraction() {
     "Bom dia! O café da manhã é servido das 8h às 10h30. Te esperamos!"
   ]
 
-  console.log(`🕵️ [Secretaria-IA] Analisando histórico de mensagens para extrair Tom de Voz...`)
 
   // Usando a lógica do Persona Learner (mockado para este teste rápido)
   const persona = {
@@ -44,16 +42,8 @@ async function testSecretariaExtraction() {
     ]
   }
 
-  console.log(`\n✨ [PERFIL EXTRAÍDO — SECRETARIA-IA]`)
-  console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
-  console.log(`🎭 TOM DE VOZ: ${persona.tone}`)
-  console.log(`🗣️ EXPRESSÕES: ${persona.commonExpressions.join(', ')}`)
-  console.log(`📏 ESTILO: ${persona.style}`)
-  console.log(`📜 REGRAS: ${persona.rules.join(' | ')}`)
-  console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`)
 
   // Gerar CSV
-  console.log(`💾 Gerando arquivo CSV em: ${csvPath}`)
   const csvContent = [
     'Nome,Telefone,Categoria,Status',
     ...mockContacts.map(c => `${c.nome},${c.telefone},${c.categoria},${c.status}`)
@@ -64,12 +54,10 @@ async function testSecretariaExtraction() {
       mkdirSync(downloadPath, { recursive: true })
     }
     writeFileSync(csvPath, csvContent)
-    console.log(`✅ CSV salvo com sucesso em Downloads!`)
   } catch (err) {
     console.error(`❌ Erro ao salvar CSV:`, err)
   }
 
-  console.log(`\n🚀 [Zehla Brain] Teste concluído. O cérebro aprendeu seu estilo de atendimento!`)
 }
 
 testSecretariaExtraction().catch(console.error)

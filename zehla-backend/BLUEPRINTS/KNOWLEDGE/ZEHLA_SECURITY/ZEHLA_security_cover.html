@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,700;1,9..40,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+@page { size: 794px 1123px; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 794px; height: 1123px; background: #f8f6f3; }
+@media screen {
+  html { height: auto; display: flex; justify-content: center; }
+  body { transform-origin: top center; scale: min(1, calc(100vh / 1123)); margin: 0 auto; }
+}
+
+.cover {
+  position: relative;
+  width: 794px;
+  height: 1123px;
+  background: #f8f6f3;
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+}
+
+/* Layer 0: Background fill */
+.bg-fill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(175deg, #f8f6f3 0%, #f0ece6 55%, #e8e2d8 100%);
+}
+
+/* Layer 1: Decorative accents */
+.accent-line-v {
+  position: absolute;
+  left: 72px;
+  top: 120px;
+  width: 3px;
+  height: 320px;
+  background: #c14c25;
+  opacity: 0.7;
+}
+.accent-line-h {
+  position: absolute;
+  left: 72px;
+  top: 440px;
+  width: 180px;
+  height: 2px;
+  background: #c14c25;
+  opacity: 0.4;
+}
+.accent-circle {
+  position: absolute;
+  right: -80px;
+  top: -80px;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  border: 1.5px solid #c14c25;
+  opacity: 0.08;
+}
+.accent-circle-2 {
+  position: absolute;
+  right: -20px;
+  top: -20px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  border: 1px solid #c14c25;
+  opacity: 0.05;
+}
+.accent-dots {
+  position: absolute;
+  right: 85px;
+  bottom: 200px;
+  display: grid;
+  grid-template-columns: repeat(5, 8px);
+  gap: 12px;
+  opacity: 0.12;
+}
+.accent-dots span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #c14c25;
+}
+.accent-grid {
+  position: absolute;
+  left: 72px;
+  bottom: 100px;
+  width: 200px;
+  height: 200px;
+  background-image:
+    linear-gradient(#c14c25 0.5px, transparent 0.5px),
+    linear-gradient(90deg, #c14c25 0.5px, transparent 0.5px);
+  background-size: 24px 24px;
+  opacity: 0.04;
+}
+
+/* Layer 2: Structure lines */
+.struct-line {
+  position: absolute;
+  left: 72px;
+  right: 72px;
+  bottom: 180px;
+  height: 1px;
+  background: #c14c25;
+  opacity: 0.15;
+}
+
+/* Layer 3: Text content */
+.kicker {
+  position: absolute;
+  left: 96px;
+  top: 280px;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #c14c25;
+  opacity: 0.75;
+}
+.hero {
+  position: absolute;
+  left: 96px;
+  top: 316px;
+  font-family: 'DM Serif Display', serif;
+  font-size: 48px;
+  font-weight: 400;
+  line-height: 1.15;
+  color: #202224;
+  max-width: 550px;
+}
+.hero b {
+  font-weight: 400;
+  color: #c14c25;
+}
+.meta {
+  position: absolute;
+  left: 96px;
+  top: 470px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #6d7478;
+  max-width: 460px;
+}
+.summary-block {
+  position: absolute;
+  left: 96px;
+  top: 560px;
+  width: 500px;
+  padding: 20px 24px;
+  background: rgba(193, 76, 37, 0.04);
+  border-left: 3px solid #c14c25;
+  border-radius: 0 8px 8px 0;
+}
+.summary-block p {
+  font-size: 13px;
+  line-height: 1.65;
+  color: #4a4d50;
+}
+
+.footer-info {
+  position: absolute;
+  left: 96px;
+  bottom: 130px;
+  font-size: 12px;
+  color: #6d7478;
+  line-height: 1.8;
+}
+.footer-info .tag {
+  display: inline-block;
+  padding: 3px 10px;
+  background: #c14c25;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-radius: 3px;
+  margin-bottom: 10px;
+}
+
+/* Background watermark */
+.watermark {
+  position: absolute;
+  right: 72px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  font-size: 140px;
+  font-family: 'DM Serif Display', serif;
+  color: #c14c25;
+  opacity: 0.025;
+  white-space: nowrap;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+<div class="cover">
+  <!-- Layer 0 -->
+  <div class="bg-fill"></div>
+  <!-- Layer 1 -->
+  <div class="accent-line-v"></div>
+  <div class="accent-line-h"></div>
+  <div class="accent-circle"></div>
+  <div class="accent-circle-2"></div>
+  <div class="accent-dots">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+  <div class="accent-grid"></div>
+  <!-- Layer 2 -->
+  <div class="struct-line"></div>
+  <!-- Watermark -->
+  <div class="watermark">ZEHLA SECURITY</div>
+  <!-- Layer 3 -->
+  <div class="kicker">ZEHLA Ecosystem</div>
+  <div class="hero">Blueprint de<br><b>Seguranca de Dados</b></div>
+  <div class="meta">
+    Arquitetura completa de protecao para o ecossistema<br>
+    ZEHLA / SMARTHOTEL — LGPD, Criptografia, Controle de<br>
+    Acesso, Auditoria e Resposta a Incidentes
+  </div>
+  <div class="summary-block">
+    <p>
+      Documento tecnico de referencia para implementacao dos 7 pilares de seguranca:
+      conformidade LGPD, criptografia AES-256-GCM, RBAC com MFA, protecao de sessoes
+      WhatsApp, audit logging imutavel, backup 3-2-1 e plano de resposta a incidentes
+      com notificacao ANPD em 72h.
+    </p>
+  </div>
+  <div class="footer-info">
+    <div class="tag">Confidencial</div>
+    <div>Versao 1.0 — Maio 2025</div>
+    <div>SMARTHOTEL Tecnologia para Hospitalidade</div>
+  </div>
+</div>
+</body>
+</html>

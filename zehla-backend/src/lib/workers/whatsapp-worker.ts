@@ -2,6 +2,7 @@ import { Worker, Job } from 'bullmq';
 import { redisWorker } from '@/lib/redis';
 import { prisma } from '@/lib/prisma';
 import { orchestrator } from '@/lib/brain/agent-orchestrator';
+import { ProcessPaymentProofUseCase } from '@/lib/brain/use-cases/ProcessPaymentProofUseCase';
 import { ReceiptExtractor } from '@/lib/brain/receipt-extractor';
 import { EmailService } from '@/lib/email/email-service';
 import axios from 'axios';
@@ -24,49 +25,27 @@ export const whatsappWorker = new Worker('whatsapp-inbound', async (job: Job) =>
       const receipt = await ReceiptExtractor.extract(mediaData.base64 || content || '');
 
       if (receipt && receipt.isConfirmed) {
-        // 1. CONFRONTO FINANCEIRO (Veda-Fraude)
-        const reservation = await prisma.reservation.findFirst({
-          where: { propertyId, guestPhone: phone, status: 'PENDING_PAYMENT' },
-          orderBy: { createdAt: 'desc' }
-        });
+        // 1. CONFRONTO FINANCEIRO (Caso de Uso Centralizado com Veda-Fraude 2.0)
+        const result = await ProcessPaymentProofUseCase.execute(phone, propertyId, receipt);
 
-        const isAmountMatch = reservation && Math.abs(receipt.amount - reservation.totalPrice) < 0.01;
-
-        if (isAmountMatch && reservation) {
-          console.log(`💰 [FINANCIAL SUCCESS] Valor exato confirmado: R$ ${receipt.amount}`);
-
-          await prisma.payment.create({
-            data: {
-              amount: receipt.amount,
-              status: 'PAID',
-              externalId: receipt.transactionId,
-              propertyId,
-              reservationId: reservation.id,
-              metadata: JSON.stringify(receipt)
-            }
-          });
-
-          await prisma.reservation.update({
-            where: { id: reservation.id },
-            data: { status: 'PAID' }
-          });
-
-          const successMsg = `Recebi seu comprovante de R$ ${receipt.amount.toLocaleString('pt-BR')}! 🎉 Sua reserva está confirmada.`;
+        if (result.success) {
+          console.log(`💰 [FINANCIAL SUCCESS] Pagamento confirmado via UseCase para ${phone.slice(-4)}`);
+          const successMsg = `Recebi seu comprovante de R$ ${result.amount?.toLocaleString('pt-BR')}! 🎉 Sua reserva está confirmada.`;
           await sendWhatsAppMessage(propertyId, phone, successMsg);
         } else {
-          // 🚨 DIVERGÊNCIA OU FRAUDE DETECTADA
-          console.warn(`🚨 [HIGH SEVERITY] Fraude ou divergência para ${phone}. Esperado: ${reservation?.totalPrice} | Recebido: ${receipt.amount}`);
+          // 🚨 DIVERGÊNCIA OU FALHA NA LOCALIZAÇÃO
+          console.warn(`🚨 [HIGH SEVERITY] Falha no processamento automático para ${phone.slice(-4)}: ${result.message}`);
 
           await prisma.securityAlert.create({
             data: {
               tenantId: propertyId,
-              alertType: 'PAYMENT_FRAUD_ATTEMPT',
+              alertType: 'PAYMENT_MANUAL_REVIEW_REQUIRED',
               severity: 'HIGH',
-              metadata: JSON.stringify({ phone, expected: reservation?.totalPrice, received: receipt.amount, receipt })
+              metadata: JSON.stringify({ phone, receipt, reason: result.message })
             }
           });
 
-          const alertMsg = `Houve uma divergência no valor do seu comprovante. Nossa equipe fará a conferência manual agora mesmo.`;
+          const alertMsg = `Recebi seu comprovante, mas precisei encaminhar para nossa equipe conferir manualmente (ID: ${result.message}). Em breve te aviso!`;
           await sendWhatsAppMessage(propertyId, phone, alertMsg);
         }
 
@@ -90,7 +69,7 @@ export const whatsappWorker = new Worker('whatsapp-inbound', async (job: Job) =>
     const isEmailFallback = await redisWorker.get('config:global:force_email_fallback');
 
     if (isEmailFallback) {
-      console.log(`✉️ [HEALED] Fallback ativo. Enviando resposta via E-mail para ${phone}`);
+      console.log(`✉️ [HEALED] Fallback ativo. Enviando resposta via canal de redundância para o final ${phone.slice(-4)}`);
       const lead = await prisma.lead.findFirst({ where: { phone } });
       if (lead) {
         await EmailService.sendSwipeEmail(lead, { content: result.response, tier: 'RECOVERY' });
@@ -119,7 +98,7 @@ export const whatsappWorker = new Worker('whatsapp-inbound', async (job: Job) =>
     });
 
   } catch (error) {
-    console.error(`❌ [WORKER ERROR] Falha ao processar job ${job.id}:`, error);
+    console.error(`❌ [WORKER ERROR] Falha ao processar job ${job.id}`);
     throw error; // BullMQ Retry
   }
 }, { 
@@ -149,9 +128,9 @@ async function sendWhatsAppMessage(propertyId: string, number: string, text: str
       headers: { 'apikey': evolutionKey }
     });
     
-    console.log(`📤 [SENT] Resposta enviada para ${number}`);
+    console.log(`📤 [SENT] Resposta enviada com sucesso.`);
   } catch (err) {
-    console.error(`❌ [EVOLUTION ERROR] Falha ao enviar para ${number}:`, err);
+    console.error(`❌ [EVOLUTION ERROR] Falha no envio via Evolution API.`);
     throw err; // Força o Retry do BullMQ
   }
 }

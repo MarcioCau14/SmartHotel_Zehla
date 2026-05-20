@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+@page { size: 794px 1123px; margin: 0; }
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:794px; height:1123px; background:#f5f4f3; font-family:'Inter',sans-serif; overflow:hidden; }
+.cover-base { position:absolute; inset:0; background:#f5f4f3; z-index:0; }
+.cover-bg { position:absolute; inset:0; overflow:hidden; z-index:1; }
+.bg-grid {
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(43,148,183,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(43,148,183,0.04) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+.cover-lines { position:absolute; inset:0; z-index:2; }
+.anchor-line {
+  position:absolute;
+  left: 95.28px;
+  top: 112.30000000000001px;
+  width: 6px;
+  height: 898.4000000000001px;
+  background: #2b94b7;
+  border-radius: 3px;
+}
+.meta-line {
+  position:absolute;
+  left: 125.28px;
+  top: 808.56px;
+  width: 277.9px;
+  height: 1px;
+  background: rgba(43,148,183,0.4);
+}
+.cover-content { position:absolute; inset:0; z-index:3; }
+.kicker {
+  position:absolute;
+  left: 125.28px;
+  top: 168.45px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(43,148,183,0.6);
+}
+.hero {
+  position:absolute;
+  left: 125.28px;
+  top: 314.44000000000005px;
+  max-width: 516.1px;
+  font-family: 'Playfair Display', serif;
+  font-size: 48px;
+  font-weight: 900;
+  line-height: 1.18;
+  color: #1d1c1a;
+}
+.hero .accent { color: #2b94b7; }
+.summary {
+  position:absolute;
+  left: 125.28px;
+  top: 583.96px;
+  max-width: 436.70000000000005px;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.7;
+  color: rgba(29,28,26,0.75);
+}
+.meta {
+  position:absolute;
+  left: 125.28px;
+  top: 831.02px;
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(29,28,26,0.5);
+  line-height: 1.8;
+}
+.meta strong { color: rgba(29,28,26,0.7); }
+</style>
+</head>
+<body>
+<div class="cover-base"></div>
+<div class="cover-bg"><div class="bg-grid"></div></div>
+<div class="cover-lines">
+  <div class="anchor-line"></div>
+  <div class="meta-line"></div>
+</div>
+<div class="cover-content">
+  <div class="kicker">Design Document</div>
+  <div class="hero">Web Scraping<br><span class="accent">Skill</span></div>
+  <div class="summary">Especificacao completa de uma skill de raspagem web ponta a ponta. Arquitetura modular com Playwright, extracao inteligente de dados, anti-deteccao, paginacao automatica, pipeline de limpeza e validacao, e exportacao em multiplos formatos.</div>
+  <div class="meta">
+    <strong>Versao:</strong> 1.0.0<br>
+    <strong>Data:</strong> Maio 2026<br>
+    <strong>Tipo:</strong> DESIGN.md - Documento de Design Tecnico
+  </div>
+</div>
+</body>
+</html>

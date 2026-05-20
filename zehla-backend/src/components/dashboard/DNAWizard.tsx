@@ -1,0 +1,523 @@
+'use client';
+
+import React, { useState, useMemo } from 'react';
+import {
+  Dna,
+  MessageSquare,
+  Percent,
+  BrainCircuit,
+  CheckCircle2,
+  ArrowRight,
+  ArrowLeft,
+  Smile,
+  UserCheck,
+  Briefcase,
+  Crown,
+  Building2,
+  Zap,
+  ShieldCheck,
+  AlertCircle,
+  FileText,
+  Loader2,
+  Share2 } from
+'lucide-react';
+
+const archetypes = [
+{ id: 1, title: 'Amigão de Infância', icon: Smile, desc: 'Informal, empolgado e usa gírias.', example: '"Eaaa, que bom que você entrou em contato! Vai ser demais ter você aqui!"' },
+{ id: 2, title: 'Anfitrião Carinhoso', icon: UserCheck, desc: 'Acolhedor, caloroso e afetuoso.', example: '"Que alegria receber seu contato! Nossa pousada vai ser o refúgio perfeito."' },
+{ id: 3, title: 'Host Profissional', icon: Briefcase, desc: 'Equilibrado, educado e direto.', example: '"Olá! Fico feliz pelo seu interesse. Temos disponibilidade nas datas."' },
+{ id: 4, title: 'Concierge Exclusivo', icon: Crown, desc: 'Formal, elegante e sofisticado.', example: '"Bom dia. Temos o prazer de informar que nossa suíte master está disponível."' },
+{ id: 5, title: 'Gerente 5 Estrelas', icon: Building2, desc: 'Ultra-formal e protocolar.', example: '"Prezado(a) hóspede. Confirmamos a disponibilidade. Gostaria de prosseguir?"' }];
+
+
+const discountKeys = [
+{ id: 'PAYMENT', label: 'Pagamento (PIX)', desc: 'Desconto para pagamento à vista no PIX', default: 10 },
+{ id: 'SEASON', label: 'Temporada (Antecipado)', desc: 'Desconto para reservas com 60+ dias', default: 5 },
+{ id: 'STAY', label: 'Estadia Longa', desc: 'Desconto para 5+ noites', default: 12 },
+{ id: 'GROUP', label: 'Grupos', desc: 'Desconto para 3+ quartos', default: 8 },
+{ id: 'RETURN', label: 'Fidelidade', desc: 'Desconto para hóspedes que já vieram', default: 10 },
+{ id: 'COMPETITOR', label: 'Rivalidade', desc: 'Igualar preço do Booking/Concorrente', default: 5 }];
+
+
+const painQuestions = [
+"Você sabe quantos hóspedes perguntam sobre preço e não voltam?",
+"Você sabe qual é o dia da semana com mais pedidos de reserva?",
+"Você consegue medir quantos descontos você concede por mês?",
+"Você sabe quantas reservas perde por demora na resposta?",
+"Você sabe quais são as 5 perguntas mais frequentes dos hóspedes?",
+"Você sabe o perfil dos hóspedes que mais reservam?",
+"Você sabe quantos hóspedes voltam depois da primeira visita?",
+"Você consegue medir se suas respostas estão sendo eficazes?",
+"Você sabe em qual etapa do funil os hóspedes desistem?",
+"Você sabe quanto tempo gasta por dia respondendo mensagens?"];
+
+
+// --- Radar Chart Component ---
+function RadarChart({ data }: {data: Record<string, number>;}) {
+  const labels = Object.keys(data);
+  const values = Object.values(data);
+  const size = 300;
+  const center = size / 2;
+  const radius = size * 0.4;
+  const angleStep = Math.PI * 2 / labels.length;
+
+  const points = useMemo(() => {
+    return values.map((val, i) => {
+      const x = center + radius * (val / 100) * Math.cos(i * angleStep - Math.PI / 2);
+      const y = center + radius * (val / 100) * Math.sin(i * angleStep - Math.PI / 2);
+      return `${x},${y}`;
+    }).join(' ');
+  }, [values, center, radius, angleStep]);
+
+  const gridLevels = [0.2, 0.4, 0.6, 0.8, 1];
+
+  return (
+    <div className="flex flex-col items-center justify-center py-6">
+      <svg width={size} height={size} className="overflow-visible">
+        {/* Grid Levels */}
+        {gridLevels.map((lvl, idx) =>
+        <circle
+          key={idx}
+          cx={center} cy={center} r={radius * lvl}
+          fill="none" stroke="#2e2e2e" strokeWidth="0.5" />
+
+        )}
+        {/* Axis */}
+        {labels.map((label, i) => {
+          const x = center + radius * Math.cos(i * angleStep - Math.PI / 2);
+          const y = center + radius * Math.sin(i * angleStep - Math.PI / 2);
+          return (
+            <line
+              key={i}
+              x1={center} y1={center} x2={x} y2={y}
+              stroke="#2e2e2e" strokeWidth="1" />);
+
+
+        })}
+        {/* Data Shape */}
+        <polygon
+          points={points}
+          fill="rgba(255, 85, 0, 0.2)"
+          stroke="#FF5500"
+          strokeWidth="2"
+          className="drop-shadow-[0_0_8px_rgba(255,85,0,0.5)]" />
+        
+        {/* Labels */}
+        {labels.map((label, i) => {
+          const x = center + (radius + 25) * Math.cos(i * angleStep - Math.PI / 2);
+          const y = center + (radius + 20) * Math.sin(i * angleStep - Math.PI / 2);
+          return (
+            <text
+              key={i}
+              x={x} y={y}
+              fill="#858b91"
+              fontSize="9"
+              textAnchor="middle"
+              className="font-mono uppercase tracking-widest">
+              
+              {label}
+            </text>);
+
+        })}
+      </svg>
+    </div>);
+
+}
+
+export default function DNAWizard() {
+  const [step, setStep] = useState(0); // Inicia no passo 0 (Clonagem)
+  const [isCloning, setIsCloning] = useState(false);
+  const [chatLog, setChatLog] = useState('');
+  const [clonedDNA, setClonedDNA] = useState<Record<string, number> | null>(null);
+
+  const [formData, setFormData] = useState({
+    tone: 3,
+    proactivity: 'HYBRID',
+    emojiLevel: 'MODERATE',
+    formality: 'ADAPTIVE',
+    discounts: useMemo(() => discountKeys.reduce((acc, k) => ({ ...acc, [k.id]: k.default }), {}), []),
+    pains: Array(10).fill(3),
+    voiceSamples: { s1: '', s2: '', s3: '' }
+  });
+
+  const nextStep = () => setStep((s) => Math.min(s + 1, 6));
+  const prevStep = () => setStep((s) => Math.max(s - 1, 0));
+
+  const handleCloneDNA = async () => {
+    if (!chatLog) return;
+    setIsCloning(true);
+    try {
+      const res = await fetch('/api/zcc/dna/clone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chatLog })
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Mapeia os dados do cloner para o gráfico de radar
+        const metrics = data.metrics;
+        setClonedDNA({
+          FORM: metrics.formality,
+          ENTU: metrics.enthusiasm,
+          EMPA: metrics.empathy,
+          EMOJ: metrics.emojiLevel,
+          CONC: metrics.conciseness,
+          AUTH: metrics.authority,
+          HUMO: metrics.humor,
+          PROA: metrics.proactivity
+        });
+
+        // Auto-seleciona arquétipo baseado na formalidade
+        let toneId = 3;
+        if (metrics.formality > 80) toneId = 5;else
+        if (metrics.formality > 60) toneId = 4;else
+        if (metrics.formality < 30) toneId = 1;else
+        if (metrics.empathy > 70) toneId = 2;
+
+        setFormData((prev) => ({
+          ...prev,
+          tone: toneId,
+          emojiLevel: metrics.emojiLevel > 70 ? 'GENEROUS' : metrics.emojiLevel > 30 ? 'MODERATE' : 'MINIMAL'
+        }));
+
+        setStep(1); // Vai para o welcome após clonar
+      }
+    } catch (error) {
+      console.error('Clone error:', error);
+    } finally {
+      setIsCloning(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0a] text-[#efefef] p-8 flex flex-col items-center">
+      {/* Progress Header */}
+      <div className="w-full max-w-4xl mb-12">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-[#FF5500]/20 rounded-lg">
+              <Dna className="w-6 h-6 text-[#FF5500]" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold font-serif">Mapeamento de DNA</h1>
+              <p className="text-xs text-[#4d4d4d]">Configurando o seu Gêmeo Digital</p>
+            </div>
+          </div>
+          <div className="text-sm font-mono text-[#FF5500]">Passo {step} de 6</div>
+        </div>
+        <div className="h-1 w-full bg-[#1a1a1a] rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-[#FF5500] to-[#FF8800] transition-all duration-500"
+            style={{ width: `${step / 6 * 100}%` }} />
+          
+        </div>
+      </div>
+
+      {/* Content Area */}
+      <div className="w-full max-w-4xl glass-card p-8 min-h-[600px] flex flex-col relative overflow-hidden">
+        
+        {/* STEP 0: CLONAGEM AUTOMÁTICA */}
+        {step === 0 &&
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-[10px] font-bold text-orange-500 mb-4 uppercase tracking-widest">
+                <Sparkles className="w-3 h-3" />
+                Tecnologia de Clonagem Real
+              </div>
+              <h2 className="text-4xl font-serif mb-4">Extraia o seu DNA</h2>
+              <p className="text-[#858b91] max-w-2xl mx-auto">
+                Não gaste tempo respondendo perguntas. Cole aqui o histórico de algumas conversas suas no WhatsApp 
+                e o ZEHLA aprenderá instantaneamente o seu tom, gírias e jeito de vender.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="relative">
+                <textarea
+                value={chatLog}
+                onChange={(e) => setChatLog(e.target.value)}
+                placeholder="Cole aqui o log das suas conversas... (Dica: Exportar chat do WhatsApp)"
+                className="w-full h-48 bg-white/[0.03] border border-white/10 rounded-2xl p-6 text-sm text-neutral-300 focus:border-orange-500/50 transition-all zehla-scroll" />
+              
+                {!chatLog &&
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                    <MessageSquare className="w-12 h-12" />
+                  </div>
+              }
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                onClick={handleCloneDNA}
+                disabled={!chatLog || isCloning}
+                className="flex-1 py-4 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-all flex items-center justify-center gap-3 disabled:opacity-50">
+                
+                  {isCloning ?
+                <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Analisando seu tom...
+                    </> :
+
+                <>
+                      <Zap className="w-5 h-5" />
+                      EXTRAIR MEU DNA AGORA
+                    </>
+                }
+                </button>
+                <button
+                onClick={() => setStep(1)}
+                className="px-8 py-4 bg-white/5 border border-white/10 text-neutral-400 font-bold rounded-xl hover:bg-white/10 transition-all">
+                
+                  Pular e ir Manual
+                </button>
+              </div>
+
+              <p className="text-[10px] text-center text-neutral-600">
+                Seus logs são processados de forma efêmera e não ficam armazenados. 
+                Extraímos apenas as métricas de tom.
+              </p>
+            </div>
+          </div>
+        }
+
+        {/* STEP 1: WELCOME & RADAR VISUALIZATION (IF CLONED) */}
+        {step === 1 &&
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-serif mb-4">
+                {clonedDNA ? 'Mapeamento Concluído!' : 'Bem-vindo ao Futuro'}
+              </h2>
+              <p className="text-[#858b91] max-w-2xl mx-auto">
+                {clonedDNA ?
+              'Identificamos os padrões únicos da sua comunicação. Veja abaixo a sua assinatura digital:' :
+              'Estamos mapeando a essência da sua pousada para que o ZEHLA seja uma extensão inteligente de você.'}
+              </p>
+            </div>
+            
+            {clonedDNA &&
+          <div className="flex flex-col md:flex-row items-center justify-center gap-12 bg-orange-500/[0.03] border border-orange-500/10 p-8 rounded-3xl mb-12">
+                <RadarChart data={clonedDNA} />
+                <div className="space-y-4 max-w-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center">
+                      <Share2 className="w-4 h-4 text-orange-400" />
+                    </div>
+                    <span className="text-xs font-bold text-neutral-300">DNA Extraído de Conversas Reais</span>
+                  </div>
+                  <p className="text-xs text-neutral-500 leading-relaxed italic">
+                    "Detectamos um tom equilibrado com forte empatia e proatividade moderada. Sua IA usará gírias detectadas para criar conexão imediata."
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {Object.entries(clonedDNA).map(([key, val]) =>
+                <div key={key} className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-white/5 border border-white/5">
+                        <span className="text-[9px] font-bold text-neutral-600">{key}</span>
+                        <span className="text-[10px] font-mono text-orange-400">{val}%</span>
+                      </div>
+                )}
+                  </div>
+                </div>
+              </div>
+          }
+
+            {!clonedDNA &&
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+            { title: 'Personalidade', icon: MessageSquare, desc: 'O tom de voz exato que você usa com seus hóspedes.' },
+            { title: 'Autonomia', icon: Percent, desc: 'Suas regras de desconto e negociação sem ceder margem.' },
+            { title: 'Inteligência', icon: BrainCircuit, desc: 'Insights que revelam o comportamento oculto dos seus leads.' }].
+            map((item, i) =>
+            <div key={i} className="p-6 bg-white/5 rounded-xl border border-white/10 hover:border-[#FF5500]/50 transition-colors">
+                    <item.icon className="w-8 h-8 text-[#FF5500] mb-4" />
+                    <h3 className="font-bold mb-2">{item.title}</h3>
+                    <p className="text-sm text-[#858b91] leading-relaxed">{item.desc}</p>
+                  </div>
+            )}
+              </div>
+          }
+
+            <div className="mt-8 p-6 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-start gap-4">
+              <ShieldCheck className="w-6 h-6 text-blue-400 shrink-0" />
+              <p className="text-sm text-blue-200">
+                <b>Privacidade Garantida:</b> Seus dados são usados exclusivamente para treinar o seu agente privado.
+              </p>
+            </div>
+          </div>
+        }
+
+        {step === 2 &&
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="mb-8">
+              <h2 className="text-2xl font-serif mb-2">Pilar 1: Termômetro de Tom</h2>
+              <p className="text-sm text-[#858b91]">Como você gostaria que seu Gerente Digital tratasse um hóspede?</p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 mb-12">
+              {archetypes.map((arc) =>
+            <button
+              key={arc.id}
+              onClick={() => setFormData({ ...formData, tone: arc.id })}
+              className={`p-4 rounded-xl border text-left transition-all flex items-center gap-4 ${
+              formData.tone === arc.id ?
+              'bg-[#FF5500]/10 border-[#FF5500] ring-1 ring-[#FF5500]' :
+              'bg-white/5 border-white/10 hover:border-white/30'}`
+              }>
+              
+                  <div className={`p-2 rounded-lg ${formData.tone === arc.id ? 'bg-[#FF5500] text-white' : 'bg-white/10'}`}>
+                    <arc.icon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-bold text-sm">{arc.title}</div>
+                    <div className="text-xs text-[#858b91]">{arc.desc}</div>
+                  </div>
+                  <div className="text-[10px] font-mono text-[#4d4d4d] max-w-[200px] italic">
+                    {arc.example}
+                  </div>
+                </button>
+            )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 bg-white/5 rounded-xl border border-white/10">
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-[#4d4d4d] mb-4 block">Nível de Proatividade</label>
+                <div className="flex gap-2">
+                  {['REACTIVE', 'HYBRID', 'PROACTIVE'].map((v) =>
+                <button
+                  key={v}
+                  onClick={() => setFormData({ ...formData, proactivity: v })}
+                  className={`flex-1 py-2 text-[10px] font-bold rounded-md border transition-all ${
+                  formData.proactivity === v ? 'bg-[#FF5500] border-[#FF5500] text-white' : 'bg-white/5 border-white/10'}`
+                  }>
+                  
+                      {v === 'REACTIVE' ? 'Reativo' : v === 'HYBRID' ? 'Híbrido' : 'Proativo'}
+                    </button>
+                )}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-[#4d4d4d] mb-4 block">Uso de Emojis</label>
+                <div className="flex gap-2">
+                  {['MINIMAL', 'MODERATE', 'GENEROUS'].map((v) =>
+                <button
+                  key={v}
+                  onClick={() => setFormData({ ...formData, emojiLevel: v })}
+                  className={`flex-1 py-2 text-[10px] font-bold rounded-md border transition-all ${
+                  formData.emojiLevel === v ? 'bg-[#FF5500] border-[#FF5500] text-white' : 'bg-white/5 border-white/10'}`
+                  }>
+                  
+                      {v === 'MINIMAL' ? 'Mínimo' : v === 'MODERATE' ? 'Moderado' : 'Generoso'}
+                    </button>
+                )}
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        {step === 3 &&
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="mb-8">
+              <h2 className="text-2xl font-serif mb-2">Pilar 2: Chaves de Desconto</h2>
+              <p className="text-sm text-[#858b91]">Defina os limites de negociação para que a IA venda sozinha com suas regras.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {discountKeys.map((key) =>
+            <div key={key.id} className="p-4 bg-white/5 border border-white/10 rounded-xl">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-bold text-sm">{key.label}</span>
+                    <span className="text-[#FF5500] font-mono text-sm font-bold">{formData.discounts[key.id]}%</span>
+                  </div>
+                  <p className="text-[10px] text-[#4d4d4d] mb-4">{key.desc}</p>
+                  <input
+                type="range"
+                min="0" max="25" step="1"
+                value={formData.discounts[key.id]}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  discounts: { ...formData.discounts, [key.id]: parseInt(e.target.value) }
+                })}
+                className="w-full accent-[#FF5500]" />
+              
+                </div>
+            )}
+            </div>
+          </div>
+        }
+
+        {step === 4 &&
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="mb-8">
+              <h2 className="text-2xl font-serif mb-2">Pilar 3: Dores de Operação</h2>
+              <p className="text-sm text-[#858b91]">O que tira o seu sono hoje?</p>
+            </div>
+
+            <div className="space-y-6">
+              {painQuestions.map((q, idx) =>
+            <div key={idx} className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border-b border-white/5">
+                  <span className="text-sm flex-1">{q}</span>
+                  <div className="flex gap-2 items-center">
+                    {[1, 2, 3, 4, 5].map((val) =>
+                <button
+                  key={val}
+                  onClick={() => {
+                    const newPains = [...formData.pains];
+                    newPains[idx] = val;
+                    setFormData({ ...formData, pains: newPains });
+                  }}
+                  className={`w-8 h-8 rounded-full border text-xs font-bold transition-all ${
+                  formData.pains[idx] === val ? 'bg-[#FF5500] border-[#FF5500] text-white' : 'bg-white/5 border-white/10'}`
+                  }>
+                  
+                        {val}
+                      </button>
+                )}
+                  </div>
+                </div>
+            )}
+            </div>
+          </div>
+        }
+
+        {step === 5 &&
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 text-center">
+            <div className="mb-12">
+              <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle2 className="w-10 h-10 text-green-500" />
+              </div>
+              <h2 className="text-3xl font-serif mb-4">DNA Mapeado com Sucesso!</h2>
+              <p className="text-[#858b91] max-w-xl mx-auto">
+                Seu Gêmeo Digital está pronto para ser ativado.
+              </p>
+            </div>
+
+            <button
+            className="px-12 py-4 bg-[#FF5500] text-white font-bold rounded-xl hover:bg-[#FF4400] transition-all transform hover:scale-105 shadow-xl shadow-[#FF5500]/20"
+            onClick={() => window.location.href = '/dashboard/marketing'}>
+            
+              ATIVAR MEU GÊMEO DIGITAL
+            </button>
+          </div>
+        }
+
+        {/* Navigation Footer */}
+        <div className="mt-auto pt-8 flex justify-between border-t border-white/5">
+          <button
+            onClick={prevStep}
+            disabled={step === 0}
+            className={`flex items-center gap-2 text-sm font-bold transition-opacity ${step === 0 ? 'opacity-0' : 'opacity-100'}`}>
+            
+            <ArrowLeft className="w-4 h-4" /> Voltar
+          </button>
+          {step < 5 &&
+          <button
+            onClick={nextStep}
+            className="flex items-center gap-2 bg-white text-black px-6 py-2 rounded-lg font-bold hover:bg-[#efefef] transition-all">
+            
+              Continuar <ArrowRight className="w-4 h-4" />
+            </button>
+          }
+        </div>
+      </div>
+    </div>);
+
+}

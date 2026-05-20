@@ -1,0 +1,25 @@
+import { PrismaClient } from '@prisma/client';
+
+
+const prisma = new PrismaClient();
+
+async function main() {
+  try {
+  const scLeads = await prisma.lead.findMany({
+    where: { state: 'SC' },
+    select: {
+      id: true,
+      city: true,
+      latitude: true,
+      longitude: true
+    },
+    take: 5
+  });
+
+  
+  );
+}
+
+main()
+  .catch(e => console.error(e))
+  .finally(async () => await prisma.$disconnect());

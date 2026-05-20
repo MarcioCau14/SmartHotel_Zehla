@@ -64,19 +64,18 @@ export class SwarmEngine {
 
     try {
       const agents = JSON.parse(response.content)
-      for (const agent of agents) {
-        await prisma.simulationAgent.create({
-          data: {
-            scenarioId,
-            name: agent.name,
-            role: agent.role,
-            persona: agent.persona,
-            traits: agent.traits
-          }
-        })
-      }
+      // Otimização N+1: Inserção em lote (Bulk Insert)
+      await prisma.simulationAgent.createMany({
+        data: agents.map((agent: any) => ({
+          scenarioId,
+          name: agent.name,
+          role: agent.role,
+          persona: agent.persona,
+          traits: agent.traits
+        }))
+      })
     } catch (e) {
-      console.error('❌ Falha ao parsear agentes do enxame:', e)
+      console.error('❌ Falha ao parsear ou persistir agentes do enxame:', e)
     }
   }
 
@@ -97,16 +96,17 @@ export class SwarmEngine {
     })
 
     for (let r = 1; r <= scenario.rounds; r++) {
+      // Otimização: Buscar histórico uma vez por rodada, não por agente
+      const history = await prisma.simulationRound.findMany({
+        where: { scenarioId },
+        orderBy: { createdAt: 'asc' },
+        take: 30 // Aumentado para melhor contexto
+      })
+      const historyText = history.map(h => `${h.agentName}: ${h.content}`).join('\n')
+
+      const roundResponses = [];
+
       for (const agent of scenario.agents) {
-        // Cada agente fala uma vez por rodada
-        const history = await prisma.simulationRound.findMany({
-          where: { scenarioId },
-          orderBy: { createdAt: 'asc' },
-          take: 20
-        })
-
-        const historyText = history.map(h => `${h.agentName}: ${h.content}`).join('\n')
-
         const prompt = `
           Você é ${agent.name}, com a seguinte persona: ${agent.persona}.
           Seus traços são: ${agent.traits.join(', ')}.
@@ -122,19 +122,22 @@ export class SwarmEngine {
           model: 'fast',
           messages: [{ role: 'user', content: prompt }],
           temperature: 0.9,
-          forceLocal: true // Custo Zero garantido
+          forceLocal: true
         })
 
-        await prisma.simulationRound.create({
-          data: {
-            scenarioId,
-            roundNumber: r,
-            agentName: agent.name,
-            content: response.content,
-            sentiment: 'NEUTRAL' // Poderia ser classificado aqui
-          }
-        })
+        roundResponses.push({
+          scenarioId,
+          roundNumber: r,
+          agentName: agent.name,
+          content: response.content,
+          sentiment: 'NEUTRAL'
+        });
       }
+
+      // Otimização N+1: Persistir todas as falas da rodada de uma vez
+      await prisma.simulationRound.createMany({
+        data: roundResponses
+      });
     }
 
     // Finalizar e Sintetizar

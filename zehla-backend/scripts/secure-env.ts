@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 
+
 // ============================================================
 // ENV GUARDIAN — Proteção de Chaves .env em Repouso
 // ============================================================
@@ -17,6 +18,7 @@ const SALT = 'zehla-env-guardian-v1';
 const KEY_LENGTH = 32;
 
 function getMasterKey(): string {
+  try {
   if (process.env.ZEHLA_MASTER_KEY) return process.env.ZEHLA_MASTER_KEY;
   const keyPath = path.resolve(process.cwd(), '.master-key');
   if (fs.existsSync(keyPath)) {
@@ -29,6 +31,7 @@ function getMasterKey(): string {
 }
 
 function deriveKey(passphrase: string): Buffer {
+  try {
   return crypto.scryptSync(passphrase, SALT, KEY_LENGTH);
 }
 
@@ -37,6 +40,7 @@ function deriveKey(passphrase: string): Buffer {
  * Saída: formato Base64 URL-safe (iv + authTag + ciphertext)
  */
 export function encryptEnv(plaintext: string): string {
+  try {
   const passphrase = getMasterKey();
   const key = deriveKey(passphrase);
   const iv = crypto.randomBytes(IV_LENGTH);
@@ -55,6 +59,7 @@ export function encryptEnv(plaintext: string): string {
  * Descriptografa .env.encrypted de volta para texto plano
  */
 export function decryptEnv(encryptedBase64: string): string {
+  try {
   const passphrase = getMasterKey();
   const key = deriveKey(passphrase);
   const payload = Buffer.from(encryptedBase64, 'base64url');
@@ -75,6 +80,7 @@ export function decryptEnv(encryptedBase64: string): string {
  * Lê .env, criptografa e salva .env.encrypted, depois apaga .env
  */
 export function sealEnv(envPath: string): void {
+  try {
   if (!fs.existsSync(envPath)) {
     console.error(`[ENV-GUARDIAN] Arquivo não encontrado: ${envPath}`);
     process.exit(1);
@@ -90,8 +96,6 @@ export function sealEnv(envPath: string): void {
   // Só apaga o .env original se a criptografia foi bem-sucedida
   if (fs.existsSync(encryptedPath)) {
     fs.unlinkSync(envPath);
-    console.log(`[ENV-GUARDIAN] ✓ ${path.basename(envPath)} → ${path.basename(encryptedPath)}`);
-    console.log(`[ENV-GUARDIAN] ✓ Original apagado. Use ZEHLA_MASTER_KEY para descriptografar.`);
   }
 }
 
@@ -99,6 +103,7 @@ export function sealEnv(envPath: string): void {
  * Abre .env.encrypted e carrega no process.env
  */
 export function unsealEnv(encryptedPath: string): Record<string, string> {
+  try {
   if (!fs.existsSync(encryptedPath)) {
     // Fallback: tenta .env (não criptografado)
     const plainPath = encryptedPath.replace('.encrypted', '');
@@ -137,7 +142,6 @@ export function loadSecureEnv(projectRoot?: string): void {
   try {
     const vars = unsealEnv(encryptedPath);
     Object.assign(process.env, vars);
-    console.log('[ENV-GUARDIAN] ✓ .env.encrypted carregado com segurança');
     return;
   } catch {
     // Fallback para .env.local ou .env
@@ -158,11 +162,13 @@ export function loadSecureEnv(projectRoot?: string): void {
 // ─── Helpers ────────────────────────────────────────────────────
 
 function parseEnvFile(filePath: string): Record<string, string> {
+  try {
   const content = fs.readFileSync(filePath, 'utf8');
   return parseEnvString(content);
 }
 
 function parseEnvString(content: string): Record<string, string> {
+  try {
   const vars: Record<string, string> = {};
   for (const line of content.split('\n')) {
     const trimmed = line.trim();
@@ -200,12 +206,10 @@ if (require.main === module) {
       const encryptedPath = envPath + '.encrypted';
       const vars = unsealEnv(encryptedPath);
       // Output seguro: só mostra nomes das variáveis, não valores
-      console.log('[ENV-GUARDIAN] Variáveis descriptografadas:');
       for (const key of Object.keys(vars)) {
         const masked = vars[key].length > 0
           ? vars[key].slice(0, 4) + '…' + vars[key].slice(-4)
           : '(vazio)';
-        console.log(`  ${key}=${masked}`);
       }
       break;
     }
@@ -216,7 +220,6 @@ if (require.main === module) {
         const fullPath = path.join(process.cwd(), file);
         if (fs.existsSync(fullPath)) {
           fs.chmodSync(fullPath, 0o600);
-          console.log(`[ENV-GUARDIAN] ✓ Permissões 600: ${file}`);
         }
       }
       break;
@@ -231,13 +234,10 @@ if (require.main === module) {
         process.exit(1);
       }
       const newKey = crypto.randomBytes(32).toString('hex');
-      console.log(`[ENV-GUARDIAN] Nova chave mestra: ${newKey}`);
-      console.log('[ENV-GUARDIAN] Salve esta chave em local seguro!');
       break;
     }
 
     default:
-      console.log(`
   ENV GUARDIAN — Proteção de Chaves .env
 
   USO:

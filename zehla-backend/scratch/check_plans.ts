@@ -1,0 +1,15 @@
+import { prisma } from '@/lib/prisma';
+
+
+async function run() {
+  try {
+  const counts = await prisma.property.groupBy({ 
+    by: ['plan'], 
+    _count: true 
+  });
+  
+  
+  const total = await prisma.property.count();
+  
+}
+run().finally(() => prisma.$disconnect());
