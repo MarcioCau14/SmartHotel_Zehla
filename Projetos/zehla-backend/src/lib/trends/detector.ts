@@ -1,8 +1,7 @@
-import { type TrendData, type TrendSignalInput } from "./types";
-import { type TrendKeyword, type TrendSignal } from "@prisma/client";
-
 // src/lib/trends/detector.ts
 
+import { type TrendKeyword, type TrendSignal } from "@prisma/client";
+import { type TrendData, type TrendSignalInput } from "./types";
 
 /**
  * Lógica central para detecção de sinais de tendência.

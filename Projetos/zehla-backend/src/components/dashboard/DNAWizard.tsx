@@ -1,9 +1,7 @@
-import React, { useState, useMemo } from 'react';
-import {
-
-
 'use client';
 
+import React, { useState, useMemo } from 'react';
+import {
   Dna,
   MessageSquare,
   Percent,
@@ -56,7 +54,6 @@ const painQuestions = [
 
 // --- Radar Chart Component ---
 function RadarChart({ data }: {data: Record<string, number>;}) {
-  try {
   const labels = Object.keys(data);
   const values = Object.values(data);
   const size = 300;

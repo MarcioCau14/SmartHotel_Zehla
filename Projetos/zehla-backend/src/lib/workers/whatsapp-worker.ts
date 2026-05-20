@@ -1,13 +1,11 @@
-import axios from 'axios';
 import { Worker, Job } from 'bullmq';
-
-import { EmailService } from '@/lib/email/email-service';
+import { redisWorker } from '@/lib/redis';
+import { prisma } from '@/lib/prisma';
+import { orchestrator } from '@/lib/brain/agent-orchestrator';
 import { ProcessPaymentProofUseCase } from '@/lib/brain/use-cases/ProcessPaymentProofUseCase';
 import { ReceiptExtractor } from '@/lib/brain/receipt-extractor';
-import { orchestrator } from '@/lib/brain/agent-orchestrator';
-import { prisma } from '@/lib/prisma';
-import { redisWorker } from '@/lib/redis';
-
+import { EmailService } from '@/lib/email/email-service';
+import axios from 'axios';
 
 /**
  * Worker do ZEHLA Brain para processamento assíncrono de WhatsApp.
@@ -18,11 +16,11 @@ export const whatsappWorker = new Worker('whatsapp-inbound', async (job: Job) =>
   const startTime = Date.now();
 
   try {
-    
+    console.log(`⚙️ [WORKER] Iniciando processamento para mensagem ${messageId}...`);
 
     // --- FEATURE 4: ROTEADOR DE MÍDIA (ESCUDO VISION) ---
     if (mediaData && (mediaData.type === 'imageMessage' || mediaData.type === 'documentMessage')) {
-      
+      console.log(`📸 [VISION] Mídia detectada. Acionando ReceiptExtractor...`);
 
       const receipt = await ReceiptExtractor.extract(mediaData.base64 || content || '');
 
@@ -31,7 +29,7 @@ export const whatsappWorker = new Worker('whatsapp-inbound', async (job: Job) =>
         const result = await ProcessPaymentProofUseCase.execute(phone, propertyId, receipt);
 
         if (result.success) {
-          }`);
+          console.log(`💰 [FINANCIAL SUCCESS] Pagamento confirmado via UseCase para ${phone.slice(-4)}`);
           const successMsg = `Recebi seu comprovante de R$ ${result.amount?.toLocaleString('pt-BR')}! 🎉 Sua reserva está confirmada.`;
           await sendWhatsAppMessage(propertyId, phone, successMsg);
         } else {
@@ -71,7 +69,7 @@ export const whatsappWorker = new Worker('whatsapp-inbound', async (job: Job) =>
     const isEmailFallback = await redisWorker.get('config:global:force_email_fallback');
 
     if (isEmailFallback) {
-      }`);
+      console.log(`✉️ [HEALED] Fallback ativo. Enviando resposta via canal de redundância para o final ${phone.slice(-4)}`);
       const lead = await prisma.lead.findFirst({ where: { phone } });
       if (lead) {
         await EmailService.sendSwipeEmail(lead, { content: result.response, tier: 'RECOVERY' });
@@ -130,7 +128,7 @@ async function sendWhatsAppMessage(propertyId: string, number: string, text: str
       headers: { 'apikey': evolutionKey }
     });
     
-    
+    console.log(`📤 [SENT] Resposta enviada com sucesso.`);
   } catch (err) {
     console.error(`❌ [EVOLUTION ERROR] Falha no envio via Evolution API.`);
     throw err; // Força o Retry do BullMQ
@@ -152,7 +150,7 @@ async function deleteWhatsAppMessage(propertyId: string, messageId: string) {
       data: { key: { id: messageId } },
       headers: { 'apikey': evolutionKey }
     });
-    
+    console.log(`🧹 [CLEANUP] Mídia ${messageId} expurgada do servidor.`);
   } catch (err) {
     console.warn(`⚠️ [CLEANUP FAIL] Não foi possível excluir a mídia ${messageId}`);
   }

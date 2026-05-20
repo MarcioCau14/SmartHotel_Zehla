@@ -1,17 +1,14 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-
-
 'use client';
 
+import React from 'react';
+import { motion } from 'framer-motion';
 
 const brands = [
   'Booking.com', 'Airbnb', 'TripAdvisor', 'Google Hotels', 'Trivago', 
   'WhatsApp', 'Instagram', 'Meta', 'Stripe', 'Pagar.me', 'Cloudbeds', 'Omnibees'
 ];
 
-export function BrandCarousel() : void {
-  try {
+export function BrandCarousel() {
   return (
     <div className="w-full py-12 border-y border-white/5 overflow-hidden bg-black relative">
       <div className="absolute inset-y-0 left-0 w-40 bg-gradient-to-r from-black to-transparent z-10" />

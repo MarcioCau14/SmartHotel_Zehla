@@ -1,9 +1,7 @@
-import { Brain, ArrowLeft, Lock, Database, Target, Scale, Users, Cookie, Shield, Clock, Baby, RefreshCw, Mail } from 'lucide-react';
-import { motion } from 'framer-motion';
-
-
 'use client';
 
+import { motion } from 'framer-motion';
+import { Brain, ArrowLeft, Lock, Database, Target, Scale, Users, Cookie, Shield, Clock, Baby, RefreshCw, Mail } from 'lucide-react';
 
 const sections = [
   {

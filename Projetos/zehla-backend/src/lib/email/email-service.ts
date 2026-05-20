@@ -21,7 +21,7 @@ export class EmailService {
   /**
    * Sincronização REAL de lead com o Listmonk via API
    */
-  static async syncLead(lead: unknown) {
+  static async syncLead(lead: any) {
     try {
       const payload: EmailSubscriber = {
         email: lead.email,
@@ -51,9 +51,9 @@ export class EmailService {
         throw new Error(`Listmonk API Error: ${JSON.stringify(error)}`);
       }
 
-      
+      console.log(`✅ [EMAIL-SERVICE] Lead ${lead.email} sincronizado com sucesso.`);
       return await response.json();
-    } catch (err: unknown) {
+    } catch (err: any) {
       console.error(`❌ [EMAIL-SERVICE] Falha ao sincronizar lead: ${err.message}`);
       throw err;
     }
@@ -62,7 +62,7 @@ export class EmailService {
   /**
    * Dispara transacional via API
    */
-  static async sendTransactional(to: string, templateId: number, data: unknown) {
+  static async sendTransactional(to: string, templateId: number, data: any) {
     try {
       const response = await fetch(`${LISTMONK_URL}/tx`, {
         method: 'POST',
@@ -78,7 +78,7 @@ export class EmailService {
       });
 
       return await response.json();
-    } catch (err: unknown) {
+    } catch (err: any) {
       console.error(`❌ [EMAIL-SERVICE] Falha no transacional: ${err.message}`);
     }
   }
@@ -86,7 +86,7 @@ export class EmailService {
   /**
    * Dispara um Swipe específico via Listmonk
    */
-  static async sendSwipeEmail(lead: unknown, swipe: unknown) {
+  static async sendSwipeEmail(lead: any, swipe: any) {
     try {
       // Sincroniza o lead primeiro para garantir que os atributos estejam atualizados
       await this.syncLead(lead);
@@ -100,7 +100,7 @@ export class EmailService {
         tier: swipe.tier,
         justificativa: lead.aiJustification || ""
       });
-    } catch (err: unknown) {
+    } catch (err: any) {
       console.error(`❌ [EMAIL-SERVICE] Falha ao enviar Swipe Email: ${err.message}`);
     }
   }

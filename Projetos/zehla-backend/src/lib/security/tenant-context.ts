@@ -1,6 +1,5 @@
-import { getServerSession } from 'next-auth';
 import { headers } from 'next/headers';
-
+import { getServerSession } from 'next-auth';
 
 /**
  * Extracts the Tenant ID from the request context to ensure multi-tenant isolation.

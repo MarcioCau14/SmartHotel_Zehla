@@ -1,10 +1,8 @@
-import axios from 'axios';
 import { Queue, Worker, Job } from 'bullmq';
-
+import { redisWorker } from '../redis';
 import { SwipeMatcher } from '../swipe/matcher';
 import { ValidatedLead, ZMGPayload } from '../types/warmup-types';
-import { redisWorker } from '../redis';
-
+import axios from 'axios';
 
 export class ZMGDispatcher {
   private queueName = 'zmg-warmup-disparo';
@@ -31,7 +29,7 @@ export class ZMGDispatcher {
    * Integração Swipe: Captura a abordagem correta da Swipe Library.
    */
   async enqueueLeads(leads: ValidatedLead[]): Promise<void> {
-    
+    console.log(`🚀 [ZMG] Enfileirando ${leads.length} leads qualificados para a esteira.`);
     
     for (const lead of leads) {
       try {
@@ -52,7 +50,7 @@ export class ZMGDispatcher {
       }
     }
     
-    
+    console.log(`✅ [ZMG] Enfileiramento concluído.`);
   }
 
   /**
@@ -68,7 +66,7 @@ export class ZMGDispatcher {
         // LGPD Compliance: Trava de segurança obrigatória
         const finalMessage = `${messageContent}\n\n*Para não receber mais mensagens, responda PARAR*`;
 
-        
+        console.log(`[ZMG] [WORKER] Despachando para ${whatsapp}...`);
 
         try {
           // Zero Browser: Disparo direto via Evolution API (HTTP)
@@ -82,8 +80,8 @@ export class ZMGDispatcher {
             { headers: { apikey: this.evolutionKey } }
           );
           
-          
-        } catch (error: unknown) {
+          console.log(`✅ [ZMG] [SUCCESS] Mensagem entregue para ${whatsapp}`);
+        } catch (error: any) {
           const errorMsg = error.response?.data || error.message;
           console.error(`❌ [ZMG] [ERROR] Falha crítica para ${whatsapp}:`, errorMsg);
           throw error; // Trigger do BullMQ retry strategy

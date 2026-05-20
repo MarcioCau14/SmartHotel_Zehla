@@ -1,14 +1,10 @@
+// src/app/api/swipes/match/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-
-import { matchSwipes } from '@/lib/swipe/matcher';
 import { prisma } from '@/lib/prisma';
-
+import { matchSwipes } from '@/lib/swipe/matcher';
 import { type LeadProfile } from '@/lib/swipe/types';
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-// src/app/api/swipes/match/route.ts
-
-async function _POST(req: NextRequest) : void {
+export async function POST(req: NextRequest) {
   try {
     const { leadId, channel, category, limit } = await req.json();
     const lead = await prisma.lead.findUnique({
@@ -35,9 +31,7 @@ async function _POST(req: NextRequest) : void {
 
     const result = await matchSwipes(profile, { channel, category, limit });
     return NextResponse.json(result);
-  } catch (error: unknown) {
+  } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 30, windowSeconds: 60 } });
-

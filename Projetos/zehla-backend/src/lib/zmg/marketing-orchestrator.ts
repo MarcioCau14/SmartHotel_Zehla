@@ -1,18 +1,15 @@
-import { prisma } from '@/lib/prisma';
-
-import { ZMG } from './core';
-
-
 /**
  * ZMG Marketing Orchestrator
  * Processa planilhas de leads e dispara campanhas baseadas em tendências (Camada 0)
  */
 
+import { ZMG } from './core';
 const XLSX = require('xlsx');
+import { prisma } from '@/lib/prisma';
 
 export class ZMGMarketingOrchestrator {
   static async runCampaignFromExcel(filePath: string, tier: string) {
-    
+    console.log(`🚀 [ZMG:MKT] Iniciando campanha para tier ${tier} a partir de ${filePath}`);
     
     try {
       const workbook = XLSX.readFile(filePath);
@@ -20,7 +17,7 @@ export class ZMGMarketingOrchestrator {
       const worksheet = workbook.Sheets[sheetName];
       const leads = XLSX.utils.sheet_to_json(worksheet);
 
-      
+      console.log(`📊 [ZMG:MKT] Encontrados ${leads.length} leads. Processando...`);
 
       let processed = 0;
       for (const lead of leads) {
@@ -62,12 +59,12 @@ export class ZMGMarketingOrchestrator {
         processed++;
         // Rate limit para não sobrecarregar a API no teste
         if (processed >= 5) {
-             atingido.');
+            console.log('🛑 [ZMG:MKT] Limite de teste (5) atingido.');
             break;
         }
       }
 
-      
+      console.log(`✅ [ZMG:MKT] Campanha finalizada. ${processed} intenções disparadas.`);
     } catch (error) {
       console.error(`❌ [ZMG:MKT] Erro ao rodar campanha:`, error);
     }

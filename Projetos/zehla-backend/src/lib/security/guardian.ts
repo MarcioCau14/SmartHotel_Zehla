@@ -1,6 +1,5 @@
 import { prisma } from '@/lib/prisma';
 
-
 /**
  * ZEHLA Guardian 2.0 - Circuit Breaker
  * Detecta e bloqueia ações suspeitas antes que causem impacto financeiro ou vazamento de dados.
@@ -70,7 +69,7 @@ export class Guardian {
   /**
    * Loga incidentes no banco de dados
    */
-  private static async logSecurityIncident(type: string, details: unknown) {
+  private static async logSecurityIncident(type: string, details: any) {
     console.error(`🚨 [SECURITY INCIDENT] ${type}:`, details);
     
     await prisma.systemLog.create({
@@ -88,7 +87,6 @@ export class Guardian {
  * Sanitizes input to prevent XSS and injection attacks.
  */
 export function sanitizeInput(input: string): string {
-  try {
   if (!input) return '';
   return input.replace(/[<>"'&]/g, (match) => {
     const map: Record<string, string> = {
@@ -106,7 +104,6 @@ export function sanitizeInput(input: string): string {
  * Scans input for Personally Identifiable Information (PII) before logging or processing.
  */
 export function scanPII(input: string): { hasPII: boolean; sanitized: string; found: string[] } {
-  try {
   const cpfRegex = /\b\d{3}\.\d{3}\.\d{3}-\d{2}\b/g;
   const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
   
@@ -135,7 +132,6 @@ export function scanPII(input: string): { hasPII: boolean; sanitized: string; fo
  * Validates generic API requests to ensure payload integrity.
  */
 export async function validateRequest(req: Request): Promise<{ allowed: boolean; reason?: string }> {
-  try {
   // Implementation of request validation
   return { allowed: true };
 }

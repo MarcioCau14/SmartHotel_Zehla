@@ -1,6 +1,3 @@
-import { redis } from '../redis';
-
-
 /**
  * ZEHLA Voice Analytics Service
  * 
@@ -8,6 +5,7 @@ import { redis } from '../redis';
  * Alimenta o Dashboard do ZCC para provar o valor do plano MAX.
  */
 
+import { redis } from '../redis';
 
 export interface VoiceMetric {
   propertyId: string;
@@ -17,7 +15,7 @@ export interface VoiceMetric {
   cacheHit: boolean;
   tier: 'PRO' | 'MAX';
   event: 'GENERATED' | 'PLAYED' | 'COMPLETED' | 'ABANDONED';
-  metadata?: unknown;
+  metadata?: any;
 }
 
 export class VoiceAnalyticsService {
@@ -40,7 +38,7 @@ export class VoiceAnalyticsService {
     await redis.ltrim(key, 0, 999);
 
     // 3. Log para auditoria
-    
+    console.log(`[VOICE_TELEMETRY]: ${metric.event} | Property: ${metric.propertyId} | Latency: ${metric.latencyMs}ms`);
   }
 
   /**

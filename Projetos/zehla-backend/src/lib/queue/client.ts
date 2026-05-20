@@ -1,6 +1,5 @@
-import IORedis from 'ioredis';
 import { Queue } from 'bullmq';
-
+import IORedis from 'ioredis';
 
 const connection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', {
   maxRetriesPerRequest: null,
@@ -13,8 +12,7 @@ const connection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379'
 export const emailQueue = new Queue('email-tasks', { connection });
 export const brainQueue = new Queue('brain-tasks', { connection });
 
-export async function addEmailJob(type: 'TRANSACTIONAL' | 'CAMPAIGN', data: unknown) : void {
-  try {
+export async function addEmailJob(type: 'TRANSACTIONAL' | 'CAMPAIGN', data: any) {
   return await emailQueue.add(type, data, {
     attempts: 3,
     backoff: {
@@ -24,8 +22,7 @@ export async function addEmailJob(type: 'TRANSACTIONAL' | 'CAMPAIGN', data: unkn
   });
 }
 
-export async function addSimulationJob(scenarioId: string) : void {
-  try {
+export async function addSimulationJob(scenarioId: string) {
   return await brainQueue.add('RUN_SIMULATION', { scenarioId }, {
     attempts: 2,
     backoff: {

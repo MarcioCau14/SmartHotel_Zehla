@@ -1,6 +1,5 @@
 import { PrismaClient } from '@prisma/client'
 
-
 const prisma = new PrismaClient()
 
 export interface HandoffContext {
@@ -8,7 +7,7 @@ export interface HandoffContext {
   leadId: string;
   phone: string;
   reason: 'CLOSE_READY' | 'SEVERE_DISSATISFACTION' | 'AI_FAILURES' | 'SDE_OVERLOAD';
-  metadata?: unknown;
+  metadata?: any;
 }
 
 export class HandoffTrigger {
@@ -18,7 +17,7 @@ export class HandoffTrigger {
    * Ativado em caso de alta intenção de fechamento ou falha semântica.
    */
   static async triggerHandoff(context: HandoffContext) {
-    
+    console.log(`[HandoffTrigger] Executando Handoff para Lead ${context.leadId} | Motivo: ${context.reason}`);
 
     // 1. Atualizar o estado do Lead e desligar IA (Mock)
     await prisma.lead.update({
@@ -48,6 +47,6 @@ export class HandoffTrigger {
 
   private static notifyZCC(context: HandoffContext) {
     // Integração real usaria Redis Pub/Sub ou Websocket para o front-end "Pitch-Black"
-    
+    console.log(`[ZCC HUD] ALERTA VERMELHO NO RADAR NEURAL: Handoff Requerido. Reason: ${context.reason}`);
   }
 }

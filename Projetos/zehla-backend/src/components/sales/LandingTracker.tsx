@@ -1,12 +1,9 @@
+"use client";
 import { useEffect } from 'react';
 
-
-"use client";
-
-export function LandingTracker() : void {
-  try {
+export function LandingTracker() {
   useEffect(() => {
-    
+    console.log('[LANDING TRACKER] Tracking initialized');
   }, []);
   
   return null;

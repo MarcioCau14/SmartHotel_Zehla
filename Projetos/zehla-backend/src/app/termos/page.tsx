@@ -1,9 +1,7 @@
-import { Brain, ArrowLeft, Shield, FileText, Scale, Lock, Server, AlertTriangle, Trash2, RefreshCw, BookOpen, Gavel } from 'lucide-react';
-import { motion } from 'framer-motion';
-
-
 'use client';
 
+import { motion } from 'framer-motion';
+import { Brain, ArrowLeft, Shield, FileText, Scale, Lock, Server, AlertTriangle, Trash2, RefreshCw, BookOpen, Gavel } from 'lucide-react';
 
 const sections = [
   {

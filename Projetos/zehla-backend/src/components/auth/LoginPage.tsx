@@ -1,10 +1,8 @@
-import { Brain, Mail, Lock, Eye, EyeOff, Loader2, ArrowLeft, Zap } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useState } from 'react';
-
-
 'use client';
 
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Brain, Mail, Lock, Eye, EyeOff, Loader2, ArrowLeft, Zap } from 'lucide-react';
 
 interface LoginPageProps {
   onBack: () => void;
@@ -21,7 +19,7 @@ interface LoginPageProps {
   onGoToRegister: () => void;
 }
 
-export function LoginPage(: void { onBack, onLogin, onGoToRegister }: LoginPageProps) {
+export function LoginPage({ onBack, onLogin, onGoToRegister }: LoginPageProps) {
   const [email, setEmail] = useState('maria@pousadadosol.com.br');
   const [senha, setSenha] = useState('pousada123');
   const [showPassword, setShowPassword] = useState(false);

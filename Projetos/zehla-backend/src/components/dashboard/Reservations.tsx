@@ -1,14 +1,11 @@
-import { CheckCircle, LogIn, XCircle, RefreshCw } from 'lucide-react';
-import { useState, useEffect, useCallback } from 'react';
-
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-
-import type { Reservation, ReservationStatus } from '@/lib/store';
-
 'use client';
 
+import { useState, useEffect, useCallback } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { CheckCircle, LogIn, XCircle, RefreshCw } from 'lucide-react';
+import type { Reservation, ReservationStatus } from '@/lib/store';
 
 const statusColors: Record<string, string> = {
   PENDING: 'bg-[#FF5500]/10 text-[#FF5500] border-[#FF5500]/30',
@@ -26,7 +23,7 @@ const statusLabels: Record<string, string> = {
   NOSHOW: 'No-Show',
 };
 
-export function Reservations() : void {
+export function Reservations() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
@@ -49,7 +46,6 @@ export function Reservations() : void {
   }, [fetchReservations]);
 
   const updateStatus = async (id: string, status: ReservationStatus) => {
-    try {
     await fetch('/api/reservations', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },

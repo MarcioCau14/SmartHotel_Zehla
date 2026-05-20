@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
-
-import { launchCampaign } from '@/services/blast/campaign-sender';
 import { prisma } from '@/lib/prisma';
+import { launchCampaign } from '@/services/blast/campaign-sender';
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-async function _GET(req: Request) : void {
+export async function GET(req: Request) {
   try {
     const campaigns = await prisma.blastCampaign.findMany({
       orderBy: { createdAt: 'desc' },
@@ -20,10 +17,8 @@ async function _GET(req: Request) : void {
     return NextResponse.json({ error: 'Failed to fetch campaigns' }, { status: 500 });
   }
 }
-  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
 
-
-async function _POST(req: Request) : void {
+export async function POST(req: Request) {
   try {
     const data = await req.json();
     const { name, messageTemplate, contactGroup, mediaUrl, mediaType, config, instanceIds } = data;
@@ -82,5 +77,3 @@ async function _POST(req: Request) : void {
     return NextResponse.json({ error: 'Failed to create campaign' }, { status: 500 });
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
-

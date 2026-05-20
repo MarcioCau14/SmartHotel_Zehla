@@ -1,9 +1,6 @@
 import crypto from 'node:crypto';
-
 import { prisma } from '@/lib/prisma';
-
 import { scanPII } from './pii-sanitizer';
-
 
 export type SecuritySeverity = 'INFO' | 'WARN' | 'ALERT' | 'CRITICAL';
 
@@ -12,7 +9,7 @@ interface AuditLogParams {
   userId?: string;
   action: string;
   severity: SecuritySeverity;
-  metadata?: unknown;
+  metadata?: any;
   resource?: string;
 }
 
@@ -20,7 +17,7 @@ interface AuditLogParams {
  * ZEHLA Audit Engine
  * Grava eventos de segurança e auditoria seguindo o protocolo de imutabilidade.
  */
-export async function logSecurityEvent(params: AuditLogParams) : void {
+export async function logSecurityEvent(params: AuditLogParams) {
   const { sanitized: safeMetadata } = scanPII(params.metadata);
   
   try {
@@ -52,13 +49,12 @@ export async function logSecurityEvent(params: AuditLogParams) : void {
  * Implementa o encadeamento de hash para garantir que o histórico financeiro não foi alterado.
  */
 export async function logFinancialAction(params: {
-  try {
   tenantId: string;
   action: string;
   amount: number;
   source: string;
   externalId?: string;
-  metadata?: unknown;
+  metadata?: any;
 }) {
   // 1. Buscar o último registro para pegar o hash anterior (Hash Chain)
   const lastAudit = await prisma.financialAudit.findFirst({
@@ -101,7 +97,6 @@ export async function logFinancialAction(params: {
  * Verifica a integridade da corrente financeira de um tenant.
  */
 export async function verifyFinancialIntegrity(tenantId: string): Promise<boolean> {
-  try {
   const audits = await prisma.financialAudit.findMany({
     where: { tenantId },
     orderBy: { createdAt: 'asc' }

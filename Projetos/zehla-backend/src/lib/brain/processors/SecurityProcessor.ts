@@ -1,6 +1,5 @@
 import { prisma } from '../../prisma';
 
-
 export class SecurityProcessor {
   static async validate(message: string, propertyId: string) {
     // HARDENING: Sanitização contra Prompt Injections

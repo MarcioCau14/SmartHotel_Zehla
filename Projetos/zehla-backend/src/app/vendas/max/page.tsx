@@ -1,18 +1,9 @@
-import Link from 'next/link';
-import { 
-import { Suspense } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useRef } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { ExclusiveWaitlistForm } from '@/components/sales/ExclusiveWaitlistForm';
-import { LandingTracker } from '@/components/sales/LandingTracker';
-import { MainFooter } from '@/components/landing/MainFooter';
-import { PremiumUpsell } from '@/components/sales/PremiumUpsell';
-
-
 'use client';
 
+import { Suspense } from 'react';
+import { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
   Check, 
   Crown, 
   ShieldCheck, 
@@ -25,6 +16,12 @@ import { PremiumUpsell } from '@/components/sales/PremiumUpsell';
   Globe,
   Star
 } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { ExclusiveWaitlistForm } from '@/components/sales/ExclusiveWaitlistForm';
+import { PremiumUpsell } from '@/components/sales/PremiumUpsell';
+import { LandingTracker } from '@/components/sales/LandingTracker';
+import { MainFooter } from '@/components/landing/MainFooter';
 
 export default function MaxSalesPage() {
   const [showWaitlist, setShowWaitlist] = useState(false);

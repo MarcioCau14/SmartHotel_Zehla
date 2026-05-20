@@ -1,8 +1,6 @@
-import { ArrowLeft, Command } from 'lucide-react';
-
-
 'use client';
 
+import { ArrowLeft, Command } from 'lucide-react';
 
 interface ZCCLayoutProps {
   activeTab: string;
@@ -19,8 +17,7 @@ const tabs = [
   { id: 'metrics', label: 'Metrics' },
 ];
 
-export function ZCCLayout(: void { activeTab, onTabChange, onBack, children }: ZCCLayoutProps) {
-  try {
+export function ZCCLayout({ activeTab, onTabChange, onBack, children }: ZCCLayoutProps) {
   return (
     <div className="min-h-screen">
       {/* Top bar */}

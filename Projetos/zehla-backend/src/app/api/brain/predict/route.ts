@@ -1,16 +1,13 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-
 import { WhatsappAgentService } from '@/lib/brain/whatsapp-agent-service'
 import { authOptions } from '@/lib/auth'
-
-import { withApiSecurity } from '@/lib/server/with-api-security';
+import { getServerSession } from 'next-auth'
 
 /**
  * API ENDPOINT: BRAIN PREDICT
  * Dispara uma simulação de enxame para prever o ROI de uma campanha ou tática.
  */
-async function _POST(req: Request) : void {
+export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
@@ -40,5 +37,3 @@ async function _POST(req: Request) : void {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 30, windowSeconds: 60 } });
-

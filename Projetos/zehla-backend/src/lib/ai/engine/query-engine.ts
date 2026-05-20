@@ -1,9 +1,7 @@
-import { z } from 'zod';
-
-import { MemoryManager } from './memory-manager';
-import { ZehlaToolSchemas } from './tool-schemas';
 import { llmRouter } from '../llm-router';
-
+import { ZehlaToolSchemas } from './tool-schemas';
+import { MemoryManager } from './memory-manager';
+import { z } from 'zod';
 
 export interface QueryContext {
   propertyId: string;
@@ -21,7 +19,7 @@ export class QueryEngine {
    * Executa uma query complexa com raciocínio multi-passo e tool calling.
    */
   static async execute(input: string, context: QueryContext) {
-    
+    console.log(`🧠 [Query Engine] Iniciando raciocínio para Session: ${context.sessionId}`);
     
     let currentStep = 0;
     let messages = [

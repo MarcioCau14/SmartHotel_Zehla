@@ -1,15 +1,13 @@
-import * as React from "react"
-import useEmblaCarousel, {
-import { ArrowLeft, ArrowRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-
-
 "use client"
 
+import * as React from "react"
+import useEmblaCarousel, {
   type UseEmblaCarouselType,
 } from "embla-carousel-react"
+import { ArrowLeft, ArrowRight } from "lucide-react"
 
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 
 type CarouselApi = UseEmblaCarouselType[1]
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>
@@ -35,7 +33,6 @@ type CarouselContextProps = {
 const CarouselContext = React.createContext<CarouselContextProps | null>(null)
 
 function useCarousel() {
-  try {
   const context = React.useContext(CarouselContext)
 
   if (!context) {
@@ -46,7 +43,6 @@ function useCarousel() {
 }
 
 function Carousel({
-  try {
   orientation = "horizontal",
   opts,
   setApi,
@@ -137,7 +133,6 @@ function Carousel({
 }
 
 function CarouselContent({ className, ...props }: React.ComponentProps<"div">) {
-  try {
   const { carouselRef, orientation } = useCarousel()
 
   return (
@@ -159,7 +154,6 @@ function CarouselContent({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
-  try {
   const { orientation } = useCarousel()
 
   return (
@@ -178,7 +172,6 @@ function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function CarouselPrevious({
-  try {
   className,
   variant = "outline",
   size = "icon",
@@ -209,7 +202,6 @@ function CarouselPrevious({
 }
 
 function CarouselNext({
-  try {
   className,
   variant = "outline",
   size = "icon",

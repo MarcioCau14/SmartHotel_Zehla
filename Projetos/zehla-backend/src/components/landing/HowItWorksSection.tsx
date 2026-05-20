@@ -1,9 +1,7 @@
-import { Building, QrCode, BarChart3 } from 'lucide-react';
-import { motion } from 'framer-motion';
-
-
 'use client';
 
+import { motion } from 'framer-motion';
+import { Building, QrCode, BarChart3 } from 'lucide-react';
 
 const steps = [
   {
@@ -44,8 +42,7 @@ const lineColorMap: Record<string, string> = {
   amber: 'bg-amber-500',
 };
 
-export function HowItWorksSection() : void {
-  try {
+export function HowItWorksSection() {
   return (
     <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
       <motion.div

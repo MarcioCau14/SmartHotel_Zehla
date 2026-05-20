@@ -1,7 +1,5 @@
 import { Redis } from 'ioredis';
-
 import { getTenantId } from './tenant-context';
-
 
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
 
@@ -53,8 +51,7 @@ export async function checkRateLimit(
 /**
  * Middleware de proteção para rotas críticas (API/WhatsApp)
  */
-export async function fortressGuard(req: Request) : void {
-  try {
+export async function fortressGuard(req: Request) {
   const ip = req.headers.get('x-forwarded-for') || '0.0.0.0';
   const { allowed, remaining, reset } = await checkRateLimit(ip);
 

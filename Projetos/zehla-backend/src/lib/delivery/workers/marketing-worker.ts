@@ -1,7 +1,5 @@
 import { Worker, Queue } from 'bullmq';
-
 import { redisConfig } from '../redis-connection';
-
 
 /**
  * ZEHLA MARKETING WORKER (LLM CONTROLLED)
@@ -16,7 +14,7 @@ export const marketingWorker = new Worker(
   async (job) => {
     const lead = job.data;
     
-    
+    console.log(`✍️ [MARKETING] Personalizando Pitch para: ${lead.empresa}`);
 
     // TD4: Hiper-personalização Agêntica Controlada
     // Aqui simularíamos a chamada ao LLMRouter com as restrições (Constraints)

@@ -1,9 +1,7 @@
 import { Worker, Job, Queue } from 'bullmq';
-
-import { WhatsappPersonaLearner } from '@/lib/brain/whatsapp-persona-learner';
-import { prisma } from '@/lib/prisma';
 import { redisWorker } from '@/lib/redis';
-
+import { prisma } from '@/lib/prisma';
+import { WhatsappPersonaLearner } from '@/lib/brain/whatsapp-persona-learner';
 
 /**
  * ZEHLA Persona Worker
@@ -22,14 +20,14 @@ const personaQueue = new Queue('persona-learning', {
 export const personaWorker = new Worker('persona-learning', async (job: Job) => {
   const { propertyId } = job.data;
 
-  
+  console.log(`🌙 [PERSONA WORKER] Iniciando aprendizado noturno para ${propertyId}...`);
   
   try {
     // Forçamos o aprendizado. O WhatsappPersonaLearner internamente deve 
     // priorizar modelos locais para custo zero.
     const persona = await WhatsappPersonaLearner.getPersona(propertyId);
     
-    
+    console.log(`✅ [PERSONA WORKER] DNA extraído com sucesso para ${propertyId}. Tom: ${persona.tone}`);
     
     return { status: 'LEARNED', tone: persona.tone };
   } catch (error) {
@@ -45,9 +43,8 @@ export const personaWorker = new Worker('persona-learning', async (job: Job) => 
  * Agendador Noturno (CRON 03:00)
  * Varre todas as propriedades e enfileira o aprendizado.
  */
-export async function scheduleNightlyLearning() : void {
-  try {
-  
+export async function scheduleNightlyLearning() {
+  console.log('📅 [SCHEDULER] Agendando mineração de DNA para 03:00 AM...');
   
   // Remove jobs repetitivos antigos para evitar duplicidade
   const repeatableJobs = await personaQueue.getRepeatableJobs();
@@ -71,5 +68,5 @@ export async function scheduleNightlyLearning() : void {
     );
   }
 
-  
+  console.log(`🚀 [SCHEDULER] ${properties.length} tarefas de aprendizado agendadas.`);
 }

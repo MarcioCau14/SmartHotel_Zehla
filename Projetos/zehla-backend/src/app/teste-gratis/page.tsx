@@ -1,10 +1,7 @@
-import { useRouter } from 'next/navigation';
-
-import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
-
-
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 
 export default function TesteGratisPage() {
   const router = useRouter();

@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-
 import { llmRouter } from '@/lib/ai/llm-router'
-
-import { withApiSecurity } from '@/lib/server/with-api-security';
 
 const LOCAL_ATTRACTIONS = [
   { name: 'Praia do Rosa', type: 'praia', description: 'Uma das praias mais bonitas do Brasil, famosa pelo surf e pelo pôr do sol.', distance: '0km' },
@@ -15,7 +12,7 @@ const LOCAL_ATTRACTIONS = [
   { name: 'Mercado de Artesanato', type: 'compras', description: 'Artesanato local, roupas de praia e souvenirs.', distance: '1.5km' }
 ]
 
-async function _POST(request: NextRequest) : void {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { action, data } = body
@@ -35,11 +32,8 @@ async function _POST(request: NextRequest) : void {
     return NextResponse.json({ success: false, error: 'Erro interno' }, { status: 500 })
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
 
-
-async function getRecommendations(filters: unknown) {
-  try {
+async function getRecommendations(filters: any) {
   let attractions = [...LOCAL_ATTRACTIONS]
 
   if (filters?.type) {
@@ -83,8 +77,7 @@ Gere uma resposta amigável recomendando as melhores opções.`
   })
 }
 
-async function getWeather(data: unknown) {
-  try {
+async function getWeather(data: any) {
   // Simulação — em produção integrar com API de clima
   const weather = {
     location: 'Praia do Rosa, Imbituba/SC',
@@ -104,8 +97,7 @@ async function getWeather(data: unknown) {
   return NextResponse.json({ success: true, data: weather })
 }
 
-async function answerQuestion(data: unknown) {
-  try {
+async function answerQuestion(data: any) {
   const systemPrompt = `Você é o concierge especialista da Praia do Rosa.
 Responda perguntas sobre a região de forma completa e acolhedora.
 Se não souber algo específico, sugira onde o hóspede pode encontrar a informação.`
@@ -130,10 +122,7 @@ Se não souber algo específico, sugira onde o hóspede pode encontrar a informa
   })
 }
 
-
-  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
-async function _GET() : void {
-  try {
+export async function GET() {
   return NextResponse.json({
     agent: 'CONCIERGE',
     status: 'online',

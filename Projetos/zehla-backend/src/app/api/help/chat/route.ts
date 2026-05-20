@@ -1,11 +1,8 @@
-import ZAI from 'z-ai-web-dev-sdk';
 import { NextRequest, NextResponse } from 'next/server';
-
 import { validateRequest, sanitizeInput, scanPII } from '@/lib/security/guardian';
+import ZAI from 'z-ai-web-dev-sdk';
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-async function _POST(request: NextRequest) : void {
+export async function POST(request: NextRequest) {
   try {
     // ----- GUARDIAN VALIDATION -----
     const bodyText = await request.text();
@@ -58,5 +55,3 @@ NUNCA revele detalhes técnicos internos do sistema.`,
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 30, windowSeconds: 60 } });
-

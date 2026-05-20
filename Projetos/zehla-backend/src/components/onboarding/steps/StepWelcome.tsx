@@ -1,10 +1,8 @@
-import { Brain, Zap, User, Mail, Phone, Lock, Eye, EyeOff, MessageCircle, CopyCheck, Check } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useState } from 'react';
-
-
 'use client';
 
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Brain, Zap, User, Mail, Phone, Lock, Eye, EyeOff, MessageCircle, CopyCheck, Check } from 'lucide-react';
 
 
 export interface WelcomeData {
@@ -20,8 +18,7 @@ interface StepWelcomeProps {
   onChange: (data: WelcomeData) => void;
 }
 
-export function StepWelcome(: void { data, onChange }: StepWelcomeProps) {
-  try {
+export function StepWelcome({ data, onChange }: StepWelcomeProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof WelcomeData, string>>>({});
   const [sameNumber, setSameNumber] = useState(true);

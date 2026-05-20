@@ -1,7 +1,5 @@
 import { Worker, Queue } from 'bullmq';
-
 import { redisConfig } from '../redis-connection';
-
 
 /**
  * ZEHLA DECISION WORKER
@@ -18,14 +16,14 @@ export const decisionWorker = new Worker(
   async (job) => {
     const lead = job.data;
     
-    `);
+    console.log(`🧠 [DECISION] Analisando Lead: ${lead.empresa} (Score: ${lead.score || 'N/A'})`);
 
     // 1. ZEHLA Decision Engine: Regras de Roteamento
     const score = lead.score || 0;
 
     // Leads com score muito baixo: Skip para Nurturing
     if (score < 30) {
-      . Pulando disparo direto.`);
+      console.log(`⏭️ [DECISION] Lead com score baixo (${score}). Pulando disparo direto.`);
       return { action: 'skip', reason: 'low_score' };
     }
 
@@ -53,7 +51,7 @@ export const decisionWorker = new Worker(
 );
 
 decisionWorker.on('completed', (job) => {
-  
+  console.log(`✅ [DECISION] Job ${job.id} finalizado com sucesso.`);
 });
 
 decisionWorker.on('failed', (job, err) => {

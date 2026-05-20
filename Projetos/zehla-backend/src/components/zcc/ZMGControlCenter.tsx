@@ -1,12 +1,8 @@
-import { 
-import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
-
-import { Badge } from '@/components/ui/badge';
-
-
 'use client';
 
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { 
   Share, 
   Send, 
   AlertCircle, 
@@ -22,8 +18,9 @@ import { Badge } from '@/components/ui/badge';
   Filter,
   BarChart3
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
-export function ZMGControlCenter() : void {
+export function ZMGControlCenter() {
   const [activeTab, setActiveTab] = useState<'realtime' | 'analytics' | 'config'>('realtime');
   const [stats, setStats] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);

@@ -1,6 +1,5 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 
-
 // Segredo para assinatura (garantir fallback seguro)
 const SECRET = process.env.CACHE_SIGNING_SECRET || 'zehla-fortress-super-cache-signature-secret-key';
 

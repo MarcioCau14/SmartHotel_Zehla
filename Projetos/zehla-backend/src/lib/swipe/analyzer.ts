@@ -1,6 +1,5 @@
-import { type LeadProfile, type SwipeMatch, type TierRecommendation } from './types';
-
 // src/lib/swipe/analyzer.ts
+import { type LeadProfile, type SwipeMatch, type TierRecommendation } from './types';
 
 /**
  * Gera uma justificativa técnica baseada em regras (Heurística).

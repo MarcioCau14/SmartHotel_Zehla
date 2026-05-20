@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-
+import { validatePixWebhook } from '@/lib/security/pix-webhook-guard';
 import { fireGuardianAlert } from '@/lib/security/guardian-alert';
 import { prisma } from '@/lib/prisma';
-import { validatePixWebhook } from '@/lib/security/pix-webhook-guard';
-
-import { withApiSecurity } from '@/lib/server/with-api-security';
 
 export const runtime = 'nodejs';
 
-async function _POST(request: NextRequest) : void {
+export async function POST(request: NextRequest) {
   try {
     const gateway = request.nextUrl.searchParams.get('gateway') as any || 'asaas';
     const payload = await request.text(); // Raw body
@@ -59,10 +56,8 @@ async function _POST(request: NextRequest) : void {
     });
 
     return NextResponse.json({ received: true }, { status: 200 });
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error('[WEBHOOK:PIX] Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 300, windowSeconds: 60 } });
-

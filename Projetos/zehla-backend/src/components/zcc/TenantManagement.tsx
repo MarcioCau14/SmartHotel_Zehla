@@ -1,15 +1,12 @@
-import { Building2, Clock, CheckCircle, XCircle, AlertTriangle, Search, Phone, Star, Users, DollarSign, TrendingUp, MapPin, MessageCircle } from 'lucide-react';
-import { useState, useEffect, useMemo } from 'react';
+'use client';
 
+import { useState, useEffect, useMemo } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
-
+import { Building2, Clock, CheckCircle, XCircle, AlertTriangle, Search, Phone, Star, Users, DollarSign, TrendingUp, MapPin, MessageCircle } from 'lucide-react';
 import type { Property } from '@/lib/store';
-
-'use client';
-
 
 const statusColors: Record<string, string> = {
   active: 'bg-[#FF5500]/10 text-[#FF5500]',
@@ -106,8 +103,7 @@ const mockProperties: PropertyFull[] = [
 }];
 
 
-export function TenantManagement() : void {
-  try {
+export function TenantManagement() {
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -320,7 +316,7 @@ export function TenantManagement() : void {
             <div>
               <div className="text-[10px] text-[#363636] mb-2 font-medium">Atividade Recente</div>
               <div className="space-y-1.5">
-                {(prop.activities || []).map((activity: unknown) =>
+                {(prop.activities || []).map((activity: any) =>
               <div key={activity.id} className="flex items-center gap-2">
                     <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
                 activity.type === 'success' ? 'bg-[#FF5500]' :

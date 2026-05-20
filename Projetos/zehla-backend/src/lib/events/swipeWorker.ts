@@ -1,14 +1,10 @@
-import { prisma } from '@/lib/prisma';
-
-import { gerarJustificativaIA } from '../swipe/analyzer';
-import { matchSwipes } from '../swipe/matcher';
-
-import { type LeadProfile } from '../swipe/types';
-
 // src/lib/events/swipeWorker.ts
+import { prisma } from '@/lib/prisma';
+import { matchSwipes } from '../swipe/matcher';
+import { type LeadProfile } from '../swipe/types';
+import { gerarJustificativaIA } from '../swipe/analyzer';
 
-export async function processSwipeStage(jobData: unknown) : void {
-  try {
+export async function processSwipeStage(jobData: any) {
   const { leadId } = jobData;
   const lead = await prisma.lead.findUnique({
     where: { id: leadId },

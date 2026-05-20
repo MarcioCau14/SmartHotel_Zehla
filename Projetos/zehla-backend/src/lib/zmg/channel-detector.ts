@@ -1,11 +1,9 @@
-import { ChannelDetection } from './types';
-
-
 /**
  * ZMG Channel Detector
  * Responsável por identificar a disponibilidade de canais (WhatsApp, SMS, etc.)
  */
 
+import { ChannelDetection } from './types';
 
 // Mock/Simulação inicial da Z-API para detecção
 // Em produção, integraria com axios chamando o endpoint de checagem da Z-API

@@ -1,14 +1,7 @@
-import {
-import { motion } from 'framer-motion';
-
-import type { PaymentData } from './StepPayment';
-import type { PropertyData } from './StepProperty';
-import type { RoomData } from './StepRooms';
-import type { ServicesData } from './StepServices';
-import type { WelcomeData } from './StepWelcome';
-
 'use client';
 
+import { motion } from 'framer-motion';
+import {
   Brain,
   Check,
   Building2,
@@ -18,6 +11,11 @@ import type { WelcomeData } from './StepWelcome';
   Zap,
   MessageCircle } from
 'lucide-react';
+import type { WelcomeData } from './StepWelcome';
+import type { PropertyData } from './StepProperty';
+import type { RoomData } from './StepRooms';
+import type { ServicesData } from './StepServices';
+import type { PaymentData } from './StepPayment';
 
 interface StepConfirmationProps {
   welcome: WelcomeData;
@@ -56,7 +54,6 @@ const tipoLabels: Record<string, string> = {
 };
 
 export function StepConfirmation({
-  try {
   welcome,
   property,
   rooms,

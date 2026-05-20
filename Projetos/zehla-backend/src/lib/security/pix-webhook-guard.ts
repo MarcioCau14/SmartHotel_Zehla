@@ -1,6 +1,5 @@
 import { timingSafeEqual } from 'crypto';
 
-
 export type PixGateway = 'asaas' | 'pagarme' | 'mercadopago' | 'openpix';
 
 interface WebhookConfig {

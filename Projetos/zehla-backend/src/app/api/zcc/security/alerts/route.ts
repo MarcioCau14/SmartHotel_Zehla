@@ -1,11 +1,7 @@
+import { apiMetrics } from '@/lib/metrics/api-metrics';
 import { performance } from 'perf_hooks';
 
-import { apiMetrics } from '@/lib/metrics/api-metrics';
-
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
 function generateMockAlert() {
-  try {
   const severities = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
   const types = ['CANARY_TOUCHED', 'HMAC_FAIL', 'BRUTE_FORCE', 'SUSPICIOUS_PATTERN'];
   
@@ -20,10 +16,7 @@ function generateMockAlert() {
   };
 }
 
-
-  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
-async function _GET() : void {
-  try {
+export async function GET() {
   const endpoint = '/api/zcc/security/alerts';
   apiMetrics.sseConnections.inc({ endpoint });
 

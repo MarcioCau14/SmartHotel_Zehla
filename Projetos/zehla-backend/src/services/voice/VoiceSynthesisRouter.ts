@@ -1,6 +1,5 @@
 import { PrismaClient } from '@prisma/client';
 
-
 const prisma = new PrismaClient();
 
 export interface VoiceGenerationPayload {
@@ -18,7 +17,7 @@ export class VoiceSynthesisRouter {
    * da pousada, carrega a "Voice Print" do dono e injeta na fila (Mocked BullMQ).
    */
   public async routeToTTS(payload: VoiceGenerationPayload): Promise<Buffer> {
-    
+    console.log(`[VoiceRouter] Roteando síntese de voz para a Property ${payload.propertyId}. Formality: ${payload.formalityIndex}`);
 
     // 1. Busca se a Pousada clonou a voz oficial
     const voicePrint = await prisma.voicePrint.findFirst({
@@ -28,7 +27,7 @@ export class VoiceSynthesisRouter {
 
     const modelToUse = voicePrint ? voicePrint.modelType : 'F5_TTS'; // Fallback para F5-TTS
     
-    `);
+    console.log(`[VoiceRouter] Modelo Selecionado: ${modelToUse}. (Voz Proprietária: ${voicePrint ? 'SIM' : 'NÃO'})`);
 
     // 2. Modula o "Acting" (Tom de Voz) baseado na Formality Index
     let emotionPrompt = "Normal";
@@ -46,13 +45,13 @@ export class VoiceSynthesisRouter {
       data: { voiceTokensUsed: { increment: tokensSpent } }
     });
 
-    
+    console.log(`[VoiceRouter] Áudio gerado. Foram consumidos ${tokensSpent} Voice Tokens.`);
 
     return audioBufferResult;
   }
 
   private mockWorkerGeneration(text: string, model: string, emotion: string): Buffer {
-     Gerando áudio via ${model} | Emoção: ${emotion}`);
+    console.log(`[BullMQ-Worker-GPU] (Simulado) Gerando áudio via ${model} | Emoção: ${emotion}`);
     // Simula a devolução de um buffer OGG/OPUS
     return Buffer.from(`MOCK_AUDIO_BUFFER_FOR: ${text}`);
   }

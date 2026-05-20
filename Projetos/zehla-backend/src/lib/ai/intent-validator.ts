@@ -1,7 +1,5 @@
-import { Plan } from '@prisma/client';
-
 import { prisma } from '@/lib/prisma';
-
+import { Plan } from '@prisma/client';
 
 export type ActionCategory = 'MARKETING' | 'FINANCE' | 'GUEST_DATA' | 'SYSTEM_CONFIG';
 export type ActionSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
@@ -12,7 +10,7 @@ export interface IntentRequest {
   action: string;
   category: ActionCategory;
   severity: ActionSeverity;
-  payload: unknown;
+  payload: any;
   context?: string;
 }
 
@@ -34,7 +32,7 @@ export class IntentValidator {
    * Validates if an agent's intended action is safe and authorized.
    */
   static async validate(request: IntentRequest): Promise<IntentVerdict> {
-    
+    console.log(`[🛡️ GUARDIAN] Validating intent from Agent: ${request.agentId} for User: ${request.userId}`);
 
     // 1. Fetch User Info
     const user = await prisma.user.findUnique({

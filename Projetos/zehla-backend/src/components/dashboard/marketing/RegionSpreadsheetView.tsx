@@ -1,19 +1,16 @@
-import { 
-import { useState, useEffect, useMemo } from 'react';
-
-import { Badge } from '@/components/ui/badge';
-
-
 'use client';
 
+import { useState, useEffect, useMemo } from 'react';
+import { 
   FolderOpen, Upload, List, Star, Loader2 
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface RegionSpreadsheetViewProps {
   region: string;
 }
 
-export function RegionSpreadsheetView(: void { region }: RegionSpreadsheetViewProps) {
+export function RegionSpreadsheetView({ region }: RegionSpreadsheetViewProps) {
   const [leads, setLeads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);

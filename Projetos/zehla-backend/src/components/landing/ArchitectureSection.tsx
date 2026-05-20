@@ -1,9 +1,7 @@
-import { Brain, Shield, Cpu, Database, MessageCircle, Globe, Lock, Zap } from 'lucide-react';
-import { motion } from 'framer-motion';
-
-
 'use client';
 
+import { motion } from 'framer-motion';
+import { Brain, Shield, Cpu, Database, MessageCircle, Globe, Lock, Zap } from 'lucide-react';
 
 const archNodes = [
   { icon: MessageCircle, label: 'WhatsApp API', desc: 'Evolution API', color: 'text-green-400' },
@@ -16,8 +14,7 @@ const archNodes = [
   { icon: Zap, label: 'Gemma Engine', desc: 'Sovereign LLM', color: 'text-yellow-400' },
 ];
 
-export function ArchitectureSection() : void {
-  try {
+export function ArchitectureSection() {
   return (
     <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
       <motion.div

@@ -5,7 +5,7 @@ export async function sendWhatsAppAlert(message: string): Promise<boolean> {
     const targetPhone = process.env.ADMIN_WHATSAPP_NUMBER || '';
 
     if (!evoKey || !targetPhone) {
-      
+      console.log('Evolution API não configurada. Simulando envio de mensagem:', message);
       return true;
     }
 

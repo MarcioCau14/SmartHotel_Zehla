@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { 
-import { motion, AnimatePresence } from 'framer-motion';
-
-
 // src/components/zcc/SwipeSuggestionPanel.tsx
 'use client';
 
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
   CheckCircle, 
   Copy, 
   MessageSquare, 
@@ -52,7 +50,7 @@ export const SwipeSuggestionPanel: React.FC<SwipeSuggestionPanelProps> = ({ lead
         
         const result = await res.json();
         setData(result);
-      } catch (err: unknown) {
+      } catch (err: any) {
         setError(err.message);
       } finally {
         setLoading(false);
@@ -142,7 +140,7 @@ export const SwipeSuggestionPanel: React.FC<SwipeSuggestionPanelProps> = ({ lead
       {/* SWIPE SUGGESTIONS */}
       <div className="space-y-3">
         <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest pl-2">Top 3 Sugestões de Resposta</h3>
-        {matches.map((match: unknown, idx: number) => (
+        {matches.map((match: any, idx: number) => (
           <motion.div
             key={match.swipe.id}
             initial={{ opacity: 0, x: -20 }}

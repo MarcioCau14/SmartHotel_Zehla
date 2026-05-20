@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-
 import { prisma } from '@/lib/prisma'
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-async function _POST(request: NextRequest) : void {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { action, data } = body
@@ -26,11 +23,8 @@ async function _POST(request: NextRequest) : void {
     return NextResponse.json({ success: false, error: 'Erro interno' }, { status: 500 })
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
 
-
-async function analyzePatterns(data: unknown) {
-  try {
+async function analyzePatterns(data: any) {
   const { propertyId, period } = data
   const startDate = period?.startDate ? new Date(period.startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
   const endDate = period?.endDate ? new Date(period.endDate) : new Date()
@@ -47,11 +41,11 @@ async function analyzePatterns(data: unknown) {
   // Analisar padrões
   const patterns = {
     totalInteractions: logs.length,
-    byAgent: logs.reduce((acc: unknown, log) => {
+    byAgent: logs.reduce((acc: any, log) => {
       acc[log.agentName] = (acc[log.agentName] || 0) + 1
       return acc
     }, {}),
-    byIntent: logs.reduce((acc: unknown, log) => {
+    byIntent: logs.reduce((acc: any, log) => {
       const intentKey = log.intent || 'unknown'
       acc[intentKey] = (acc[intentKey] || 0) + 1
       return acc
@@ -75,8 +69,7 @@ async function analyzePatterns(data: unknown) {
   return NextResponse.json({ success: true, data: patterns })
 }
 
-async function getInsights(data: unknown) {
-  try {
+async function getInsights(data: any) {
   const { propertyId } = data
 
   const reservations = await prisma.reservation.findMany({
@@ -109,8 +102,7 @@ async function getInsights(data: unknown) {
   return NextResponse.json({ success: true, data: insights })
 }
 
-async function trainFromFeedback(data: unknown) {
-  try {
+async function trainFromFeedback(data: any) {
   const { logId, feedback, correctedIntent } = data
 
   const log = await prisma.agentLog.update({
@@ -146,8 +138,7 @@ async function trainFromFeedback(data: unknown) {
   })
 }
 
-async function getPerformance(data: unknown) {
-  try {
+async function getPerformance(data: any) {
   const { propertyId, agentName } = data
 
   const logs = await prisma.agentLog.findMany({
@@ -174,8 +165,7 @@ async function getPerformance(data: unknown) {
 }
 
 // Helpers
-function analyzePeakHours(logs: unknown[]) {
-  try {
+function analyzePeakHours(logs: any[]) {
   const hours = new Array(24).fill(0)
   logs.forEach(log => {
     const hour = new Date(log.createdAt).getHours()
@@ -190,9 +180,8 @@ function analyzePeakHours(logs: unknown[]) {
   }
 }
 
-function getCommonQuestions(logs: unknown[]) {
-  try {
-  const intents = logs.reduce((acc: unknown, log) => {
+function getCommonQuestions(logs: any[]) {
+  const intents = logs.reduce((acc: any, log) => {
     acc[log.intent] = (acc[log.intent] || 0) + 1
     return acc
   }, {})
@@ -203,8 +192,7 @@ function getCommonQuestions(logs: unknown[]) {
     .map(([intent, count]) => ({ intent, count }))
 }
 
-function generateRecommendations(reservations: unknown[]) {
-  try {
+function generateRecommendations(reservations: any[]) {
   const recommendations = []
 
   if (reservations.length === 0) {
@@ -217,7 +205,7 @@ function generateRecommendations(reservations: unknown[]) {
     recommendations.push('Considere oferecer pacotes de 3+ noites para aumentar o ticket médio.')
   }
 
-  const sources = reservations.reduce((acc: unknown, r) => {
+  const sources = reservations.reduce((acc: any, r) => {
     acc[r.source] = (acc[r.source] || 0) + 1
     return acc
   }, {})
@@ -229,8 +217,7 @@ function generateRecommendations(reservations: unknown[]) {
   return recommendations
 }
 
-function calculateTrends(logs: unknown[]) {
-  try {
+function calculateTrends(logs: any[]) {
   if (logs.length < 10) return { message: 'Dados insuficientes para tendências' }
 
   const midPoint = Math.floor(logs.length / 2)
@@ -251,10 +238,7 @@ function calculateTrends(logs: unknown[]) {
   }
 }
 
-
-  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
-async function _GET() : void {
-  try {
+export async function GET() {
   return NextResponse.json({
     agent: 'LEARNER',
     status: 'online',

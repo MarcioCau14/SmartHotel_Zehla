@@ -1,6 +1,5 @@
 import IORedis from 'ioredis';
 
-
 const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
 const REDIS_PORT = parseInt(process.env.REDIS_PORT || '6379');
 const isDev = process.env.NODE_ENV === 'development';
@@ -15,18 +14,18 @@ export const redisConfig = {
   },
 };
 
-let redis: unknown;
+let redis: any;
 
 try {
   const realRedis = new IORedis(redisConfig);
 
   if (isDev) {
     const silentHandler = {
-      get: (target: unknown, prop: string) => {
+      get: (target: any, prop: string) => {
         const value = target[prop];
         if (typeof value === 'function') {
-          return (...args: unknown[]) => {
-            return value.apply(target, args).catch((err: unknown) => {
+          return (...args: any[]) => {
+            return value.apply(target, args).catch((err: any) => {
               if (err.code === 'ECONNREFUSED' || err.message.includes('max retries')) {
                 return null;
               }
@@ -42,7 +41,7 @@ try {
     redis = realRedis;
   }
 
-  redis.on('error', (err: unknown) => {
+  redis.on('error', (err: any) => {
     if (isDev && (err.code === 'ECONNREFUSED' || err.message.includes('max retries'))) {
       // Silencioso em dev
     } else {

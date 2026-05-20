@@ -1,12 +1,9 @@
-import { Redis } from 'ioredis'
-
-import { llmRouter } from '@/lib/ai/llm-router'
 import { prisma } from '@/lib/prisma'
+import { llmRouter } from '@/lib/ai/llm-router'
 import { scanAndMaskPII, sanitizePrompt } from '@/lib/security/pii-scanner'
-
 import { WhatsappPersonaLearner } from './whatsapp-persona-learner'
 import { classifyIntent } from './intent-classifier'
-
+import { Redis } from 'ioredis'
 
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379')
 

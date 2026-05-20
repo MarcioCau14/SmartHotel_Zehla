@@ -1,18 +1,14 @@
-import { 
-import { useState, useEffect, useMemo } from 'react';
-
-import { Badge } from '@/components/ui/badge';
-
-import { FishDashboardView } from './FishDashboardView';
-
-
 'use client';
 
+import { useState, useEffect, useMemo } from 'react';
+import { 
   Sparkles, RefreshCw, Megaphone, Building2, Eye, List, Zap, 
   Upload, FolderOpen, Loader2, MapPin, Search, Download 
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { FishDashboardView } from './FishDashboardView';
 
-export function SecretariaPanel() : void {
+export function SecretariaPanel() {
   const [activeTab, setActiveTab] = useState<'WA' | 'FISH'>('WA');
   const [isSyncing, setIsSyncing] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);

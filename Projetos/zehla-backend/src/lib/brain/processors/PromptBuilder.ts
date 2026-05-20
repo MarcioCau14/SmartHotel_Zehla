@@ -1,9 +1,8 @@
-import { WhatsappPersonaLearner } from '../whatsapp-persona-learner';
 import { hasFeature } from '../feature-guard';
-
+import { WhatsappPersonaLearner } from '../whatsapp-persona-learner';
 
 export class PromptBuilder {
-  static async build(property: unknown, intent: string, message: string, classified: unknown, context: unknown) {
+  static async build(property: any, intent: string, message: string, classified: any, context: any) {
     let learnedPersonaPrompt = '';
     
     if (hasFeature(property.plan, 'WHATSAPP_LEARNING')) {
@@ -29,7 +28,7 @@ IMPORTANTE: Você DEVE adotar esse estilo de atendimento rigorosamente para pres
     return { systemPrompt, userPrompt };
   }
 
-  private static buildSystemPrompt(property: unknown, intent: string): string {
+  private static buildSystemPrompt(property: any, intent: string): string {
     const basePrompt = `Você é o assistente virtual da ${property.name}, uma pousada na Praia do Rosa, Imbituba/SC.
 Você atende hóspedes pelo WhatsApp de forma calorosa, profissional e eficiente.
 
@@ -41,7 +40,7 @@ INFORMAÇÕES DA POUSADA:
 - WhatsApp: ${property.whatsapp || 'Não informado'}
 
 QUARTOS DISPONÍVEIS:
-${property.rooms.map((r: unknown) => `- ${r.name || r.number}: ${r.type}, ${r.capacity} hóspedes, R$ ${r.basePrice}/${r.pricingType === 'PER_PERSON' ? 'pessoa' : 'quarto'}`).join('\n')}
+${property.rooms.map((r: any) => `- ${r.name || r.number}: ${r.type}, ${r.capacity} hóspedes, R$ ${r.basePrice}/${r.pricingType === 'PER_PERSON' ? 'pessoa' : 'quarto'}`).join('\n')}
 
 LÓGICA DE PREÇO:
 - Se o quarto for "Por Quarto": O valor é fixo por noite, independente de quantas pessoas (dentro da capacidade).
@@ -68,7 +67,7 @@ REGRAS:
     return basePrompt + (intentSpecific[intent] || '');
   }
 
-  private static buildUserPrompt(message: string, classified: unknown, context: unknown): string {
+  private static buildUserPrompt(message: string, classified: any, context: any): string {
     return `Mensagem do hóspede: "${message}"
 
 Intent detectado: ${classified.intent} (confiança: ${(classified.confidence * 100).toFixed(1)}%)

@@ -33,14 +33,13 @@ export const DEFAULT_LIMITS: ResourceLimits = {
 };
 
 export class ResourceExhaustionError extends Error {
-  constructor(public code: string, public details: unknown) {
+  constructor(public code: string, public details: any) {
     super(`RESOURCE_EXHAUSTED: ${code}`);
     this.name = 'ResourceExhaustionError';
   }
 }
 
 export function checkCircuitBreaker(key: string): void {
-  try {
   const now = Date.now();
   let cb = circuitBreakers.get(key);
     
@@ -63,7 +62,6 @@ export function checkCircuitBreaker(key: string): void {
 }
 
 export function recordFailure(key: string): void {
-  try {
   const cb = circuitBreakers.get(key);
   if (cb) {
     cb.failures++;
@@ -77,7 +75,6 @@ export function recordFailure(key: string): void {
 }
 
 export function recordSuccess(key: string): void {
-  try {
   const cb = circuitBreakers.get(key);
   if (cb && cb.state === 'HALF_OPEN') {
     cb.state = 'CLOSED';
@@ -142,7 +139,6 @@ export function truncateMessagesSecure(
 }
 
 export function estimateCost(inputChars: number, outputTokens: number): number {
-  try {
   const inputTokens = Math.ceil(inputChars / 4);
   const inputCost = (inputTokens / 1_000_000) * 0.50;
   const outputCost = (outputTokens / 1_000_000) * 1.50;
@@ -150,7 +146,6 @@ export function estimateCost(inputChars: number, outputTokens: number): number {
 }
 
 export function assertCostLimit(inputChars: number, outputTokens: number, limitUsd: number = DEFAULT_LIMITS.maxLlmCostUsd): void {
-  try {
   const cost = estimateCost(inputChars, outputTokens);
   if (cost > limitUsd) {
     throw new ResourceExhaustionError('COST_LIMIT_EXCEEDED', {

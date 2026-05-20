@@ -1,11 +1,9 @@
+'use client'
+
 import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 
-
-'use client'
-
-
-export const GPTNode = memo(({ data, isConnectable }: unknown) => {
+export const GPTNode = memo(({ data, isConnectable }: any) => {
   return (
     <div className="bg-[#0A0A0A] border border-zinc-800 rounded-xl shadow-2xl overflow-hidden min-w-[280px]">
       {/* Header do Nó */}

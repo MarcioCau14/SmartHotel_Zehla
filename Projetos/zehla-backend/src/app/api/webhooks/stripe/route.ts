@@ -1,15 +1,12 @@
-import Stripe from 'stripe';
 import { NextResponse } from 'next/server';
-
+import Stripe from 'stripe';
 import { sendWhatsAppAlert } from '@/lib/notifications';
-
-import { withApiSecurity } from '@/lib/server/with-api-security';
 
 // Ensure Stripe is initialized only if the key is provided
 const stripeKey = process.env.STRIPE_SECRET_KEY || '';
 const stripe = stripeKey ? new Stripe(stripeKey, { apiVersion: '2023-10-16' as any }) : null;
 
-async function _POST(req: Request) : void {
+export async function POST(req: Request) {
   try {
     const body = await req.text();
     const signature = req.headers.get('stripe-signature') as string;
@@ -29,7 +26,7 @@ async function _POST(req: Request) : void {
 
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-    } catch (err: unknown) {
+    } catch (err: any) {
       console.error(`Webhook signature verification failed.`, err.message);
       return NextResponse.json({ error: err.message }, { status: 400 });
     }
@@ -49,11 +46,11 @@ async function _POST(req: Request) : void {
       
       // Handle other event types here
       default:
-        
+        console.log(`Unhandled event type ${event.type}`);
     }
 
     return NextResponse.json({ received: true });
-  } catch (err: unknown) {
+  } catch (err: any) {
     console.error('Webhook Error:', err);
     return NextResponse.json(
       { error: 'Webhook handler failed' },
@@ -61,5 +58,3 @@ async function _POST(req: Request) : void {
     );
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 300, windowSeconds: 60 } });
-

@@ -27,8 +27,7 @@ export const ZEHLA_PLANS = {
  * 2. Se a reserva tem origem 'DIRECT' (WhatsApp/Zehla link): ZEHLA cobra a % do plano.
  * 3. Suporte ao hóspede 24h: Sempre incluso na mensalidade fixa.
  */
-export function calculateCommission(amount: number, source: 'OTA' | 'DIRECT', plan: keyof typeof ZEHLA_PLANS) : void {
-  try {
+export function calculateCommission(amount: number, source: 'OTA' | 'DIRECT', plan: keyof typeof ZEHLA_PLANS) {
   if (source === 'OTA') return 0;
   if (plan === 'MAX') return 0;
   

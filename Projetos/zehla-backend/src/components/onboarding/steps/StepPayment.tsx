@@ -1,10 +1,8 @@
-import { CreditCard, QrCode, Banknote, Building, Check } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useState, useMemo } from 'react';
-
-
 'use client';
 
+import { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { CreditCard, QrCode, Banknote, Building, Check } from 'lucide-react';
 
 export interface PaymentData {
   methods: string[];
@@ -34,8 +32,7 @@ const pixKeyTypes = [
 { value: 'aleatoria', label: 'Chave Aleatória' }];
 
 
-export function StepPayment(: void { data, onChange }: StepPaymentProps) {
-  try {
+export function StepPayment({ data, onChange }: StepPaymentProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const toggleMethod = (id: string) => {

@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
-
 import { prisma } from '@/lib/prisma';
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-async function _GET() : void {
+export async function GET() {
   try {
     const logs = await prisma.agentLog.groupBy({
       by: ['agentName'],
@@ -32,5 +29,3 @@ async function _GET() : void {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
-  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
-

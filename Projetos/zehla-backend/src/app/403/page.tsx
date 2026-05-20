@@ -1,10 +1,8 @@
-import Link from 'next/link';
-import { ShieldOff, ArrowLeft } from 'lucide-react';  
-
-
 // src/app/403/page.tsx
 'use client';
 
+import { ShieldOff, ArrowLeft } from 'lucide-react';  
+import Link from 'next/link';
 
 export default function ForbiddenPage() {  
   return (  

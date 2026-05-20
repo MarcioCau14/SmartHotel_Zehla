@@ -1,8 +1,6 @@
 import { prisma } from '@/lib/prisma';
-
-import { assertSanitized } from '../security/pii-sanitizer';
 import { subconsciousQueue } from '../ml/subconscious-worker';
-
+import { assertSanitized } from '../security/pii-sanitizer';
 
 export type TerminalLevel = 'info' | 'warn' | 'error' | 'success' | 'insight';
 
@@ -48,7 +46,7 @@ export class CognitiveTerminal {
         insight: '🧠',
       };
 
-      }] ${sanitizedMessage}`, sanitizedMetadata);
+      console.log(`${icons[level]} [${component.toUpperCase()}] ${sanitizedMessage}`, sanitizedMetadata);
 
       // 3. Auto-Healing Trigger
       if (level === 'error') {
@@ -65,9 +63,9 @@ export class CognitiveTerminal {
   }
 
   // Atalhos úteis
-  static info(comp: string, msg: string, meta?: unknown, tid?: string) { return this.log('info', comp, msg, meta, tid); }
-  static warn(comp: string, msg: string, meta?: unknown, tid?: string) { return this.log('warn', comp, msg, meta, tid); }
-  static error(comp: string, msg: string, meta?: unknown, tid?: string) { return this.log('error', comp, msg, meta, tid); }
-  static success(comp: string, msg: string, meta?: unknown, tid?: string) { return this.log('success', comp, msg, meta, tid); }
-  static insight(comp: string, msg: string, meta?: unknown, tid?: string) { return this.log('insight', comp, msg, meta, tid); }
+  static info(comp: string, msg: string, meta?: any, tid?: string) { return this.log('info', comp, msg, meta, tid); }
+  static warn(comp: string, msg: string, meta?: any, tid?: string) { return this.log('warn', comp, msg, meta, tid); }
+  static error(comp: string, msg: string, meta?: any, tid?: string) { return this.log('error', comp, msg, meta, tid); }
+  static success(comp: string, msg: string, meta?: any, tid?: string) { return this.log('success', comp, msg, meta, tid); }
+  static insight(comp: string, msg: string, meta?: any, tid?: string) { return this.log('insight', comp, msg, meta, tid); }
 }

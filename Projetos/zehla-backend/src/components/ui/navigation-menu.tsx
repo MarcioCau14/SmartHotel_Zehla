@@ -1,12 +1,11 @@
-import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu"
 import * as React from "react"
-import { ChevronDownIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
+import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu"
 import { cva } from "class-variance-authority"
+import { ChevronDownIcon } from "lucide-react"
 
+import { cn } from "@/lib/utils"
 
 function NavigationMenu({
-  try {
   className,
   children,
   viewport = true,
@@ -31,7 +30,6 @@ function NavigationMenu({
 }
 
 function NavigationMenuList({
-  try {
   className,
   ...props
 }: React.ComponentProps<typeof NavigationMenuPrimitive.List>) {
@@ -48,7 +46,6 @@ function NavigationMenuList({
 }
 
 function NavigationMenuItem({
-  try {
   className,
   ...props
 }: React.ComponentProps<typeof NavigationMenuPrimitive.Item>) {
@@ -66,7 +63,6 @@ const navigationMenuTriggerStyle = cva(
 )
 
 function NavigationMenuTrigger({
-  try {
   className,
   children,
   ...props
@@ -87,7 +83,6 @@ function NavigationMenuTrigger({
 }
 
 function NavigationMenuContent({
-  try {
   className,
   ...props
 }: React.ComponentProps<typeof NavigationMenuPrimitive.Content>) {
@@ -105,7 +100,6 @@ function NavigationMenuContent({
 }
 
 function NavigationMenuViewport({
-  try {
   className,
   ...props
 }: React.ComponentProps<typeof NavigationMenuPrimitive.Viewport>) {
@@ -128,7 +122,6 @@ function NavigationMenuViewport({
 }
 
 function NavigationMenuLink({
-  try {
   className,
   ...props
 }: React.ComponentProps<typeof NavigationMenuPrimitive.Link>) {
@@ -145,7 +138,6 @@ function NavigationMenuLink({
 }
 
 function NavigationMenuIndicator({
-  try {
   className,
   ...props
 }: React.ComponentProps<typeof NavigationMenuPrimitive.Indicator>) {

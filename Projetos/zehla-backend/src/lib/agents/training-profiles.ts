@@ -1,14 +1,11 @@
-import { visibilityAgentProfile } from './visibility-agent';
-
-import type { AgentTrainingProfile } from './mal-types';
-
 // ZEHLA SmartHotel Cognitive OS — MAL Training Profiles
 // Malha de Aprendizado Agêntica — Perfil de treinamento por agente
 
+import type { AgentTrainingProfile } from './mal-types';
+import { visibilityAgentProfile } from './visibility-agent';
 
 // Helper: generate a 30-day trend from start → end with some noise
 function generateTrend(start: number, end: number, noise = 0.003): number[] {
-  try {
   const trend: number[] = [];
   for (let i = 0; i < 30; i++) {
     const base = start + ((end - start) * i) / 29;
@@ -22,7 +19,6 @@ function generateTrend(start: number, end: number, noise = 0.003): number[] {
 
 // Helper: generate descending trend (e.g. latency decreasing)
 function generateDescendingTrend(start: number, end: number, noise = 5): number[] {
-  try {
   const trend: number[] = [];
   for (let i = 0; i < 30; i++) {
     const base = start - ((start - end) * i) / 29;
@@ -461,6 +457,5 @@ const profiles: AgentTrainingProfile[] = [
 ];
 
 export function getTrainingProfiles(): AgentTrainingProfile[] {
-  try {
   return profiles;
 }

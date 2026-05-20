@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-
 import { prisma } from '@/lib/prisma'
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-async function _POST(request: NextRequest) : void {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { id, status, data } = body
 
-    
+    console.log('📩 Webhook Pagarme recebido:', { id, status })
 
     // Atualizar pagamento
     const payment = await prisma.payment.updateMany({
@@ -41,5 +38,3 @@ async function _POST(request: NextRequest) : void {
     return NextResponse.json({ success: false, error: 'Webhook error' }, { status: 500 })
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 300, windowSeconds: 60 } });
-

@@ -1,16 +1,15 @@
 import { fireGuardianAlert } from './guardian-alert';
 
-
 /**
  * ZEHLA Canary Detector
  * Detecta se algum registro retornado pelo banco de dados é um "Canary" (Honeypot).
  */
 
-export function detectCanary(result: unknown, model: string, action: string) : void {
+export function detectCanary(result: any, model: string, action: string) {
   if (!result) return;
 
   const records = Array.isArray(result) ? result : [result];
-  const touchedCanaries = records.filter((r: unknown) => r?.isCanary === true);
+  const touchedCanaries = records.filter((r: any) => r?.isCanary === true);
 
   if (touchedCanaries.length > 0) {
     void (async () => {

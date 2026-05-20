@@ -1,10 +1,8 @@
-import React from 'react';
-import { 
-import { motion } from 'framer-motion';
-
-
 'use client';
 
+import React from 'react';
+import { motion } from 'framer-motion';
+import { 
   Instagram, 
   Brain, 
   Fingerprint, 
@@ -57,8 +55,7 @@ const timelineSteps = [
   }
 ];
 
-export function ROILine() : void {
-  try {
+export function ROILine() {
   return (
     <div className="relative py-20 overflow-hidden">
       {/* Background Line */}

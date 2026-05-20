@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-
 import { dnaClonerService } from '@/lib/ai/engine/dna-cloner-service';
 import { getTenantId } from '@/lib/security/tenant-context';
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-async function _POST(req: NextRequest) : void {
+export async function POST(req: NextRequest) {
   try {
     const tenantId = getTenantId();
     if (!tenantId) {
@@ -24,12 +21,10 @@ async function _POST(req: NextRequest) : void {
       metrics: dnaMetrics,
       message: 'DNA extraído com sucesso!' 
     });
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error('[DNA_CLONE_ERROR]', error);
     return NextResponse.json({ 
       error: error.message || 'Erro ao clonar DNA' 
     }, { status: 500 });
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 30, windowSeconds: 60 } });
-

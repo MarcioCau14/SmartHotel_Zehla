@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-import { LeadScorer } from '@/lib/brain/lead-scorer'
 import { WhatsappExtractorService } from '@/lib/whatsapp/extractor-service'
-import { WhatsappPersonaLearner } from '@/lib/brain/whatsapp-persona-learner'
 import { prisma } from '@/lib/prisma'
+import { WhatsappPersonaLearner } from '@/lib/brain/whatsapp-persona-learner'
+import { LeadScorer } from '@/lib/brain/lead-scorer'
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-async function _POST(req: NextRequest) : void {
+export async function POST(req: NextRequest) {
   try {
     const { instanceName, type, groupJid, propertyId } = await req.json()
 
@@ -15,7 +12,7 @@ async function _POST(req: NextRequest) : void {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 })
     }
 
-    
+    console.log(`🧠 [Secretaria-IA] Iniciando extração ${type} para property ${propertyId}...`)
 
     let rawContacts = []
 
@@ -77,15 +74,13 @@ async function _POST(req: NextRequest) : void {
       persona
     })
 
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error('❌ WhatsApp Extraction API Error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
 
-
-async function _GET(req: NextRequest) : void {
+export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const action = searchParams.get('action')
   const instanceName = searchParams.get('instanceName')
@@ -102,9 +97,7 @@ async function _GET(req: NextRequest) : void {
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
-  } catch (error: unknown) {
+  } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
-  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
-

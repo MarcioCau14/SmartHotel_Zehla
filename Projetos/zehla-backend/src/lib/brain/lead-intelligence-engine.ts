@@ -1,17 +1,14 @@
-import { LeadEventType, LeadStatus } from '@prisma/client';
-
-import { captureQueue, EVENT_SCORES } from '@/lib/queues';
 import { prisma } from '@/lib/prisma';
-
+import { LeadEventType, LeadStatus } from '@prisma/client';
 import { LeadScorer } from './lead-scorer';
-
+import { captureQueue, EVENT_SCORES } from '@/lib/queues';
 
 export type BehaviorProfile = 'conservador' | 'curioso' | 'urgente' | 'resistente';
 
 export interface LeadEventData {
   leadId: string;
   type: LeadEventType;
-  metadata?: unknown;
+  metadata?: any;
   email?: string;
 }
 
@@ -33,7 +30,7 @@ export class LeadIntelligenceEngine {
         eventSource: 'intelligence_engine',
       });
 
-      
+      console.log(`[Brain] Evento ${data.type} encaminhado para pipeline assíncrona`);
       return { async: true };
     } catch (err) {
       // Fallback síncrono se Redis/BullMQ estiver indisponível
@@ -75,7 +72,7 @@ export class LeadIntelligenceEngine {
    * Camada 2 & 3: Memory & Scoring Engine
    * Recalcula o score e estágio do funil baseado no histórico real
    */
-  private static async refreshBrain(lead: unknown) {
+  private static async refreshBrain(lead: any) {
     const events = lead.events;
     
     // 1. Cálculo de Score Dinâmico (Baseado em Eventos)
@@ -109,7 +106,7 @@ export class LeadIntelligenceEngine {
   /**
    * Camada 4: Profile Detection (Psicologia de Vendas)
    */
-  private static detectBehaviorProfile(events: unknown[]): BehaviorProfile {
+  private static detectBehaviorProfile(events: any[]): BehaviorProfile {
     const hasFastResponse = events.some(e => e.type === 'WHATSAPP_REPLY');
     const clickCount = events.filter(e => e.type === 'LINK_CLICK').length;
     const hasTrial = events.some(e => e.type === 'TRIAL_STARTED');
@@ -125,7 +122,7 @@ export class LeadIntelligenceEngine {
   /**
    * Detecção de Estágio do Funil (Conforme o Modelo Correto)
    */
-  private static detectFunnelStage(events: unknown[]): string {
+  private static detectFunnelStage(events: any[]): string {
     if (events.some(e => e.type === 'CONVERSION')) return 'CONVERTED';
     if (events.some(e => e.type === 'TRIAL_STARTED')) return 'TRIAL';
     if (events.some(e => e.type === 'WHATSAPP_REPLY')) return 'ENGAGED';

@@ -1,13 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-
-import { EmailService } from '@/lib/email/email-service';
-import { prisma } from '@/lib/prisma';
-
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
 // src/app/api/swipes/send-email/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { EmailService } from '@/lib/email/email-service';
 
-async function _POST(req: NextRequest) : void {
+export async function POST(req: NextRequest) {
   try {
     const { leadId, swipeId } = await req.json();
 
@@ -22,9 +18,7 @@ async function _POST(req: NextRequest) : void {
     const result = await EmailService.sendSwipeEmail(lead, swipe);
 
     return NextResponse.json({ success: true, result });
-  } catch (error: unknown) {
+  } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 30, windowSeconds: 60 } });
-

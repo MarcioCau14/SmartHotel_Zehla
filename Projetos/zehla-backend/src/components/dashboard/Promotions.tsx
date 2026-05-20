@@ -1,13 +1,10 @@
-import { Tag, Percent, Calendar, Clock, Plus, TrendingUp, Users } from 'lucide-react';
-import { useState, useMemo } from 'react';
-
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-
-
 'use client';
 
+import { useState, useMemo } from 'react';
+import { Tag, Percent, Calendar, Clock, Plus, TrendingUp, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 
 interface Promo {
   id: string;
@@ -42,8 +39,7 @@ const statusLabels: Record<string, string> = {
   expired: 'Expirada'
 };
 
-export function Promotions() : void {
-  try {
+export function Promotions() {
   const [promos] = useState<Promo[]>(initialPromos);
 
   return (

@@ -1,6 +1,5 @@
 import { createHash } from 'crypto';
 
-
 const SENSITIVE_PATTERNS = {
   // CPF com ou sem formatação, com ou sem espaços
   cpf: /\b(\d{3}[.\s]?\d{3}[.\s]?\d{3}[-\s]?\d{2}|\d{11})\b/g,
@@ -40,7 +39,6 @@ export interface SanitizationProof {
 }
 
 export function sanitizePIIWithProof(text: string): SanitizationProof {
-  try {
   if (!text) return { 
     sanitized: '', 
     valid: true, 
@@ -94,12 +92,10 @@ export function sanitizePIIWithProof(text: string): SanitizationProof {
 }
 
 function hash(text: string): string {
-  try {
   return createHash('sha256').update(text).digest('hex').slice(0, 16);
 }
 
 export function assertSanitized(text: string): string {
-  try {
   const proof = sanitizePIIWithProof(text);
   
   if (!proof.valid) {
@@ -111,6 +107,7 @@ export function assertSanitized(text: string): string {
   }
 
   if (proof.changed) {
+    console.log(JSON.stringify({
       level: 'security',
       event: 'PII_SANITIZED',
       types: proof.detections.map(d => d.type),

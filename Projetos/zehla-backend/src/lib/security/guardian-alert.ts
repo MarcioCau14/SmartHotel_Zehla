@@ -1,7 +1,5 @@
-import { Redis } from 'ioredis';
-
 import { prisma } from '@/lib/prisma';
-
+import { Redis } from 'ioredis';
 
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
 
@@ -24,7 +22,7 @@ export async function fireGuardianAlert(payload: AlertPayload): Promise<void> {
   };
 
   // Log local imediato (sempre acontece)
-  `);
+  console.log(`🚨 [GUARDIAN ALERT] ${payload.alertType} (${payload.severity})`);
 
   // Publica no Redis Stream para o Guardian Agent (Circuit Breaker)
   void (async () => {

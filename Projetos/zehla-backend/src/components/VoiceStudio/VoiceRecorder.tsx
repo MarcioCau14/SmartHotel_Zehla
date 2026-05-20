@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
-import { Mic, Lock, Zap, CheckCircle } from 'lucide-react';
-
-
 'use client'
 
+import React, { useState } from 'react';
+import { Mic, Lock, Zap, CheckCircle } from 'lucide-react';
 
 export const VoiceRecorder = ({ userPlan = 'LITE' }: { userPlan?: 'LITE' | 'PRO' | 'MAX' }) => {
   const [isRecording, setIsRecording] = useState(false);

@@ -1,7 +1,6 @@
-import { CognitiveTerminal } from '../observability/cognitive-terminal';
 import { prisma } from '../prisma';
 import { redis } from '../redis';
-
+import { CognitiveTerminal } from '../observability/cognitive-terminal';
 
 /**
  * SELF-HEALING ENGINE — O "Anticorpo" do Cérebro ZEHLA

@@ -1,8 +1,6 @@
-import { prisma } from '@/lib/prisma';
-
-import { type LeadProfile, type SwipeTemplate } from "./types";
-
 // src/lib/swipe/swipe-generator.ts
+import { prisma } from '@/lib/prisma';
+import { type LeadProfile, type SwipeTemplate } from "./types";
 
 /**
  * ZEHLA Swipe Generator (MAX Tier Exclusive)
@@ -37,7 +35,7 @@ export async function generateAutonomousSwipe(
   };
 
   // 3. Simulação de Chamada LLM (A ser integrada com ZEHLA Brain API)
-  
+  console.log(`🤖 [GEN_MAX] Sintetizando swipe para dor: ${profile.dor}`);
   
   // Placeholder de Resposta Sintetizada
   const synthesizedContent = `Olá! Vi que você está enfrentando desafios com ${profile.dor} na ${property.name}. 

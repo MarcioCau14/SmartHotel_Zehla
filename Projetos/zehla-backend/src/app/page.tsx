@@ -1,20 +1,8 @@
-import {
-import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-
-import { CTASection } from '@/components/landing/CTASection';
-import { FeaturesSection } from '@/components/landing/FeaturesSection';
-import { HeroSection } from '@/components/landing/HeroSection';
-import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
-import { PainPoints } from '@/components/landing/PainPoints';
-import { PainPointsSection } from '@/components/landing/PainPointsSection';
-import { PricingSection } from '@/components/landing/PricingSection';
-import { RaioXForm } from '@/components/landing/RaioXForm';
-import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
-
-
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import {
   Brain,
   Zap,
   Menu,
@@ -23,6 +11,15 @@ import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
 } from 'lucide-react';
 
 // Landing Sections
+import { HeroSection } from '@/components/landing/HeroSection';
+import { PainPointsSection } from '@/components/landing/PainPointsSection';
+import { PainPoints } from '@/components/landing/PainPoints';
+import { RaioXForm } from '@/components/landing/RaioXForm';
+import { FeaturesSection } from '@/components/landing/FeaturesSection';
+import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
+import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
+import { PricingSection } from '@/components/landing/PricingSection';
+import { CTASection } from '@/components/landing/CTASection';
 
 const navLinks = [
   { label: 'Funcionalidades', href: '#funcionalidades' },

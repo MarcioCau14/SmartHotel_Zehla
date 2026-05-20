@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-import { getTenantId } from '@/lib/security/tenant-context';
 import { prisma } from '@/lib/prisma';
+import { getTenantId } from '@/lib/security/tenant-context';
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-async function _POST(req: NextRequest) : void {
+export async function POST(req: NextRequest) {
   try {
     const tenantId = getTenantId();
     if (!tenantId) {
@@ -78,10 +75,8 @@ async function _POST(req: NextRequest) : void {
     return NextResponse.json({ error: 'Erro ao salvar configurações de DNA' }, { status: 500 });
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
 
-
-async function _GET(req: NextRequest) : void {
+export async function GET(req: NextRequest) {
   try {
     const tenantId = getTenantId();
     if (!tenantId) {
@@ -99,5 +94,3 @@ async function _GET(req: NextRequest) : void {
     return NextResponse.json({ error: 'Erro ao buscar dados de DNA' }, { status: 500 });
   }
 }
-  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
-

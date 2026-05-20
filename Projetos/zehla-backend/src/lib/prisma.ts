@@ -1,8 +1,6 @@
 import { PrismaClient } from '@prisma/client'
-
 import { detectCanary } from './security/canary-detector'
 import { getTenantId } from './security/tenant-context'
-
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
@@ -38,7 +36,7 @@ export const prisma = basePrisma.$extends({
           if (operation === 'create' || operation === 'createMany') {
             const createArgs = args as any;
             if (Array.isArray(createArgs.data)) {
-              createArgs.data = createArgs.data.map((item: unknown) => ({ ...item, propertyId: tenantId }));
+              createArgs.data = createArgs.data.map((item: any) => ({ ...item, propertyId: tenantId }));
             } else {
               createArgs.data = { ...createArgs.data, propertyId: tenantId };
             }

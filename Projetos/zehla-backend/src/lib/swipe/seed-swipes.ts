@@ -1,10 +1,7 @@
+// src/lib/swipe/seed-swipes.ts
 import { prisma } from '@/lib/prisma';
 
-
-// src/lib/swipe/seed-swipes.ts
-
-export async function seedSwipes() : void {
-  try {
+export async function seedSwipes() {
   const templates = [
     {
       title: "Saudação Concierge PRO",

@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-import { AgentRequest } from '@/types'
 import { orchestrator } from '@/lib/brain/agent-orchestrator'
+import { AgentRequest } from '@/types'
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-async function _POST(request: NextRequest) : void {
+export async function POST(request: NextRequest) {
   try {
     const body: AgentRequest = await request.json()
 
@@ -36,13 +33,8 @@ async function _POST(request: NextRequest) : void {
     )
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
 
-
-
-  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
-async function _GET() : void {
-  try {
+export async function GET() {
   return NextResponse.json({
     agent: 'RECEPTIONIST',
     status: 'online',

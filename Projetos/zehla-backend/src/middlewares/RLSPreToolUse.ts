@@ -1,6 +1,5 @@
 import { PrismaClient } from '@prisma/client'
 
-
 /**
  * Middleware de Segurança (Layer 3 - Hooks): RLS PreToolUse
  * Garante o Dogma 1 do ZAOS: O banco deve operar em contexto isolado (Soberania Multi-Tenant).

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Mic, CheckCircle, ShieldAlert, BarChart } from 'lucide-react';
 
-
 export const ZccVoiceControlPanel = () => {
   // Mock data para o painel de controle do ZCC
   const voiceStats = {

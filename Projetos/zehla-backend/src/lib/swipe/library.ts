@@ -1,8 +1,6 @@
-import { prisma } from '@/lib/prisma';
-
-import { type SwipeTemplate, type PlanTier, type SwipeCategory } from './types';
-
 // src/lib/swipe/library.ts
+import { prisma } from '@/lib/prisma';
+import { type SwipeTemplate, type PlanTier, type SwipeCategory } from './types';
 
 export class SwipeLibrary {
   static async getTemplates(filters?: { 
@@ -26,7 +24,7 @@ export class SwipeLibrary {
     });
   }
 
-  static async create(data: unknown) {
+  static async create(data: any) {
     return await prisma.swipeTemplate.create({
       data: {
         ...data,
@@ -35,7 +33,7 @@ export class SwipeLibrary {
     });
   }
 
-  static async update(id: string, data: unknown) {
+  static async update(id: string, data: any) {
     return await prisma.swipeTemplate.update({
       where: { id },
       data,

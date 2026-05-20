@@ -1,6 +1,5 @@
 import { prisma } from '@/lib/prisma';
 
-
 export interface ImportContactRequest {
   phone: string;
   name?: string;
@@ -11,26 +10,25 @@ export interface ImportContactRequest {
   group?: string;
 }
 
-export async function importContacts(contacts: ImportContactRequest[], groupName: string) : void {
-  const normalized = contacts.map(c => ({
-    ...c,
-    phone: c.phone.replace(/\D/g, '').replace(/^(\d{11})$/, '55$1')
-  }));
+export async function importContacts(contacts: ImportContactRequest[], groupName: string) {
+  let createdCount = 0;
+  let updatedCount = 0;const blastContactBatch = await prisma.blastContact.findMany({ where: { phone: { in: contacts.map((contact) => contact.phone) } } });const blastContactMap = new Map(blastContactBatch.map((r) => [r.phone, r]));
 
-  const existingBatch = await prisma.blastContact.findMany({
-    where: { phone: { in: normalized.map(c => c.phone) } }
-  });
-  const existingMap = new Map(existingBatch.map(r => [r.phone, r]));
+  for (const contact of contacts) {
+    // Normalização do telefone (Remover caracteres não numéricos e garantir DDI)
+    let phone = contact.phone.replace(/\D/g, '');
+    if (phone.length === 11 && !phone.startsWith('55')) {
+      phone = '55' + phone;
+    }
 
-  const updates = [];
-  const creates = [];
+    try {
+      const existing = await blastContactMap.get(
+        phone);
 
-  for (const contact of normalized) {
-    const existing = existingMap.get(contact.phone);
-    if (existing) {
-      updates.push(
-        prisma.blastContact.update({
-          where: { phone: contact.phone },
+
+      if (existing) {
+        await prisma.blastContact.update({
+          where: { phone },
           data: {
             name: contact.name || existing.name,
             email: contact.email || existing.email,
@@ -39,13 +37,12 @@ export async function importContacts(contacts: ImportContactRequest[], groupName
             state: contact.state || existing.state,
             group: groupName || contact.group || existing.group
           }
-        })
-      );
-    } else {
-      creates.push(
-        prisma.blastContact.create({
+        });
+        updatedCount++;
+      } else {
+        await prisma.blastContact.create({
           data: {
-            phone: contact.phone,
+            phone,
             name: contact.name,
             email: contact.email,
             pousadaName: contact.pousadaName,
@@ -56,20 +53,18 @@ export async function importContacts(contacts: ImportContactRequest[], groupName
             optInSource: 'csv_import',
             optInDate: new Date()
           }
-        })
-      );
+        });
+        createdCount++;
+      }
+    } catch (err) {
+      console.error(`❌ [CONTACTS] Erro ao importar contato ${phone}:`, err);
     }
   }
-
-  const batchResults = await prisma.$transaction([...updates, ...creates]);
-  const updatedCount = updates.length;
-  const createdCount = creates.length;
 
   return { createdCount, updatedCount };
 }
 
-export async function getContactsByGroup(group: string) : void {
-  try {
+export async function getContactsByGroup(group: string) {
   return prisma.blastContact.findMany({
     where: {
       group,

@@ -1,6 +1,5 @@
 import { redis } from '@/lib/redis';
 
-
 export interface RateLimitResult {
   success: boolean;
   limit: number;

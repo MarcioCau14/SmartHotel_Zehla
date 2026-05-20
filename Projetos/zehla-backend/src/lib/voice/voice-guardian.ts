@@ -1,6 +1,3 @@
-import { crypto } from 'crypto';
-
-
 /**
  * ZEHLA Voice Guardian (Security Layer)
  * 
@@ -10,6 +7,7 @@ import { crypto } from 'crypto';
  * 3. Generation Tokenization: Registro de auditoria imutável.
  */
 
+import { crypto } from 'crypto';
 
 export class VoiceGuardian {
   /**
@@ -19,7 +17,7 @@ export class VoiceGuardian {
     // Implementação de marca d'água inaudível (Forensic Tracking)
     // No V2, injetamos um padrão de frequência imperceptível com o propertyId hash.
     const watermarkId = crypto.createHash('md5').update(propertyId).digest('hex');
-    
+    console.log(`[VOICE_GUARDIAN]: Aplicando Watermark ID ${watermarkId}...`);
     
     // Simulação de processamento de áudio
     return audioBuffer;

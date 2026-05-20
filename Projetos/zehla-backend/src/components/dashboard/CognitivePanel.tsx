@@ -1,15 +1,12 @@
-import { AlertTriangle, Settings, ArrowRight } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { useState, useEffect } from 'react';
-
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-
-import type { AIAgent, IntentStat } from '@/lib/store';
-
 'use client';
 
+import { useState, useEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle, Settings, ArrowRight } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import type { AIAgent, IntentStat } from '@/lib/store';
 
 const sourceColors: Record<string, string> = {
   fast_path: '#10B981',
@@ -36,7 +33,7 @@ const llmMarketplace: LLMMarketplaceItem[] = [
   { name: 'Anthropic Claude 3.5 Sonnet', status: 'paid', pricing: '💰 $3/1M tokens', rateLimit: '', description: '' },
 ];
 
-export function CognitivePanel() : void {
+export function CognitivePanel() {
   const [agents, setAgents] = useState<AIAgent[]>([]);
   const [intents, setIntents] = useState<IntentStat[]>([]);
   const [health, setHealth] = useState<Record<string, unknown> | null>(null);

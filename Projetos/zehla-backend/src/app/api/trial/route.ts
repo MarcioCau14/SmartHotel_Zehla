@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-
-  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
-async function _GET() : void {
-  try {
+export async function GET() {
   // This endpoint would be called by a cron job to check trial expirations
   // For now, it returns trial check logic documentation
 

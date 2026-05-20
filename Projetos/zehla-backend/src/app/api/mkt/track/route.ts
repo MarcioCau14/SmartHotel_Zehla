@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-
 import { prisma } from '@/lib/prisma'
-
-import { withApiSecurity } from '@/lib/server/with-api-security';
 
 // 1x1 Transparent GIF Base64
 const PIXEL_B64 = 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
 const PIXEL_BUFFER = Buffer.from(PIXEL_B64, 'base64')
 
-async function _GET(req: NextRequest) : void {
+export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const leadId = searchParams.get('l')
   const campaignId = searchParams.get('c')
@@ -29,7 +26,7 @@ async function _GET(req: NextRequest) : void {
           }
         })
         
-        
+        console.log(`📧 [Tracking] Email aberto por lead: ${leadId} | IP: ${ip}`)
       } catch (err) {
         console.error('❌ [Tracking] Erro ao registrar abertura:', err)
       }
@@ -47,5 +44,3 @@ async function _GET(req: NextRequest) : void {
     }
   })
 }
-  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
-

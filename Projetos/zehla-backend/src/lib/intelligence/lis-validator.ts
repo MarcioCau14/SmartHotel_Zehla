@@ -1,7 +1,5 @@
-import axios from 'axios';
-
 import { ValidatedLead } from '../types/warmup-types';
-
+import axios from 'axios';
 
 export class LISBatchValidator {
   private evolutionUrl = process.env.EVOLUTION_API_URL;
@@ -11,8 +9,8 @@ export class LISBatchValidator {
    * Processa um lote de até 300 leads brutos.
    * Foco em Zero Browser Policy: Estritamente HTTP e JSON.
    */
-  async processBatch(leads: unknown[]): Promise<ValidatedLead[]> {
-    .`);
+  async processBatch(leads: any[]): Promise<ValidatedLead[]> {
+    console.log(`🚀 [LIS] Iniciando processamento de ${leads.length} leads (Limite: 300).`);
     
     // Filtro inicial e limitador
     const batch = leads.slice(0, 300);
@@ -22,7 +20,7 @@ export class LISBatchValidator {
     const CHUNK_SIZE = 10;
     for (let i = 0; i < batch.length; i += CHUNK_SIZE) {
       const chunk = batch.slice(i, i + CHUNK_SIZE);
-       + 1}...`);
+      console.log(`[LIS] Validando bloco ${Math.floor(i / CHUNK_SIZE) + 1}...`);
       
       const chunkPromises = chunk.map(async (lead) => {
         try {
@@ -40,7 +38,7 @@ export class LISBatchValidator {
       validatedLeads.push(...(chunkResults.filter(Boolean) as ValidatedLead[]));
     }
 
-    
+    console.log(`✅ [LIS] Processamento finalizado. ${validatedLeads.length} leads válidos encontrados.`);
 
     // Retorna os top 100 leads com maior qualificationScore
     return validatedLeads
@@ -52,7 +50,7 @@ export class LISBatchValidator {
    * Validação sintática de e-mail e WA Check via Evolution API.
    * Zero Browser: Apenas requisições HTTP.
    */
-  private async validateContact(lead: unknown): Promise<boolean> {
+  private async validateContact(lead: any): Promise<boolean> {
     const email = lead.email || lead.contato_email;
     const whatsapp = lead.whatsapp || lead.telefone || lead.contato_whats;
 
@@ -60,7 +58,7 @@ export class LISBatchValidator {
     if (email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-        
+        console.log(`[LIS] E-mail inválido ignorado: ${email}`);
         return false;
       }
     }
@@ -80,7 +78,7 @@ export class LISBatchValidator {
       const exists = status?.exists || status?.numberExists || false;
       
       if (!exists) {
-        
+        console.log(`[LIS] Número sem WhatsApp ativo: ${whatsapp}`);
       }
       
       return exists;
@@ -94,7 +92,7 @@ export class LISBatchValidator {
   /**
    * Extração de Decisor (Simulada) e Match Semântico para dor.
    */
-  private async enrichAndIdentifyPain(lead: unknown): Promise<ValidatedLead> {
+  private async enrichAndIdentifyPain(lead: any): Promise<ValidatedLead> {
     const content = (lead.notes || lead.description || lead.history || "").toLowerCase();
     
     // Match Semântico Simples

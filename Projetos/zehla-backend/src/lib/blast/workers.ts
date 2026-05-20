@@ -1,18 +1,15 @@
 import { Worker, Job } from 'bullmq';
-
-import { prisma } from '@/lib/prisma';
 import { redis } from '@/lib/redis';
-import { trackBlastEvent } from '@/services/blast/brain-integration';
-
+import { prisma } from '@/lib/prisma';
 import { EvolutionClient } from './evolution-client';
-
+import { trackBlastEvent } from '@/services/blast/brain-integration';
 
 export const blastProcessWorker = new Worker(
   'blast:process',
   async (job: Job) => {
     const { messageId, phoneNumber, content, instanceId, campaignId } = job.data;
 
-    
+    console.log(`📡 [WORKER] Processando mensagem ${messageId} para ${phoneNumber}`);
 
     try {
       // 1. Buscar a instância e verificar limites (Section 3.2 & 10.1)
@@ -77,9 +74,9 @@ export const blastProcessWorker = new Worker(
         }
       });
 
+      console.log(`✅ [WORKER] Mensagem ${messageId} enviada com sucesso via ${instance.name}.`);
       
-      
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error(`❌ [WORKER] Erro ao enviar mensagem ${messageId}:`, error.message);
       
       await prisma.blastMessage.update({
@@ -109,7 +106,7 @@ export const blastProcessWorker = new Worker(
 );
 
 blastProcessWorker.on('completed', (job) => {
-  
+  console.log(`Job ${job.id} completed!`);
 });
 
 blastProcessWorker.on('failed', (job, err) => {

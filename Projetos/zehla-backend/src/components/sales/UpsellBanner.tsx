@@ -1,9 +1,7 @@
-import { Zap, TrendingUp, CheckCircle2 } from 'lucide-react';
-import { motion } from 'framer-motion';
-
-
 'use client';
 
+import { Zap, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface UpsellBannerProps {
   currentTier: 'LITE' | 'PRO' | 'MAX';

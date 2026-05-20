@@ -1,6 +1,5 @@
-import { WebhookSigner } from './webhook-signer';
 import { redis } from '../redis-connection';
-
+import { WebhookSigner } from './webhook-signer';
 
 /**
  * ZEHLA TRACKER ENGINE
@@ -15,7 +14,7 @@ export class TrackerEngine {
   /**
    * Registra um evento de clique de forma ultra-rápida.
    */
-  static async trackClick(leadId: string, metadata: unknown): Promise<void> {
+  static async trackClick(leadId: string, metadata: any): Promise<void> {
     const timestamp = Date.now();
     
     // 1. Persistência em Stream (Resiliência e Escala)
@@ -28,7 +27,7 @@ export class TrackerEngine {
       'metadata', JSON.stringify(metadata)
     );
 
-    
+    console.log(`📡 [TRACKER] Clique registrado para Lead ${leadId}`);
 
     // 2. Lógica de Hot Lead Detection (TD1 / TD10)
     // Se o clique ocorrer em menos de 60 segundos após o envio (metadado vindo da URL)
@@ -41,7 +40,7 @@ export class TrackerEngine {
    * Notifica o ZCC sobre um Hot Lead usando Webhook Seguro (HMAC).
    */
   private static async triggerHotLead(leadId: string, timestamp: number): Promise<void> {
-    
+    console.log(`🔥 [HOT LEAD] Detectado comportamento de alta urgência para Lead ${leadId}!`);
 
     const payload = {
       type: 'HOT_LEAD_CLICK',

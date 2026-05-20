@@ -1,15 +1,12 @@
-import React, { useState } from 'react';
-import { CheckCircle2, Loader2, Sparkles } from 'lucide-react';
+'use client';
 
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { CheckCircle2, Loader2, Sparkles } from 'lucide-react';
 
-
-'use client';
-
-
-export function ExclusiveWaitlistForm() : void {
+export function ExclusiveWaitlistForm() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [formData, setFormData] = useState({
     email: '',

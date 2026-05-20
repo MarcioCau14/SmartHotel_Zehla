@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-
 import { prisma } from '@/lib/prisma';
 import { verifyPassword, generateSessionToken } from '@/lib/auth';
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-async function _POST(request: NextRequest) : void {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { email, senha } = body;
@@ -75,5 +72,3 @@ async function _POST(request: NextRequest) : void {
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 30, windowSeconds: 60 } });
-

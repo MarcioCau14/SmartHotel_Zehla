@@ -1,17 +1,14 @@
-import { 
-import { motion } from 'framer-motion';
-import { useState } from 'react';
-
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-
-
 'use client';
 
+import { useState } from 'react';
+import { 
   FileText, Download, Wallet, TrendingUp, 
   ArrowDownCircle, ArrowUpCircle, Percent,
   Calendar, ChevronDown, CheckCircle2, Clock
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { motion } from 'framer-motion';
 
 const mockReports = [
   { id: 'rep-1', period: 'Março 2026', totalGross: 84200.00, totalNet: 75780.00, fees: 8420.00, status: 'Fechado' },
@@ -25,8 +22,7 @@ const mockTransactions = [
   { id: 'tx-3', guest: 'Roberto F. Lima', date: '26/03/2026', gross: 3200.00, fee: 320.00, net: 2880.00, status: 'PENDENTE' },
 ];
 
-export function FinancialReport() : void {
-  try {
+export function FinancialReport() {
   const [selectedMonth, setSelectedMonth] = useState('Março 2026');
 
   return (

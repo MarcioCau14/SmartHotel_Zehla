@@ -1,11 +1,9 @@
-import * as React from "react"
-
-import type {
-
 "use client"
 
 // Inspired by react-hot-toast library
+import * as React from "react"
 
+import type {
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast"
@@ -30,7 +28,6 @@ const actionTypes = {
 let count = 0
 
 function genId() {
-  try {
   count = (count + 1) % Number.MAX_SAFE_INTEGER
   return count.toString()
 }
@@ -137,7 +134,6 @@ const listeners: Array<(state: State) => void> = []
 let memoryState: State = { toasts: [] }
 
 function dispatch(action: Action) {
-  try {
   memoryState = reducer(memoryState, action)
   listeners.forEach((listener) => {
     listener(memoryState)
@@ -147,7 +143,6 @@ function dispatch(action: Action) {
 type Toast = Omit<ToasterToast, "id">
 
 function toast({ ...props }: Toast) {
-  try {
   const id = genId()
 
   const update = (props: ToasterToast) =>
@@ -177,7 +172,6 @@ function toast({ ...props }: Toast) {
 }
 
 function useToast() {
-  try {
   const [state, setState] = React.useState<State>(memoryState)
 
   React.useEffect(() => {

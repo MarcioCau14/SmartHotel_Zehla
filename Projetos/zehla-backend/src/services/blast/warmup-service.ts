@@ -1,13 +1,11 @@
 import { prisma } from '@/lib/prisma';
 
-
 /**
  * ZEHLA Warmup Service
  * Implements the 4-week progression plan from Section 3.2 of the Blueprint.
  */
-export async function processDailyWarmup() : void {
-  try {
-  
+export async function processDailyWarmup() {
+  console.log('🌅 [WARMUP] Iniciando processamento diário de aquecimento...');
 
   const instances = await prisma.blastInstance.findMany({
     where: { 
@@ -16,22 +14,37 @@ export async function processDailyWarmup() : void {
     }
   });
 
-  const updates = instances.map(instance => {
+  for (const instance of instances) {
     const daysSinceCreation = Math.floor(
-      (Date.now() - new Date(instance.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+      (new Date().getTime() - new Date(instance.createdAt).getTime()) / (1000 * 60 * 60 * 24)
     );
 
     let newLimit = instance.dailyLimit;
     let newStage = instance.warmupStage;
 
-    if (daysSinceCreation <= 3) { newLimit = 100; newStage = 1; }
-    else if (daysSinceCreation <= 7) { newLimit = 250; newStage = 1; }
-    else if (daysSinceCreation <= 14) { newLimit = 500; newStage = 2; }
-    else if (daysSinceCreation <= 21) { newLimit = 1000; newStage = 3; }
-    else if (daysSinceCreation <= 28) { newLimit = 2500; newStage = 4; }
-    else { newLimit = 10000; newStage = 5; }
+    // Tabela de Progressão (Blueprint Section 3.2, Table 4)
+    if (daysSinceCreation <= 3) {
+      newLimit = 100;
+      newStage = 1;
+    } else if (daysSinceCreation <= 7) {
+      newLimit = 250;
+      newStage = 1;
+    } else if (daysSinceCreation <= 14) {
+      newLimit = 500;
+      newStage = 2;
+    } else if (daysSinceCreation <= 21) {
+      newLimit = 1000;
+      newStage = 3;
+    } else if (daysSinceCreation <= 28) {
+      newLimit = 2500;
+      newStage = 4;
+    } else {
+      newLimit = 10000;
+      newStage = 5;
+    }
 
-    return prisma.blastInstance.update({
+    // Reset diário de contadores e atualização de limites
+    await prisma.blastInstance.update({
       where: { id: instance.id },
       data: {
         dailyLimit: newLimit,
@@ -40,20 +53,17 @@ export async function processDailyWarmup() : void {
         sentThisHour: 0
       }
     });
-  });
 
-  if (updates.length > 0) {
-    await prisma.$transaction(updates);
+    console.log(`📈 [WARMUP] Instância ${instance.name} (${instance.phone}): Dia ${daysSinceCreation}, Novo Limite: ${newLimit}, Estágio: ${newStage}`);
   }
 
-  
+  console.log('✅ [WARMUP] Processamento diário concluído.');
 }
 
 /**
  * Reset de hora em hora para o limite por hora (Opcional, se quisermos ser mais granulares)
  */
-export async function resetHourlyLimits() : void {
-  try {
+export async function resetHourlyLimits() {
   await prisma.blastInstance.updateMany({
     data: { sentThisHour: 0 }
   });

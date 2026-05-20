@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-
 import { prisma } from '@/lib/prisma';
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-async function _POST(request: NextRequest) : void {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { tenantId: userId, property, rooms, services, payment } = body;
@@ -62,7 +59,7 @@ async function _POST(request: NextRequest) : void {
     // Create rooms
     if (rooms && rooms.length > 0) {
       await prisma.room.createMany({
-        data: rooms.map((room: unknown) => ({
+        data: rooms.map((room: any) => ({
           propertyId: prop.id,
           number: String(room.nome || room.number || '101'),
           type: (room.tipo?.toUpperCase() as any) || 'STANDARD',
@@ -99,5 +96,3 @@ async function _POST(request: NextRequest) : void {
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 30, windowSeconds: 60 } });
-

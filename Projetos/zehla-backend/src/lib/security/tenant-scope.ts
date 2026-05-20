@@ -1,6 +1,5 @@
 import { prisma } from '@/lib/prisma';
 
-
 /**
  * ZEHLA Tenant Isolation Helper
  * Garante que todas as queries sejam filtradas pelo tenantId do usuário logado.
@@ -67,7 +66,6 @@ export class TenantScope {
  * Extrai o tenantId do token da sessão (em um cenário real, via middleware/headers)
  */
 export function getTenantFromRequest(req: Request): string | null {
-  try {
   // Para o MVP, o frontend envia o tenantId/userId no body ou query
   // Em produção, isso viria decodificado do JWT
   const url = new URL(req.url);

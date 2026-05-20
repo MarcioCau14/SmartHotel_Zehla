@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { redis } from '@/lib/redis';
 
-
 /**
  * Radar Service - Consolidador de Dados Geográficos para o ZCC Dashboard.
  * Utiliza o Redis (DB 0) para evitar estresse no PostgreSQL.
@@ -13,7 +12,7 @@ export class RadarService {
    * Consolida as coordenadas de leads e pousadas para o mapa de calor.
    */
   static async consolidateHeatmap() {
-    
+    console.log('📡 [RADAR] Consolidando mapa de calor geográfico...');
 
     // 1. Buscar Leads com Coordenadas (LAT/LONG capturados pela Secretaria-IA)
     const leads = await prisma.lead.findMany({

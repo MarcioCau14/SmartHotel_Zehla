@@ -1,5 +1,4 @@
-export function BrainDashboard() : void {
-  try {
+export function BrainDashboard() {
   return (
     <div className="p-4 border rounded-lg bg-gray-50/50">
       <h3 className="font-semibold text-lg">Brain Dashboard</h3>

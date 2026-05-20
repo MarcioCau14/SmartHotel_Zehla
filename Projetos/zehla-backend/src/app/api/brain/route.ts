@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-import { classifyIntent } from '@/lib/brain/intent-classifier'
 import { llmRouter } from '@/lib/ai/llm-router'
+import { classifyIntent } from '@/lib/brain/intent-classifier'
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-async function _POST(request: NextRequest) : void {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { action, data } = body
@@ -42,8 +39,6 @@ async function _POST(request: NextRequest) : void {
     return NextResponse.json({ success: false, error: 'Erro interno' }, { status: 500 })
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
-
 
 async function checkOllama() {
   try {
@@ -65,10 +60,7 @@ async function checkOpenRouter() {
   }
 }
 
-
-  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
-async function _GET() : void {
-  try {
+export async function GET() {
   return NextResponse.json({
     engine: 'ZEHLA Brain v2.5',
     status: 'online',

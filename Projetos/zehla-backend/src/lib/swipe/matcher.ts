@@ -1,15 +1,12 @@
-import {
-import { classificarTier } from "./classifier";
-
-import { prisma } from '@/lib/prisma';
-
-
 // src/lib/swipe/matcher.ts
+import { prisma } from '@/lib/prisma';
+import {
   type LeadProfile,
   type SwipeMatch,
   type SwipeMatchResult,
   type SwipeTemplate,
 } from "./types";
+import { classificarTier } from "./classifier";
 
 const WEIGHT_SIMILARITY  = 0.25;
 const WEIGHT_CONV_RATE   = 0.30;
@@ -110,7 +107,7 @@ async function buscarCandidatos(
 function calcularMatchScore(
   swipe: SwipeTemplate,
   profile: LeadProfile,
-  activeSignals: unknown[]
+  activeSignals: any[]
 ): SwipeMatch {
   const reasons: string[] = [];
   

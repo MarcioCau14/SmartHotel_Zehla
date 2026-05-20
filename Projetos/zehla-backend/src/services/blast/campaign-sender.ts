@@ -1,10 +1,8 @@
-import { EvolutionClient } from '@/lib/blast/evolution-client';
-import { blastProcessQueue } from '@/lib/blast/queues';
 import { prisma } from '@/lib/prisma';
+import { blastProcessQueue } from '@/lib/blast/queues';
+import { EvolutionClient } from '@/lib/blast/evolution-client';
 
-
-export async function launchCampaign(campaignId: string) : void {
-  try {
+export async function launchCampaign(campaignId: string) {
   const campaign = await prisma.blastCampaign.findUniqueOrThrow({
     where: { id: campaignId },
     include: { messages: true }
@@ -55,22 +53,25 @@ export async function launchCampaign(campaignId: string) : void {
     orderBy: { createdAt: 'asc' }
   });
 
-  
+  console.log(`🚀 [BLAST] Iniciando campanha "${campaign.name}" para ${messages.length} leads.`);
 
   // Distribuição entre instâncias (Round-Robin) com Throttling
   let instanceIdx = 0;
   let batchCounter = 0;
-  let currentDelay = 0;
-
-  const blastContactBatch = await prisma.blastContact.findMany({
-    where: { phone: { in: [...new Set(messages.map((msg) => msg.contactPhone))] } }
-  });
-  const blastContactMap = new Map(blastContactBatch.map((r) => [r.phone, r]));
+  let currentDelay = 0;const blastContactBatch = await prisma.blastContact.findMany({ where: { phone: { in: messages.map((msg) => msg.contactPhone) } } });const blastContactMap = new Map(blastContactBatch.map((r) => [r.phone, r]));
 
   for (const msg of messages) {
-    const contact = blastContactMap.get(msg.contactPhone);
+    // Verificar se o contato optou por sair em outra campanha entre a criação e o lançamento desta
+    const contact = await blastContactMap.get(
+      msg.contactPhone);
+
 
     if (contact?.optedOut) {
+      console.log(`🚫 [BLAST] Ignorando ${msg.contactPhone} (Opt-out detectado)`);
+      await prisma.blastMessage.update({
+        where: { id: msg.id },
+        data: { status: 'failed', failedReason: 'Usuário optou por sair' }
+      });
       continue;
     }
 
@@ -87,7 +88,7 @@ export async function launchCampaign(campaignId: string) : void {
     if (batchCounter >= batchSize) {
       currentDelay += batchPause;
       batchCounter = 0;
-      
+      console.log(`⏳ [BLAST] Lote concluído. Aplicando pausa de ${batchPause / 60000} min.`);
     }
 
     await blastProcessQueue.add(
@@ -111,11 +112,10 @@ export async function launchCampaign(campaignId: string) : void {
     );
   }
 
-  
+  console.log(`✅ [BLAST] Todas as mensagens da campanha "${campaign.name}" foram enfileiradas.`);
 }
 
-export async function pauseCampaign(campaignId: string) : void {
-  try {
+export async function pauseCampaign(campaignId: string) {
   // Em uma implementação real, poderíamos remover os jobs da fila processQueue
   // Para simplificar agora, apenas mudamos o status
   await prisma.blastCampaign.update({

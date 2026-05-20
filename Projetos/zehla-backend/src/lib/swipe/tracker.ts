@@ -1,10 +1,7 @@
+// src/lib/swipe/tracker.ts
 import { prisma } from '@/lib/prisma';
 
-
-// src/lib/swipe/tracker.ts
-
-export async function registrarUsoSwipe(swipeId: string, leadId: string, agentId?: string) : void {
-  try {
+export async function registrarUsoSwipe(swipeId: string, leadId: string, agentId?: string) {
   return await prisma.$transaction(async (tx) => {
     const usage = await tx.swipeUsage.upsert({
       where: { swipeId_leadId: { swipeId, leadId } },
@@ -26,8 +23,7 @@ export async function registrarUsoSwipe(swipeId: string, leadId: string, agentId
   });
 }
 
-export async function registrarConversaoSwipe(leadId: string) : void {
-  try {
+export async function registrarConversaoSwipe(leadId: string) {
   const lead = await prisma.lead.findUnique({
     where: { id: leadId },
     select: { lastSwipeUsedId: true }
@@ -61,16 +57,14 @@ export async function registrarConversaoSwipe(leadId: string) : void {
   });
 }
 
-export async function registrarIgnorado(swipeId: string, leadId: string, agentId?: string) : void {
-  try {
+export async function registrarIgnorado(swipeId: string, leadId: string, agentId?: string) {
   return await prisma.lead.update({
     where: { id: leadId },
     data: { lastSwipeAction: 'ignored' }
   });
 }
 
-export async function registrarFeedback(swipeId: string, leadId: string, feedback: unknown) : void {
-  try {
+export async function registrarFeedback(swipeId: string, leadId: string, feedback: any) {
   return await prisma.swipeUsage.update({
     where: { swipeId_leadId: { swipeId, leadId } },
     data: { feedback }

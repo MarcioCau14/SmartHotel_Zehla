@@ -1,16 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-import { IdempotencyGuard } from '@/lib/delivery/services/idempotency-guard';
 import { WebhookSigner } from '@/lib/delivery/services/webhook-signer';
-
-import { withApiSecurity } from '@/lib/server/with-api-security';
+import { IdempotencyGuard } from '@/lib/delivery/services/idempotency-guard';
 
 /**
  * ZCC WEBHOOK RECEIVER
  * Recebe eventos da Delivery Machine (Cliques, Hot Leads, Bounces).
  */
 
-async function _POST(req: NextRequest) : void {
+export async function POST(req: NextRequest) {
   try {
     const signature = req.headers.get('x-zehla-signature');
     const timestamp = parseInt(req.headers.get('x-zehla-timestamp') || '0');
@@ -28,11 +25,11 @@ async function _POST(req: NextRequest) : void {
     }
 
     // 3. Processamento de Evento
-    
+    console.log(`🔥 [EVENT] Novo evento recebido: ${payload.type} para Lead ${payload.leadId}`);
     
     if (payload.type === 'HOT_LEAD_CLICK') {
       // Aqui integraria com o sistema de Alertas do SDR (WhatsApp/Dashboard)
-      
+      console.log('🚀 ACIONANDO SDR: Lead quente detectado em tempo recorde!');
     }
 
     return NextResponse.json({ status: 'success' });
@@ -41,5 +38,3 @@ async function _POST(req: NextRequest) : void {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 300, windowSeconds: 60 } });
-

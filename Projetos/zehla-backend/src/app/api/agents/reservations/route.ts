@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-import { PiiGuard } from '@/lib/security/pii-guard'
-import { llmRouter } from '@/lib/ai/llm-router'
 import { prisma } from '@/lib/prisma'
+import { llmRouter } from '@/lib/ai/llm-router'
+import { PiiGuard } from '@/lib/security/pii-guard'
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-async function _POST(request: NextRequest) : void {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { action, propertyId, data } = body
@@ -32,11 +29,8 @@ async function _POST(request: NextRequest) : void {
     return NextResponse.json({ success: false, error: 'Erro interno' }, { status: 500 })
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
 
-
-async function createReservation(propertyId: string, data: unknown) {
-  try {
+async function createReservation(propertyId: string, data: any) {
   // Verificar disponibilidade
   const existingReservation = await prisma.reservation.findFirst({
     where: {
@@ -102,8 +96,7 @@ async function createReservation(propertyId: string, data: unknown) {
   return NextResponse.json({ success: true, data: PiiGuard.reveal(reservation) })
 }
 
-async function updateReservation(id: string, data: unknown) {
-  try {
+async function updateReservation(id: string, data: any) {
   const protectedData = PiiGuard.protect(data);
   
   const reservation = await prisma.reservation.update({
@@ -128,7 +121,6 @@ async function updateReservation(id: string, data: unknown) {
 }
 
 async function cancelReservation(id: string) {
-  try {
   const reservation = await prisma.reservation.update({
     where: { id },
     data: { status: 'CANCELLED' },
@@ -145,7 +137,6 @@ async function cancelReservation(id: string) {
 }
 
 async function checkIn(id: string) {
-  try {
   const reservation = await prisma.reservation.update({
     where: { id },
     data: { 
@@ -160,7 +151,6 @@ async function checkIn(id: string) {
 }
 
 async function checkOut(id: string) {
-  try {
   const reservation = await prisma.reservation.update({
     where: { id },
     data: { status: 'CHECKED_OUT' },
@@ -176,8 +166,7 @@ async function checkOut(id: string) {
   return NextResponse.json({ success: true, data: reservation })
 }
 
-async function listReservations(propertyId: string, filters: unknown) {
-  try {
+async function listReservations(propertyId: string, filters: any) {
   const where: any = { propertyId }
 
   if (filters?.status) where.status = filters.status
@@ -193,10 +182,7 @@ async function listReservations(propertyId: string, filters: unknown) {
   return NextResponse.json({ success: true, data: PiiGuard.revealMany(reservations) })
 }
 
-
-  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
-async function _GET() : void {
-  try {
+export async function GET() {
   return NextResponse.json({
     agent: 'RESERVATIONS',
     status: 'online',

@@ -1,6 +1,5 @@
 import { prisma } from '@/lib/prisma';
 
-
 export class TrialService {
   /**
    * Starts a 7-day trial for a given tenant.
@@ -11,7 +10,7 @@ export class TrialService {
     trialEndDate.setDate(trialEndDate.getDate() + 7);
 
     // Placeholder logic for starting a trial
-    }`);
+    console.log(`[TRIAL SERVICE] Started 7-day trial for tenant ${tenantId}. Ends on ${trialEndDate.toISOString()}`);
   }
 
   /**

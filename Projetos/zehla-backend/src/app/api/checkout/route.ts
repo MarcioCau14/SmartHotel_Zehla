@@ -1,13 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-
+import { authOptions } from '../auth/[...nextauth]/route';
 import { StripeService } from '@/lib/finance/stripe-service';
 
-import { authOptions } from '../auth/[...nextauth]/route';
-
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-async function _POST(req: Request) : void {
+export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user.tenantId) {
@@ -23,10 +19,8 @@ async function _POST(req: Request) : void {
   try {
     const url = await StripeService.createCheckoutSession(session.user.tenantId, plan);
     return NextResponse.json({ url });
-  } catch (err: unknown) {
+  } catch (err: any) {
     console.error(`❌ [CHECKOUT-API] Erro: ${err.message}`);
     return NextResponse.json({ error: 'Checkout Error' }, { status: 500 });
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 30, windowSeconds: 60 } });
-

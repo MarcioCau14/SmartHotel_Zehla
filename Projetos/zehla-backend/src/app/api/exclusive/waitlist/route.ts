@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-
 import { prisma } from '@/lib/prisma';
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-async function _POST(req: NextRequest) : void {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { email, name, phone, pousadaName, roomCount } = body;
@@ -24,7 +21,7 @@ async function _POST(req: NextRequest) : void {
     });
 
     return NextResponse.json({ success: true, id: entry.id });
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error('Error in exclusive waitlist:', error);
     if (error.code === 'P2002') {
       return NextResponse.json({ error: 'Este e-mail já está na lista de espera' }, { status: 400 });
@@ -32,5 +29,3 @@ async function _POST(req: NextRequest) : void {
     return NextResponse.json({ error: 'Erro interno ao processar cadastro' }, { status: 500 });
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 30, windowSeconds: 60 } });
-

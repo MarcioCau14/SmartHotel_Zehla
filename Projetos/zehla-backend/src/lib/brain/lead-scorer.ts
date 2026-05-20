@@ -1,6 +1,5 @@
 import { llmRouter } from '../ai/llm-router'
 
-
 export interface LeadScoreResult {
   score: number
   category: string

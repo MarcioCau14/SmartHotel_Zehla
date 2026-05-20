@@ -1,13 +1,10 @@
-import { ContactProfile } from '@prisma/client';
-
-import { prisma } from '@/lib/prisma';
-
-
 /**
  * ZMG Intelligence Enricher
  * Cross-references contacts with ZCC-TRENDS and Swipe Intelligence
  */
 
+import { prisma } from '@/lib/prisma';
+import { ContactProfile } from '@prisma/client';
 
 export interface TrendSignal {
   id: string;

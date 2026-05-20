@@ -1,6 +1,5 @@
 import { Plan } from '@prisma/client';
 
-
 export interface FeeBreakdown {
   grossAmount: number;
   platformFee: number;
@@ -25,7 +24,6 @@ const PLAN_FEES: Record<Plan, { commission: number; monthly: number }> = {
 };
 
 export function calculateFees(finalTotalAmount: number, plan: Plan): FeeBreakdown {
-  try {
   const { commission } = PLAN_FEES[plan];
   
   // Débito imediato no cartão do dono sobre o valor bruto da reserva
@@ -41,6 +39,5 @@ export function calculateFees(finalTotalAmount: number, plan: Plan): FeeBreakdow
 }
 
 export function getPlanMonthlyPrice(plan: Plan): number {
-  try {
   return PLAN_FEES[plan].monthly;
 }

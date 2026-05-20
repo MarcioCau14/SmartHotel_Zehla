@@ -1,17 +1,14 @@
-import { Brain, ArrowLeft, ArrowRight, Check, Loader2, PartyPopper } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+'use client';
+
 import { useState, useEffect, useCallback } from 'react';
-
-import { StepConfirmation } from './steps/StepConfirmation';
-
-import { StepPayment, type PaymentData } from './steps/StepPayment';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Brain, ArrowLeft, ArrowRight, Check, Loader2, PartyPopper } from 'lucide-react';
+import { StepWelcome, type WelcomeData } from './steps/StepWelcome';
 import { StepProperty, type PropertyData } from './steps/StepProperty';
 import { StepRooms, type RoomData } from './steps/StepRooms';
 import { StepServices, type ServicesData } from './steps/StepServices';
-import { StepWelcome, type WelcomeData } from './steps/StepWelcome';
-
-'use client';
-
+import { StepPayment, type PaymentData } from './steps/StepPayment';
+import { StepConfirmation } from './steps/StepConfirmation';
 
 const TOTAL_STEPS = 6;
 
@@ -67,7 +64,7 @@ interface OnboardingWizardProps {
   onComplete: () => void;
 }
 
-export function OnboardingWizard(: void { onComplete }: OnboardingWizardProps) {
+export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [data, setData] = useState<OnboardingData>(defaultData);
   const [isActivating, setIsActivating] = useState(false);

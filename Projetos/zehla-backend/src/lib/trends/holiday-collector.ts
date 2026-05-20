@@ -4,7 +4,7 @@
  * OpenHolidays API — Feriados brasileiros programáticos.
  * Mapeia feriados e "pontes" para antecipação de demanda.
  */
-export async function fetchHolidays() : void {
+export async function fetchHolidays() {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s Timeout Rigoroso
 
@@ -24,7 +24,7 @@ export async function fetchHolidays() : void {
 
     const data = await response.json();
     
-    return data.map((h: unknown) => {
+    return data.map((h: any) => {
       const date = new Date(h.startDate);
       const dayOfWeek = date.getDay();
       
@@ -38,7 +38,7 @@ export async function fetchHolidays() : void {
         isExtended,
         daysUntil: Math.ceil((date.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
       };
-    }).filter((h: unknown) => h.daysUntil >= 0); // Apenas feriados futuros
+    }).filter((h: any) => h.daysUntil >= 0); // Apenas feriados futuros
 
   } catch (error) {
     console.error("❌ [HOLIDAY-COLLECTOR] Erro ao buscar feriados:", error);

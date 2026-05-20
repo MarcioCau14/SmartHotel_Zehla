@@ -1,8 +1,6 @@
 import { prisma } from '@/lib/prisma';
 
-
-export async function getZccRealTelemetry() : void {
-  try {
+export async function getZccRealTelemetry() {
   const now = new Date();
   const todayStart = new Date(now.setHours(0, 0, 0, 0));
 

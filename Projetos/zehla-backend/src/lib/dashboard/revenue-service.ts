@@ -1,10 +1,7 @@
+import { prisma } from '@/lib/prisma';
 import { startOfDay, endOfDay, subDays } from 'date-fns';
 
-import { prisma } from '@/lib/prisma';
-
-
-export async function getRealRevenueKPIs() : void {
-  try {
+export async function getRealRevenueKPIs() {
   const now = new Date();
   const todayStart = startOfDay(now);
   const todayEnd = endOfDay(now);

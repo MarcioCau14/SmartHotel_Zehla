@@ -1,18 +1,15 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import { useState, useEffect } from 'react';
-
-import { Skeleton } from '@/components/ui/skeleton';
-
-
 'use client';
 
+import { useState, useEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 interface KPIs {
   monthly_revenue_trend: { month: string; revenue: number }[];
   weekly_occupancy: { day: string; rate: number }[];
 }
 
-export function ChartsSection() : void {
+export function ChartsSection() {
   const [data, setData] = useState<KPIs | null>(null);
   const [loading, setLoading] = useState(true);
 

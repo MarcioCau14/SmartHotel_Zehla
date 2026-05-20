@@ -1,16 +1,13 @@
-import { Zap, ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
-
-
 'use client';
 
+import { motion } from 'framer-motion';
+import { Zap, ArrowRight } from 'lucide-react';
 
 interface CTASectionProps {
   onNavigate?: () => void;
 }
 
-export function CTASection(: void { onNavigate }: CTASectionProps) {
-  try {
+export function CTASection({ onNavigate }: CTASectionProps) {
   return (
     <section className="py-24 px-4 sm:px-6 lg:px-8">
       <motion.div

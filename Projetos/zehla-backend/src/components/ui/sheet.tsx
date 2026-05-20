@@ -1,41 +1,34 @@
+"use client"
+
 import * as React from "react"
 import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { XIcon } from "lucide-react"
+
 import { cn } from "@/lib/utils"
 
-
-"use client"
-
-
-
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
-  try {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
 }
 
 function SheetTrigger({
-  try {
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Trigger>) {
   return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />
 }
 
 function SheetClose({
-  try {
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Close>) {
   return <SheetPrimitive.Close data-slot="sheet-close" {...props} />
 }
 
 function SheetPortal({
-  try {
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Portal>) {
   return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
 }
 
 function SheetOverlay({
-  try {
   className,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Overlay>) {
@@ -52,7 +45,6 @@ function SheetOverlay({
 }
 
 function SheetContent({
-  try {
   className,
   children,
   side = "right",
@@ -90,7 +82,6 @@ function SheetContent({
 }
 
 function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
-  try {
   return (
     <div
       data-slot="sheet-header"
@@ -101,7 +92,6 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
-  try {
   return (
     <div
       data-slot="sheet-footer"
@@ -112,7 +102,6 @@ function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function SheetTitle({
-  try {
   className,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Title>) {
@@ -126,7 +115,6 @@ function SheetTitle({
 }
 
 function SheetDescription({
-  try {
   className,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Description>) {

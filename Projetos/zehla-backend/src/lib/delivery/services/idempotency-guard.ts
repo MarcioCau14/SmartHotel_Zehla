@@ -1,6 +1,5 @@
 import { redis } from './redis-connection';
 
-
 /**
  * ZEHLA IDEMPOTENCY GUARD
  * Impede o reprocessamento acidental de eventos/leads.

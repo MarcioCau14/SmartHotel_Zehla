@@ -1,13 +1,10 @@
-import { Eye, Image as ImageIcon, Calendar, AlertTriangle, CheckCircle, Award } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useState } from 'react';
-
-
 'use client';
 
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Eye, Image as ImageIcon, Calendar, AlertTriangle, CheckCircle, Award } from 'lucide-react';
 
-export function VisibilityDashboard() : void {
-  try {
+export function VisibilityDashboard() {
   const [photoCount, setPhotoCount] = useState(34);
   const [daysSinceLastPost, setDaysSinceLastPost] = useState(5);
   const [napScore, setNapScore] = useState(85);

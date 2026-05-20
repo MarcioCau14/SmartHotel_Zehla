@@ -1,10 +1,8 @@
-import { Badge } from "@/components/ui/badge";
-import { Bot, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-
-
 'use client';
 
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Bot, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
 
 interface FinanceHeroProps {
   summary: {
@@ -22,8 +20,7 @@ interface FinanceHeroProps {
 /**
  * FinanceHero: Componente estilo "Pierre Finance" focado em conversação e insights.
  */
-export function FinanceHero(: void { summary, aiInsight, healthScore, alertCount, agentName }: FinanceHeroProps) {
-  try {
+export function FinanceHero({ summary, aiInsight, healthScore, alertCount, agentName }: FinanceHeroProps) {
   const healthColor = healthScore >= 70 ? 'border-emerald-500' : healthScore >= 40 ? 'border-yellow-500' : 'border-red-500';
   const healthLabel = healthScore >= 70 ? 'Saudável' : healthScore >= 40 ? 'Atenção' : 'Crítico';
 

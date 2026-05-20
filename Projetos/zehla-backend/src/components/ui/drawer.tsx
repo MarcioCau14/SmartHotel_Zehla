@@ -1,42 +1,35 @@
-import * as React from "react"
-import { Drawer as DrawerPrimitive } from "vaul"
-import { cn } from "@/lib/utils"
-
-
 "use client"
 
+import * as React from "react"
+import { Drawer as DrawerPrimitive } from "vaul"
 
+import { cn } from "@/lib/utils"
 
 function Drawer({
-  try {
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) {
   return <DrawerPrimitive.Root data-slot="drawer" {...props} />
 }
 
 function DrawerTrigger({
-  try {
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Trigger>) {
   return <DrawerPrimitive.Trigger data-slot="drawer-trigger" {...props} />
 }
 
 function DrawerPortal({
-  try {
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Portal>) {
   return <DrawerPrimitive.Portal data-slot="drawer-portal" {...props} />
 }
 
 function DrawerClose({
-  try {
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Close>) {
   return <DrawerPrimitive.Close data-slot="drawer-close" {...props} />
 }
 
 function DrawerOverlay({
-  try {
   className,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Overlay>) {
@@ -53,7 +46,6 @@ function DrawerOverlay({
 }
 
 function DrawerContent({
-  try {
   className,
   children,
   ...props
@@ -81,7 +73,6 @@ function DrawerContent({
 }
 
 function DrawerHeader({ className, ...props }: React.ComponentProps<"div">) {
-  try {
   return (
     <div
       data-slot="drawer-header"
@@ -95,7 +86,6 @@ function DrawerHeader({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function DrawerFooter({ className, ...props }: React.ComponentProps<"div">) {
-  try {
   return (
     <div
       data-slot="drawer-footer"
@@ -106,7 +96,6 @@ function DrawerFooter({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function DrawerTitle({
-  try {
   className,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Title>) {
@@ -120,7 +109,6 @@ function DrawerTitle({
 }
 
 function DrawerDescription({
-  try {
   className,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Description>) {

@@ -1,7 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-
 import { db as prisma } from '@/lib/db';
-
 
 export interface ProcessPaymentResult {
   success: boolean;
@@ -17,7 +15,7 @@ export class ProcessPaymentProofUseCase {
   static async execute(
     phone: string, 
     propertyId: string,
-    receiptData: { amount: number; transactionId: string; [key: string]: unknown },
+    receiptData: { amount: number; transactionId: string; [key: string]: any },
     contextReservationId?: string
   ): Promise<ProcessPaymentResult> {
     let targetReservationId = contextReservationId;
@@ -65,7 +63,7 @@ export class ProcessPaymentProofUseCase {
           data: { status: 'PAID' }
         });
 
-        
+        console.log(`✅ [FINANCIAL SUCCESS] Reserva ${targetReservationId} confirmada via Transação.`);
         
         return { 
           success: true, 

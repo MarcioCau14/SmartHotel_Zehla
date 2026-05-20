@@ -1,7 +1,5 @@
 import Stripe from 'stripe';
-
 import { prisma } from '@/lib/prisma';
-
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2025-01-27' as any,
@@ -66,7 +64,7 @@ export class StripeService {
               status: 'ACTIVE',
             },
           });
-          
+          console.log(`✅ [STRIPE] Plano ${plan} ativado para o Tenant ${tenantId}`);
         }
         break;
 

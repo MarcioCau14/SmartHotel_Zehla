@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
-
 import { prisma } from '@/lib/prisma';
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-async function _GET(request: Request) : void {
+export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const propertyId = searchParams.get('propertyId');
@@ -37,5 +34,3 @@ async function _GET(request: Request) : void {
     return NextResponse.json([], { status: 500 });
   }
 }
-  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
-

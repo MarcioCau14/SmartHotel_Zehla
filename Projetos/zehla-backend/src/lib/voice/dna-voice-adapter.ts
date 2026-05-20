@@ -13,7 +13,7 @@ export class DNAVoiceAdapter {
    */
   static async synthesizeVoice(text: string, guestDNA: GuestDNA): Promise<Buffer> {
     // Placeholder for actual voice synthesis integration (e.g., ElevenLabs)
-    
+    console.log(`[VOICE ADAPTER] Synthesizing voice for DNA tone: ${guestDNA.voiceTone}`);
     return Buffer.from('mock-audio-data');
   }
 
@@ -42,7 +42,7 @@ export class DNAVoiceAdapter {
   /**
    * Generates system instructions based on adaptation parameters.
    */
-  static getSystemInstruction(adaptation: unknown): string {
+  static getSystemInstruction(adaptation: any): string {
     return `Adote um estilo de voz ${adaptation.style} com emotividade de ${adaptation.emotiveness}.`;
   }
 }

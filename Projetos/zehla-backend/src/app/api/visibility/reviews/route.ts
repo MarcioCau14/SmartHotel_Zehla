@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
-
-import { llmRouter } from '@/lib/ai/llm-router';
 import { prisma } from '@/lib/prisma';
+import { llmRouter } from '@/lib/ai/llm-router';
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-async function _POST(req: Request) : void {
+export async function POST(req: Request) {
   try {
     const { reviewText, guestName, propertyId } = await req.json();
 
@@ -64,10 +61,8 @@ REGRA CRÍTICA DE SEGURANÇA:
       response: llmResponse.content
     });
 
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error('Error in reviews endpoint:', error);
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 30, windowSeconds: 60 } });
-

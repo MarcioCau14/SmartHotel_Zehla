@@ -1,10 +1,8 @@
-import { BedDouble, Plus, Trash2, Users, DollarSign } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useMemo } from 'react';
-
-
 'use client';
 
+import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { BedDouble, Plus, Trash2, Users, DollarSign } from 'lucide-react';
 
 export interface RoomData {
   id: string;
@@ -36,12 +34,10 @@ const tipoColors: Record<string, string> = {
 
 let idCounter = 1;
 function generateId() {
-  try {
   return `room-${idCounter++}-${Date.now()}`;
 }
 
-export function StepRooms(: void { data, onChange }: StepRoomsProps) {
-  try {
+export function StepRooms({ data, onChange }: StepRoomsProps) {
   const addRoom = () => {
     const newRoom: RoomData = {
       id: generateId(),

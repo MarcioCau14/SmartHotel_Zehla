@@ -1,10 +1,8 @@
-import { Building2, Globe } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useState } from 'react';
-
-
 'use client';
 
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Building2, Globe } from 'lucide-react';
 
 export interface PropertyData {
   nome: string;
@@ -44,8 +42,7 @@ const paymentMethods = [
   { id: 'cartao', label: 'Cartão de Crédito', icon: CreditCard, description: 'Visa, Master, Elo' },
 ];
 
-export function StepProperty(: void { data, onChange }: StepPropertyProps) {
-  try {
+export function StepProperty({ data, onChange }: StepPropertyProps) {
   const [errors, setErrors] = useState<Partial<Record<keyof PropertyData, string>>>({});
 
   const updateField = (field: keyof PropertyData, value: string) => {

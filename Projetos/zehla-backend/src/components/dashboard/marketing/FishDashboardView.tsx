@@ -1,14 +1,11 @@
-import { 
-import { useState, useEffect } from 'react';
-
-import { Badge } from '@/components/ui/badge';
-
-
 'use client';
 
+import { useState, useEffect } from 'react';
+import { 
   Upload, Sparkles, ChevronRight, FileDown, Search, 
   Percent, TrendingUp, AlertTriangle, CheckCircle, RefreshCw, Copy, ExternalLink 
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface Lead {
   id: string;
@@ -31,7 +28,7 @@ interface Lead {
   leadTier: string;
 }
 
-export function FishDashboardView() : void {
+export function FishDashboardView() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -74,7 +71,7 @@ export function FishDashboardView() : void {
         if (lines.length < 2) return alert('Planilha vazia ou sem cabeçalhos!');
 
         const headers = lines[0].split(/[,;]/).map(h => h.trim().toLowerCase());
-        const leadsArray: unknown[] = [];
+        const leadsArray: any[] = [];
 
         for (let i = 1; i < lines.length; i++) {
           const columns = lines[i].split(/[,;]/).map(c => c.trim());
@@ -102,7 +99,7 @@ export function FishDashboardView() : void {
         }
       };
       reader.readAsText(file);
-    } catch (err: unknown) {
+    } catch (err: any) {
       alert('Erro ao ler arquivo: ' + err.message);
     } finally {
       setIsUploading(false);
@@ -413,7 +410,7 @@ export function FishDashboardView() : void {
                       {(() => {
                         try {
                           const obj = JSON.parse(selectedLead.objectKeywords || '{}');
-                          return Object.entries(obj).map(([key, val]: unknown) => {
+                          return Object.entries(obj).map(([key, val]: any) => {
                             const pct = Math.round((val / 500) * 100);
                             return (
                               <div key={key} className="space-y-1">

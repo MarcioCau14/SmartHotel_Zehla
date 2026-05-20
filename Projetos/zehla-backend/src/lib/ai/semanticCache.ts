@@ -1,7 +1,5 @@
-import crypto from 'node:crypto';
-
 import { redisAI } from '@/lib/redis';
-
+import crypto from 'node:crypto';
 
 const CACHE_TTL = 43200; // 12 horas conforme PRD v4.0
 
@@ -9,7 +7,6 @@ const CACHE_TTL = 43200; // 12 horas conforme PRD v4.0
  * Normaliza e gera um Hash SHA-256 da entrada para servir como chave.
  */
 function generateKey(input: string, propertyId: string): string {
-  try {
   const normalized = input
     .toLowerCase()
     .trim()

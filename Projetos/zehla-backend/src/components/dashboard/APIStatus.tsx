@@ -1,13 +1,10 @@
-import { Loader2, CheckCircle, XCircle, ChevronDown, ChevronUp, Activity, Zap, Globe } from 'lucide-react';
-import { useState, useMemo } from 'react';
+'use client';
 
+import { useState, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-
-
-'use client';
-
+import { Loader2, CheckCircle, XCircle, ChevronDown, ChevronUp, Activity, Zap, Globe } from 'lucide-react';
 
 interface LLMModel {
   name: string;
@@ -88,8 +85,7 @@ const statusConfig = {
   offline: { color: 'text-red-400', bg: 'bg-red-500/10', label: 'Inativo', badgeColor: 'bg-red-500/20 text-red-400 border-red-500/30' }
 };
 
-export function APIStatus() : void {
-  try {
+export function APIStatus() {
   const [providers] = useState<LLMProvider[]>(initialProviders);
   const [testing, setTesting] = useState<string | null>(null);
   const [expandedProviders, setExpandedProviders] = useState<Set<string>>(new Set(['z-ai-web-dev-sdk']));

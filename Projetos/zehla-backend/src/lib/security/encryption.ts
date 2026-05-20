@@ -1,6 +1,5 @@
 import crypto from 'crypto';
 
-
 const ALGORITHM = 'aes-256-gcm';
 const SECRET_KEY = process.env.ENCRYPTION_KEY || 'default-insecure-key-change-it-in-production-1234567890'; // MUST be 32 bytes
 const IV_LENGTH = 16;
@@ -11,7 +10,6 @@ const IV_LENGTH = 16;
  * @returns The encrypted string in format: iv:authTag:encryptedData
  */
 export function encrypt(text: string): string {
-  try {
   const iv = crypto.randomBytes(IV_LENGTH);
   const key = crypto.scryptSync(SECRET_KEY, 'salt', 32);
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
@@ -29,7 +27,6 @@ export function encrypt(text: string): string {
  * @returns The decrypted string.
  */
 export function decrypt(hash: string): string {
-  try {
   const parts = hash.split(':');
   if (parts.length !== 3) {
     throw new Error('Invalid encrypted hash format');

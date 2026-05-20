@@ -1,6 +1,5 @@
-import { type Cluster, type DorType, type FunnelStage } from "../events/types";
-
 // src/lib/swipe/types.ts
+import { type Cluster, type DorType, type FunnelStage } from "../events/types";
 
 export const PLAN_TIERS = ["lite", "pro", "max", "universal"] as const;
 export type PlanTier = (typeof PLAN_TIERS)[number];

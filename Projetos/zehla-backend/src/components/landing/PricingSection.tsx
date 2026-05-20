@@ -1,9 +1,7 @@
-import {
-import { motion } from 'framer-motion';
-
-
 'use client';
 
+import { motion } from 'framer-motion';
+import {
   Zap,
   Check,
   MessageSquare,
@@ -66,8 +64,7 @@ const plans = [
   },
 ];
 
-export function PricingSection(: void { onNavigate }: PricingSectionProps) {
-  try {
+export function PricingSection({ onNavigate }: PricingSectionProps) {
   return (
     <section id="precos" className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <motion.div

@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-
 import { prisma } from '@/lib/prisma'
 
-import { withApiSecurity } from '@/lib/server/with-api-security';
-
-async function _POST(request: NextRequest) : void {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { action, propertyId, data } = body
@@ -24,11 +21,8 @@ async function _POST(request: NextRequest) : void {
     return NextResponse.json({ success: false, error: 'Erro interno' }, { status: 500 })
   }
 }
-  export const POST = withApiSecurity(_POST, { rateLimit: { limit: 100, windowSeconds: 60 } });
 
-
-async function createCampaign(propertyId: string, data: unknown) {
-  try {
+async function createCampaign(propertyId: string, data: any) {
   // Simular criação de campanha
   const campaign = {
     id: `camp-${Date.now()}`,
@@ -45,8 +39,7 @@ async function createCampaign(propertyId: string, data: unknown) {
   return NextResponse.json({ success: true, data: campaign })
 }
 
-async function getAnalytics(propertyId: string, period: unknown) {
-  try {
+async function getAnalytics(propertyId: string, period: any) {
   const startDate = period?.startDate ? new Date(period.startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
   const endDate = period?.endDate ? new Date(period.endDate) : new Date()
 
@@ -68,7 +61,7 @@ async function getAnalytics(propertyId: string, period: unknown) {
     period: { startDate, endDate },
     reservations: {
       total: reservations.length,
-      bySource: reservations.reduce((acc: unknown, r) => {
+      bySource: reservations.reduce((acc: any, r) => {
         acc[r.source] = (acc[r.source] || 0) + 1
         return acc
       }, {}),
@@ -88,8 +81,7 @@ async function getAnalytics(propertyId: string, period: unknown) {
   return NextResponse.json({ success: true, data: analytics })
 }
 
-async function generatePromo(propertyId: string, data: unknown) {
-  try {
+async function generatePromo(propertyId: string, data: any) {
   const property = await prisma.property.findUnique({ where: { id: propertyId } })
 
   const promo = {
@@ -108,10 +100,7 @@ async function generatePromo(propertyId: string, data: unknown) {
   return NextResponse.json({ success: true, data: promo })
 }
 
-
-  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
-async function _GET() : void {
-  try {
+export async function GET() {
   return NextResponse.json({
     agent: 'MARKETING',
     status: 'online',

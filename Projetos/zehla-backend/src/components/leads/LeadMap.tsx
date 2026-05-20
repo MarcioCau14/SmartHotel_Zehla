@@ -1,13 +1,11 @@
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-import MarkerClusterGroup from 'react-leaflet-cluster';
-import {
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import { useState, useEffect, useCallback, useMemo } from 'react';
-
-
 'use client';
 
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
+import 'leaflet/dist/leaflet.css';
+import {
   Zap,
   Search,
   Filter,
@@ -49,7 +47,6 @@ const icons = {
 };
 
 function MapController({ center }: {center: [number, number] | null;}) {
-  try {
   const map = useMap();
   useEffect(() => {
     if (center) {
@@ -157,7 +154,7 @@ export default function LeadMap() {
 
           <div className="space-y-3">
             <h3 className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Distribuição Regional</h3>
-            {stats?.byRegion?.map((r: unknown) =>
+            {stats?.byRegion?.map((r: any) =>
             <div key={r.name} className="space-y-1">
                 <div className="flex justify-between text-[10px] text-zinc-400">
                   <span>{r.name}</span>

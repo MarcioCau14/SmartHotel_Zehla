@@ -1,9 +1,6 @@
-import { NextResponse } from 'next/server';  
-
-import { verifyToken, extractToken, ZehlaJWTPayload } from '../auth/jwt';  
-
-
 // src/lib/server/with-superadmin.ts
+import { NextResponse } from 'next/server';  
+import { verifyToken, extractToken, ZehlaJWTPayload } from '../auth/jwt';  
 
 export async function withSuperAdmin<T>(  
   request: Request,  
@@ -28,7 +25,7 @@ export async function withSuperAdmin<T>(
 
     return handler(payload);
 
-  } catch (error: unknown) {  
+  } catch (error: any) {  
     return NextResponse.json(  
       {   
         error: 'UNAUTHORIZED',  

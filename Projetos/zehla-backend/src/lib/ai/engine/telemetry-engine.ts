@@ -1,7 +1,5 @@
-import { LeadStatus } from '@prisma/client';
-
 import { prisma } from '@/lib/prisma';
-
+import { LeadStatus } from '@prisma/client';
 
 export interface TelemetryMetrics {
   leadConversionRate: number;

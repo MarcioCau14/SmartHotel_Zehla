@@ -1,10 +1,8 @@
-import Image from 'next/image';
-import { Star, Quote } from 'lucide-react';
-import { motion } from 'framer-motion';
-
-
 'use client';
 
+import { motion } from 'framer-motion';
+import { Star, Quote } from 'lucide-react';
+import Image from 'next/image';
 
 const testimonials = [
   {
@@ -45,8 +43,7 @@ const testimonials = [
   },
 ];
 
-export function TestimonialsSection() : void {
-  try {
+export function TestimonialsSection() {
   return (
     <section id="depoimentos" className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <motion.div

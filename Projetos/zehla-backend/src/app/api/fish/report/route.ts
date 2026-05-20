@@ -1,16 +1,13 @@
-import fs from 'fs';
-import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-
-import { prisma } from '@/lib/prisma';
-
-import { withApiSecurity } from '@/lib/server/with-api-security';
+import path from 'path';
+import fs from 'fs';
 
 const execAsync = promisify(exec);
 
-async function _GET(req: NextRequest) : void {
+export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const leadId = searchParams.get('leadId');
   
@@ -85,10 +82,8 @@ async function _GET(req: NextRequest) : void {
       },
     });
 
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error('❌ [FISH-REPORT] Falha na compilação do Dossier:', error);
     return NextResponse.json({ error: 'Erro interno ao compilar o dossier PDF.', details: error.message }, { status: 500 });
   }
 }
-  export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSeconds: 60 } });
-

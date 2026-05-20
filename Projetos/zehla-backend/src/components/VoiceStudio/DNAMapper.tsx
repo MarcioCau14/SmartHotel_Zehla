@@ -1,9 +1,7 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-
-
 'use client';
 
+import React from 'react';
+import { motion } from 'framer-motion';
 
 interface DNAMapperProps {
   parameters: {
@@ -20,8 +18,7 @@ interface DNAMapperProps {
  * Estética: Field.io (Motion Poetics)
  * Visualização de teia para atributos vocais
  */
-export function DNAMapper(: void { parameters }: DNAMapperProps) {
-  try {
+export function DNAMapper({ parameters }: DNAMapperProps) {
   const points = [
     { label: 'Formalidade', val: parameters.formality, x: 0, y: -100 },
     { label: 'Energia', val: parameters.energy, x: 95, y: -31 },

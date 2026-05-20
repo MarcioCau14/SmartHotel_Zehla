@@ -1,5 +1,4 @@
-export function FNRHCheckinProvider() : void {
-  try {
+export function FNRHCheckinProvider() {
   return (
     <div className="p-4 border rounded-lg bg-gray-50/50">
       <h3 className="font-semibold text-lg">FNRH Checkin</h3>

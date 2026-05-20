@@ -1,13 +1,5 @@
-import Link from 'next/link';
-import { 
 import { Suspense } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { LandingTracker } from '@/components/sales/LandingTracker';
-import { MainFooter } from '@/components/landing/MainFooter';
-import { PremiumUpsell } from '@/components/sales/PremiumUpsell';
-
-
+import { 
   Check, 
   Zap, 
   Sparkles, 
@@ -19,6 +11,11 @@ import { PremiumUpsell } from '@/components/sales/PremiumUpsell';
   BarChart,
   Globe
 } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { PremiumUpsell } from '@/components/sales/PremiumUpsell';
+import { LandingTracker } from '@/components/sales/LandingTracker';
+import { MainFooter } from '@/components/landing/MainFooter';
 
 export const metadata = {
   title: 'Zehla PRO | Escala e Lucro Invisível para sua Pousada',
