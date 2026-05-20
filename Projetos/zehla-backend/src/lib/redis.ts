@@ -26,13 +26,17 @@ function createRedisInstance(name: string, dbIndex: number) {
     return createMockRedis();
   }
 
+  if (process.env.NEXT_PHASE) {
+    return createMockRedis();
+  }
+
   try {
     const redisOptions = {
       maxRetriesPerRequest: null,
       lazyConnect: true,
-      enableOfflineQueue: !isDev,
+      enableOfflineQueue: false,
       retryStrategy: (times: number) => {
-        if (isDev && times > 3) return null;
+        if (times > 2) return null;
         return Math.min(times * 50, 2000);
       },
     };

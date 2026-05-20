@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Building2, Globe } from 'lucide-react';
+import { Building2, Globe, QrCode, CreditCard } from 'lucide-react';
 
 export interface PropertyData {
   nome: string;
