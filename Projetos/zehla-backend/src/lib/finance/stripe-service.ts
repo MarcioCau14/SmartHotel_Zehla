@@ -1,9 +1,18 @@
 import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-01-27' as any,
-});
+let _stripe: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!_stripe) {
+    const key = process.env.STRIPE_SECRET_KEY || '';
+    if (!key) throw new Error('STRIPE_SECRET_KEY not configured');
+    _stripe = new Stripe(key, {
+      apiVersion: '2025-01-27' as any,
+    });
+  }
+  return _stripe;
+}
 
 export const PLAN_PRICES: Record<string, string> = {
   LITE: 'price_lite_id', // Placeholder - será substituído por IDs Reais do Dashboard Stripe
@@ -23,7 +32,7 @@ export class StripeService {
 
     if (!property) throw new Error('Propriedade não encontrada');
 
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {

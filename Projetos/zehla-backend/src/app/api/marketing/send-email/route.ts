@@ -3,7 +3,14 @@ import { Queue } from 'bullmq';
 import { redisConfig } from '@/lib/delivery/redis-connection';
 import { prisma } from '@/lib/prisma';
 
-const deliveryQueue = new Queue('delivery', { connection: redisConfig });
+let deliveryQueue: Queue | null = null;
+
+function getDeliveryQueue() {
+  if (!deliveryQueue) {
+    deliveryQueue = new Queue('delivery', { connection: redisConfig });
+  }
+  return deliveryQueue;
+}
 
 export async function POST(req: Request) {
   try {
@@ -35,7 +42,7 @@ export async function POST(req: Request) {
       }
     }));
 
-    await deliveryQueue.addBulk(jobs);
+    await getDeliveryQueue().addBulk(jobs);
 
     return NextResponse.json({ 
       success: true, 
