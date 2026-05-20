@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
   Search,
   Phone,
   Mail,
@@ -11,7 +10,6 @@ import {
   Loader2,
   MoreHorizontal,
 } from 'lucide-react';
-import {
   Table,
   TableBody,
   TableCell,
@@ -22,7 +20,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -58,8 +55,7 @@ export function ContactList({ onSelectContact }: ContactListProps) {
   const [sourceFilter, setSourceFilter] = useState<string>('all');
 
   const loadContacts = useCallback(async () => {
-    try {
-      const params = new URLSearchParams();
+  const params = new URLSearchParams();
       if (search) params.set('q', search);
       if (sourceFilter !== 'all') params.set('source', sourceFilter);
       const res = await fetch(`/api/crm/contacts?${params}`);

@@ -24,7 +24,7 @@ const HEAL_ACTIONS: Record<HealAction, { label: string; description: string }> =
 
 async function _GET() {
   try {
-    const actions = await prisma.systemLog.findMany({
+  const actions = await prisma.systemLog.findMany({
       where: {
         component: 'SELF-HEALING',
       },
@@ -50,7 +50,7 @@ async function _GET() {
 
 async function _POST(req: Request) {
   try {
-    const { action, target } = await req.json() as { action: HealAction; target?: string };
+  const { action, target } = await req.json() as { action: HealAction; target?: string };
 
     if (!HEAL_ACTIONS[action]) {
       return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });

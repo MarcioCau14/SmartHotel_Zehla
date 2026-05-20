@@ -39,11 +39,11 @@ function getClientIp(req: NextRequest): string {
 }
 
 async function enforceRateLimit(req: NextRequest, limit: number, windowSeconds: number): Promise<boolean> {
-  const ip = getClientIp(req);
-  const method = req.method;
-  const path = new URL(req.url).pathname;
-  const key = `rl:${method}:${path}:${ip}`;
   try {
+    const ip = getClientIp(req);
+    const method = req.method;
+    const path = new URL(req.url).pathname;
+    const key = `rl:${method}:${path}:${ip}`;
     const { rateLimit } = await import('@/lib/security/rate-limit');
     const result = await rateLimit(key, limit, windowSeconds);
     if (!result.success) return false;
@@ -54,9 +54,9 @@ async function enforceRateLimit(req: NextRequest, limit: number, windowSeconds: 
 }
 
 async function enforceCsrf(req: NextRequest): Promise<boolean> {
-  const token = req.headers.get('x-csrf-token');
-  if (!token) return false;
   try {
+    const token = req.headers.get('x-csrf-token');
+    if (!token) return false;
     const { jwtVerify } = await import('jose');
     const secret = new TextEncoder().encode(process.env.CSRF_SECRET || process.env.ZEHLA_JWT_SECRET || 'csrf-dev-fallback');
     await jwtVerify(token, secret);

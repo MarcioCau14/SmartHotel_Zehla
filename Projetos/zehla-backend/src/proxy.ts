@@ -5,21 +5,39 @@ import { redis } from '@/lib/redis';
 
 import type { NextRequest } from 'next/server';
 
-// Using resilient redis client from @/lib/redis
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || 'http://localhost:3000,https://smarthotelzehla.vercel.app,https://zehla.com.br').split(',').map(s => s.trim());
+
+function isOriginAllowed(origin: string): boolean {
+  return ALLOWED_ORIGINS.includes(origin) || ALLOWED_ORIGINS.includes('*');
+}
+
+function addCorsHeaders(response: NextResponse, origin: string | null): void {
+  if (!origin || !isOriginAllowed(origin)) return;
+  response.headers.set('Access-Control-Allow-Origin', origin);
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-CSRF-Token, X-Tenant-Id, X-Api-Key');
+  response.headers.set('Access-Control-Allow-Credentials', 'true');
+  response.headers.set('Access-Control-Max-Age', '86400');
+  response.headers.set('Vary', 'Origin');
+}
 
 const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET!);
 const ZCC_PATHS = ['/zcc', '/api/zcc'];
-
-/**
- * ZEHLA SECURITY MIDDLEWARE
- * Proteção de rotas, isolamento de tenant e headers de segurança.
- */
-
 const PROTECTED_ROUTES = ['/dashboard'];
 const ADMIN_ONLY_ROUTES = ['/api/admin'];
 
-export async function proxy(request: NextRequest) : void {
-  // BYPASS TOTAL EM DESENVOLVIMENTO: Elimina redirecionamentos para login/zcc-login durante os testes
+export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const origin = request.headers.get('origin');
+
+  // CORS preflight
+  if (pathname.startsWith('/api') && request.method === 'OPTIONS') {
+    const response = new NextResponse(null, { status: 204 });
+    addCorsHeaders(response, origin);
+    return response;
+  }
+
+  // BYPASS TOTAL EM DESENVOLVIMENTO
   if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
     return NextResponse.next();
   }
@@ -51,8 +69,6 @@ export async function proxy(request: NextRequest) : void {
     console.warn('⚠️ [Proxy] Redis offline - bypassing security checks for dev stability');
   }
 
-
-  const { pathname } = request.nextUrl;
 
   // 0.1 Proteção Estrita ZCC (SUPER_ADMIN)
   if (ZCC_PATHS.some(p => pathname.startsWith(p)) && pathname !== '/zcc-login') {
@@ -108,6 +124,7 @@ export async function proxy(request: NextRequest) : void {
   
   // 1. Headers de Segurança (ZEHLA Fortress)
   const response = NextResponse.next();
+  addCorsHeaders(response, origin);
   response.headers.set('X-Frame-Options', 'SAMEORIGIN');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');

@@ -9,7 +9,7 @@ async function _PATCH(
   context: { params: Promise<Record<string, string>> }
 ) {
   try {
-    const { id } = await context.params;
+  const { id } = await context.params;
     const body = await req.json();
     const { title, value, stage, expectedCloseDate, probability, notes, contactId, ownerId } = body;
 

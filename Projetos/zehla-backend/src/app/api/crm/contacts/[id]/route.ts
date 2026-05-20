@@ -9,7 +9,7 @@ async function _GET(
   context: { params: Promise<Record<string, string>> }
 ) {
   try {
-    const { id } = await context.params;
+  const { id } = await context.params;
 
     const contact = await prisma.crmContact.findFirst({
       where: { id, deletedAt: null },
@@ -57,7 +57,7 @@ async function _PUT(
   context: { params: Promise<Record<string, string>> }
 ) {
   try {
-    const { id } = await context.params;
+  const { id } = await context.params;
     const body = await req.json();
     const { name, email, phone, whatsapp, instagram, facebook, tags, customFields, source, ownerId, assignedToId } = body;
 
@@ -100,7 +100,7 @@ async function _DELETE(
   context: { params: Promise<Record<string, string>> }
 ) {
   try {
-    const { id } = await context.params;
+  const { id } = await context.params;
 
     const existing = await prisma.crmContact.findFirst({
       where: { id, deletedAt: null },

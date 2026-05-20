@@ -14,7 +14,7 @@ const AGENTS_WITH_ALERTS: { agent: AgentType; label: string }[] = [
 
 async function _GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
     const agentFilter = searchParams.get("agent")?.toUpperCase();
 
     const signals = await getActiveSignals({

@@ -65,7 +65,7 @@ export function SwarmOverview() {
 
   const fetchStatus = useCallback(async () => {
     try {
-      const res = await fetch('/api/agents/status');
+  const res = await fetch('/api/agents/status');
       const data = await res.json();
       setAgents(data.agents);
       setSummary(data.summary);
@@ -81,9 +81,9 @@ export function SwarmOverview() {
   }, [fetchStatus]);
 
   const handleToggle = async (agent: AgentStatusEntry) => {
-    setToggling(agent.code);
     try {
-      const res = await fetch('/api/agents/status', {
+    setToggling(agent.code);
+  const res = await fetch('/api/agents/status', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: agent.code, isEnabled: !agent.isEnabled }),

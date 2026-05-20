@@ -58,8 +58,7 @@ export const CLUSTER_THRESHOLDS = {
 export type Cluster = 'HOT' | 'WARM' | 'COLD';
 
 export function determineCluster(score: number): Cluster {
-  try {
-  if (score >= CLUSTER_THRESHOLDS.HOT) return 'HOT';
+if (score >= CLUSTER_THRESHOLDS.HOT) return 'HOT';
   if (score >= CLUSTER_THRESHOLDS.WARM) return 'WARM';
   return 'COLD';
 }

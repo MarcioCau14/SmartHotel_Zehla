@@ -6,7 +6,7 @@ import { withApiSecurity } from '@/lib/server/with-api-security';
 
 async function _GET() {
   try {
-    const pipelines = await prisma.crmPipeline.findMany({
+  const pipelines = await prisma.crmPipeline.findMany({
       orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
       include: {
         _count: { select: { deals: true } },
@@ -24,7 +24,7 @@ export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSecond
 
 async function _POST(req: NextRequest) {
   try {
-    const body = await req.json();
+  const body = await req.json();
     const { name, stages, isDefault } = body;
 
     if (!name) {

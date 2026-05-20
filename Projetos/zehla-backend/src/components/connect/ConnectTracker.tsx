@@ -21,7 +21,7 @@ export function ConnectTracker({
 }) {
   const track = (type: 'view' | 'click', linkId?: string) => {
     try {
-      const payload = { slug, type, ...(linkId ? { linkId } : {}) };
+    const payload = { slug, type, ...(linkId ? { linkId } : {}) };
       navigator.sendBeacon('/api/connect/analytics/track', JSON.stringify(payload));
     } catch {
       // silent

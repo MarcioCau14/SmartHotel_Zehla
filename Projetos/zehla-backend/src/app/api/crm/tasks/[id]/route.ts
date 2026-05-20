@@ -9,7 +9,7 @@ async function _PATCH(
   context: { params: Promise<Record<string, string>> }
 ) {
   try {
-    const { id } = await context.params;
+  const { id } = await context.params;
     const body = await req.json();
     const { title, description, dueDate, completed, priority, type, assignedToId } = body;
 
@@ -51,7 +51,7 @@ async function _DELETE(
   context: { params: Promise<Record<string, string>> }
 ) {
   try {
-    const { id } = await context.params;
+  const { id } = await context.params;
 
     const existing = await prisma.crmTask.findFirst({ where: { id } });
 

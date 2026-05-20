@@ -6,7 +6,7 @@ import { withApiSecurity } from "@/lib/server/with-api-security";
 
 async function _GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
     const days = parseInt(searchParams.get("days") ?? "7", 10);
 
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);

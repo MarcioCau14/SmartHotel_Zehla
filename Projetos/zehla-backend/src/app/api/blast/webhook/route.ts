@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { trackBlastEvent } from '@/services/blast/brain-integration';
 
 import { verifyWhatsAppSignature } from '@/lib/security/whatsapp-shield';
-import { scanPII } from '@/lib/security/pii-scanner';
+import { scanAndMaskPII } from '@/lib/security/pii-scanner';
 
 export async function POST(req: Request) {
   try {
@@ -51,8 +51,8 @@ export async function POST(req: Request) {
 
       if (lastSentMessage) {
         if (isOptOut) {
-          const { sanitized: safeText } = scanPII(text);
-          const { sanitized: safePhone } = scanPII(phone);
+          const { masked: safeText } = scanAndMaskPII(text);
+          const { masked: safePhone } = scanAndMaskPII(phone);
           console.log(`🔕 [WEBHOOK] Opt-out detectado para ${safePhone}: "${safeText}"`);
           await trackBlastEvent({
             messageId: lastSentMessage.id,

@@ -17,12 +17,9 @@ export const captureWorker = new Worker(
   async (job: Job) => {
     const { email, eventType, sessionId, fingerprint, metadata, eventSource } = job.data;
 
-    `);
-
     // 1. Rate Limiting via Redis
     const rateLimitKey = `brain:rate:${email}`;
-    try {
-      const current = await redis.incr(rateLimitKey);
+  const current = await redis.incr(rateLimitKey);
       if (current === 1) {
         await redis.expire(rateLimitKey, RATE_LIMIT_WINDOW);
       }
@@ -45,7 +42,7 @@ export const captureWorker = new Worker(
     });
 
     if (existingEvent) {
-      `);
+
       return { status: 'duplicate', dedupHash };
     }
 
@@ -67,8 +64,6 @@ export const captureWorker = new Worker(
       attempts: 3,
       backoff: { type: 'exponential', delay: 2000 },
     });
-
-    `);
 
     return { status: 'captured', email, eventType, scoreImpact, dedupHash };
   },

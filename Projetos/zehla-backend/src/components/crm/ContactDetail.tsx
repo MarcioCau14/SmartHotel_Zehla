@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
   X,
   Phone,
   Mail,
@@ -20,7 +19,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -98,8 +96,7 @@ export function ContactDetail({ contact, onClose, onUpdate }: ContactDetailProps
   const [savingTags, setSavingTags] = useState(false);
 
   const loadInteractions = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/crm/contacts/${contact.id}/interactions`);
+  const res = await fetch(`/api/crm/contacts/${contact.id}/interactions`);
       if (res.ok) setInteractions(await res.json());
     } catch {
       // silent
@@ -107,8 +104,7 @@ export function ContactDetail({ contact, onClose, onUpdate }: ContactDetailProps
   }, [contact.id]);
 
   const loadDeals = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/crm/contacts/${contact.id}/deals`);
+  const res = await fetch(`/api/crm/contacts/${contact.id}/deals`);
       if (res.ok) setDeals(await res.json());
     } catch {
       // silent
@@ -122,8 +118,7 @@ export function ContactDetail({ contact, onClose, onUpdate }: ContactDetailProps
 
   const handleSaveTags = async () => {
     setSavingTags(true);
-    try {
-      const newTags = tagsInput.split(',').map((t) => t.trim()).filter(Boolean);
+  const newTags = tagsInput.split(',').map((t) => t.trim()).filter(Boolean);
       await fetch(`/api/crm/contacts/${contact.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -141,8 +136,7 @@ export function ContactDetail({ contact, onClose, onUpdate }: ContactDetailProps
   const handleAddInteraction = async () => {
     if (!newInteractionContent.trim()) return;
     setSendingInteraction(true);
-    try {
-      await fetch(`/api/crm/contacts/${contact.id}/interactions`, {
+  await fetch(`/api/crm/contacts/${contact.id}/interactions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

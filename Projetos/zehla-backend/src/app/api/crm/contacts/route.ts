@@ -6,7 +6,7 @@ import { withApiSecurity } from '@/lib/server/with-api-security';
 
 async function _GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
+  const { searchParams } = new URL(req.url);
     const search = searchParams.get('search');
     const source = searchParams.get('source');
     const ownerId = searchParams.get('ownerId');
@@ -76,7 +76,7 @@ export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSecond
 
 async function _POST(req: NextRequest) {
   try {
-    const body = await req.json();
+  const body = await req.json();
     const { name, email, phone, whatsapp, instagram, facebook, tags, customFields, source, ownerId, assignedToId } = body;
 
     if (!name) {

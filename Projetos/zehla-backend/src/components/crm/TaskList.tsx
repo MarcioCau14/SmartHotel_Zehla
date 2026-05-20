@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
   Plus,
   Loader2,
   Trash2,
@@ -18,14 +17,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -89,8 +86,7 @@ export function TaskList() {
   const [creating, setCreating] = useState(false);
 
   const loadTasks = useCallback(async () => {
-    try {
-      const params = new URLSearchParams();
+  const params = new URLSearchParams();
       if (statusFilter !== 'all') params.set('status', statusFilter);
       if (priorityFilter !== 'all') params.set('priority', priorityFilter);
       const res = await fetch(`/api/crm/tasks?${params}`);
@@ -109,8 +105,7 @@ export function TaskList() {
   const handleToggleComplete = async (task: Task) => {
     const newStatus: TaskStatus = task.status === 'completed' ? 'pending' : 'completed';
     setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, status: newStatus } : t)));
-    try {
-      await fetch(`/api/crm/tasks/${task.id}`, {
+  await fetch(`/api/crm/tasks/${task.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
@@ -123,8 +118,7 @@ export function TaskList() {
   const handleCreate = async () => {
     if (!newTitle.trim()) return;
     setCreating(true);
-    try {
-      const res = await fetch('/api/crm/tasks', {
+  const res = await fetch('/api/crm/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -153,8 +147,7 @@ export function TaskList() {
 
   const handleDelete = async (id: string) => {
     setTasks((prev) => prev.filter((t) => t.id !== id));
-    try {
-      await fetch(`/api/crm/tasks/${id}`, { method: 'DELETE' });
+  await fetch(`/api/crm/tasks/${id}`, { method: 'DELETE' });
     } catch {
       await loadTasks();
     }

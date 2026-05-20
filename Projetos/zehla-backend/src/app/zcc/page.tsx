@@ -1,4 +1,8 @@
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Badge, Skeleton } from '@/components/ui';
 import {
   ArrowLeft,
   Command,
@@ -112,6 +116,7 @@ export default function ZCCPage() {
 
   // Admin login gate
   useEffect(() => {
+    try {
     // DEVELOPER BYPASS: Automatic login in dev mode for Marcio
     if (process.env.NODE_ENV === 'development') {
       setIsAdmin(true);
@@ -122,8 +127,7 @@ export default function ZCCPage() {
       return;
     }
 
-    try {
-      const adminToken = localStorage.getItem('zehla-admin-token');
+  const adminToken = localStorage.getItem('zehla-admin-token');
       if (adminToken) {
         const payload = JSON.parse(atob(adminToken));
         if ((payload.role === 'admin' || payload.role === 'team') && payload.exp > Date.now()) {
@@ -157,7 +161,7 @@ export default function ZCCPage() {
     let cancelled = false;
     const load = async () => {
       try {
-        const res = await fetch('/api/brain/health');
+  const res = await fetch('/api/brain/health');
         const data = await res.json();
         if (!cancelled) setBrainHealth(data);
       } catch {

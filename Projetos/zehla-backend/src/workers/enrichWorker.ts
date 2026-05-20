@@ -111,8 +111,7 @@ export const enrichWorker = new Worker(
 
 // Helpers de parsing
 function parseBrowser(ua: string): string {
-  try {
-  if (ua.includes('Chrome') && !ua.includes('Edg')) return 'Chrome';
+if (ua.includes('Chrome') && !ua.includes('Edg')) return 'Chrome';
   if (ua.includes('Firefox')) return 'Firefox';
   if (ua.includes('Safari') && !ua.includes('Chrome')) return 'Safari';
   if (ua.includes('Edg')) return 'Edge';
@@ -120,8 +119,7 @@ function parseBrowser(ua: string): string {
 }
 
 function parseOS(ua: string): string {
-  try {
-  if (ua.includes('Windows')) return 'Windows';
+if (ua.includes('Windows')) return 'Windows';
   if (ua.includes('Mac OS')) return 'macOS';
   if (ua.includes('Android')) return 'Android';
   if (ua.includes('iPhone') || ua.includes('iPad')) return 'iOS';

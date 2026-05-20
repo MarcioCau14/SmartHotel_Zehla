@@ -38,7 +38,6 @@ export const telemetryWorker = new Worker(
       const endDate = new Date();
 
       for (const prop of properties) {
-        try {
           const metrics = await TelemetryEngine.calculateMetrics(prop.id, startDate, endDate);
           await TelemetryEngine.saveTelemetry(prop.id, metrics);
           
@@ -56,7 +55,6 @@ export const telemetryWorker = new Worker(
 
 // Schedule the job (Run every hour)
 export async function scheduleTelemetry() : void {
-  try {
   const jobs = await telemetryQueue.getRepeatableJobs();
   
   // Clean existing repeatable jobs to avoid duplicates during dev

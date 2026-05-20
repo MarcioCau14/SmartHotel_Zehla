@@ -107,8 +107,7 @@ export const classifyWorker = new Worker(
 
 // Detecção de perfil comportamental (reaproveitando lógica do LeadIntelligenceEngine)
 function detectBehaviorProfile(events: { type: string }[]): string {
-  try {
-  const types = events.map(e => e.type);
+const types = events.map(e => e.type);
   const hasFastResponse = types.includes('WHATSAPP_REPLY');
   const clickCount = types.filter(t => t === 'LINK_CLICK').length;
   const hasTrial = types.includes('TRIAL_STARTED');
@@ -122,8 +121,7 @@ function detectBehaviorProfile(events: { type: string }[]): string {
 
 // Detecção de estágio do funil
 function detectFunnelStage(events: { type: string }[]): string {
-  try {
-  const types = events.map(e => e.type);
+const types = events.map(e => e.type);
   if (types.includes('CONVERSION') || types.includes('PAYMENT_MADE')) return 'CONVERTED';
   if (types.includes('TRIAL_STARTED')) return 'TRIAL';
   if (types.includes('WHATSAPP_REPLY')) return 'ENGAGED';

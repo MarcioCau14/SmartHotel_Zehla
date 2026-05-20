@@ -8,7 +8,7 @@ const VALID_SEVERITIES = ["baixa", "media", "alta", "critica"];
 
 async function _GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
     const severity = searchParams.get("severity");
     const type = searchParams.get("type");
     const startDate = searchParams.get("startDate");

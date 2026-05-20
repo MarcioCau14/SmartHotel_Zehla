@@ -8,7 +8,7 @@ import { withApiSecurity } from '@/lib/server/with-api-security';
 
 async function _GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }

@@ -15,8 +15,7 @@ export const scraperWorker = new Worker(
 
     
 
-    try {
-      const scrapedData = await scraperService.deepScrape(url);
+  const scrapedData = await scraperService.deepScrape(url);
 
       if (Object.keys(scrapedData).length === 0) {
         console.warn(`⚠️ [Scraper 2.0] Nenhum dado extraído para ${url}`);

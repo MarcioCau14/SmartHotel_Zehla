@@ -6,7 +6,7 @@ import { withApiSecurity } from '@/lib/server/with-api-security';
 
 async function _GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
+  const { searchParams } = new URL(req.url);
     const stage = searchParams.get('stage');
     const pipelineId = searchParams.get('pipelineId');
     const contactId = searchParams.get('contactId');
@@ -76,7 +76,7 @@ export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSecond
 
 async function _POST(req: NextRequest) {
   try {
-    const body = await req.json();
+  const body = await req.json();
     const { title, value, stage, pipelineId, contactId, ownerId, expectedCloseDate, probability, notes } = body;
 
     if (!title || !pipelineId) {

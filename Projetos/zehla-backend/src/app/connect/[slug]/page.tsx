@@ -107,7 +107,7 @@ function LinkIcon({ icon }: { icon: string }) {
 
 async function getProfile(slug: string): Promise<ConnectProfile | null> {
   try {
-    const res = await fetch(`${API}/api/connect/profile/${slug}`, { cache: 'force-cache' });
+  const res = await fetch(`${API}/api/connect/profile/${slug}`, { cache: 'force-cache' });
     if (!res.ok) return null;
     return res.json();
   } catch {

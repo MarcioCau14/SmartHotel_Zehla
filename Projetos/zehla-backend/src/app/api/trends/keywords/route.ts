@@ -6,7 +6,7 @@ import { withApiSecurity } from "@/lib/server/with-api-security";
 
 async function _GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
     const isActive = searchParams.get("isActive");
 

@@ -19,8 +19,7 @@ const workers = [
 ];
 
 async function startAllWorkers() {
-  try {
-  
+
   
   
   
@@ -44,8 +43,7 @@ async function shutdown(signal: string) {
   
 
   const closePromises = workers.map(async ({ name, worker }) => {
-    try {
-      await worker.close();
+  await worker.close();
       
     } catch (err: unknown) {
       console.error(`  ❌ [${name}] Erro ao encerrar:`, err.message);

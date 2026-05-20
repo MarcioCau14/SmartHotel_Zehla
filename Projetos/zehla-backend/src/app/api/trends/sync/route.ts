@@ -6,7 +6,7 @@ import { withApiSecurity } from "@/lib/server/with-api-security";
 
 async function _POST(request: NextRequest) {
   try {
-    const body = await request.json().catch(() => ({}));
+  const body = await request.json().catch(() => ({}));
     const tierFilter = body.tier;
 
     const results = await collectAllTrends(tierFilter);

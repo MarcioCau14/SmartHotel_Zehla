@@ -90,7 +90,7 @@ export default function ZccAutoHealer() {
 
   const fetchAll = useCallback(async () => {
     try {
-      const [hRes, healRes, errRes] = await Promise.all([
+  const [hRes, healRes, errRes] = await Promise.all([
         fetch('/api/system/health'),
         fetch('/api/system/heal'),
         fetch('/api/telemetry/events'),
@@ -125,10 +125,10 @@ export default function ZccAutoHealer() {
   }, [fetchAll]);
 
   const triggerHeal = async (actionId: string) => {
+    try {
     setExecuting(actionId);
     setExecResult(null);
-    try {
-      const res = await fetch('/api/system/heal', {
+  const res = await fetch('/api/system/heal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: actionId }),

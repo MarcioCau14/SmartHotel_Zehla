@@ -9,7 +9,7 @@ async function _GET(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const { slug } = params;
+  const { slug } = params;
 
     const profile = await prisma.connectProfile.findUnique({
       where: { slug },

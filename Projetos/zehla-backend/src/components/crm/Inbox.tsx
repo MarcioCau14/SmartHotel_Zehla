@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
   Search,
   Phone,
   MessageSquare,
@@ -82,8 +81,7 @@ export function Inbox() {
   const [sending, setSending] = useState(false);
 
   const loadConversations = useCallback(async () => {
-    try {
-      const params = new URLSearchParams();
+  const params = new URLSearchParams();
       if (search) params.set('q', search);
       const res = await fetch(`/api/crm/conversations?${params}`);
       if (res.ok) setConversations(await res.json());
@@ -96,8 +94,7 @@ export function Inbox() {
 
   const loadMessages = useCallback(async (conversationId: string) => {
     setLoadingMessages(true);
-    try {
-      const res = await fetch(`/api/crm/conversations/${conversationId}/messages`);
+  const res = await fetch(`/api/crm/conversations/${conversationId}/messages`);
       if (res.ok) setMessages(await res.json());
     } catch {
       // silent
@@ -130,8 +127,7 @@ export function Inbox() {
     setMessages((prev) => [...prev, optimistic]);
     setNewMessage('');
 
-    try {
-      const res = await fetch(`/api/crm/conversations/${activeConversation}/messages`, {
+  const res = await fetch(`/api/crm/conversations/${activeConversation}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: newMessage }),

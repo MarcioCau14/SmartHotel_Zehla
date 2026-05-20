@@ -55,8 +55,7 @@ export default function ZehlaBrain({ pousadaId }: { pousadaId?: string }) {
 
   useEffect(() => {
     async function checkHealth() {
-      try {
-        const res = await fetch('/api/brain/health')
+  const res = await fetch('/api/brain/health')
         const data = await res.json()
         setState(prev => ({ ...prev, isConnected: data?.success ?? data?.data?.openrouter ?? false }))
       } catch {
@@ -70,8 +69,7 @@ export default function ZehlaBrain({ pousadaId }: { pousadaId?: string }) {
 
   useEffect(() => {
     async function fetchSessions() {
-      try {
-        const res = await fetch('/api/brain/health')
+  const res = await fetch('/api/brain/health')
         if (res.ok) {
           const data = await res.json()
           if (data?.sessions) {
@@ -104,8 +102,7 @@ export default function ZehlaBrain({ pousadaId }: { pousadaId?: string }) {
     }))
     setInput('')
 
-    try {
-      const res = await fetch('/api/brain/chat', {
+  const res = await fetch('/api/brain/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -52,7 +52,7 @@ export const validateWorker = new Worker(
           conversionScore: 0,
         },
       });
-      `);
+
     }
 
     // 3. Persistir evento no banco
@@ -69,8 +69,6 @@ export const validateWorker = new Worker(
         metadata: metadata || null,
       },
     });
-
-    `);
 
     // 4. Encaminhar para enriquecimento
     await enrichQueue.add('enrich-event', {

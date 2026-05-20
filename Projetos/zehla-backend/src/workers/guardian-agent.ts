@@ -86,8 +86,7 @@ class GuardianAgent {
     this.isRunning = true;
 
     while (this.isRunning) {
-      try {
-        // Lê do stream Redis (bloqueante por 5s)
+  // Lê do stream Redis (bloqueante por 5s)
         const messages = await this.redis.xread(
           'BLOCK', 5000,
           'STREAMS', 'guardian:alerts', '$'
@@ -202,8 +201,7 @@ class GuardianAgent {
     await this.redis.setex(`isolate:tenant:${tenantId}`, 3600, '1');
     await this.updateIsolatedGauge();
       
-    try {
-      await prisma.securityIncident.create({
+  await prisma.securityIncident.create({
         data: {
           tenantId,
           type: 'TENANT_ISOLATED',
@@ -231,8 +229,7 @@ class GuardianAgent {
   }
 
   private async persistAlert(alert: unknown, rule: GuardianRule) {
-    try {
-      await prisma.securityAlert.create({
+  await prisma.securityAlert.create({
         data: {
           tenantId: alert.tenantId || 'global',
           alertType: alert.alertType,

@@ -6,7 +6,7 @@ import { withApiSecurity } from '@/lib/server/with-api-security';
 
 async function _POST(req: NextRequest) {
   try {
-    const body = await req.json();
+  const body = await req.json();
     const { slug, type, linkId } = body;
 
     if (!slug) {

@@ -9,7 +9,7 @@ async function _GET(
   context: { params: Promise<Record<string, string>> }
 ) {
   try {
-    const { id } = await context.params;
+  const { id } = await context.params;
 
     const contact = await prisma.crmContact.findFirst({
       where: { id, deletedAt: null },
@@ -42,7 +42,7 @@ async function _POST(
   context: { params: Promise<Record<string, string>> }
 ) {
   try {
-    const { id } = await context.params;
+  const { id } = await context.params;
     const body = await req.json();
     const { type, content, metadata } = body;
 

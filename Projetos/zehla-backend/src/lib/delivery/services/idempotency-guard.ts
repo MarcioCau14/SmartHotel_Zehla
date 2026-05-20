@@ -1,4 +1,4 @@
-import { redis } from './redis-connection';
+import { redis } from '@/lib/redis';
 
 /**
  * ZEHLA IDEMPOTENCY GUARD
