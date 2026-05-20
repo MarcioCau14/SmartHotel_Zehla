@@ -1,0 +1,148 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { CheckCircle, LogIn, XCircle, RefreshCw } from 'lucide-react';
+import type { Reservation, ReservationStatus } from '@/lib/store';
+
+const statusColors: Record<string, string> = {
+  PENDING: 'bg-[#FF5500]/10 text-[#FF5500] border-[#FF5500]/30',
+  CONFIRMED: 'bg-[#FF5500]/10 text-[#FF5500] border-[#FF5500]/30',
+  CANCELLED: 'bg-red-500/20 text-red-400 border-red-500/30',
+  COMPLETED: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  NOSHOW: 'bg-neutral-500/20 text-[#898989] border-neutral-500/30',
+};
+
+const statusLabels: Record<string, string> = {
+  PENDING: 'Pendente',
+  CONFIRMED: 'Confirmada',
+  CANCELLED: 'Cancelada',
+  COMPLETED: 'Concluída',
+  NOSHOW: 'No-Show',
+};
+
+export function Reservations() {
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<string>('all');
+
+  const fetchReservations = useCallback(async () => {
+    try {
+      const url = filter === 'all' ? '/api/reservations' : `/api/reservations?status=${filter}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      setReservations(data);
+    } catch {
+      // silent
+    } finally {
+      setLoading(false);
+    }
+  }, [filter]);
+
+  useEffect(() => {
+    fetchReservations();
+  }, [fetchReservations]);
+
+  const updateStatus = async (id: string, status: ReservationStatus) => {
+    await fetch('/api/reservations', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status }),
+    });
+    fetchReservations();
+  };
+
+  const filters = ['all', 'PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED'];
+
+  return (
+    <div className="space-y-4">
+      {/* Filters */}
+      <div className="flex gap-2 overflow-x-auto zehla-scroll-x pb-2">
+        {filters.map(f => (
+          <button
+            key={f}
+            onClick={() => { setFilter(f); setLoading(true); }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+              filter === f
+                ? 'bg-[#FF5500]/10 text-[#FF5500] border border-[#FF5500]/30'
+                : 'bg-[#242424] text-[#4d4d4d] hover:text-[#b4b4b4] border border-transparent'
+            }`}
+          >
+            {f === 'all' ? 'Todas' : statusLabels[f]}
+          </button>
+        ))}
+        <button onClick={fetchReservations} className="ml-auto text-[#4d4d4d] hover:text-[#FF5500]">
+          <RefreshCw className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Table */}
+      {loading ? (
+        <Skeleton className="h-96 w-full rounded-xl" />
+      ) : (
+        <div className="glass-card overflow-hidden">
+          <div className="overflow-x-auto zehla-scroll-x">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[#2e2e2e]">
+                  <th className="text-left text-xs text-[#4d4d4d] font-medium px-4 py-3">Hóspede</th>
+                  <th className="text-left text-xs text-[#4d4d4d] font-medium px-4 py-3">Quarto</th>
+                  <th className="text-left text-xs text-[#4d4d4d] font-medium px-4 py-3">Check-in</th>
+                  <th className="text-left text-xs text-[#4d4d4d] font-medium px-4 py-3">Check-out</th>
+                  <th className="text-left text-xs text-[#4d4d4d] font-medium px-4 py-3">Valor</th>
+                  <th className="text-left text-xs text-[#4d4d4d] font-medium px-4 py-3">Status</th>
+                  <th className="text-left text-xs text-[#4d4d4d] font-medium px-4 py-3">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reservations.map((res) => (
+                  <tr key={res.id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-[#efefef]">{res.guestName}</div>
+                      <div className="text-xs text-[#4d4d4d]">{res.guestPhone}</div>
+                    </td>
+                    <td className="px-4 py-3 text-[#b4b4b4]">{res.roomNumber} <span className="text-[#363636]">({res.roomType})</span></td>
+                    <td className="px-4 py-3 text-[#898989] font-mono text-xs">{res.checkIn}</td>
+                    <td className="px-4 py-3 text-[#898989] font-mono text-xs">{res.checkOut}</td>
+                    <td className="px-4 py-3 text-[#FF5500] font-semibold">R$ {res.totalAmount.toLocaleString('pt-BR')}</td>
+                    <td className="px-4 py-3">
+                      <Badge variant="outline" className={`text-[10px] ${statusColors[res.status]}`}>
+                        {statusLabels[res.status]}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-1">
+                        {res.status === 'PENDING' && (
+                          <Button size="sm" variant="ghost" className="h-7 px-2 text-[#FF5500] hover:text-orange-300 hover:bg-[#FF5500]/10" onClick={() => updateStatus(res.id, 'CONFIRMED')}>
+                            <CheckCircle className="w-3.5 h-3.5 mr-1" /> Confirmar
+                          </Button>
+                        )}
+                        {res.status === 'CONFIRMED' && (
+                          <>
+                            <Button size="sm" variant="ghost" className="h-7 px-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10" onClick={() => updateStatus(res.id, 'COMPLETED')}>
+                              <LogIn className="w-3.5 h-3.5 mr-1" /> Check-in
+                            </Button>
+                            <Button size="sm" variant="ghost" className="h-7 px-2 text-red-400 hover:text-red-300 hover:bg-red-500/10" onClick={() => updateStatus(res.id, 'CANCELLED')}>
+                              <XCircle className="w-3.5 h-3.5" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {reservations.length === 0 && (
+            <div className="text-center py-12 text-[#4d4d4d] text-sm">
+              Nenhuma reserva encontrada
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

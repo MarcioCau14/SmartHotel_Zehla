@@ -1,0 +1,45 @@
+#!/bin/sh
+# ============================================================
+# PRE-COMMIT HOOK — Anti-vazamento de Secrets
+# ============================================================
+# Impede commits que contenham:
+#   - Arquivos .env (não criptografados)
+#   - Chaves API hardcoded em arquivos de código
+#   - Arquivos .master-key
+# ============================================================
+
+echo "🔒 [ENV-GUARDIAN] Verificando vazamento de secrets..."
+
+BLOCKED_FILES=".env .env.local .env.production .env.development .master-key"
+HARDCODED_PATTERNS='sk-[a-zA-Z0-9]{20,}|API_KEY=["'"'"']{8,}|api_key|apiKey\s*[:=]\s*["'"'"'][a-zA-Z0-9_\-]{16,}'
+
+HAS_ERROR=0
+
+# 1. Bloquear arquivos .env no staged
+for file in $BLOCKED_FILES; do
+    if git diff --cached --name-only | grep -q "^$file$"; then
+        echo "  ✖ BLOQUEADO: $file contém secrets em texto plano"
+        echo "    Use: npx tsx scripts/secure-env.ts seal"
+        HAS_ERROR=1
+    fi
+done
+
+# 2. Escanear diffs por chaves hardcoded
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|js|tsx|jsx|yml|yaml|json|sh)$' | grep -v node_modules | grep -v '.env')
+for file in $STAGED_FILES; do
+    if git diff --cached "$file" | grep -E "^\+.*$HARDCODED_PATTERNS" | grep -qv 'process.env\|sua-chave\|your-key\|example\|placeholder'; then
+        echo "  ⚠ Potencial secret hardcoded em: $file"
+        git diff --cached "$file" | grep -E "^\+.*$HARDCODED_PATTERNS" | head -3
+        HAS_ERROR=1
+    fi
+done
+
+if [ "$HAS_ERROR" = "1" ]; then
+    echo ""
+    echo "  ⛔ Commit cancelado por segurança"
+    echo "  Use: git commit --no-verify para ignorar (não recomendado)"
+    exit 1
+fi
+
+echo "  ✓ Nenhum vazamento detectado"
+exit 0

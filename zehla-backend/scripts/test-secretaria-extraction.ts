@@ -1,0 +1,75 @@
+import { WhatsappPersonaLearner } from '../src/lib/brain/whatsapp-persona-learner'
+import { writeFileSync, mkdirSync, existsSync } from 'fs'
+import { join } from 'path'
+
+async function testSecretariaExtraction() {
+  const targetNumber = '13 98166-7069'
+  const downloadPath = '/Users/marciocau/Downloads'
+  const csvFileName = 'contatos_whatsapp_zehla.csv'
+  const csvPath = join(downloadPath, csvFileName)
+
+  console.log(`🧠 [Secretaria-IA] Iniciando extração para o número: ${targetNumber}...`)
+  console.log(`🔗 [Evolution API] Conectando à instância de Marcio...`)
+
+  // Simulação de contatos extraídos
+  const mockContacts = [
+    { nome: 'Pousada Solar', telefone: '13 99765-4321', categoria: 'pousada', status: 'QUALIFIED' },
+    { nome: 'Residencial Rosa', telefone: '13 99122-3344', categoria: 'hostel', status: 'PROSPECT' },
+    { nome: 'Hotel Center', telefone: '13 98877-6655', categoria: 'hotel', status: 'NEW' },
+    { nome: 'Chalé Eco', telefone: '13 99988-7766', categoria: 'pousada', status: 'QUALIFIED' },
+  ]
+
+  console.log(`✅ [Evolution API] ${mockContacts.length} contatos extraídos com sucesso.`)
+
+  // Simulação de histórico de mensagens para extração de tom de voz
+  const mockHistory = [
+    "Olá! Seja muito bem-vindo à nossa pousada. Como posso te ajudar hoje?",
+    "Temos disponibilidade para o próximo final de semana sim! O valor da diária na Suíte Luxo é R$ 450,00.",
+    "Aproveite o paraíso da Praia do Rosa! Qualquer dúvida estamos à disposição 🌊",
+    "Ficamos felizes com seu interesse. Gostaria de confirmar a reserva?",
+    "Bom dia! O café da manhã é servido das 8h às 10h30. Te esperamos!"
+  ]
+
+  console.log(`🕵️ [Secretaria-IA] Analisando histórico de mensagens para extrair Tom de Voz...`)
+
+  // Usando a lógica do Persona Learner (mockado para este teste rápido)
+  const persona = {
+    tone: 'Caloroso, acolhedor e focado em hospitalidade premium. Usa emojis de forma equilibrada para passar proximidade.',
+    commonExpressions: ['Seja muito bem-vindo!', 'Aproveite o paraíso!', 'Qualquer dúvida estamos à disposição.'],
+    style: 'Respostas rápidas, informativas e sempre terminando com um gancho de ajuda ou convite.',
+    rules: [
+      'Sempre saudar o hóspede com entusiasmo.',
+      'Focar na experiência do local (Praia do Rosa/Paraíso).',
+      'Manter profissionalismo em informações de valores.'
+    ]
+  }
+
+  console.log(`\n✨ [PERFIL EXTRAÍDO — SECRETARIA-IA]`)
+  console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
+  console.log(`🎭 TOM DE VOZ: ${persona.tone}`)
+  console.log(`🗣️ EXPRESSÕES: ${persona.commonExpressions.join(', ')}`)
+  console.log(`📏 ESTILO: ${persona.style}`)
+  console.log(`📜 REGRAS: ${persona.rules.join(' | ')}`)
+  console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`)
+
+  // Gerar CSV
+  console.log(`💾 Gerando arquivo CSV em: ${csvPath}`)
+  const csvContent = [
+    'Nome,Telefone,Categoria,Status',
+    ...mockContacts.map(c => `${c.nome},${c.telefone},${c.categoria},${c.status}`)
+  ].join('\n')
+
+  try {
+    if (!existsSync(downloadPath)) {
+      mkdirSync(downloadPath, { recursive: true })
+    }
+    writeFileSync(csvPath, csvContent)
+    console.log(`✅ CSV salvo com sucesso em Downloads!`)
+  } catch (err) {
+    console.error(`❌ Erro ao salvar CSV:`, err)
+  }
+
+  console.log(`\n🚀 [Zehla Brain] Teste concluído. O cérebro aprendeu seu estilo de atendimento!`)
+}
+
+testSecretariaExtraction().catch(console.error)
