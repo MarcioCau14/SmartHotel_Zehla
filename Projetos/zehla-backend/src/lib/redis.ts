@@ -31,7 +31,8 @@ function createRedisInstance(name: string, dbIndex: number) {
   }
 
   try {
-    const redisOptions = {
+    const isTls = url.startsWith('rediss://');
+    const redisOptions: any = {
       maxRetriesPerRequest: null,
       lazyConnect: true,
       enableOfflineQueue: false,
@@ -40,6 +41,10 @@ function createRedisInstance(name: string, dbIndex: number) {
         return Math.min(times * 50, 2000);
       },
     };
+
+    if (isTls) {
+      redisOptions.tls = {};
+    }
 
     const client = new Redis(url, redisOptions);
 
