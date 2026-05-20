@@ -1,0 +1,142 @@
+import { NextResponse } from 'next/server';
+import { Redis } from 'ioredis';
+import { jwtVerify } from 'jose';
+
+import type { NextRequest } from 'next/server';
+
+const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET!);
+const ZCC_PATHS = ['/zcc', '/api/zcc'];
+
+/**
+ * ZEHLA SECURITY MIDDLEWARE
+ * Proteção de rotas, isolamento de tenant e headers de segurança.
+ */
+
+const PROTECTED_ROUTES = ['/dashboard'];
+const ADMIN_ONLY_ROUTES = ['/api/admin'];
+
+export async function proxy(request: NextRequest) : void {
+  const ip = request.ip ?? request.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown';
+  const tenantId = request.headers.get('x-tenant-id') || 'global';
+
+  // 0. Circuit Breaker Automático (Guardian Agent)
+  const isBlocked = await redis.get(`block:ip:${ip}`);
+  if (isBlocked) {
+    return NextResponse.json(
+      { error: 'Access denied by Guardian Agent' },
+      { status: 403 }
+    );
+  }
+
+  if (tenantId && tenantId !== 'global') {
+    const isIsolated = await redis.get(`isolate:tenant:${tenantId}`);
+    if (isIsolated) {
+      return NextResponse.json(
+        { error: 'Tenant under security review' },
+        { status: 503 }
+      );
+    }
+  }
+
+  const { pathname } = request.nextUrl;
+
+  // 0.1 Proteção Estrita ZCC (SUPER_ADMIN)
+  if (ZCC_PATHS.some(p => pathname.startsWith(p)) && pathname !== '/zcc-login') {
+    // DEVELOPER BYPASS: Allow ZCC access in development mode
+    if (process.env.NODE_ENV === 'development') {
+      const requestHeaders = new Headers(request.headers);
+      requestHeaders.set('x-zcc-user-id', 'dev-marcio-id');
+      requestHeaders.set('x-zcc-role', 'SUPER_ADMIN');
+      requestHeaders.set('x-zcc-tenant-id', 'global');
+
+      return NextResponse.next({
+        request: { headers: requestHeaders },
+      });
+    }
+
+    const token = request.cookies.get('__session')?.value 
+      ?? request.cookies.get('zehla-token')?.value
+      ?? request.headers.get('Authorization')?.replace('Bearer ', '');
+
+    if (!token) {
+      if (pathname.startsWith('/api')) {
+        return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      }
+      return NextResponse.redirect(new URL('/zcc-login', request.url));
+    }
+
+  const { payload } = await jwtVerify(token, SECRET_KEY, { clockTolerance: 60 });
+      
+      if (payload.role !== 'SUPER_ADMIN') {
+        const url = request.nextUrl.clone();
+        url.pathname = '/403';
+        url.searchParams.set('reason', 'superadmin_required');
+        return NextResponse.rewrite(url);
+      }
+
+      // Injeta headers para downstream
+      const requestHeaders = new Headers(request.headers);
+      requestHeaders.set('x-zcc-user-id', payload.sub as string);
+      requestHeaders.set('x-zcc-role', payload.role as string);
+      requestHeaders.set('x-zcc-tenant-id', payload.tenantId as string);
+
+      return NextResponse.next({
+        request: { headers: requestHeaders },
+      });
+    } catch (e) {
+      if (pathname.startsWith('/api')) {
+        return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
+      }
+      return NextResponse.redirect(new URL('/login?reason=token_invalid', request.url));
+    }
+  }
+  
+  // 1. Headers de Segurança (ZEHLA Fortress)
+  const response = NextResponse.next();
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  
+  // 2. Verificação de Autenticação para Rotas Protegidas
+  const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
+  
+  if (isProtectedRoute) {
+    const token = request.cookies.get('zehla-token')?.value || request.headers.get('Authorization');
+    
+    if (!token) {
+      // Se for API, retorna 401
+      if (pathname.startsWith('/api')) {
+        return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+      }
+      // Se for página, redireciona para login
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+    
+    // 3. RBAC - Proteção de Rotas Administrativas (ZCC)
+    const isAdminRoute = ADMIN_ONLY_ROUTES.some(route => pathname.startsWith(route));
+    if (isAdminRoute) {
+      // Em produção, decodificaríamos o JWT aqui para checar a role.
+      // Por enquanto, permitimos se houver token, mas o backend validará a role.
+    }
+  }
+
+  return response;
+}
+
+// Configuração dos matchers
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public (public files)
+     */
+    '/((?!_next/static|_next/image|favicon.ico|public).*)',
+  ],
+};
+
+export default proxy;

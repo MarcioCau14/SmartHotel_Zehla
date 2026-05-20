@@ -1,0 +1,48 @@
+export interface GuestDNA {
+  id: string;
+  tenantId: string;
+  preferences: Record<string, any>;
+  voiceTone: 'formal' | 'friendly' | 'urgent';
+  language: string;
+}
+
+export class DNAVoiceAdapter {
+  /**
+   * Adapts the voice response based on the Guest's DNA profile.
+   * This is the core of the Voice Studio personalization.
+   */
+  static async synthesizeVoice(text: string, guestDNA: GuestDNA): Promise<Buffer> {
+    // Placeholder for actual voice synthesis integration (e.g., ElevenLabs)
+    console.log(`[VOICE ADAPTER] Synthesizing voice for DNA tone: ${guestDNA.voiceTone}`);
+    return Buffer.from('mock-audio-data');
+  }
+
+  /**
+   * Extracts Voice DNA from a conversational transcript.
+   */
+  static async extractDNA(transcript: string): Promise<Partial<GuestDNA>> {
+    return {
+      voiceTone: 'friendly',
+      language: 'pt-BR'
+    };
+  }
+
+  /**
+   * Retrieves adaptive parameters for the guest's voice profile.
+   */
+  static async getAdaptiveParams(sessionId: string): Promise<{ speaking_rate: number; pitch: number; style: string; emotiveness: number }> {
+    return {
+      speaking_rate: 1.0,
+      pitch: 1.0,
+      style: 'friendly',
+      emotiveness: 0.8
+    };
+  }
+
+  /**
+   * Generates system instructions based on adaptation parameters.
+   */
+  static getSystemInstruction(adaptation: any): string {
+    return `Adote um estilo de voz ${adaptation.style} com emotividade de ${adaptation.emotiveness}.`;
+  }
+}

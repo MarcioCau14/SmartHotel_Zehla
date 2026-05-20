@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,700;1,9..40,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+@page { size: 794px 1123px; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 794px; height: 1123px; background: #f5f3f8; }
+@media screen {
+  html { height: auto; display: flex; justify-content: center; }
+  body { transform-origin: top center; scale: min(1, calc(100vh / 1123)); margin: 0 auto; }
+}
+.cover {
+  position: relative;
+  width: 794px;
+  height: 1123px;
+  background: linear-gradient(178deg, #f5f3f8 0%, #ede8f5 50%, #e4ddf0 100%);
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+}
+.accent-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 6px;
+  height: 100%;
+  background: #522cc6;
+}
+.accent-circle {
+  position: absolute;
+  right: 100px;
+  bottom: 160px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  border: 1.5px solid #522cc6;
+  opacity: 0.06;
+}
+.accent-circle-2 {
+  position: absolute;
+  right: 140px;
+  bottom: 200px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #522cc6;
+  opacity: 0.04;
+}
+.grid-accent {
+  position: absolute;
+  right: 60px;
+  top: 80px;
+  width: 180px;
+  height: 180px;
+  background-image:
+    linear-gradient(#522cc6 0.4px, transparent 0.4px),
+    linear-gradient(90deg, #522cc6 0.4px, transparent 0.4px);
+  background-size: 20px 20px;
+  opacity: 0.03;
+}
+.dot-cluster {
+  position: absolute;
+  left: 100px;
+  bottom: 220px;
+  display: grid;
+  grid-template-columns: repeat(6, 6px);
+  gap: 10px;
+  opacity: 0.1;
+}
+.dot-cluster span {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #522cc6;
+}
+.line-accent-h {
+  position: absolute;
+  left: 80px;
+  top: 460px;
+  width: 140px;
+  height: 2px;
+  background: #522cc6;
+  opacity: 0.3;
+}
+.struct-bottom {
+  position: absolute;
+  left: 80px;
+  right: 80px;
+  bottom: 175px;
+  height: 1px;
+  background: #522cc6;
+  opacity: 0.12;
+}
+.kicker {
+  position: absolute;
+  left: 100px;
+  top: 290px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: #522cc6;
+  opacity: 0.65;
+}
+.hero {
+  position: absolute;
+  left: 100px;
+  top: 325px;
+  font-family: 'DM Serif Display', serif;
+  font-size: 44px;
+  font-weight: 400;
+  line-height: 1.18;
+  color: #1e2021;
+  max-width: 520px;
+}
+.hero b { font-weight: 400; color: #522cc6; }
+.meta {
+  position: absolute;
+  left: 100px;
+  top: 480px;
+  font-size: 14.5px;
+  line-height: 1.75;
+  color: #858b91;
+  max-width: 440px;
+}
+.summary-box {
+  position: absolute;
+  left: 100px;
+  top: 575px;
+  width: 480px;
+  padding: 20px 24px;
+  background: rgba(82, 44, 198, 0.04);
+  border-left: 3px solid #522cc6;
+  border-radius: 0 8px 8px 0;
+}
+.summary-box p {
+  font-size: 13px;
+  line-height: 1.65;
+  color: #3a3d40;
+}
+.pillar-tags {
+  position: absolute;
+  left: 100px;
+  top: 700px;
+  display: flex;
+  gap: 10px;
+}
+.pillar-tag {
+  padding: 6px 14px;
+  background: #522cc6;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-radius: 4px;
+}
+.pillar-tag.secondary {
+  background: rgba(82, 44, 198, 0.12);
+  color: #522cc6;
+}
+.footer-info {
+  position: absolute;
+  left: 100px;
+  bottom: 120px;
+  font-size: 12px;
+  color: #858b91;
+  line-height: 1.9;
+}
+.watermark {
+  position: absolute;
+  right: 70px;
+  top: 48%;
+  transform: translateY(-50%) rotate(90deg);
+  font-size: 130px;
+  font-family: 'DM Serif Display', serif;
+  color: #522cc6;
+  opacity: 0.02;
+  white-space: nowrap;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+<div class="cover">
+  <div class="accent-bar"></div>
+  <div class="accent-circle"></div>
+  <div class="accent-circle-2"></div>
+  <div class="grid-accent"></div>
+  <div class="dot-cluster">
+    <span></span><span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span><span></span>
+  </div>
+  <div class="line-accent-h"></div>
+  <div class="struct-bottom"></div>
+  <div class="watermark">DNA WIZARD</div>
+
+  <div class="kicker">SMARTHOTEL Onboarding</div>
+  <div class="hero">DNA Wizard e<br><b>Insights Engine</b></div>
+  <div class="meta">
+    3 pilares para mapear a essencia da sua pousada:<br>
+    Termometro de Tom, Chaves de Desconto e Dores de Operacao
+  </div>
+  <div class="summary-box">
+    <p>
+      Combustivel completo para o onboarding: escala de personalidade com 5 arquetipos,
+      6 tipos de chaves de negociacao autonomas, 12 insights que o pousadeiro nao sabe
+      que precisa, e integracao direta com o ZEHLA Brain.
+    </p>
+  </div>
+  <div class="pillar-tags">
+    <div class="pillar-tag">Pilar 1: Tom</div>
+    <div class="pillar-tag">Pilar 2: Precos</div>
+    <div class="pillar-tag secondary">Pilar 3: Insights</div>
+  </div>
+  <div class="footer-info">
+    <div style="color:#522cc6; font-weight:700; letter-spacing:1px; text-transform:uppercase; font-size:10px; margin-bottom:8px;">Blueprint Tecnico</div>
+    <div>Versao 1.0 — Maio 2025</div>
+    <div>SMARTHOTEL Tecnologia para Hospitalidade</div>
+  </div>
+</div>
+</body>
+</html>

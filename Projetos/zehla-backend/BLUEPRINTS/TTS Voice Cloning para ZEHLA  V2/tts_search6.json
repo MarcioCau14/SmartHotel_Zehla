@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://huggingface.co/ModelsLab/F5-tts-brazilian",
+    "name": "ModelsLab/F5-tts-brazilian",
+    "snippet": "This guide will walk you through the steps to load and run the F5 - TTS model for text-to-speech synthesis using reference audio and text inputs. Read more",
+    "host_name": "huggingface.co",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://datarootlabs.com/blog/text-to-speech-models",
+    "name": "Which Open Source Text-to-Speech Model Should You Use?",
+    "snippet": "6 Jan 2026 — Voice cloning applications benefit from CosyVoice 2.0 's excellent speaker similarity, despite its higher computational requirements. Resource- ... Read more",
+    "host_name": "datarootlabs.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://cosyvoice.org",
+    "name": "CosyVoice | Multilingual TTS Model",
+    "snippet": "Discover CosyVoice , a multilingual zero-shot TTS model, featuring natural pronunciation and high-quality speech synthesis with advanced features.",
+    "host_name": "cosyvoice.org",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/StableDiffusion/comments/1nix2r4/the_new_indextts2_model_is_now_supported_on_tts",
+    "name": "The new IndexTTS-2 model is now supported on TTS Audio",
+    "snippet": "The new IndexTTS -2 model is now supported on TTS Audio Suite v4.9 with Advanced Emotion Control - ComfyUI. Resource - Update.",
+    "host_name": "www.reddit.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://arxiv.org/html/2604.00688v1",
+    "name": "OmniVoice: Towards Omnilingual Zero-Shot Text-to-",
+    "snippet": "1 Apr 2026 — Zero-shot text-to-speech ( TTS ) models trained on large-scale datasets have demonstrated a remarkable ability to generate high-quality speech ... Read more",
+    "host_name": "arxiv.org",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/firstpixel/F5-TTS-pt-br",
+    "name": "firstpixel/F5-TTS-pt-br",
+    "snippet": "12 Feb 2025 — Português do Brasil. Contains pre-trained weights for Portuguese BR in F5-TTS . It only speaks portuguese as it is a preliminary test. Tokenizer ... Read more\nPortuguês do Brasil. Contains pre-trained weights for Portuguese BR in F5-TTS. It only speaks portuguese as it is a preliminary test. Tokenizer ...",
+    "host_name": "huggingface.co",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.researchgate.net/publication/388091235_E2_TTS_Embarrassingly_Easy_Fully_Non-Autoregressive_Zero-Shot_TTS",
+    "name": "E2 TTS: Embarrassingly Easy Fully Non-Autoregressive",
+    "snippet": "Recent TTS models often possess zero-shot voice cloning capabilities, allowing them to mimic a speaker's timbre from a short speech prompt [1,2,3,4]. By ... Read more",
+    "host_name": "www.researchgate.net",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://doc-en.302.ai/354933210e0",
+    "name": "Qwen3-TTS-Flash（Speech Synthesis）",
+    "snippet": "24 Sept 2025 — Qwen3- TTS -Flash is a speech synthesis model from the Qwen series. Qwen3- TTS offers 17 voice styles and supports multiple languages and dialects. Read more",
+    "host_name": "doc-en.302.ai",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://elevenlabs.io/text-to-speech/portuguese",
+    "name": "Free Portuguese Text to Speech & Portuguese AI Voices - ElevenLabs",
+    "snippet": "Turn Portuguese text into lifelike speech that reflects the language's expressive style, ideal for reaching audiences across Brazil, Portugal, and beyond.",
+    "host_name": "elevenlabs.io",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://modelslab.com/audio-gen/voice-cloning/portuguese",
+    "name": "Portuguese AI Voice Cloning and Speech API - ModelsLab",
+    "snippet": "Rating 4.6 (7) Get 99% accuracy and clone any voice in Portuguese in real time. Retain accents and nuances. Try our humanizing AI voice cloning Portuguese TTS API.",
+    "host_name": "modelslab.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

@@ -1,0 +1,22 @@
+/Users/marciocau/zehla-backend/BLUEPRINTS/TTS Voice Cloning para ZEHLA  V2/cover_voice.html
+/Users/marciocau/zehla-backend/BLUEPRINTS/AGENTS/secretaria_ia_auditor.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/PROTOTYPES/zcc-prototype.html
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/README.en.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/README.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/SKILL.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/references/design-styles.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/references/react-setup.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/references/apple-gallery-showcase.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/references/cinematic-patterns.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/references/animation-best-practices.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/references/tweaks-system.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/references/workflow.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/references/video-export.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/references/scene-templates.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/references/verification.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/references/sfx-library.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/references/animations.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/references/content-guidelines.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/references/editable-pptx.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/references/slide-decks.md
+/Users/marciocau/zehla-backend/BLUEPRINTS/KNOWLEDGE/huashu-design/references/hero-animation-case-study.md

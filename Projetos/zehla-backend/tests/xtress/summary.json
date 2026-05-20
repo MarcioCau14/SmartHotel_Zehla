@@ -1,0 +1,42 @@
+{
+  "pousadas": 15,
+  "pousadasAtivas": 15,
+  "hospedes": 107,
+  "conversas": 100,
+  "totalMensagens": 736,
+  "conversasPorTipo": {
+    "bombardeio": 4,
+    "media_pesquisa": 16,
+    "rapida_info": 10,
+    "negociacao": 8,
+    "internacional": 3,
+    "pet_friendly_flow": 5,
+    "reclamacao_escalonada": 5,
+    "rapida_reserva": 15,
+    "longa_familia": 8,
+    "recorrente_return": 3,
+    "fantasma": 2,
+    "longa_pesquisa": 12,
+    "longa_grupo": 5,
+    "multi_destino": 1,
+    "seriado_finalista": 3
+  },
+  "mensagensPorPousada": {
+    "d6rga3ajof9moxhaxvr": 49,
+    "a8ern4chd3bmoxhaxvr": 66,
+    "5vn3ys3u08nmoxhaxvr": 47,
+    "p7x9k2vjakmoxhaxvr": 75,
+    "kzlczjeknamoxhaxvr": 86,
+    "q23bbt0c55moxhaxvr": 51,
+    "0wzvvivnibdkmoxhaxvs": 20,
+    "ycxjskilhlmoxhaxvs": 31,
+    "8rys1224hg3moxhaxvs": 33,
+    "z75cac6r9l8moxhaxvs": 60,
+    "ltgg3m4wgpmoxhaxvs": 74,
+    "vi2nkqkyilmoxhaxvs": 39,
+    "0c9ooos6ft94moxhaxvs": 23,
+    "5538j4oxb5umoxhaxvs": 42,
+    "js8uyajo1qhmoxhaxvs": 40
+  },
+  "hospedesComMultiplasMensagens": 64
+}

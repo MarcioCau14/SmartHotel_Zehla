@@ -1,0 +1,16 @@
+# listmonk configuration
+[app]
+address = "0.0.0.0:9000"
+admin_username = "admin"
+admin_password = "zehla_secret_2026" # Altere no primeiro acesso
+
+[db]
+host = "db"
+port = 5432
+user = "listmonk"
+password = "listmonk_pass"
+name = "listmonk"
+ssl_mode = "disable"
+max_open = 25
+max_idle = 25
+max_lifetime = "300s"

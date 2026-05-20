@@ -1,0 +1,59 @@
+/**
+ * ZEHLA Voice Analytics Service
+ * 
+ * Responsável por capturar telemetria de performance e conversão vocal.
+ * Alimenta o Dashboard do ZCC para provar o valor do plano MAX.
+ */
+
+import { redis } from '../redis';
+
+export interface VoiceMetric {
+  propertyId: string;
+  guestId: string;
+  intent: string;
+  latencyMs: number;
+  cacheHit: boolean;
+  tier: 'PRO' | 'MAX';
+  event: 'GENERATED' | 'PLAYED' | 'COMPLETED' | 'ABANDONED';
+  metadata?: any;
+}
+
+export class VoiceAnalyticsService {
+  private static readonly METRICS_KEY_PREFIX = 'zehla:analytics:voice:';
+
+  /**
+   * Registra um evento de performance vocal
+   */
+  static async track(metric: VoiceMetric) {
+    const key = `${this.METRICS_KEY_PREFIX}${metric.propertyId}`;
+    const payload = {
+      ...metric,
+      timestamp: new Date().toISOString()
+    };
+
+    // 1. Armazenar no Redis para processamento em tempo real (Radar ZCC)
+    await redis.lpush(key, JSON.stringify(payload));
+    
+    // 2. Trim da lista para manter apenas os últimos 1000 eventos por propriedade
+    await redis.ltrim(key, 0, 999);
+
+    // 3. Log para auditoria
+    console.log(`[VOICE_TELEMETRY]: ${metric.event} | Property: ${metric.propertyId} | Latency: ${metric.latencyMs}ms`);
+  }
+
+  /**
+   * Calcula o "Time to First Play" (Métrica crítica de UX)
+   */
+  static async trackPlayback(propertyId: string, audioId: string, timeToPlayMs: number) {
+    await this.track({
+      propertyId,
+      guestId: 'SYSTEM', // Identificado via evento de playback
+      intent: 'UI_INTERACTION',
+      latencyMs: timeToPlayMs,
+      cacheHit: true,
+      tier: 'MAX',
+      event: 'PLAYED',
+      metadata: { audioId }
+    });
+  }
+}

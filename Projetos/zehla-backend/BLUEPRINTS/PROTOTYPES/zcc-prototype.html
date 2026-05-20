@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zehla Control Center (ZCC) - Prototype</title>
+
+  <!-- React + Babel pinned -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <style>
+    /* Supabase-inspired Orange Fluorescent Base */
+    :root {
+      --bg-base: #000000;
+      --bg-panel: #111111;
+      --bg-panel-hover: #1A1A1A;
+      --border-color: #222222;
+      --text-main: #EDEDED;
+      --text-muted: #888888;
+      
+      --accent-orange: #FF4500; /* Orange Fluorescent */
+      --accent-orange-dim: rgba(255, 69, 0, 0.15);
+      --accent-orange-glow: rgba(255, 69, 0, 0.4);
+      
+      --font-display: 'Inter', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; width: 100%; background: var(--bg-base); color: var(--text-main); font-family: var(--font-display); }
+    
+    #root { min-height: 100vh; display: flex; flex-direction: column; }
+    
+    /* Utility classes */
+    .glow-text { text-shadow: 0 0 10px var(--accent-orange-glow); color: var(--accent-orange); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Main ZCC React App -->
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // --- ASSUMPTIONS & PLACEHOLDERS (Junior Designer Pass) ---
+    // 1. Context: ZCC Dashboard for Zehla backend management.
+    // 2. Style: Supabase-inspired dark theme with Orange Fluorescent accents.
+    // 3. Density: High-density data components (Fintech, Validator, Swarm Overview).
+    // 4. Placeholders: Currently using mock data for the UI layout review.
+
+    const styles = {
+      layout: {
+        display: 'flex',
+        height: '100vh',
+        width: '100%',
+      },
+      sidebar: {
+        width: '240px',
+        borderRight: '1px solid var(--border-color)',
+        background: 'var(--bg-base)',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '24px 16px',
+      },
+      logo: {
+        fontSize: '18px',
+        fontWeight: '700',
+        letterSpacing: '-0.5px',
+        marginBottom: '40px',
+        color: '#FFF',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
+      },
+      navItem: {
+        padding: '10px 12px',
+        borderRadius: '6px',
+        color: 'var(--text-muted)',
+        fontSize: '14px',
+        cursor: 'pointer',
+        marginBottom: '4px',
+        transition: 'all 0.2s',
+      },
+      navItemActive: {
+        background: 'var(--accent-orange-dim)',
+        color: 'var(--accent-orange)',
+        fontWeight: '500',
+      },
+      content: {
+        flex: 1,
+        background: 'var(--bg-base)',
+        padding: '32px 48px',
+        overflowY: 'auto',
+      },
+      header: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '32px',
+      },
+      title: {
+        fontSize: '24px',
+        fontWeight: '600',
+        letterSpacing: '-0.5px',
+      },
+      grid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        gap: '24px',
+      },
+      card: {
+        background: 'var(--bg-panel)',
+        border: '1px solid var(--border-color)',
+        borderRadius: '8px',
+        padding: '24px',
+        position: 'relative',
+        overflow: 'hidden',
+      },
+      cardTopBorder: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '2px',
+        background: 'var(--accent-orange)',
+        opacity: 0.8,
+      },
+      cardTitle: {
+        fontSize: '13px',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
+        color: 'var(--text-muted)',
+        marginBottom: '16px',
+        fontWeight: '600',
+      },
+      metricValue: {
+        fontSize: '32px',
+        fontWeight: '500',
+        color: '#FFF',
+        fontFamily: 'var(--font-mono)',
+        marginBottom: '8px',
+      },
+      metricLabel: {
+        fontSize: '14px',
+        color: 'var(--text-muted)',
+      }
+    };
+
+    function Sidebar({ activeTab, setActiveTab }) {
+      const tabs = [
+        { id: 'overview', label: 'Swarm Overview' },
+        { id: 'fintech', label: 'Fintech Hub' },
+        { id: 'validator', label: 'Validator & Logs' },
+        { id: 'tenants', label: 'Tenants' },
+      ];
+
+      return (
+        <div style={styles.sidebar}>
+          <div style={styles.logo}>
+            <div style={{ width: 16, height: 16, background: 'var(--accent-orange)', borderRadius: 4 }}></div>
+            ZEHLA <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>ZCC</span>
+          </div>
+          <div style={{ flex: 1 }}>
+            {tabs.map(tab => (
+              <div 
+                key={tab.id}
+                style={{
+                  ...styles.navItem,
+                  ...(activeTab === tab.id ? styles.navItemActive : {})
+                }}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+            System Status: <span className="glow-text">Online</span>
+          </div>
+        </div>
+      );
+    }
+
+    function OverviewTab() {
+      return (
+        <div>
+          <div style={styles.grid}>
+            {/* Swarm Metrics Placeholder */}
+            <div style={styles.card}>
+              <div style={styles.cardTopBorder}></div>
+              <div style={styles.cardTitle}>Active Agents</div>
+              <div style={styles.metricValue}>12<span style={{fontSize: 16, color: 'var(--text-muted)'}}>/15</span></div>
+              <div style={styles.metricLabel}>Swarm Capacity</div>
+            </div>
+            
+            {/* Fintech Hub Placeholder */}
+            <div style={styles.card}>
+              <div style={styles.cardTitle}>MRR (Real-time)</div>
+              <div style={styles.metricValue}>R$ 45.2K</div>
+              <div style={styles.metricLabel}>+12.5% this month</div>
+            </div>
+
+            {/* Scale Metrics Placeholder */}
+            <div style={styles.card}>
+              <div style={styles.cardTitle}>Global Latency</div>
+              <div style={styles.metricValue}>124<span style={{fontSize: 16, color: 'var(--text-muted)'}}>ms</span></div>
+              <div style={styles.metricLabel}>Avg. response time</div>
+            </div>
+          </div>
+          
+          <div style={{ marginTop: 32 }}>
+            <div style={styles.card}>
+              <div style={styles.cardTitle}>Recent Logs & Auto-Healer Actions</div>
+              <div style={{ color: 'var(--text-muted)', fontSize: 14, fontStyle: 'italic', padding: '24px 0', textAlign: 'center', border: '1px dashed var(--border-color)', borderRadius: 4 }}>
+                [ PLACEHOLDER: Log Stream will be rendered here ]<br/>
+                Awaiting real data integration.
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [activeTab, setActiveTab] = useState('overview');
+
+      return (
+        <div style={styles.layout}>
+          <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+          
+          <div style={styles.content}>
+            <div style={styles.header}>
+              <h1 style={styles.title}>
+                {activeTab === 'overview' && 'ZCC Swarm Overview'}
+                {activeTab === 'fintech' && 'Fintech Hub'}
+                {activeTab === 'validator' && 'Zehla Validator'}
+                {activeTab === 'tenants' && 'Tenant Management'}
+              </h1>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <button style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-color)', color: '#FFF', borderRadius: 6, cursor: 'pointer' }}>Documentation</button>
+                <button style={{ padding: '8px 16px', background: 'var(--accent-orange)', border: 'none', color: '#000', fontWeight: 600, borderRadius: 6, cursor: 'pointer' }}>Deploy All</button>
+              </div>
+            </div>
+            
+            {activeTab === 'overview' && <OverviewTab />}
+            {activeTab !== 'overview' && (
+              <div style={{ color: 'var(--text-muted)', fontSize: 14, fontStyle: 'italic' }}>
+                [ Content for {activeTab} is being designed in the next pass... ]
+              </div>
+            )}
+            
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

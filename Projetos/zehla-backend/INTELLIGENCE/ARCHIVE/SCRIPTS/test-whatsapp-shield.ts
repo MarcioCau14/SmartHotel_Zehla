@@ -1,0 +1,28 @@
+import { checkWhatsAppRateLimit } from '../src/lib/security/whatsapp-shield';
+
+
+async function testRateLimit() {
+  try {
+  const phone = '5511999999999';
+  
+
+  for (let i = 1; i <= 12; i++) {
+    const isAllowed = await checkWhatsAppRateLimit(phone);
+    
+    
+    if (i === 10 && isAllowed) {
+      
+    }
+  }
+
+  const finalCheck = await checkWhatsAppRateLimit(phone);
+  if (!finalCheck) {
+    
+  } else {
+    
+  }
+  
+  process.exit(0);
+}
+
+testRateLimit().catch(console.error);

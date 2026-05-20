@@ -1,0 +1,261 @@
+import {
+
+
+  VirtualGuest, GuestProfile, Formalidade, RegiaoBrasil,
+  DDD_BY_STATE
+} from "./types";
+
+// 2000+ Brazilian names by region
+const NAMES_BY_REGION: Record<RegiaoBrasil, { feminino: string[]; masculino: string[] }> = {
+  sudeste: {
+    feminino: ["Maria", "Ana", "Julia", "Camila", "Fernanda", "Carolina", "Isabela", "Larissa", "Beatriz", "Gabriela", "Mariana", "Rafaela", "Patricia", "Daniela", "Amanda", "Bianca", "Letícia", "Natália", "Vanessa", "Priscila", "Aline", "Renata", "Márcia", "Luciana", "Tatiana"],
+    masculino: ["Pedro", "Lucas", "Gabriel", "Rafael", "Thiago", "Bruno", "Rodrigo", "Matheus", "Gustavo", "Felipe", "Leonardo", "Ricardo", "André", "Marcos", "Diego", "Eduardo", "Vinícius", "Daniel", "Caio", "Luiz", "Carlos", "Paulo", "Roberto", "Fernando", "Alexandre"],
+  },
+  nordeste: {
+    feminino: ["Maria", "Ana", "Francisca", "Antonia", "Josefa", "Adriana", "Luana", "Yasmin", "Amanda", "Kátia", "Cláudia", "Sandra", "Regina", "Rosa", "Iracema", "Tereza", "Genivalda", "Cleonice", "Nádia", "Gildete"],
+    masculino: ["José", "Francisco", "Antonio", "João", "Carlos", "Luís", "Raimundo", "Severino", "Edson", "Valdir", "Gilberto", "Roberval", "Ademar", "Djalma", "Tadeu", "Cicero", "Davi", "Artur", "Benício", "Everaldo"],
+  },
+  sul: {
+    feminino: ["Maria", "Ana", "Julia", "Bruna", "Taiane", "Carolina", "Gabriela", "Fernanda", "Patricia", "Jéssica", "Daiane", "Camila", "Leticia", "Michele", "Janaína", "Cristiane", "Silvana", "Angela", "Cátia", "Mônica"],
+    masculino: ["Pedro", "Lucas", "Gabriel", "Mateus", "Rafael", "Felipe", "Tiago", "Anderson", "Marcos", "Leandro", "Fabrício", "Marcelo", "Alexandre", "Cláudio", "Renato", "Sérgio", "Ivan", "Joaquim", "Otávio", "Eduardo"],
+  },
+  norte: {
+    feminino: ["Maria", "Ana", "Lucia", "Francisca", "Nazare", "Rosangela", "Alessandra", "Deise", "Suzana", "Eliane", "Cristina", "Neide", "Raimunda", "Nair", "Graciliana", "Ilma", "Zulmira", "Osmarina", "Alcinea", "Jucelma"],
+    masculino: ["José", "Francisco", "Antonio", "João", "Raimundo", "Severino", "Adailton", "Edivaldo", "Waldir", "Osmar", "Edilson", "Ronaldo", "Valdeci", "Dário", "Nilton", "Jeová", "Rudi", "Luciano", "Ademir", "Clodoaldo"],
+  },
+  centro_oeste: {
+    feminino: ["Maria", "Ana", "Julia", "Camila", "Luisa", "Fernanda", "Amanda", "Isabela", "Gabriela", "Beatriz", "Aline", "Tatiana", "Silvana", "Regina", "Carla", "Daniela", "Letícia", "Bianca", "Mariana", "Raquel"],
+    masculino: ["Pedro", "Lucas", "Gabriel", "Rafael", "Bruno", "Gustavo", "Felipe", "Leonardo", "Rodrigo", "Matheus", "Vinícius", "Diego", "Ricardo", "André", "Caio", "Thiago", "Eduardo", "Luiz", "Daniel", "Alex"],
+  },
+};
+
+const SOBRENOMES: string[] = [
+  "Silva", "Santos", "Oliveira", "Souza", "Lima", "Pereira", "Costa", "Ferreira",
+  "Rodrigues", "Almeida", "Nascimento", "Araujo", "Melo", "Barbosa", "Ribeiro",
+  "Martins", "Gomes", "Carvalho", "Alves", "Lopes", "Soares", "Fernandes",
+  "Vieira", "Barros", "Dias", "Nogueira", "Andrade", "Moreira", "Nunes",
+  "Marques", "Machado", "Mendes", "Freitas", "Cardoso", "Ramos", "Goncalves",
+  "Santana", "Teixeira", "Monteiro", "Correia", "Pinto", "Batista", "Azevedo",
+  "Borges", "Campos", "Cunha", "Duarte", "Fonseca", "Garcia", "Lira",
+];
+
+const CIDADES_BY_STATE: Record<string, string[]> = {
+  "SP": ["São Paulo", "Campinas", "Santos", "Ribeirão Preto", "Sorocaba", "São José dos Campos", "Bauru", "Piracicaba", "Taubaté", "Limeira"],
+  "RJ": ["Rio de Janeiro", "Niterói", "Petrópolis", "Volta Redonda", "Macae", "Angra dos Reis", "Cabro Frio", "Búzios", "Paraty", "Teresópolis"],
+  "MG": ["Belo Horizonte", "Uberlândia", "Contagem", "Juiz de Fora", "Betim", "Montes Claros", "Uberaba", "Ipatinga", "Divinópolis", "Poços de Caldas"],
+  "ES": ["Vitória", "Vila Velha", "Serra", "Cariacica", "Viana", "Guarapari", "Linhares", "Colatina"],
+  "BA": ["Salvador", "Feira de Santana", "Vitória da Conquista", "Camacari", "Ilheus", "Itabuna", "Porto Seguro", "Jequié"],
+  "SE": ["Aracaju", "Nossa Senhora do Socorro", "Lagarto", "Itabaiana", "São Cristóvão"],
+  "PE": ["Recife", "Jaboatão dos Guararapes", "Olinda", "Caruaru", "Petrolina", "Paulista", "Garanhuns"],
+  "AL": ["Maceió", "Arapiraca", "Rio Largo", "Palmeira dos Índios", "União dos Palmares"],
+  "PB": ["João Pessoa", "Campina Grande", "Santa Rita", "Patos", "Bayeux", "Sousa"],
+  "RN": ["Natal", "Mossoró", "Parnamirim", "São Gonçalo do Amarante", "Ceará-Mirim"],
+  "CE": ["Fortaleza", "Caucaia", "Juazeiro do Norte", "Maracanaú", "Sobral", "Crato", "Itapipoca"],
+  "PI": ["Teresina", "Parnaíba", "São Raimundo Nonato", "Picos", "Floriano"],
+  "MA": ["São Luís", "Imperatriz", "Caxias", "Timon", "Codó", "Açailândia"],
+  "PR": ["Curitiba", "Londrina", "Maringá", "Ponta Grossa", "Foz do Iguaçu", "Cascavel", "Guarapuava", "Londrina"],
+  "SC": ["Florianópolis", "Joinville", "Blumenau", "São José", "Chapecó", "Criciúma", "Lages", "Itajaí"],
+  "RS": ["Porto Alegre", "Caxias do Sul", "Pelotas", "Santa Maria", "Passo Fundo", "Gramado", "Canela", "Novo Hamburgo"],
+  "GO": ["Goiânia", "Anápolis", "Rio Verde", "Aparecida de Goiânia", "Luziânia", "Pirenópolis", "Anápolis"],
+  "MS": ["Campo Grande", "Dourados", "Três Lagoas", "Corumbá", "Ponta Porã", "Bonito"],
+  "MT": ["Cuiabá", "Várzea Grande", "Rondonópolis", "Sinop", "Tangará da Serra", "Lucas do Rio Verde"],
+  "TO": ["Palmas", "Araguaína", "Gurupi", "Porto Nacional", "Paraíso do Tocantins"],
+  "PA": ["Belém", "Ananindeua", "Santarém", "Marabá", "Parauapebas", "Castanhal", "Altamira"],
+  "AM": ["Manaus", "Parintins", "Itacoatiara", "Manacapuru", "Coari", "Tefé"],
+  "RO": ["Porto Velho", "Ji-Paraná", "Ariquemes", "Vilhena", "Cacoal"],
+  "AC": ["Rio Branco", "Cruzeiro do Sul", "Sena Madureira", "Tarauacá", "Feijó"],
+  "AP": ["Macapá", "Santana", "Laranjal do Jari", "Oiapoque", "Mazagão"],
+  "RR": ["Boa Vista", "Rorainópolis", "Caracaraí", "Mucajaí", "Alto Alegre"],
+  "DF": ["Brasília", "Taguatinga", "Ceilândia", "Gama", "Samambaia", "Planaltina"],
+};
+
+const EMAIL_PROVIDERS = ["gmail.com", "hotmail.com", "yahoo.com.br", "uol.com.br", "terra.com.br", "outlook.com", "bol.com.br", "ig.com.br"];
+
+const FAIXA_DISTRIBUTION = [
+  { faixa: "18-25" as const, prob: 0.15 },
+  { faixa: "26-35" as const, prob: 0.35 },
+  { faixa: "36-50" as const, prob: 0.30 },
+  { faixa: "50+" as const, prob: 0.20 },
+];
+
+const PERFIL_DISTRIBUTION = [
+  { perfil: "casal" as const, prob: 0.25 },
+  { perfil: "familia" as const, prob: 0.20 },
+  { perfil: "solo" as const, prob: 0.15 },
+  { perfil: "amigos" as const, prob: 0.15 },
+  { perfil: "pet" as const, prob: 0.10 },
+  { perfil: "business" as const, prob: 0.10 },
+  { perfil: "solo" as const, prob: 0.05 },
+];
+
+const PAGAMENTO_DISTRIBUTION = [
+  { pgto: "pix" as const, prob: 0.50 },
+  { pgto: "cartao" as const, prob: 0.35 },
+  { pgto: "dinheiro" as const, prob: 0.10 },
+  { pgto: "boleto" as const, prob: 0.05 },
+];
+
+const FORMALIDADE_DISTRIBUTION = [
+  { f: "informal" as const, prob: 0.55 },
+  { f: "muito_informal" as const, prob: 0.30 },
+  { f: "formal" as const, prob: 0.15 },
+];
+
+function randomInt(min: number, max: number): number {
+  try {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randomItem<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function weightedRandom<T extends { prob: number }>(items: T[]): T {
+  const r = Math.random();
+  let cumulative = 0;
+  for (const item of items) {
+    cumulative += item.prob;
+    if (r <= cumulative) return item;
+  }
+  return items[items.length - 1];
+}
+
+function generateId(): string {
+  try {
+  return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+}
+
+function generatePhone(ddd: string): string {
+  try {
+  const prefix = "9"; // Mobile in Brazil
+  const number = randomInt(10000000, 99999999);
+  return `+55${ddd}${prefix}${number}`;
+}
+
+/**
+ * GuestSimulator — Generates realistic Brazilian guests
+ */
+export class GuestSimulator {
+  private scenarioId: string;
+  private usedEmails: Set<string> = new Set();
+  private usedPhones: Set<string> = new Set();
+
+  constructor(scenarioId: string) {
+    this.scenarioId = scenarioId;
+  }
+
+  /**
+   * Generate N virtual guests
+   */
+  generate(count: number, pousadaIds: string[]): VirtualGuest[] {
+    const guests: VirtualGuest[] = [];
+
+    for (let i = 0; i < count; i++) {
+      const pousadaId = randomItem(pousadaIds);
+      const estado = randomItem(Object.keys(DDD_BY_STATE));
+      const ddds = DDD_BY_STATE[estado];
+      const ddd = randomItem(ddds);
+      const regiao = this.getRegiaoByState(estado);
+      const cidades = CIDADES_BY_STATE[estado] || [estado];
+
+      const regionalNames = NAMES_BY_REGION[regiao];
+      const genero = Math.random() > 0.5 ? "feminino" : "masculino";
+      const nomeList = genero === "feminino" ? regionalNames.feminino : regionalNames.masculino;
+      const primeiroNome = randomItem(nomeList);
+      const sobrenome = randomItem(SOBRENOMES);
+
+      // Generate unique phone
+      let telefone: string;
+      do {
+        telefone = generatePhone(ddd);
+      } while (this.usedPhones.has(telefone));
+      this.usedPhones.add(telefone);
+
+      // Generate unique email
+      let email: string;
+      do {
+        const provider = randomItem(EMAIL_PROVIDERS);
+        const separator = randomItem([".", "_", ""]);
+        const emailUser = primeiroNome.toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z]/g, "");
+        email = `${emailUser}${separator}${sobrenome.toLowerCase().replace(/[^a-z]/g, "")}${randomInt(1, 999)}@${provider}`;
+      } while (this.usedEmails.has(email));
+      this.usedEmails.add(email);
+
+      const faixa = weightedRandom(FAIXA_DISTRIBUTION).faixa;
+      const perfil = weightedRandom(PERFIL_DISTRIBUTION).perfil;
+      const pagamento = weightedRandom(PAGAMENTO_DISTRIBUTION).pgto;
+      const formalidade = weightedRandom(FORMALIDADE_DISTRIBUTION).f;
+      const usaEmoji = Math.random() > 0.3;
+
+      // Recorrente probability increases with age
+      const ehRecorrente = Math.random() < (faixa === "50+" ? 0.30 : faixa === "36-50" ? 0.20 : 0.10);
+      const visitasAnteriores = ehRecorrente ? randomInt(1, 5) : 0;
+
+      guests.push({
+        id: generateId(),
+        nomeCompleto: `${primeiroNome} ${sobrenome}`,
+        primeiroNome,
+        sobrenome,
+        telefone,
+        ddd,
+        estado,
+        cidade: randomItem(cidades),
+        email,
+        instagram: Math.random() > 0.4 ? `@${primeiroNome.toLowerCase().replace(/[^a-z]/g, "")}${randomItem([".", "_", ""])}${sobrenome.toLowerCase().replace(/[^a-z]/g, "").substring(0, 5)}` : undefined,
+        perfilViagem: perfil,
+        faixaEtaria: faixa,
+        preferenciaPagamento: pagamento,
+        formalidade,
+        usaEmoji,
+        regiaoLinguistica: regiao,
+        ehHospedeRecorrente: ehRecorrente,
+        visitasAnteriores,
+        ultimaVisita: ehRecorrente ? new Date(Date.now() - randomInt(30, 365) * 86400000) : undefined,
+        pousadaId,
+        scenarioId: this.scenarioId,
+        createdAt: new Date(),
+      });
+    }
+
+    return guests;
+  }
+
+  /**
+   * Generate guests distributed across multiple pousadas
+   * (guestMultiplier guests per pousada)
+   */
+  generateForPousadas(pousadas: { id: string }[], guestMultiplier: number): VirtualGuest[] {
+    const allGuests: VirtualGuest[] = [];
+
+    for (const pousada of pousadas) {
+      const count = randomInt(
+        Math.max(1, Math.floor(guestMultiplier * 0.7)),
+        Math.ceil(guestMultiplier * 1.3)
+      );
+      const guests = this.generate(count, [pousada.id]);
+      allGuests.push(...guests);
+    }
+
+    return allGuests;
+  }
+
+  private getRegiaoByState(estado: string): RegiaoBrasil {
+    const sudeste = ["SP", "RJ", "MG", "ES"];
+    const nordeste = ["BA", "SE", "PE", "AL", "PB", "RN", "CE", "PI", "MA"];
+    const sul = ["PR", "SC", "RS"];
+    const norte = ["AM", "PA", "TO", "RO", "AC", "RR", "AP"];
+    const centroOeste = ["GO", "MT", "MS", "DF"];
+
+    if (sudeste.includes(estado)) return "sudeste";
+    if (nordeste.includes(estado)) return "nordeste";
+    if (sul.includes(estado)) return "sul";
+    if (norte.includes(estado)) return "norte";
+    if (centroOeste.includes(estado)) return "centro_oeste";
+    return "sudeste"; // default
+  }
+}
+
+export default GuestSimulator;

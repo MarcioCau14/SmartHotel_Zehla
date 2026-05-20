@@ -1,0 +1,19 @@
+import { Page } from 'playwright';
+
+
+/**
+ * Receita de Teste: Pesquisa Simples no Google
+ * Objetivo: Validar que o motor Webkit (Safari) está funcionando.
+ */
+export async function execute(page: Page) : void {
+  try {
+  
+  await page.goto('https://www.google.com', { waitUntil: 'domcontentloaded' });
+  
+  const title = await page.title();
+  
+
+  // Tira um screenshot para provar que funcionou (será salvo se rodar localmente)
+  await page.screenshot({ path: 'google-test-result.png' });
+  
+}

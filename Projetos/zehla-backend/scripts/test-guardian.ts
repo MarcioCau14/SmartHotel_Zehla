@@ -1,0 +1,17 @@
+import { fireGuardianAlert } from '../src/lib/security/guardian-alert';
+
+
+async function test() {
+  try {
+  await fireGuardianAlert({
+    alertType: 'CANARY_TOUCHED',
+    severity: 'CRITICAL',
+    tenantId: 'tenant-123',
+    metadata: {
+      ip: '192.168.1.100',
+      reason: 'Acesso a rota restrita'
+    }
+  });
+}
+
+test();

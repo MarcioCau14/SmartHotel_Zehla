@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=794">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  @page { size: 794px 1123px; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 794px; height: 1123px; background: #f7f6f3; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; }
+
+  .cover { position: relative; width: 100%; height: 100%; background: #f7f6f3; }
+
+  /* Layer 0: BG Fill */
+  .bg-fill { position: absolute; inset: 0; background: #f7f6f3; z-index: 0; }
+
+  /* Layer 1: Decorative */
+  .accent-bar { position: absolute; top: 0; left: 0; width: 8px; height: 100%; background: #c83c54; z-index: 1; }
+  .circle-tl { position: absolute; top: -80px; right: -80px; width: 300px; height: 300px; border-radius: 50%; background: rgba(200,60,84,0.06); z-index: 1; }
+  .circle-br { position: absolute; bottom: -60px; left: -60px; width: 200px; height: 200px; border-radius: 50%; background: rgba(200,60,84,0.04); z-index: 1; }
+  .line-h { position: absolute; top: 50%; left: 60px; right: 60px; height: 1px; background: rgba(200,60,84,0.15); z-index: 1; }
+  .line-v { position: absolute; top: 120px; bottom: 120px; left: 120px; width: 1px; background: rgba(200,60,84,0.10); z-index: 1; }
+  .grid-dots { position: absolute; top: 60px; right: 60px; width: 120px; height: 120px; z-index: 1; }
+  .grid-dots::before, .grid-dots::after { content: ''; position: absolute; background: rgba(200,60,84,0.08); border-radius: 50%; }
+  .grid-dots::before { width: 6px; height: 6px; top: 0; left: 0; box-shadow: 24px 0 0 0 rgba(200,60,84,0.08), 48px 0 0 0 rgba(200,60,84,0.08), 72px 0 0 0 rgba(200,60,84,0.08), 96px 0 0 0 rgba(200,60,84,0.08), 0 24px 0 0 rgba(200,60,84,0.08), 24px 24px 0 0 rgba(200,60,84,0.08), 48px 24px 0 0 rgba(200,60,84,0.08), 72px 24px 0 0 rgba(200,60,84,0.08), 96px 24px 0 0 rgba(200,60,84,0.08), 0 48px 0 0 rgba(200,60,84,0.08), 24px 48px 0 0 rgba(200,60,84,0.08), 48px 48px 0 0 rgba(200,60,84,0.08), 72px 48px 0 0 rgba(200,60,84,0.08), 96px 48px 0 0 rgba(200,60,84,0.08), 0 72px 0 0 rgba(200,60,84,0.08), 24px 72px 0 0 rgba(200,60,84,0.08), 48px 72px 0 0 rgba(200,60,84,0.08), 72px 72px 0 0 rgba(200,60,84,0.08), 96px 72px 0 0 rgba(200,60,84,0.08), 0 96px 0 0 rgba(200,60,84,0.08), 24px 96px 0 0 rgba(200,60,84,0.08), 48px 96px 0 0 rgba(200,60,84,0.08), 72px 96px 0 0 rgba(200,60,84,0.08), 96px 96px 0 0 rgba(200,60,84,0.08); }
+
+  /* Layer 2: Structure */
+  .corner-mark { position: absolute; top: 50px; left: 50px; z-index: 2; }
+  .corner-mark span { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: #c83c54; font-weight: 600; }
+
+  /* Layer 3: Text */
+  .content { position: absolute; top: 50%; left: 120px; right: 80px; transform: translateY(-50%); z-index: 3; }
+  .kicker { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #c83c54; font-weight: 600; margin-bottom: 20px; }
+  .hero { font-size: 42px; font-weight: 800; line-height: 1.15; color: #1f1e1c; margin-bottom: 24px; max-width: 500px; }
+  .hero .accent { color: #c83c54; }
+  .meta { font-size: 15px; color: #89867d; line-height: 1.7; max-width: 420px; margin-bottom: 30px; font-weight: 400; }
+  .divider { width: 60px; height: 3px; background: #c83c54; margin-bottom: 24px; border-radius: 2px; }
+  .footer-info { font-size: 10px; color: #89867d; letter-spacing: 1.5px; text-transform: uppercase; }
+
+  .badge { display: inline-block; padding: 6px 16px; background: rgba(200,60,84,0.08); border-radius: 20px; font-size: 10px; font-weight: 600; color: #c83c54; letter-spacing: 1px; text-transform: uppercase; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="cover">
+  <div class="bg-fill"></div>
+  <div class="accent-bar"></div>
+  <div class="circle-tl"></div>
+  <div class="circle-br"></div>
+  <div class="line-h"></div>
+  <div class="line-v"></div>
+  <div class="grid-dots"></div>
+
+  <div class="corner-mark"><span>ZEHLA Intelligence</span></div>
+
+  <div class="content">
+    <div class="kicker">Analise Competitiva</div>
+    <div class="hero">
+      Lailla.io<br>
+      Mapa de Adaptacao<br>
+      para o <span class="accent">ZEHLA</span>
+    </div>
+    <div class="divider"></div>
+    <div class="meta">
+      Analise completa de funcionalidades, IAs utilizadas, workflows, modelo de precos e estrategia de adaptacao para o ecossistema ZEHLA/SMARTHOTEL.
+    </div>
+    <div class="badge">SMARTHOTEL Ecosystem</div>
+    <div class="footer-info" style="margin-top: 40px;">Maio 2026 &nbsp;&bull;&nbsp; Confidencial</div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,700;1,9..40,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+@page { size: 794px 1123px; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 794px; height: 1123px; background: #f3f0f8; }
+@media screen {
+  html { height: auto; display: flex; justify-content: center; }
+  body { transform-origin: top center; scale: min(1, calc(100vh / 1123)); margin: 0 auto; }
+}
+.cover {
+  position: relative; width: 794px; height: 1123px;
+  background: linear-gradient(178deg, #f3f0f8 0%, #ebe6f3 55%, #e2daf0 100%);
+  font-family: 'DM Sans', sans-serif; overflow: hidden;
+}
+.bar-left { position: absolute; left: 0; top: 0; width: 5px; height: 100%; background: #5228d0; }
+.circle-deco { position: absolute; right: 90px; bottom: 190px; width: 180px; height: 180px; border-radius: 50%; border: 1.5px solid #5228d0; opacity: 0.06; }
+.circle-deco-2 { position: absolute; right: 130px; bottom: 230px; width: 100px; height: 100px; border-radius: 50%; background: #5228d0; opacity: 0.04; }
+.grid-box { position: absolute; right: 50px; top: 70px; width: 160px; height: 160px; background-image: linear-gradient(#5228d0 0.4px, transparent 0.4px), linear-gradient(90deg, #5228d0 0.4px, transparent 0.4px); background-size: 18px 18px; opacity: 0.03; }
+.dots-pattern { position: absolute; left: 110px; bottom: 240px; display: grid; grid-template-columns: repeat(5, 6px); gap: 10px; opacity: 0.1; }
+.dots-pattern span { width: 3px; height: 3px; border-radius: 50%; background: #5228d0; }
+.line-h { position: absolute; left: 80px; top: 450px; width: 130px; height: 2px; background: #5228d0; opacity: 0.3; }
+.line-bottom { position: absolute; left: 80px; right: 80px; bottom: 180px; height: 1px; background: #5228d0; opacity: 0.12; }
+.watermark { position: absolute; right: 70px; top: 47%; transform: translateY(-50%) rotate(90deg); font-size: 120px; font-family: 'DM Serif Display', serif; color: #5228d0; opacity: 0.02; white-space: nowrap; pointer-events: none; }
+.kicker { position: absolute; left: 100px; top: 290px; font-size: 12px; font-weight: 700; letter-spacing: 5px; text-transform: uppercase; color: #5228d0; opacity: 0.65; }
+.hero { position: absolute; left: 100px; top: 325px; font-family: 'DM Serif Display', serif; font-size: 42px; font-weight: 400; line-height: 1.18; color: #242320; max-width: 510px; }
+.hero b { font-weight: 400; color: #5228d0; }
+.meta { position: absolute; left: 100px; top: 475px; font-size: 14px; line-height: 1.75; color: #88857c; max-width: 430px; }
+.summary-box { position: absolute; left: 100px; top: 565px; width: 470px; padding: 18px 22px; background: rgba(82, 40, 208, 0.04); border-left: 3px solid #5228d0; border-radius: 0 8px 8px 0; }
+.summary-box p { font-size: 13px; line-height: 1.6; color: #3a3d40; }
+.tag-row { position: absolute; left: 100px; top: 685px; display: flex; gap: 8px; }
+.tag { padding: 5px 12px; background: #5228d0; color: white; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; border-radius: 4px; }
+.tag.outline { background: transparent; border: 1px solid #5228d0; color: #5228d0; }
+.footer { position: absolute; left: 100px; bottom: 120px; font-size: 12px; color: #88857c; line-height: 1.9; }
+.footer-label { color: #5228d0; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-size: 10px; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<div class="cover">
+  <div class="bar-left"></div>
+  <div class="circle-deco"></div>
+  <div class="circle-deco-2"></div>
+  <div class="grid-box"></div>
+  <div class="dots-pattern"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="line-h"></div>
+  <div class="line-bottom"></div>
+  <div class="watermark">TONE DNA</div>
+  <div class="kicker">SMARTHOTEL Intelligence</div>
+  <div class="hero">Tone DNA Cloner:<br><b>Extraia o Tom Real do<br>WhatsApp do Pousadeiro</b></div>
+  <div class="meta">
+    Analise NLP de conversas reais para construir um perfil de<br>
+    comunicacao com 14 dimensoes de personalidade
+  </div>
+  <div class="summary-box">
+    <p>
+      Como o wisprflow.ai NAO funciona, como construir algo MELHOR:
+      pipeline de 4 camadas para extrair o DNA de comunicacao
+      de mensagens reais do WhatsApp e gerar prompts personalizados.
+    </p>
+  </div>
+  <div class="tag-row">
+    <div class="tag">14 Dimensoes</div>
+    <div class="tag">NLP Pipeline</div>
+    <div class="tag outline">LGPD Compliance</div>
+  </div>
+  <div class="footer">
+    <div class="footer-label">Blueprint Tecnico</div>
+    <div>Versao 1.0 — Maio 2025</div>
+    <div>SMARTHOTEL Tecnologia para Hospitalidade</div>
+  </div>
+</div>
+</body>
+</html>

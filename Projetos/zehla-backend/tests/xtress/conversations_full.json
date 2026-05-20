@@ -1,0 +1,1515 @@
+[
+  {
+    "id": "ne9wpjvsr4moxhaxvv",
+    "pousada": {
+      "nome": "Recanto do Ceu",
+      "destino": "Bombinhas",
+      "estado": "SC"
+    },
+    "guest": {
+      "nome": "Adriana Teixeira",
+      "telefone": "+5583965815386",
+      "estado": "PB"
+    },
+    "type": "bombardeio",
+    "description": "Hospede ANSIOSO mandando varias mensagens RAPIDAS seguidas. Stress real pro agente.",
+    "bookingResult": "reservou",
+    "totalMessages": 17,
+    "messages": [
+      {
+        "step": 1,
+        "content": "OIIII",
+        "category": "disponibilidade",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "Me ajuda pfv!!",
+        "category": "disponibilidade",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 3,
+        "content": "Preciso de um quarto URGENTE pra esse fds em Trancoso!!",
+        "category": "informacao",
+        "urgency": "critica",
+        "expectResponse": true
+      },
+      {
+        "step": 4,
+        "content": "Meu hotel cancelou de ultima hora!! SOS!",
+        "category": "informacao",
+        "urgency": "critica",
+        "expectResponse": true
+      },
+      {
+        "step": 5,
+        "content": "Tem quarto? TEM QUARTO?",
+        "category": "informacao",
+        "urgency": "critica",
+        "expectResponse": true
+      },
+      {
+        "step": 6,
+        "content": "Pra 6 pessoas! 6 noites! 💕",
+        "category": "informacao",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 7,
+        "content": "Quanto custa? ME FALA RAPIDO PFV",
+        "category": "preco",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 8,
+        "content": "Aceita PIX?!",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 9,
+        "content": "Se tiver quarto reserva JÁ! Nao perco tempo!",
+        "category": "reserva",
+        "urgency": "critica",
+        "expectResponse": true
+      },
+      {
+        "step": 10,
+        "content": "E se eu quiser chegar HOJE? As 4 horas?",
+        "category": "informacao",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 11,
+        "content": "A {pousada} tem wifi? Meu filho precisa pra escola online",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 12,
+        "content": "Tem estacionamento? Vamos de carro!",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 13,
+        "content": "E a piscina? TA ABERTA MESMO?",
+        "category": "informacao",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 14,
+        "content": "Me manda o endereco via Google Maps pfv! ✨",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 15,
+        "content": "Olha, se confirmar reserva agora eu pago na hora! R$ 1656 ta bom!",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 16,
+        "content": "Esperando...",
+        "category": "reserva",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 17,
+        "content": "?? Ainda ta ai? Me responde pfv preciso saber URGENTE",
+        "category": "reserva",
+        "urgency": "critica",
+        "expectResponse": true
+      }
+    ]
+  },
+  {
+    "id": "qmghtbspghmoxhaxvv",
+    "pousada": {
+      "nome": "Recanto do Ceu",
+      "destino": "Bombinhas",
+      "estado": "SC"
+    },
+    "guest": {
+      "nome": "Antonia Cardoso",
+      "telefone": "+5588967693791",
+      "estado": "CE"
+    },
+    "type": "media_pesquisa",
+    "description": "Hospede pesquisando, faz varias perguntas antes de decidir.",
+    "bookingResult": "reservou",
+    "totalMessages": 8,
+    "messages": [
+      {
+        "step": 1,
+        "content": "Oiii 🔥 Boa tarde! Gostaria de saber sobre a Cantinho do Vale em Búzios",
+        "category": "disponibilidade",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "Qual o preco da diaria pra casal? E tem cafe da manha incluso?",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 3,
+        "content": "Hmm interessante. Vcs tem spa? E estacionamento?",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 4,
+        "content": "A Estalagem Bela Vista fica longe do centrinho de Campos do Jordão? Tem transfer do aeroporto?",
+        "category": "informacao",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 5,
+        "content": "Me passa o preco pra 3 noites em 26/5 entao",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 6,
+        "content": "Hmm Velho, esse preco ta bom mas vi outro lugar mais barato. Vcs fazem melhor pra reserva direta?",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 7,
+        "content": "Tá bom, me reserva entao! Suite premium pra 5 pessoas. 😊",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 8,
+        "content": "Quero pagar via cartão de débito. Manda os dados!",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      }
+    ]
+  },
+  {
+    "id": "qqfxa0amp8moxhaxvv",
+    "pousada": {
+      "nome": "Recanto do Ceu",
+      "destino": "Bombinhas",
+      "estado": "SC"
+    },
+    "guest": {
+      "nome": "João Martins",
+      "telefone": "+5574976145246",
+      "estado": "BA"
+    },
+    "type": "rapida_info",
+    "description": "Hospede so quer uma informacao rapida. Pergunta e vai embora.",
+    "bookingResult": "reservou",
+    "totalMessages": 2,
+    "messages": [
+      {
+        "step": 1,
+        "content": "Oi, boa tarde! Vcs aceitam cachorro por acaso?",
+        "category": "disponibilidade",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "Ah que pena. Obrigado mesmo assim! 🙏",
+        "category": "disponibilidade",
+        "urgency": "baixa",
+        "expectResponse": false
+      }
+    ]
+  },
+  {
+    "id": "4h8r4n0e9vemoxhaxvv",
+    "pousada": {
+      "nome": "Recanto do Ceu",
+      "destino": "Bombinhas",
+      "estado": "SC"
+    },
+    "guest": {
+      "nome": "Antonia Cardoso",
+      "telefone": "+5588967693791",
+      "estado": "CE"
+    },
+    "type": "negociacao",
+    "description": "Hospede tentando conseguir o MAIOR desconto possivel. Vai e volta.",
+    "bookingResult": "nao_reservou",
+    "totalMessages": 6,
+    "messages": [
+      {
+        "step": 1,
+        "content": "Oi! Quero reservar 7 noites em 02/6. Me faz um orcamento?",
+        "category": "disponibilidade",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "Hmm R$ 2068 e caro demais! No Booking ta saindo 20% mais barato. Melhora pra mim?",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 3,
+        "content": "Olha, se voce fizer R$ 327 a diaria eu fecho agora mesmo! Via PIX! 🙏",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 4,
+        "content": "Conversei com minha esposa e a gente aceita R$ 481. Mas so se incluir cafe colonial e estacionamento. Combinado?",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 5,
+        "content": "E se a gente voltar em Carnaval? Da pra fechar pacote pra 2 feriados? Desconto progressivo?",
+        "category": "preco",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 6,
+        "content": "Tá bom Cara, aceito! Mas me joga aquele upgrade de suite pfv! ✨",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      }
+    ]
+  },
+  {
+    "id": "2wln9ajwpr9moxhaxvv",
+    "pousada": {
+      "nome": "Recanto do Ceu",
+      "destino": "Bombinhas",
+      "estado": "SC"
+    },
+    "guest": {
+      "nome": "Antonia Cardoso",
+      "telefone": "+5588967693791",
+      "estado": "CE"
+    },
+    "type": "media_pesquisa",
+    "description": "Hospede pesquisando, faz varias perguntas antes de decidir.",
+    "bookingResult": "reservou",
+    "totalMessages": 8,
+    "messages": [
+      {
+        "step": 1,
+        "content": "Oiii 😊 Boa tarde! Gostaria de saber sobre a Recanto das Flores em Búzios",
+        "category": "disponibilidade",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "Qual o preco da diaria pra casal? E tem cafe da manha incluso?",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 3,
+        "content": "Hmm interessante. Vcs tem lareira? E estacionamento?",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 4,
+        "content": "A Recanto das Flores fica longe do centrinho de Trancoso? Tem transfer do aeroporto?",
+        "category": "informacao",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 5,
+        "content": "Me passa o preco pra 2 noites em 24/5 entao",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 6,
+        "content": "Hmm Amiga, esse preco ta bom mas vi outro lugar mais barato. Vcs fazem melhor pra reserva direta?",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 7,
+        "content": "Tá bom, me reserva entao! Suite standard pra 2 pessoas. 😊",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 8,
+        "content": "Quero pagar via PIX. Manda os dados!",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      }
+    ]
+  },
+  {
+    "id": "rsedn2z9r5moxhaxvv",
+    "pousada": {
+      "nome": "Recanto do Ceu",
+      "destino": "Bombinhas",
+      "estado": "SC"
+    },
+    "guest": {
+      "nome": "Antonia Cardoso",
+      "telefone": "+5588967693791",
+      "estado": "CE"
+    },
+    "type": "media_pesquisa",
+    "description": "Hospede pesquisando, faz varias perguntas antes de decidir.",
+    "bookingResult": "reservou",
+    "totalMessages": 8,
+    "messages": [
+      {
+        "step": 1,
+        "content": "Oiii ✨ Boa tarde! Gostaria de saber sobre a Cantinho do Vale em Jericoacoara",
+        "category": "disponibilidade",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "Qual o preco da diaria pra casal? E tem cafe da manha incluso?",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 3,
+        "content": "Hmm interessante. Vcs tem transfer? E estacionamento?",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 4,
+        "content": "A Cantinho do Vale fica longe do centrinho de Trancoso? Tem transfer do aeroporto?",
+        "category": "informacao",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 5,
+        "content": "Me passa o preco pra 4 noites em 28/5 entao",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 6,
+        "content": "Hmm Opa, esse preco ta bom mas vi outro lugar mais barato. Vcs fazem melhor pra reserva direta?",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 7,
+        "content": "Tá bom, me reserva entao! Suite premium pra 1 pessoas. 👍",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 8,
+        "content": "Quero pagar via cartão de débito. Manda os dados!",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      }
+    ]
+  },
+  {
+    "id": "0uvt4lubmfgqmoxhaxvw",
+    "pousada": {
+      "nome": "Chale do Lago",
+      "destino": "Arraial do Cabo",
+      "estado": "RJ"
+    },
+    "guest": {
+      "nome": "Felipe Mendes",
+      "telefone": "+5528934822905",
+      "estado": "ES"
+    },
+    "type": "bombardeio",
+    "description": "Hospede ANSIOSO mandando varias mensagens RAPIDAS seguidas. Stress real pro agente.",
+    "bookingResult": "reservou",
+    "totalMessages": 17,
+    "messages": [
+      {
+        "step": 1,
+        "content": "OIIII",
+        "category": "disponibilidade",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "Me ajuda pfv!!",
+        "category": "disponibilidade",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 3,
+        "content": "Preciso de um quarto URGENTE pra esse fds em Pipa!!",
+        "category": "informacao",
+        "urgency": "critica",
+        "expectResponse": true
+      },
+      {
+        "step": 4,
+        "content": "Meu hotel cancelou de ultima hora!! SOS!",
+        "category": "informacao",
+        "urgency": "critica",
+        "expectResponse": true
+      },
+      {
+        "step": 5,
+        "content": "Tem quarto? TEM QUARTO?",
+        "category": "informacao",
+        "urgency": "critica",
+        "expectResponse": true
+      },
+      {
+        "step": 6,
+        "content": "Pra 6 pessoas! 7 noites! 👍",
+        "category": "informacao",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 7,
+        "content": "Quanto custa? ME FALA RAPIDO PFV",
+        "category": "preco",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 8,
+        "content": "Aceita PIX?!",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 9,
+        "content": "Se tiver quarto reserva JÁ! Nao perco tempo!",
+        "category": "reserva",
+        "urgency": "critica",
+        "expectResponse": true
+      },
+      {
+        "step": 10,
+        "content": "E se eu quiser chegar HOJE? As 1 horas?",
+        "category": "informacao",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 11,
+        "content": "A {pousada} tem wifi? Meu filho precisa pra escola online",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 12,
+        "content": "Tem estacionamento? Vamos de carro!",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 13,
+        "content": "E a piscina? TA ABERTA MESMO?",
+        "category": "informacao",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 14,
+        "content": "Me manda o endereco via Google Maps pfv! 👋",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 15,
+        "content": "Olha, se confirmar reserva agora eu pago na hora! R$ 1526 ta bom!",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 16,
+        "content": "Esperando...",
+        "category": "reserva",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 17,
+        "content": "?? Ainda ta ai? Me responde pfv preciso saber URGENTE",
+        "category": "reserva",
+        "urgency": "critica",
+        "expectResponse": true
+      }
+    ]
+  },
+  {
+    "id": "sohqb4hiocbmoxhaxvw",
+    "pousada": {
+      "nome": "Chale do Lago",
+      "destino": "Arraial do Cabo",
+      "estado": "RJ"
+    },
+    "guest": {
+      "nome": "Adailton Cardoso",
+      "telefone": "+5569984177586",
+      "estado": "RO"
+    },
+    "type": "internacional",
+    "description": "Turista estrangeiro tentando se comunicar. Testa o agente com outros idiomas.",
+    "bookingResult": "nao_reservou",
+    "totalMessages": 6,
+    "messages": [
+      {
+        "step": 1,
+        "content": "Hello! Do you have availability for this weekend? We are a couple from Argentina.",
+        "category": "disponibilidade",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "We saw your inn on Booking.com and it looks amazing! What is the price per night?",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 3,
+        "content": "Do you accept credit card? We don't have PIX setup since we are tourists.",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 4,
+        "content": "Is breakfast included? We have one person with gluten intolerance. Do you have options?",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 5,
+        "content": "Perfect! We would like to book 2 nights. Can you send us the confirmation?",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 6,
+        "content": "Gracias! We are very excited! Una ultima pregunta: is there airport transfer?",
+        "category": "followup",
+        "urgency": "baixa",
+        "expectResponse": true
+      }
+    ]
+  },
+  {
+    "id": "gjquh2iicusmoxhaxvw",
+    "pousada": {
+      "nome": "Chale do Lago",
+      "destino": "Arraial do Cabo",
+      "estado": "RJ"
+    },
+    "guest": {
+      "nome": "Diego Nunes",
+      "telefone": "+5513980657354",
+      "estado": "SP"
+    },
+    "type": "pet_friendly_flow",
+    "description": "Dono de pet com MIL perguntas sobre o dog. Aceita? Tem area? Taxa?",
+    "bookingResult": "reservou",
+    "totalMessages": 6,
+    "messages": [
+      {
+        "step": 1,
+        "content": "Oii 🙏 Vcs aceitam cachorro? Tenho um dog de {randomInt(5, 25)}kg, super tranquilo!",
+        "category": "disponibilidade",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "Quanto fica a diaria pra casal com pet em 09/5? Tem taxa extra pra ele?",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 3,
+        "content": "Tem area gramada? Ele pode ficar solto? Tem alguma regra tipo nao pode subir no sofa?",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 4,
+        "content": "E o quarto tem chao frio (pis frio)? Meu dog prefere. Tem pote e comedouro pro pet?",
+        "category": "informacao",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 5,
+        "content": "A Estalagem Bela Vista perto tem veterinario? E pet shop? So por seguranca.",
+        "category": "informacao",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 6,
+        "content": "Perfeito! Entao me reserva! 5 noites, casal + 1 dog. 💯",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      }
+    ]
+  },
+  {
+    "id": "z1z5gvit4smoxhaxvw",
+    "pousada": {
+      "nome": "Chale do Lago",
+      "destino": "Arraial do Cabo",
+      "estado": "RJ"
+    },
+    "guest": {
+      "nome": "Yasmin Lopes",
+      "telefone": "+5583965511573",
+      "estado": "PB"
+    },
+    "type": "bombardeio",
+    "description": "Hospede ANSIOSO mandando varias mensagens RAPIDAS seguidas. Stress real pro agente.",
+    "bookingResult": "nao_reservou",
+    "totalMessages": 17,
+    "messages": [
+      {
+        "step": 1,
+        "content": "OIIII",
+        "category": "disponibilidade",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "Me ajuda pfv!!",
+        "category": "disponibilidade",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 3,
+        "content": "Preciso de um quarto URGENTE pra esse fds em Florianópolis!!",
+        "category": "informacao",
+        "urgency": "critica",
+        "expectResponse": true
+      },
+      {
+        "step": 4,
+        "content": "Meu hotel cancelou de ultima hora!! SOS!",
+        "category": "informacao",
+        "urgency": "critica",
+        "expectResponse": true
+      },
+      {
+        "step": 5,
+        "content": "Tem quarto? TEM QUARTO?",
+        "category": "informacao",
+        "urgency": "critica",
+        "expectResponse": true
+      },
+      {
+        "step": 6,
+        "content": "Pra 4 pessoas! 5 noites! 👍",
+        "category": "informacao",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 7,
+        "content": "Quanto custa? ME FALA RAPIDO PFV",
+        "category": "preco",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 8,
+        "content": "Aceita PIX?!",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 9,
+        "content": "Se tiver quarto reserva JÁ! Nao perco tempo!",
+        "category": "reserva",
+        "urgency": "critica",
+        "expectResponse": true
+      },
+      {
+        "step": 10,
+        "content": "E se eu quiser chegar HOJE? As 1 horas?",
+        "category": "informacao",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 11,
+        "content": "A {pousada} tem wifi? Meu filho precisa pra escola online",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 12,
+        "content": "Tem estacionamento? Vamos de carro!",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 13,
+        "content": "E a piscina? TA ABERTA MESMO?",
+        "category": "informacao",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 14,
+        "content": "Me manda o endereco via Google Maps pfv! 🙏",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 15,
+        "content": "Olha, se confirmar reserva agora eu pago na hora! R$ 1807 ta bom!",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 16,
+        "content": "Esperando...",
+        "category": "reserva",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 17,
+        "content": "?? Ainda ta ai? Me responde pfv preciso saber URGENTE",
+        "category": "reserva",
+        "urgency": "critica",
+        "expectResponse": true
+      }
+    ]
+  },
+  {
+    "id": "k2fa128aj89moxhaxvw",
+    "pousada": {
+      "nome": "Chale do Lago",
+      "destino": "Arraial do Cabo",
+      "estado": "RJ"
+    },
+    "guest": {
+      "nome": "Adailton Cardoso",
+      "telefone": "+5569984177586",
+      "estado": "RO"
+    },
+    "type": "reclamacao_escalonada",
+    "description": "Hospede insatisfeito que reclama, espera solucao, reclama de novo, escala.",
+    "bookingResult": "em_andamento",
+    "totalMessages": 7,
+    "messages": [
+      {
+        "step": 1,
+        "content": "Boa noite... to na pousada agora e o ar condicionado NAO funciona. Ta 35 graus aqui dentro.",
+        "category": "reclamacao",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "Ja mandei msg la na recepcao presencialmente mas ninguem veio ainda. Faz 40 minutos.",
+        "category": "reclamacao",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 3,
+        "content": "Agora o Wifi tambem caiu!! Sem internet e sem ar condicionado!! Impossivel ficar aqui!",
+        "category": "reclamacao",
+        "urgency": "critica",
+        "expectResponse": true
+      },
+      {
+        "step": 4,
+        "content": "Joana disse que ia mandar alguem mas ate agora NINGUEM apareceu. To muito decepcionado com a Vila da Praia.",
+        "category": "reclamacao",
+        "urgency": "critica",
+        "expectResponse": true
+      },
+      {
+        "step": 5,
+        "content": "Olha, ou voces resolvem isso AGORA ou vou pedir reembolso total e fazer avaliacao no Google. Ja gravei video do quarto.",
+        "category": "reclamacao",
+        "urgency": "critica",
+        "expectResponse": true
+      },
+      {
+        "step": 6,
+        "content": "Se pelo menos me trocassem de quarto... Mas ninguem nem se manifesta. Que servico e esse da Recanto das Flores?",
+        "category": "reclamacao",
+        "urgency": "critica",
+        "expectResponse": true
+      },
+      {
+        "step": 7,
+        "content": "Finalmente alguem veio! Mas o ar novo tambem faz barulho. Vou ver se melhora durante a noite. Se nao, amanha quero falar com o gerente.",
+        "category": "reclamacao",
+        "urgency": "media",
+        "expectResponse": true
+      }
+    ]
+  },
+  {
+    "id": "7gp4aqawgj2moxhaxvw",
+    "pousada": {
+      "nome": "Chale do Lago",
+      "destino": "Arraial do Cabo",
+      "estado": "RJ"
+    },
+    "guest": {
+      "nome": "Diego Nunes",
+      "telefone": "+5513980657354",
+      "estado": "SP"
+    },
+    "type": "rapida_reserva",
+    "description": "Hospede ja sabe o que quer. Pergunta, confirma preco, reserva.",
+    "bookingResult": "reservou",
+    "totalMessages": 5,
+    "messages": [
+      {
+        "step": 1,
+        "content": "Oi! 🔥 Tem quarto disponivel pra 09/5? Pra 4 pessoas.",
+        "category": "disponibilidade",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "Meu amor! Quanto fica a diaria pra 5 noites?",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 3,
+        "content": "Beleza! Quero reservar suite. Como faco o pagamento? dinheiro?",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 4,
+        "content": "Perfecto, manda a chave PIX pra mim 👋",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 5,
+        "content": "Me confirma se deu tudo certo com a reserva?",
+        "category": "followup",
+        "urgency": "baixa",
+        "expectResponse": false
+      }
+    ]
+  },
+  {
+    "id": "okpv88katkhmoxhaxvw",
+    "pousada": {
+      "nome": "Chale do Lago",
+      "destino": "Arraial do Cabo",
+      "estado": "RJ"
+    },
+    "guest": {
+      "nome": "Ana Nunes",
+      "telefone": "+5567977501323",
+      "estado": "MS"
+    },
+    "type": "media_pesquisa",
+    "description": "Hospede pesquisando, faz varias perguntas antes de decidir.",
+    "bookingResult": "reservou",
+    "totalMessages": 8,
+    "messages": [
+      {
+        "step": 1,
+        "content": "Oiii 🙏 Boa tarde! Gostaria de saber sobre a Solar das Estrelas em Pirenópolis",
+        "category": "disponibilidade",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "Qual o preco da diaria pra casal? E tem cafe da manha incluso?",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 3,
+        "content": "Hmm interessante. Vcs tem spa? E estacionamento?",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 4,
+        "content": "A Vila da Praia fica longe do centrinho de Itacaré? Tem transfer do aeroporto?",
+        "category": "informacao",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 5,
+        "content": "Me passa o preco pra 1 noites em 14/5 entao",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 6,
+        "content": "Hmm Mano, esse preco ta bom mas vi outro lugar mais barato. Vcs fazem melhor pra reserva direta?",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 7,
+        "content": "Tá bom, me reserva entao! Suite suite pra 5 pessoas. 🔥",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 8,
+        "content": "Quero pagar via cartão de débito. Manda os dados!",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      }
+    ]
+  },
+  {
+    "id": "ntblkz1bxjmoxhaxvx",
+    "pousada": {
+      "nome": "Pousada do Horizonte",
+      "destino": "Ubatuba",
+      "estado": "SP"
+    },
+    "guest": {
+      "nome": "Mariana Nogueira",
+      "telefone": "+5565920313109",
+      "estado": "MT"
+    },
+    "type": "media_pesquisa",
+    "description": "Hospede pesquisando, faz varias perguntas antes de decidir.",
+    "bookingResult": "reservou",
+    "totalMessages": 8,
+    "messages": [
+      {
+        "step": 1,
+        "content": "Oiii 💕 Boa tarde! Gostaria de saber sobre a Casa da Montanha em Búzios",
+        "category": "disponibilidade",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "Qual o preco da diaria pra casal? E tem cafe da manha incluso?",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 3,
+        "content": "Hmm interessante. Vcs tem spa? E estacionamento?",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 4,
+        "content": "A Chalé da Serra fica longe do centrinho de Campos do Jordão? Tem transfer do aeroporto?",
+        "category": "informacao",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 5,
+        "content": "Me passa o preco pra 6 noites em 31/5 entao",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 6,
+        "content": "Hmm Velho, esse preco ta bom mas vi outro lugar mais barato. Vcs fazem melhor pra reserva direta?",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 7,
+        "content": "Tá bom, me reserva entao! Suite triplo pra 6 pessoas. 🔥",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 8,
+        "content": "Quero pagar via cartão de crédito. Manda os dados!",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      }
+    ]
+  },
+  {
+    "id": "4n4da7586dmmoxhaxvx",
+    "pousada": {
+      "nome": "Pousada do Horizonte",
+      "destino": "Ubatuba",
+      "estado": "SP"
+    },
+    "guest": {
+      "nome": "Graciliana Cunha",
+      "telefone": "+5595997961024",
+      "estado": "RR"
+    },
+    "type": "negociacao",
+    "description": "Hospede tentando conseguir o MAIOR desconto possivel. Vai e volta.",
+    "bookingResult": "reservou",
+    "totalMessages": 6,
+    "messages": [
+      {
+        "step": 1,
+        "content": "Oi! Quero reservar 3 noites em 25/5. Me faz um orcamento?",
+        "category": "disponibilidade",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "Hmm R$ 1268 e caro demais! No Booking ta saindo 20% mais barato. Melhora pra mim?",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 3,
+        "content": "Olha, se voce fizer R$ 577 a diaria eu fecho agora mesmo! Via PIX! ✨",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 4,
+        "content": "Conversei com minha esposa e a gente aceita R$ 637. Mas so se incluir cafe colonial e estacionamento. Combinado?",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 5,
+        "content": "E se a gente voltar em Tiradentes? Da pra fechar pacote pra 2 feriados? Desconto progressivo?",
+        "category": "preco",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 6,
+        "content": "Tá bom Mano, aceito! Mas me joga aquele upgrade de suite pfv! 🔥",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      }
+    ]
+  },
+  {
+    "id": "1n00ei55tqxmoxhaxvx",
+    "pousada": {
+      "nome": "Pousada do Horizonte",
+      "destino": "Ubatuba",
+      "estado": "SP"
+    },
+    "guest": {
+      "nome": "Graciliana Cunha",
+      "telefone": "+5595997961024",
+      "estado": "RR"
+    },
+    "type": "longa_familia",
+    "description": "Familia com criancas fazendo MIL perguntas. Seguranca, comida, atividades, tudo.",
+    "bookingResult": "reservou",
+    "totalMessages": 13,
+    "messages": [
+      {
+        "step": 1,
+        "content": "Oiii 🔥 Somos uma familia com 0 criancas (idades 3, 7 e 12). Vcs tem estrutura pra gente?",
+        "category": "disponibilidade",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "Primeira coisa: tem quarto familiar? Ou quarto interligado? Precisamos de espaco pra 6 pessoas.",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 3,
+        "content": "O quarto tem frigobar? Microondas? A gente precisa preparar mamadeira pro bebê as vezes.",
+        "category": "informacao",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 4,
+        "content": "E a piscina? Tem agua aquecida? Tem parte rasa pra crianca pequena? Tem guarda-vidas?",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 5,
+        "content": "O cafe da manha tem opcoes pra crianca? Suco, pao, bolo? Minha filha tem alergia a castanha, tem controle?",
+        "category": "informacao",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 6,
+        "content": "Tem playground? Area verde? Alguma atividade pra criancas? Precisamos que eles se entretenham 😊",
+        "category": "informacao",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 7,
+        "content": "A Solar das Estrelas fica em local seguro? Tem cerca? A rua e tranquila? Preocupacao de mae kkk",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 8,
+        "content": "E sobre a praia/piscina, precisa levar toalha? Vcs fornecem? E guarda-sol?",
+        "category": "informacao",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 9,
+        "content": "Quantas camas tem no quarto? Pode colocar berco? Tem cama extra se precisar?",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 10,
+        "content": "Me passa o preco pra 2 noites entao. Ja com desconto de familia se tiver? 2 pessoas, 1 quartos",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 11,
+        "content": "Hmm o preco ta OK. E se a gente precisar cancelar? Qual a politica? Com crianca nunca sabemos se vai dar certo.",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 12,
+        "content": "Tá bom Mano, a gente topa! Me reserva pfv. Quarto familiar, 15/5 ate 16/5. 👋",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 13,
+        "content": "Vou pagar via dinheiro. Mais uma coisa: tem estacionamento? E gratuito? Vamos de carro.",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      }
+    ]
+  },
+  {
+    "id": "qgxf9r242ajmoxhaxvx",
+    "pousada": {
+      "nome": "Pousada do Horizonte",
+      "destino": "Ubatuba",
+      "estado": "SP"
+    },
+    "guest": {
+      "nome": "Regina Nascimento",
+      "telefone": "+5579992278513",
+      "estado": "SE"
+    },
+    "type": "recorrente_return",
+    "description": "Hospede que JA ficou na pousada e quer voltar. Conversa rapida e confiante.",
+    "bookingResult": "reservou",
+    "totalMessages": 5,
+    "messages": [
+      {
+        "step": 1,
+        "content": "Oiii Ana! Tudo bem? Aqui e o casal que ficou la em marco! Amamos a Pousada do Sol! 💯",
+        "category": "disponibilidade",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "Queremos voltar em 18/5! Da pra ter o mesmo quarto? O de cima com vista?",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 3,
+        "content": "E dessa vez vai ter o bolo de cenoura que voce fez? Minha esposa nao para de falar dele kkkk",
+        "category": "informacao",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 4,
+        "content": "Me reserva entao! 6 noites, 31/5. Vou pagar via cartão de débito na hora! 🔥",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 5,
+        "content": "Ah, e vamos levar nosso dog dessa vez! Ele tambem quer voltar haha",
+        "category": "followup",
+        "urgency": "media",
+        "expectResponse": true
+      }
+    ]
+  },
+  {
+    "id": "tax3uwkylrcmoxhaxvx",
+    "pousada": {
+      "nome": "Pousada do Horizonte",
+      "destino": "Ubatuba",
+      "estado": "SP"
+    },
+    "guest": {
+      "nome": "Luiz Fernandes",
+      "telefone": "+5534969593750",
+      "estado": "MG"
+    },
+    "type": "fantasma",
+    "description": "Hospede pergunta uma vez e NUNCA mais responde. Dificeis de lidar.",
+    "bookingResult": "nao_reservou",
+    "totalMessages": 0,
+    "messages": []
+  },
+  {
+    "id": "gisf0s4l3vcmoxhaxvx",
+    "pousada": {
+      "nome": "Pousada do Horizonte",
+      "destino": "Ubatuba",
+      "estado": "SP"
+    },
+    "guest": {
+      "nome": "Regina Nascimento",
+      "telefone": "+5579992278513",
+      "estado": "SE"
+    },
+    "type": "longa_pesquisa",
+    "description": "Hospede fazendo pesquisa completa. Pergunta de tudo, compara, pensa muito.",
+    "bookingResult": "reservou",
+    "totalMessages": 13,
+    "messages": [
+      {
+        "step": 1,
+        "content": "Oi! Estou planejando uma viagem pra Búzios e vi a Pousada Paraíso no Google. Podem me ajudar?",
+        "category": "disponibilidade",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "Primeiro: qual a localizacao exata? Fica perto de que? Perto do centrinho, da praia?",
+        "category": "informacao",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 3,
+        "content": "Quais tipos de quarto vcs tem? Quero ver as opcoes. Suite, quarto standard, tem algo mais premium?",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 4,
+        "content": "E sobre o cafe da manha? E completo mesmo? O que tem? Tem opcao pra intolerancia a lactose?",
+        "category": "informacao",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 5,
+        "content": "Vcs tem café colonial? E café colonial? Me conta todas as comodidades pfv 👋",
+        "category": "informacao",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 6,
+        "content": "Legal! Agora sobre precos: qual o valor da diaria pra cada tipo de quarto? E tem algum pacote?",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 7,
+        "content": "O R$ 398 ta bom mas no Booking ta saindo mais barato. Se eu reservar direto com voces tem desconto?",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 8,
+        "content": "Hmm deixa eu pensar... Vou conversar com minha esposa e te dou um retorno. Pode ser amanha?",
+        "category": "disponibilidade",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 9,
+        "content": "Oi de novo! Conversamos aqui e decidimos que a Pousada do Sol e a melhor opcao. Quanto fica pra 6 noites em 19/5?",
+        "category": "disponibilidade",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 10,
+        "content": "Esse valor ja inclui tudo? Cafe, transfer, estacionamento? Nao tem taxa extra nao?",
+        "category": "preco",
+        "urgency": "media",
+        "expectResponse": true
+      },
+      {
+        "step": 11,
+        "content": "E se a gente quiser chegar mais cedo, tipo as 12h? Tem como fazer check-in antecipado?",
+        "category": "informacao",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 12,
+        "content": "Perfeito! Vamos reservar entao. 5 pessoas, 2 noites. Qual o proximo passo? 💕",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      },
+      {
+        "step": 13,
+        "content": "E como funciona o pagamento? Aceita cartão de débito? Pode parcelar?",
+        "category": "reserva",
+        "urgency": "alta",
+        "expectResponse": true
+      }
+    ]
+  },
+  {
+    "id": "jep46ftegpmoxhaxvx",
+    "pousada": {
+      "nome": "Pousada do Horizonte",
+      "destino": "Ubatuba",
+      "estado": "SP"
+    },
+    "guest": {
+      "nome": "Luiz Fernandes",
+      "telefone": "+5534969593750",
+      "estado": "MG"
+    },
+    "type": "rapida_info",
+    "description": "Hospede so quer uma informacao rapida. Pergunta e vai embora.",
+    "bookingResult": "nao_reservou",
+    "totalMessages": 2,
+    "messages": [
+      {
+        "step": 1,
+        "content": "Oi, boa tarde! Vcs aceitam cachorro por acaso?",
+        "category": "disponibilidade",
+        "urgency": "baixa",
+        "expectResponse": true
+      },
+      {
+        "step": 2,
+        "content": "Ah que pena. Obrigado mesmo assim! 👋",
+        "category": "disponibilidade",
+        "urgency": "baixa",
+        "expectResponse": false
+      }
+    ]
+  }
+]
