@@ -15,6 +15,10 @@ function getRedisUrlForDb(base: string | undefined, dbIndex: number): string | u
   if (!base) return undefined;
   const cleanBase = base.replace(/\/$/, '');
   const baseWithoutDb = cleanBase.replace(/\/\d+$/, '');
+  const isUpstash = cleanBase.includes('upstash.io');
+  if (isUpstash) {
+    return `${baseWithoutDb}/0`;
+  }
   return `${baseWithoutDb}/${dbIndex}`;
 }
 
