@@ -9,95 +9,142 @@ export interface TelemetryMetrics {
   abandonmentCount: number;
 }
 
+type ConversationMessages = {
+  phone: string;
+  direction: string;
+  createdAt: Date;
+};
+
+type AgentLogEntry = {
+  propertyId: string;
+  intent: string;
+  status: string;
+};
+
 export class TelemetryEngine {
   /**
-   * Calculates metrics for a specific property within a date range
+   * Calculates metrics for ALL properties in a single batch.
+   * Returns a Map<propertyId, TelemetryMetrics>
    */
-  static async calculateMetrics(propertyId: string, startDate: Date, endDate: Date): Promise<TelemetryMetrics> {
+  static async calculateAllMetrics(
+    propertyIds: string[],
+    startDate: Date,
+    endDate: Date
+  ): Promise<Map<string, TelemetryMetrics>> {
+    const metricsMap = new Map<string, TelemetryMetrics>();
+
+    if (propertyIds.length === 0) return metricsMap;
+
     const [
-      totalLeads,
-      convertedLeads,
-      messages,
-      agentLogs,
-      reservations
+      leadCounts,
+      convertedCounts,
+      allMessages,
+      allAgentLogs,
+      reservationCounts
     ] = await Promise.all([
-      // Total leads created in period
-      prisma.lead.count({
-        where: { propertyId, createdAt: { gte: startDate, lte: endDate } }
+      // Batched: total leads per property
+      prisma.lead.groupBy({
+        by: ['propertyId'],
+        where: { propertyId: { in: propertyIds }, createdAt: { gte: startDate, lte: endDate } },
+        _count: { id: true }
       }),
-      // Leads converted in period
-      prisma.lead.count({
-        where: { propertyId, status: LeadStatus.CONVERTED, updatedAt: { gte: startDate, lte: endDate } }
+      // Batched: converted leads per property
+      prisma.lead.groupBy({
+        by: ['propertyId'],
+        where: { propertyId: { in: propertyIds }, status: LeadStatus.CONVERTED, updatedAt: { gte: startDate, lte: endDate } },
+        _count: { id: true }
       }),
-      // Messages to calculate response time
+      // Batched: all messages for all properties
       prisma.message.findMany({
-        where: { propertyId, createdAt: { gte: startDate, lte: endDate } },
+        where: { propertyId: { in: propertyIds }, createdAt: { gte: startDate, lte: endDate } },
         orderBy: { createdAt: 'asc' },
-        select: { phone: true, direction: true, createdAt: true }
+        select: { propertyId: true, phone: true, direction: true, createdAt: true }
       }),
-      // Agent logs to calculate close rate (looking for CLOSING intent)
+      // Batched: all agent logs for all properties
       prisma.agentLog.findMany({
-        where: { propertyId, createdAt: { gte: startDate, lte: endDate } },
-        select: { intent: true, status: true }
+        where: { propertyId: { in: propertyIds }, createdAt: { gte: startDate, lte: endDate } },
+        select: { propertyId: true, intent: true, status: true }
       }),
-      // Reservations to check source
-      prisma.reservation.count({
-        where: { propertyId, source: 'WHATSAPP', createdAt: { gte: startDate, lte: endDate } }
+      // Batched: reservation counts per property
+      prisma.reservation.groupBy({
+        by: ['propertyId'],
+        where: { propertyId: { in: propertyIds }, source: 'WHATSAPP', createdAt: { gte: startDate, lte: endDate } },
+        _count: { id: true }
       })
     ]);
 
-    // 1. Lead Conversion Rate
-    const leadConversionRate = totalLeads > 0 ? (convertedLeads / totalLeads) * 100 : 0;
+    const leadCountMap = new Map(leadCounts.map(l => [l.propertyId, l._count.id]));
+    const convertedMap = new Map(convertedCounts.map(l => [l.propertyId, l._count.id]));
+    const reservationMap = new Map(reservationCounts.map(r => [r.propertyId, r._count.id]));
 
-    // 2. Average Response Time
-    // Group messages by conversation (phone) and find the time between guest message and agent response
-    let totalResponseTime = 0;
-    let responseCount = 0;
+    const messagesByProp = new Map<string, ConversationMessages[]>();
+    for (const msg of allMessages) {
+      if (!messagesByProp.has(msg.propertyId)) messagesByProp.set(msg.propertyId, []);
+      const arr = messagesByProp.get(msg.propertyId)!;
+      arr.push({ phone: msg.phone, direction: msg.direction, createdAt: msg.createdAt });
+    }
 
-    const conversations = new Map<string, any[]>();
-    messages.forEach(msg => {
-      if (!conversations.has(msg.phone)) conversations.set(msg.phone, []);
-      conversations.get(msg.phone)?.push(msg);
-    });
+    const agentLogsByProp = new Map<string, AgentLogEntry[]>();
+    for (const log of allAgentLogs) {
+      if (!agentLogsByProp.has(log.propertyId)) agentLogsByProp.set(log.propertyId, []);
+      const arr = agentLogsByProp.get(log.propertyId)!;
+      arr.push({ propertyId: log.propertyId, intent: log.intent, status: log.status });
+    }
 
-    conversations.forEach(msgs => {
-      for (let i = 0; i < msgs.length - 1; i++) {
-        if (msgs[i].direction === 'INBOUND' && msgs[i+1].direction === 'OUTBOUND') {
-          const delta = msgs[i+1].createdAt.getTime() - msgs[i].createdAt.getTime();
-          // Filter out outliers (e.g. responses after 24h)
-          if (delta < 24 * 60 * 60 * 1000) {
-            totalResponseTime += delta;
-            responseCount++;
+    for (const propertyId of propertyIds) {
+      const totalLeads = leadCountMap.get(propertyId) ?? 0;
+      const convertedLeads = convertedMap.get(propertyId) ?? 0;
+      const messages = messagesByProp.get(propertyId) ?? [];
+      const agentLogs = agentLogsByProp.get(propertyId) ?? [];
+      const reservations = reservationMap.get(propertyId) ?? 0;
+
+      const leadConversionRate = totalLeads > 0 ? (convertedLeads / totalLeads) * 100 : 0;
+
+      let totalResponseTime = 0;
+      let responseCount = 0;
+
+      const conversations = new Map<string, ConversationMessages[]>();
+      messages.forEach(msg => {
+        if (!conversations.has(msg.phone)) conversations.set(msg.phone, []);
+        conversations.get(msg.phone)?.push(msg);
+      });
+
+      conversations.forEach(msgs => {
+        for (let i = 0; i < msgs.length - 1; i++) {
+          if (msgs[i].direction === 'INBOUND' && msgs[i + 1].direction === 'OUTBOUND') {
+            const delta = msgs[i + 1].createdAt.getTime() - msgs[i].createdAt.getTime();
+            if (delta < 24 * 60 * 60 * 1000) {
+              totalResponseTime += delta;
+              responseCount++;
+            }
           }
         }
-      }
-    });
+      });
 
-    const avgResponseTimeMs = responseCount > 0 ? totalResponseTime / responseCount : 0;
+      const avgResponseTimeMs = responseCount > 0 ? totalResponseTime / responseCount : 0;
 
-    // 3. Agent Close Rate (Successful 'CLOSING' intents)
-    const closingLogs = agentLogs.filter(log => log.intent === 'CLOSING');
-    const successfulClosings = closingLogs.filter(log => log.status === 'SUCCESS').length;
-    const agentCloseRate = closingLogs.length > 0 ? (successfulClosings / closingLogs.length) * 100 : 0;
+      const closingLogs = agentLogs.filter(log => log.intent === 'CLOSING');
+      const successfulClosings = closingLogs.filter(log => log.status === 'SUCCESS').length;
+      const agentCloseRate = closingLogs.length > 0 ? (successfulClosings / closingLogs.length) * 100 : 0;
 
-    // 4. Booking Success Rate
-    // Simplified: Reservations from WhatsApp / Leads with interest
-    const interestedLeads = agentLogs.filter(log => log.intent === 'BOOKING_INTEREST').length;
-    const bookingSuccessRate = interestedLeads > 0 ? (reservations / interestedLeads) * 100 : 0;
+      const interestedLeads = agentLogs.filter(log => log.intent === 'BOOKING_INTEREST').length;
+      const bookingSuccessRate = interestedLeads > 0 ? (reservations / interestedLeads) * 100 : 0;
 
-    // 5. Abandonment Count (Heuristic: messages without final closing or response)
-    const abandonmentCount = Array.from(conversations.values()).filter(msgs => {
-      const lastMsg = msgs[msgs.length - 1];
-      return lastMsg.direction === 'INBOUND' && (Date.now() - lastMsg.createdAt.getTime() > 4 * 60 * 60 * 1000);
-    }).length;
+      const abandonmentCount = Array.from(conversations.values()).filter(msgs => {
+        const lastMsg = msgs[msgs.length - 1];
+        return lastMsg.direction === 'INBOUND' && (Date.now() - lastMsg.createdAt.getTime() > 4 * 60 * 60 * 1000);
+      }).length;
 
-    return {
-      leadConversionRate,
-      avgResponseTimeMs,
-      bookingSuccessRate,
-      agentCloseRate,
-      abandonmentCount
-    };
+      metricsMap.set(propertyId, {
+        leadConversionRate,
+        avgResponseTimeMs,
+        bookingSuccessRate,
+        agentCloseRate,
+        abandonmentCount
+      });
+    }
+
+    return metricsMap;
   }
 
   /**
@@ -121,5 +168,13 @@ export class TelemetryEngine {
         ...metrics
       }
     });
+  }
+
+  static async saveAllTelemetry(metricsMap: Map<string, TelemetryMetrics>) {
+    const operations: Promise<any>[] = [];
+    metricsMap.forEach((metrics, propertyId) => {
+      operations.push(this.saveTelemetry(propertyId, metrics));
+    });
+    await Promise.all(operations);
   }
 }

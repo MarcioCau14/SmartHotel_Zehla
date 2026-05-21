@@ -438,7 +438,7 @@ model Lead {
   painPoints   String?    @db.Text
   source       String     @default("SECRETARIA_AI")
   status       LeadStatus @default(PROSPECT)
-  metadata     String?    @db.Text // Dados brutos da planilha
+  metadata     String?    @db.Text
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
@@ -447,18 +447,48 @@ model Lead {
 
   emailTracking EmailTracking[]
 
+  // --- LIS (Lead Intelligence System) FIELDS ---
+  latitude             Float?
+  longitude            Float?
+  scoreValid           Int?    @default(0)
+  localPraia           String?
+  observacoes          String? @db.Text
+
+  // --- DB MIRROR (columns already in database) ---
+  isCanary             Boolean  @default(false)
+  estimatedValues      String?
+  intentSignals        String?  @db.Text
+  location             String?
+  phoneSecondary       String?
+  qualification        String?  @db.Text
+  socialMedia          String?
+  site                 String?
+  validationScore      Int?     @default(0)
+  validationStatus     String?  @default("pendente")
+  conversionScore      Int?     @default(0)
+  funnelStage          String?  @default("NEUTRAL")
+  lastInteractionAt    DateTime?
+  behavioralProfile    String?  @db.Text
+  cluster              String?  @default("COLD")
+  previousCluster      String?
+  lastSwipeAction      String?
+  lastSwipeUsedId      String?
+  tierConfidence       Float?
+  tierSugerido         String?
+  tierSugeridoEm       DateTime?
+
   // --- ZEHLA FISH EXTENSIONS ---
   roomsCount            Int?    @default(0)
   instagramFollowers    Int?    @default(0)
   googleReviewsCount    Int?    @default(0)
-  otaCommissionLost     Float?  @default(0.0) // Estimativa de comissões perdidas por dependência de OTA (22%)
+  otaCommissionLost     Float?  @default(0.0)
   hasWebsite            Boolean @default(false)
-  otaDependenceLevel    String? @default("MEDIUM") // LOW, MEDIUM, HIGH, TOTAL
-  buyingBehavior        String? // Tradicional, Inovador, Sob-Pressão, Premium
-  conversionProbability Float?  @default(0.0) // Probabilidade calculada via MiroFish
-  objectKeywords        String? @db.Text // JSON ou string com objeções
-  recommendedPitch      String? @db.Text // Roteiro customizado gerado
-  leadTier              String  @default("COLD") // HOT, WARM, WARM_LOW, COLD, DEAD
+  otaDependenceLevel    String? @default("MEDIUM")
+  buyingBehavior        String?
+  conversionProbability Float?  @default(0.0)
+  objectKeywords        String? @db.Text
+  recommendedPitch      String? @db.Text
+  leadTier              String  @default("COLD")
 
   @@map("leads")
 }

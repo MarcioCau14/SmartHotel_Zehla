@@ -1,17 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import {
-  Zap,
-  Check,
-  MessageSquare,
-  BarChart3,
-  CalendarCheck,
-  Megaphone,
-  CreditCard,
-  Shield,
-  Star,
-} from 'lucide-react';
+import { Check, Star } from 'lucide-react';
 
 interface PricingSectionProps {
   onNavigate?: () => void;
@@ -29,7 +19,6 @@ const plans = [
       'Gestão de Reservas',
       'Suporte via Email',
     ],
-    color: 'orange',
     popular: false,
   },
   {
@@ -44,7 +33,6 @@ const plans = [
       'Relatórios de Performance',
       'Suporte Prioritário WhatsApp',
     ],
-    color: 'purple',
     popular: true,
   },
   {
@@ -59,115 +47,114 @@ const plans = [
       'Multi-propriedades',
       'Gestor de Conta Dedicado',
     ],
-    color: 'amber',
     popular: false,
   },
 ];
 
 export function PricingSection({ onNavigate }: PricingSectionProps) {
   return (
-    <section id="precos" className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-        className="text-center mb-16"
-      >
-        <h2 className="text-3xl sm:text-5xl font-bold text-[#fafafa] mb-4">
-          Escolha o seu plano <span className="gradient-text">ZEHLA</span>
-        </h2>
-        <p className="text-[#898989] text-lg max-w-2xl mx-auto">
-          Cresça sem limites com o período de teste de 7 dias no plano <span className="text-[#FF5500] font-bold">PRO</span>.
-        </p>
-      </motion.div>
+    <section id="precos" className="vzap-section-gray vzap-section-padding">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-14"
+        >
+          <h2 className="vzap-heading">
+            Escolha o seu plano ZEHLA
+          </h2>
+          <p className="max-w-2xl mx-auto" style={{ color: '#667781', fontSize: '16px' }}>
+            Cresça sem limites com o período de teste de 7 dias no plano <span style={{ color: '#25D366', fontWeight: 700 }}>PRO</span>.
+          </p>
+        </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {plans.map((plan, i) => (
-          <motion.div
-            key={plan.name}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: i * 0.1 }}
-            className={`relative rounded-3xl p-8 flex flex-col h-full border ${
-              plan.popular 
-                ? 'bg-neutral-900/60 border-[#F97316] shadow-[0_0_40px_rgba(249,115,22,0.2)] ring-1 ring-[#F97316]/30' 
-                : 'bg-neutral-900/30 border-[#2e2e2e]'
-            } glass-strong transition-all duration-300 hover:border-white/20`}
-          >
-            {plan.popular && (
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                <span className="bg-purple-500 text-white text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-lg shadow-purple-500/20">
-                  <Star className="w-3 h-3 fill-current" /> MAIS ESCOLHIDO
-                </span>
-              </div>
-            )}
-
-            <div className="mb-8">
-              <h3 className={`text-xl font-bold mb-2 ${
-                plan.color === 'orange' ? 'text-[#FF5500]' : 
-                plan.color === 'purple' ? 'text-[#FF5500]' : 'text-[#FF5500]'
-              }`}>
-                {plan.name}
-              </h3>
-              <div className="flex items-baseline gap-1">
-                <span className="text-sm text-[#4d4d4d]">R$</span>
-                <span className="text-4xl font-bold text-[#fafafa]">{plan.price}</span>
-                <span className="text-[#4d4d4d] text-sm">/mês</span>
-              </div>
-              <div className="mt-2 text-sm">
-                <span className={`font-bold ${plan.fee === '0%' ? 'text-[#FF5500]' : 'text-[#b4b4b4]'}`}>
-                  + {plan.fee}
-                </span>
-                <span className="text-[#4d4d4d] ml-1">por reserva fechada</span>
-              </div>
-              <p className="text-[#4d4d4d] text-xs mt-4">
-                {plan.description}
-              </p>
-            </div>
-
-            <div className="flex-1 space-y-4 mb-8">
-              {plan.features.map((feat) => (
-                <div key={feat} className="flex items-start gap-3">
-                  <Check className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                    plan.color === 'orange' ? 'text-[#FF5500]' : 
-                    plan.color === 'purple' ? 'text-[#FF5500]' : 'text-[#FF5500]'
-                  }`} />
-                  <span className="text-sm text-[#b4b4b4] leading-tight">{feat}</span>
-                </div>
-              ))}
-            </div>
-
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={onNavigate}
-              className={`w-full py-4 rounded-xl font-bold text-sm transition-all duration-200 ${
-                plan.popular
-                  ? 'bg-[#F97316] hover:bg-[#EA580C] text-white shadow-lg shadow-[#F97316]/30'
-                  : 'bg-[#242424] hover:bg-[#2e2e2e] text-[#efefef]'
-              }`}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+          {plans.map((plan, i) => (
+            <motion.div
+              key={plan.name}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              className={`vzap-card overflow-hidden ${plan.popular ? 'ring-2 ring-[#25D366] relative' : ''}`}
+              style={{ padding: '32px 28px' }}
             >
-              Começar com {plan.name}
-            </motion.button>
-          </motion.div>
-        ))}
-      </div>
+              {plan.popular && (
+                <div className="flex justify-center mb-5">
+                  <span
+                    className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold uppercase tracking-wide"
+                    style={{ background: 'linear-gradient(135deg, #25D366, #128C7E)', color: '#fff', borderRadius: '20px' }}
+                  >
+                    <Star className="w-3.5 h-3.5 fill-current" />
+                    Mais Escolhido
+                  </span>
+                </div>
+              )}
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1, delay: 0.5 }}
-        className="mt-12 text-center"
-      >
-        <p className="text-[#363636] text-xs flex items-center justify-center gap-4">
-          <span>✓ 7 Dias de Teste Grátis</span>
-          <span>✓ Sem Fidelidade</span>
-          <span>✓ Upgrade/Downgrade a qualquer momento</span>
-        </p>
-      </motion.div>
+              <div className="text-center mb-7">
+                <h3 style={{ fontSize: '20px', fontWeight: 500, color: '#111B21', marginBottom: '4px' }}>
+                  {plan.name}
+                </h3>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span style={{ fontSize: '16px', color: '#667781' }}>R$</span>
+                  <span style={{ fontSize: '48px', fontWeight: 700, color: '#25D366', lineHeight: 1 }}>
+                    {plan.price}
+                  </span>
+                  <span style={{ color: '#667781', fontSize: '14px' }}>/mês</span>
+                </div>
+                <div className="mt-2 text-sm">
+                  <span style={{ fontWeight: 500, color: plan.fee === '0%' ? '#25D366' : '#667781' }}>
+                    + {plan.fee}
+                  </span>
+                  <span style={{ color: '#667781', marginLeft: '4px' }}>por reserva</span>
+                </div>
+                <p className="mt-3" style={{ color: '#667781', fontSize: '13px', lineHeight: 1.6 }}>
+                  {plan.description}
+                </p>
+              </div>
+
+              <div className="space-y-3 mb-7">
+                {plan.features.map((feat) => (
+                  <div key={feat} className="flex items-start gap-3" style={{ color: '#667781', fontSize: '13px' }}>
+                    <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#25D366' }} />
+                    <span>{feat}</span>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={onNavigate}
+                className={`w-full font-medium transition-all duration-300 ${
+                  plan.popular
+                    ? 'vzap-btn'
+                    : 'bg-[#F0F2F5] hover:bg-[#25D366] hover:text-white text-[#25D366]'
+                }`}
+                style={{ height: '48px', borderRadius: '24px', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}
+              >
+                Começar com {plan.name}
+              </button>
+            </motion.div>
+          ))}
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="mt-10 text-center flex flex-wrap items-center justify-center gap-6"
+          style={{ color: '#667781', fontSize: '13px' }}
+        >
+          <span>7 Dias de Teste Grátis</span>
+          <span>·</span>
+          <span>Sem Fidelidade</span>
+          <span>·</span>
+          <span>Upgrade/Downgrade a qualquer momento</span>
+        </motion.div>
+      </div>
     </section>
   );
 }

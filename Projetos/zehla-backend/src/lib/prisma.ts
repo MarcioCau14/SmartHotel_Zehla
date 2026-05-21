@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, Prisma } from '@prisma/client'
 import { detectCanary } from './security/canary-detector'
 import { getTenantId } from './security/tenant-context'
 
@@ -11,35 +11,21 @@ export const prisma = basePrisma.$extends({
     $allModels: {
       async $allOperations({ model, operation, args, query }) {
         const tenantId = await getTenantId()
+        const isWhereOp = ['findUnique', 'findFirst', 'findMany', 'count', 'aggregate', 'groupBy',
+          'update', 'updateMany', 'delete', 'deleteMany', 'upsert'].includes(operation);
 
         // --- CAMADA 1: ISOLAMENTO MILITARIZADO (MULTI-TENANT DINÂMICO) ---
-        // Se houver um tenantId no contexto, aplicamos a blindagem
-        if (tenantId) {
-          // Filtramos operações que aceitam 'where'
-          const writeOps = ['update', 'updateMany', 'delete', 'deleteMany', 'upsert'];
-          const readOps = ['findUnique', 'findFirst', 'findMany', 'count', 'aggregate', 'groupBy'];
-          
-          if ([...readOps, ...writeOps].includes(operation)) {
-            const findArgs = args as any;
-            
-            // Injeção Recursiva/Dinâmica de Tenant
-            // Se o model suporta propertyId (verificado via schema ou tentativa segura)
-            // Nota: Para máxima segurança, forçamos o filtro. Se o model não tiver propertyId, 
-            // o Prisma gerará um erro de tipagem no build, o que é um sinal de alerta (Fail-Fast).
-            findArgs.where = {
-              ...findArgs.where,
-              propertyId: tenantId
-            }
-          }
+        if (tenantId && isWhereOp) {
+          (args as any).where = { ...((args as any).where || {}), propertyId: tenantId };
+        }
 
-          // Proteção Extra: Impedir criação de dados para outros tenants
-          if (operation === 'create' || operation === 'createMany') {
-            const createArgs = args as any;
-            if (Array.isArray(createArgs.data)) {
-              createArgs.data = createArgs.data.map((item: any) => ({ ...item, propertyId: tenantId }));
-            } else {
-              createArgs.data = { ...createArgs.data, propertyId: tenantId };
-            }
+        // Proteção Extra: Criar sempre com tenant
+        if (tenantId && (operation === 'create' || operation === 'createMany')) {
+          const createArgs = args as any;
+          if (Array.isArray(createArgs.data)) {
+            createArgs.data = createArgs.data.map((item: any) => ({ ...item, propertyId: tenantId }));
+          } else {
+            createArgs.data = { ...createArgs.data, propertyId: tenantId };
           }
         }
 
@@ -57,17 +43,31 @@ export const prisma = basePrisma.$extends({
            }
         }
 
-        const result = await query(args);
-        
-        // --- CAMADA 4: AUDITORIA DE CANÁRIO ---
-        if (['findUnique', 'findFirst', 'findMany'].includes(operation)) {
-          detectCanary(result, model, operation);
+        try {
+          const result = await query(args);
+          
+          // --- CAMADA 4: AUDITORIA DE CANÁRIO ---
+          if (['findUnique', 'findFirst', 'findMany'].includes(operation)) {
+            detectCanary(result, model, operation);
+          }
+          
+          return result;
+        } catch (e) {
+          // Se o model não tiver propertyId, remove e tenta de novo
+          if (tenantId && isWhereOp && e instanceof Prisma.PrismaClientValidationError &&
+              e.message.includes('propertyId')) {
+            delete (args as any).where.propertyId;
+            const result = await query(args);
+            if (['findUnique', 'findFirst', 'findMany'].includes(operation)) {
+              detectCanary(result, model, operation);
+            }
+            return result;
+          }
+          throw e;
         }
-        
-        return result;
       },
     },
   },
 })
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = basePrisma
+globalForPrisma.prisma = basePrisma

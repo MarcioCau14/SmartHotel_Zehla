@@ -1,9 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withApiSecurity } from '@/lib/server/with-api-security';
+import type { RouteHandler } from '@/lib/server/with-api-security';
 
-export async function GET(request: Request) {
+const getHandler: RouteHandler = async (req) => {
   try {
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(req.url);
     const region = searchParams.get('region');
 
     const where: any = {};
@@ -35,18 +37,17 @@ export async function GET(request: Request) {
   } catch (error) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
-}
+};
 
-export async function POST(request: Request) {
+const postHandler: RouteHandler = async (req) => {
   try {
-    const body = await request.json();
+    const body = await req.json();
     const { leads, region } = body;
 
     if (!Array.isArray(leads)) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
     }
 
-    // Processar em lote ou individualmente conforme necessidade
     const results = await Promise.all(
       leads.map(lead => 
         prisma.lead.upsert({
@@ -87,4 +88,7 @@ export async function POST(request: Request) {
     console.error('API Error:', error);
     return NextResponse.json({ error: 'Failed to process leads' }, { status: 500 });
   }
-}
+};
+
+export const GET = withApiSecurity(getHandler);
+export const POST = withApiSecurity(postHandler);

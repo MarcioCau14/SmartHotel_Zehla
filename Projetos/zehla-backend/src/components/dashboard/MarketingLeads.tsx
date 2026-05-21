@@ -2,13 +2,16 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import {
-  TrendingUp, Sparkles, Loader2, List, ChevronDown, ChevronRight
+  TrendingUp, Sparkles, Loader2, List, ChevronDown, ChevronRight, Map
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import type { B2BLead } from '@/lib/store';
 import { RegionSpreadsheetView } from './marketing/RegionSpreadsheetView';
+import dynamic from 'next/dynamic';
 import { SecretariaPanel } from './marketing/SecretariaPanel';
+
+const LeadMapView = dynamic(() => import('./marketing/LeadMapView'), { ssr: false });
 
 export function MarketingLeads() {
   const [activeSubTab, setActiveSubTab] = useState<string>('dashboard');
@@ -108,6 +111,17 @@ export function MarketingLeads() {
           <Sparkles className="w-4 h-4" />
           <span>Secretaria-IA</span>
         </button>
+
+        <button
+          onClick={() => setActiveSubTab('mapa')}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
+            activeSubTab === 'mapa' ?
+            'text-[#FF5500] bg-[#FF5500]/10 font-bold' :
+            'text-[#898989] hover:text-[#efefef] hover:bg-[#242424]'
+          }`}>
+          <Map className="w-4 h-4" />
+          <span>Mapa de Leads</span>
+        </button>
       </aside>
 
       {/* Main Content Area */}
@@ -182,6 +196,10 @@ export function MarketingLeads() {
 
         {activeSubTab === 'secretaria' && (
           <SecretariaPanel />
+        )}
+
+        {activeSubTab === 'mapa' && (
+          <LeadMapView />
         )}
       </div>
     </div>

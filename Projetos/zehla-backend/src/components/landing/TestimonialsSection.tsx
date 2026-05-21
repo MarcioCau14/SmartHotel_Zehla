@@ -1,116 +1,101 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Star, Quote } from 'lucide-react';
-import Image from 'next/image';
+import { Star } from 'lucide-react';
 
 const testimonials = [
   {
     name: 'Marcia R.',
     property: 'Pousada do Sol',
     city: 'Imbituba, SC',
-    quote:
-      'Antes eu ia dormir com o celular na mão respondendo orçamentos com medo de perder o cliente. Hoje eu acordo, tomo café com a minha família, e o ZEHLA já fechou as reservas da madrugada sozinho.',
+    quote: 'Antes eu ia dormir com o celular na mão respondendo orçamentos. Hoje eu acordo, tomo café com a minha família, e o ZEHLA já fechou as reservas da madrugada sozinho.',
     rating: 5,
-    image: '/images/testimonials/owner_lite.png',
+    initials: 'MR',
   },
   {
     name: 'Gustavo P.',
     property: 'Pousada Rosa Norte',
     city: 'Praia do Rosa, SC',
-    quote:
-      'Sempre tive receio de cobrar barato demais ou caro demais nos feriados. A precificação da IA fez tudo sozinha. O sistema se pagou no primeiro mês só com o lucro extra que eu deixava na mesa.',
+    quote: 'A precificação da IA fez tudo sozinha. O sistema se pagou no primeiro mês só com o lucro extra que eu deixava na mesa.',
     rating: 5,
-    image: '/images/testimonials/owner_pro.png',
+    initials: 'GP',
   },
   {
     name: 'Beatriz S.',
     property: 'Pousada Jardim Botânico',
     city: 'Florianópolis, SC',
-    quote:
-      'Aposentei o caderno de papel e as planilhas confusas. O mapa de quartos é perfeito, não tenho mais overbooking e, o melhor: fecho vendas diretas no WhatsApp sem pagar 15% de comissão para outros sites.',
+    quote: 'Aposentei o caderno de papel e as planilhas confusas. O mapa de quartos é perfeito, não tenho mais overbooking e fecho vendas diretas sem pagar 15% de comissão.',
     rating: 5,
-    image: '/images/testimonials/owner_max.png',
+    initials: 'BS',
   },
   {
     name: 'Rodrigo F.',
     property: 'Pousada da Guarda',
     city: 'Guarda do Embaú, SC',
-    quote:
-      'Meus hóspedes chegam elogiando a rapidez do nosso atendimento. Mal sabem eles que quem tira dúvidas em 5 segundos, envia fotos e negocia é o nosso zelador virtual. Mudou a cara da pousada.',
+    quote: 'Meus hóspedes chegam elogiando a rapidez do nosso atendimento. Mal sabem eles que quem tira dúvidas em 5 segundos é o nosso zelador virtual.',
     rating: 5,
-    image: '/images/testimonials/owner_experience.png',
+    initials: 'RF',
   },
 ];
 
 export function TestimonialsSection() {
   return (
-    <section id="depoimentos" className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-        className="text-center mb-16"
-      >
-        <h2 className="text-3xl sm:text-4xl font-bold text-[#fafafa] mb-4">
-          O "Efeito Reverso": Deixando o{' '}
-          <span className="gradient-text">caos para trás</span>
-        </h2>
-        <p className="text-[#898989] text-lg max-w-2xl mx-auto">
-          Histórias reais de donos de pousadas que recuperaram sua liberdade e lucratividade.
-        </p>
-      </motion.div>
+    <section id="depoimentos" className="vzap-section-white vzap-section-padding">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-14"
+        >
+          <h2 className="vzap-heading">
+            O que os donos de pousada estão dizendo
+          </h2>
+          <p className="max-w-2xl mx-auto" style={{ color: '#667781', fontSize: '16px' }}>
+            Histórias reais de quem já transformou sua operação com o ZEHLA.
+          </p>
+        </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-        {testimonials.map((t, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: i * 0.1 }}
-            className="bg-[#1e293b] border border-[#2e2e2e] rounded-3xl p-8 hover:border-[#363636] transition-all duration-300 relative group"
-          >
-            {/* Quote icon */}
-            <Quote className="absolute top-8 right-8 w-12 h-12 text-orange-500/5 group-hover:text-orange-500/10 transition-colors" />
-
-            {/* Stars */}
-            <div className="flex gap-1 mb-6">
-              {Array.from({ length: t.rating }).map((_, j) => (
-                <Star
-                  key={j}
-                  className="w-4 h-4 text-amber-500 fill-amber-500"
-                />
-              ))}
-            </div>
-
-            {/* Quote text */}
-            <p className="text-[#b4b4b4] italic leading-relaxed mb-8 text-lg">
-              &ldquo;{t.quote}&rdquo;
-            </p>
-
-            {/* Author */}
-            <div className="flex items-center gap-4">
-              <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-[#363636] group-hover:border-[#F97316]/30 transition-colors">
-                <Image
-                  src={t.image}
-                  alt={t.name}
-                  fill
-                  className="object-cover"
-                />
+        <div className="grid sm:grid-cols-2 gap-6">
+          {testimonials.map((t, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              className="vzap-card p-7"
+            >
+              <div className="flex gap-0.5 mb-4">
+                {Array.from({ length: t.rating }).map((_, j) => (
+                  <Star key={j} className="w-4 h-4" style={{ color: '#ffb829', fill: '#ffb829' }} />
+                ))}
               </div>
-              <div>
-                <div className="text-base font-bold text-[#fafafa]">
-                  {t.name}
+
+              <p style={{ color: '#667781', lineHeight: 1.8, fontSize: '14px', marginBottom: '20px' }}>
+                &ldquo;{t.quote}&rdquo;
+              </p>
+
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
+                  style={{ background: 'linear-gradient(135deg, #25D366, #128C7E)', color: '#fff' }}
+                >
+                  {t.initials}
                 </div>
-                <div className="text-xs text-[#4d4d4d]">
-                  {t.property} • {t.city}
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 500, color: '#111B21' }}>
+                    {t.name}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#667781' }}>
+                    {t.property} · {t.city}
+                  </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );

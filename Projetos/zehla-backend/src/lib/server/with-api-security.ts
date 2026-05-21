@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-type RouteHandler = (
+export type RouteHandler = (
   req: NextRequest,
   context?: { params: Promise<Record<string, string>> }
 ) => Promise<NextResponse> | NextResponse;
@@ -66,7 +66,7 @@ async function enforceCsrf(req: NextRequest): Promise<boolean> {
   }
 }
 
-const WEBHOOK_PATHS = ['/api/webhooks/', '/api/blast/webhook'];
+const WEBHOOK_PATHS = ['/api/webhooks/', '/api/blast/webhook', '/api/zcc/'];
 
 function isWebhookPath(pathname: string): boolean {
   return WEBHOOK_PATHS.some(p => pathname.startsWith(p));

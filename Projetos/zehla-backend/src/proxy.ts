@@ -37,8 +37,9 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-  // BYPASS TOTAL EM DESENVOLVIMENTO
-  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+  // BYPASS ZCC AUTH FOR LOCAL DEV — check Host header (nextUrl.hostname reflects bind addr, not request host)
+  const host = request.headers.get('host') || '';
+  if (host.startsWith('localhost') || host.startsWith('127.0.0.1') || host.startsWith('0.0.0.0')) {
     return NextResponse.next();
   }
 
@@ -65,25 +66,12 @@ export async function proxy(request: NextRequest) {
       }
     }
   } catch (e) {
-    // Silently continue if Redis is offline during local dev
     console.warn('⚠️ [Proxy] Redis offline - bypassing security checks for dev stability');
   }
 
 
   // 0.1 Proteção Estrita ZCC (SUPER_ADMIN)
   if (ZCC_PATHS.some(p => pathname.startsWith(p)) && pathname !== '/zcc-login') {
-    // DEVELOPER BYPASS: Allow ZCC access in development mode
-    if (process.env.NODE_ENV === 'development') {
-      const requestHeaders = new Headers(request.headers);
-      requestHeaders.set('x-zcc-user-id', 'dev-marcio-id');
-      requestHeaders.set('x-zcc-role', 'SUPER_ADMIN');
-      requestHeaders.set('x-zcc-tenant-id', 'global');
-
-      return NextResponse.next({
-        request: { headers: requestHeaders },
-      });
-    }
-
     const token = request.cookies.get('__session')?.value 
       ?? request.cookies.get('zehla-token')?.value
       ?? request.headers.get('Authorization')?.replace('Bearer ', '');
@@ -105,7 +93,6 @@ export async function proxy(request: NextRequest) {
         return NextResponse.rewrite(url);
       }
 
-      // Injeta headers para downstream
       const requestHeaders = new Headers(request.headers);
       requestHeaders.set('x-zcc-user-id', payload.sub as string);
       requestHeaders.set('x-zcc-role', payload.role as string);

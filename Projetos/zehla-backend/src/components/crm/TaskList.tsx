@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import {
   Plus,
   Loader2,
   Trash2,
@@ -17,12 +18,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -86,12 +89,13 @@ export function TaskList() {
   const [creating, setCreating] = useState(false);
 
   const loadTasks = useCallback(async () => {
-  const params = new URLSearchParams();
+    try {
+      const params = new URLSearchParams();
       if (statusFilter !== 'all') params.set('status', statusFilter);
       if (priorityFilter !== 'all') params.set('priority', priorityFilter);
       const res = await fetch(`/api/crm/tasks?${params}`);
       if (res.ok) setTasks(await res.json());
-    } catch {
+    } catch (_e) {
       // silent
     } finally {
       setLoading(false);
@@ -105,12 +109,13 @@ export function TaskList() {
   const handleToggleComplete = async (task: Task) => {
     const newStatus: TaskStatus = task.status === 'completed' ? 'pending' : 'completed';
     setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, status: newStatus } : t)));
-  await fetch(`/api/crm/tasks/${task.id}`, {
+    try {
+      await fetch(`/api/crm/tasks/${task.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
-    } catch {
+    } catch (_e) {
       await loadTasks();
     }
   };
@@ -118,7 +123,8 @@ export function TaskList() {
   const handleCreate = async () => {
     if (!newTitle.trim()) return;
     setCreating(true);
-  const res = await fetch('/api/crm/tasks', {
+    try {
+      const res = await fetch('/api/crm/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -138,7 +144,7 @@ export function TaskList() {
         setShowCreate(false);
         await loadTasks();
       }
-    } catch {
+    } catch (_e) {
       // silent
     } finally {
       setCreating(false);
@@ -147,8 +153,9 @@ export function TaskList() {
 
   const handleDelete = async (id: string) => {
     setTasks((prev) => prev.filter((t) => t.id !== id));
-  await fetch(`/api/crm/tasks/${id}`, { method: 'DELETE' });
-    } catch {
+    try {
+      await fetch(`/api/crm/tasks/${id}`, { method: 'DELETE' });
+    } catch (_e) {
       await loadTasks();
     }
   };

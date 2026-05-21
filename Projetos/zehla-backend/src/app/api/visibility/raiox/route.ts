@@ -1,11 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { llmRouter } from '@/lib/ai/llm-router';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import path from 'path';
 import fs from 'fs';
+import { withApiSecurity } from '@/lib/server/with-api-security';
+import type { RouteHandler } from '@/lib/server/with-api-security';
 
-export async function POST(req: Request) {
+const handler: RouteHandler = async (req) => {
   try {
     const { name, email, phone, gbpUrl } = await req.json();
 
@@ -91,7 +93,7 @@ Retorne APENAS o JSON válido.`;
 
       const scriptPath = path.join(process.cwd(), 'src/app/api/visibility/raiox/append_lead.py');
       
-      execSync(`python3 "${scriptPath}" "${tmpFilePath}"`);
+      execFileSync('python3', [scriptPath, tmpFilePath]);
       console.log('Lead appended to POUSADAS_PDR (1).xlsx');
       
       // Limpa o arquivo temporário
@@ -114,4 +116,6 @@ Retorne APENAS o JSON válido.`;
     }
     return NextResponse.json({ error: 'Erro interno do servidor.' }, { status: 500 });
   }
-}
+};
+
+export const POST = withApiSecurity(handler);

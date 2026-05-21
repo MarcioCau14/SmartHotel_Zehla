@@ -3,8 +3,10 @@ import { WhatsappExtractorService } from '@/lib/whatsapp/extractor-service'
 import { prisma } from '@/lib/prisma'
 import { WhatsappPersonaLearner } from '@/lib/brain/whatsapp-persona-learner'
 import { LeadScorer } from '@/lib/brain/lead-scorer'
+import { withApiSecurity } from '@/lib/server/with-api-security'
+import type { RouteHandler } from '@/lib/server/with-api-security'
 
-export async function POST(req: NextRequest) {
+const postHandler: RouteHandler = async (req) => {
   try {
     const { instanceName, type, groupJid, propertyId } = await req.json()
 
@@ -14,7 +16,7 @@ export async function POST(req: NextRequest) {
 
     console.log(`🧠 [Secretaria-IA] Iniciando extração ${type} para property ${propertyId}...`)
 
-    let rawContacts = []
+    let rawContacts: any[] = []
 
     if (type === 'GROUP' && groupJid) {
       rawContacts = await WhatsappExtractorService.fetchGroupParticipants(instanceName, groupJid)
@@ -22,14 +24,11 @@ export async function POST(req: NextRequest) {
       rawContacts = await WhatsappExtractorService.fetchContacts(instanceName)
     }
 
-    // Integrando Inteligência de Tom de Voz (conforme documento técnico)
     const persona = await WhatsappPersonaLearner.getPersona(propertyId)
 
-    // Salvar como Leads no banco de dados com Inteligência de Scoring
     const savedLeads = []
     for (const contact of rawContacts) {
       try {
-        // Verifica se já existe
         const existing = await prisma.lead.findFirst({
           where: { 
             whatsapp: contact.number
@@ -37,10 +36,8 @@ export async function POST(req: NextRequest) {
         })
 
         if (!existing) {
-          // Busca o "About" para o Lead Scoring (IA Comportamental: jitter gaussiano simulado)
           const about = await WhatsappExtractorService.fetchContactAbout(instanceName, contact.number)
           
-          // Qualificação Inteligente via IA
           const analysis = await LeadScorer.scoreLead(contact.name || '', about)
 
           const lead = await prisma.lead.create({
@@ -59,7 +56,6 @@ export async function POST(req: NextRequest) {
           })
           savedLeads.push(lead)
           
-          // Jitter para evitar ban (Documento Técnico)
           await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000))
         }
       } catch (err) {
@@ -80,7 +76,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+const getHandler: RouteHandler = async (req) => {
   const { searchParams } = new URL(req.url)
   const action = searchParams.get('action')
   const instanceName = searchParams.get('instanceName')
@@ -101,3 +97,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
+
+export const POST = withApiSecurity(postHandler);
+export const GET = withApiSecurity(getHandler);

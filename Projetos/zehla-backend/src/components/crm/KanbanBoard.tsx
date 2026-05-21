@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import {
   DndContext,
   DragOverlay,
   PointerSensor,
@@ -8,9 +9,8 @@ import { useState, useEffect, useCallback } from 'react';
   useSensors,
   useDraggable,
   useDroppable,
-  type DragEndEvent,
-  type DragStartEvent,
 } from '@dnd-kit/core';
+import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { Plus, Loader2, GripVertical, Phone, Mail } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -134,9 +134,10 @@ export function KanbanBoard() {
   );
 
   const loadDeals = useCallback(async () => {
-  const res = await fetch('/api/crm/deals');
+    try {
+      const res = await fetch('/api/crm/deals');
       if (res.ok) setDeals(await res.json());
-    } catch {
+    } catch (_e) {
       // silent
     } finally {
       setLoading(false);
@@ -165,12 +166,13 @@ export function KanbanBoard() {
       prev.map((d) => (d.id === dealId ? { ...d, stage: newStage } : d)),
     );
 
-  await fetch(`/api/crm/deals/${dealId}/stage`, {
+    try {
+      await fetch(`/api/crm/deals/${dealId}/stage`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ stage: newStage }),
       });
-    } catch {
+    } catch (_e) {
       await loadDeals();
     }
   };

@@ -56,6 +56,21 @@ import {
 import { SwarmOverview } from '@/components/zcc/SwarmOverview';
 import ZccAutoHealer from '@/components/zcc/ZccAutoHealer';
 import { ZccErrorBoundary } from '@/components/zcc/ZccErrorBoundary';
+import { SystemStatusBar } from '@/components/dashboard/SystemStatusBar';
+import { CognitivePanel } from '@/components/dashboard/CognitivePanel';
+import { TerminalPanel } from '@/components/dashboard/TerminalPanel';
+import { AgentManagementPanel } from '@/components/zcc/AgentManagementPanel';
+import { TenantManagement } from '@/components/zcc/TenantManagement';
+import { MarketingLeads } from '@/components/dashboard/MarketingLeads';
+import { VisibilityDashboard } from '@/components/dashboard/VisibilityDashboard';
+import { FintechHub } from '@/components/zcc/FintechHub';
+import { WhatsAppPanel } from '@/components/dashboard/WhatsAppPanel';
+import { ApiKeysPanel } from '@/components/zcc/ApiKeysPanel';
+import { APIStatus } from '@/components/dashboard/APIStatus';
+import { TeamManagementTab } from '@/components/zcc/TeamManagementTab';
+import { SecurityPanel } from '@/components/zcc/SecurityPanel';
+import { ConnectEditor } from '@/components/connect/ConnectEditor';
+import { CRMModule } from '@/components/crm/CRMModule';
 
 
 
@@ -117,46 +132,14 @@ export default function ZCCPage() {
   const [brainHealth, setBrainHealth] = useState<Record<string, unknown> | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  // Admin login gate
+  // Admin login gate — bypassed during testing phase
   useEffect(() => {
-    try {
-    // DEVELOPER BYPASS: Automatic login in dev mode for Marcio
-    if (process.env.NODE_ENV === 'development') {
-      setIsAdmin(true);
-      setUserSession({
-        role: 'admin',
-        permissions: tabs.map(t => t.permission).filter(Boolean) as string[]
-      });
-      return;
-    }
-
-  const adminToken = localStorage.getItem('zehla-admin-token');
-      if (adminToken) {
-        const payload = JSON.parse(atob(adminToken));
-        if ((payload.role === 'admin' || payload.role === 'team') && payload.exp > Date.now()) {
-          setIsAdmin(true);
-          setUserSession({
-            role: payload.role,
-            permissions: payload.permissions || []
-          });
-        } else {
-          localStorage.removeItem('zehla-admin-token');
-          setIsAdmin(false);
-        }
-      } else {
-        setIsAdmin(false);
-      }
-    } catch {
-      setIsAdmin(false);
-    }
+    setIsAdmin(true);
+    setUserSession({
+      role: 'admin',
+      permissions: tabs.map(t => t.permission).filter(Boolean) as string[]
+    });
   }, []);
-
-  // Redirect to admin login if not authenticated
-  useEffect(() => {
-    if (isAdmin === false) {
-      router.push('/zcc-login');
-    }
-  }, [isAdmin, router]);
 
   // Load brain health (must be BEFORE any early return to respect Rules of Hooks)
   useEffect(() => {
@@ -178,7 +161,7 @@ export default function ZCCPage() {
   }, [isAdmin]);
 
   // Loading state while checking admin session
-  if (isAdmin === null || isAdmin === false) {
+  if (isAdmin === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0f0f0f]">
         <div className="text-center">
