@@ -1294,3 +1294,40 @@ model RevenueSettings {
   @@index([propertyId])
   @@map("revenue_settings")
 }
+
+// ============================================================
+// ZEHLA CHANNEL MANAGER — OTA Integration (Booking.com, Airbnb, etc.)
+// ============================================================
+
+model ChannelMapping {
+  id            String   @id @default(cuid())
+  propertyId    String
+  channel       String // "booking", "airbnb", "expedia"
+  externalId    String // OTA's property/room ID
+  internalId    String // ZEHLA's room/property ID
+  type          String // "room", "property", "rate_plan"
+  metadata      Json?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([propertyId, channel, externalId, type])
+  @@index([propertyId, channel])
+  @@map("channel_mappings")
+}
+
+model ChannelSyncLog {
+  id          String   @id @default(cuid())
+  propertyId  String
+  channel     String // "booking", "airbnb", "expedia"
+  eventType   String // "new_reservation", "modified", "cancelled"
+  externalId  String? // OTA reservation ID
+  status      String   @default("pending") // "pending", "processed", "failed", "duplicate"
+  payload     Json?
+  error       String?
+  createdAt   DateTime @default(now())
+
+  @@index([propertyId, channel, createdAt])
+  @@index([status, createdAt])
+  @@map("channel_sync_logs")
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CalendarDays, Plus, Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarDays, Plus, Search, Filter, ChevronLeft, ChevronRight, Globe, MessageSquare, Building2 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
   CONFIRMED: { label: 'Confirmada', color: '#25D366', bg: 'rgba(37, 211, 102, 0.1)' },
@@ -10,6 +10,14 @@ const statusConfig: Record<string, { label: string; color: string; bg: string }>
   CANCELLED: { label: 'Cancelada', color: '#EA4335', bg: 'rgba(234, 67, 53, 0.1)' },
   PENDING: { label: 'Pendente', color: '#FFB74D', bg: 'rgba(255, 183, 77, 0.15)' },
   NO_SHOW: { label: 'No Show', color: '#8696A0', bg: 'rgba(0,0,0,0.06)' },
+};
+
+const sourceConfig: Record<string, { label: string; color: string; bg: string; icon: any }> = {
+  'BOOKING.COM': { label: 'Booking.com', color: '#0047AB', bg: 'rgba(0, 71, 171, 0.1)', icon: Globe },
+  'WHATSAPP': { label: 'WhatsApp', color: '#25D366', bg: 'rgba(37, 211, 102, 0.1)', icon: MessageSquare },
+  'AIRBNB': { label: 'Airbnb', color: '#FF5A5F', bg: 'rgba(255, 90, 95, 0.1)', icon: Building2 },
+  'EXPEDIA': { label: 'Expedia', color: '#FFB700', bg: 'rgba(255, 183, 0, 0.1)', icon: Globe },
+  'DIRETO': { label: 'Direto', color: '#075E54', bg: 'rgba(7, 94, 84, 0.1)', icon: MessageSquare },
 };
 
 export default function ReservasPage() {
@@ -38,6 +46,11 @@ export default function ReservasPage() {
     confirmed: reservations.filter(r => r.status === 'CONFIRMED').length,
     checkedIn: reservations.filter(r => r.status === 'CHECKED_IN').length,
     totalRevenue: reservations.reduce((sum, r) => sum + (r.paidAmount || 0), 0),
+    bySource: reservations.reduce((acc, r) => {
+      const source = r.source || 'WHATSAPP';
+      acc[source] = (acc[source] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>),
   };
 
   if (loading) {
@@ -102,6 +115,7 @@ export default function ReservasPage() {
             <tr>
               <th>Código</th>
               <th>Hóspede</th>
+              <th>Origem</th>
               <th>Check-in</th>
               <th>Check-out</th>
               <th>Valor</th>
@@ -111,12 +125,20 @@ export default function ReservasPage() {
           <tbody>
             {filtered.map((res) => {
               const status = statusConfig[res.status] || statusConfig.PENDING;
+              const source = sourceConfig[res.source] || sourceConfig.WHATSAPP;
+              const SourceIcon = source.icon;
               return (
                 <tr key={res.id}>
                   <td className="font-mono text-sm" style={{ color: '#667781' }}>{res.code}</td>
                   <td>
                     <p className="text-sm font-medium" style={{ color: '#111B21' }}>{res.guestName}</p>
                     <p className="text-xs" style={{ color: '#8696A0' }}>{res.guestPhone}</p>
+                  </td>
+                  <td>
+                    <span className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-full font-medium" style={{ backgroundColor: source.bg, color: source.color }}>
+                      <SourceIcon className="w-3 h-3" />
+                      {source.label}
+                    </span>
                   </td>
                   <td className="text-sm">{new Date(res.checkIn).toLocaleDateString('pt-BR')}</td>
                   <td className="text-sm">{new Date(res.checkOut).toLocaleDateString('pt-BR')}</td>
