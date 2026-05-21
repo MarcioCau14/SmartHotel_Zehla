@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import {
-  TrendingUp, Sparkles, Loader2, List, ChevronDown, ChevronRight, Map
+  TrendingUp, Sparkles, Loader2, List, ChevronDown, ChevronRight, Map, BarChart3
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,6 +10,7 @@ import type { B2BLead } from '@/lib/store';
 import { RegionSpreadsheetView } from './marketing/RegionSpreadsheetView';
 import dynamic from 'next/dynamic';
 import { SecretariaPanel } from './marketing/SecretariaPanel';
+import { FunnelAnalyticsDashboard } from '@/components/zcc/marketing/FunnelAnalyticsDashboard';
 
 const LeadMapView = dynamic(() => import('./marketing/LeadMapView'), { ssr: false });
 
@@ -70,6 +71,17 @@ export function MarketingLeads() {
           }`}>
           <TrendingUp className="w-4 h-4" />
           <span>Dashboard de Leads</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSubTab('funnel')}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
+            activeSubTab === 'funnel' ?
+            'text-[#FF5500] bg-[#FF5500]/10 font-bold' :
+            'text-[#898989] hover:text-[#efefef] hover:bg-[#242424]'
+          }`}>
+          <BarChart3 className="w-4 h-4" />
+          <span>Funil Analytics</span>
         </button>
 
         <div className="space-y-1">
@@ -189,6 +201,8 @@ export function MarketingLeads() {
             </div>
           </div>
         )}
+
+        {activeSubTab === 'funnel' && <FunnelAnalyticsDashboard />}
 
         {activeSubTab.startsWith('leads-') && (
           <RegionSpreadsheetView region={activeSubTab.split('-')[1].toUpperCase()} />
