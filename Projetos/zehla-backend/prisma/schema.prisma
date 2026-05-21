@@ -1497,3 +1497,64 @@ model WebhookDeliveryLog {
   @@index([eventType, createdAt])
   @@map("webhook_delivery_logs")
 }
+
+// ============================================================
+// ZEHLA SWARM — Long-Term Guest Memory (Malha de Aprendizado)
+// ============================================================
+
+model GuestMemory {
+  id            String   @id @default(cuid())
+  propertyId    String
+  guestPhone    String   // Identificador único do hóspede
+  guestName     String?
+  guestEmail    String?
+  
+  // Preferências extraídas das conversas
+  preferences   Json     @default("{}") // { roomPreference: "quiet", bedType: "king", etc. }
+  tags          String[] @default([]) // ["business_traveler", "likes_wine", "early_riser"]
+  notes         String?  @db.Text // Notas livres do agente
+  
+  // Vetor de embedding simplificado (array de floats para similaridade)
+  // Em produção com pgvector, usar tipo Vector(384)
+  embedding     Float[]  @default([]) // Embedding da preferência do hóspede
+  
+  // Estatísticas de interação
+  visitCount    Int      @default(0)
+  totalSpent    Float    @default(0)
+  lastVisitAt   DateTime?
+  firstSeenAt   DateTime @default(now())
+  
+  // Metadados
+  source        String   @default("WHATSAPP") // WHATSAPP, BOOKING, AIRBNB, API
+  isActive      Boolean  @default(true)
+  metadata      Json?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([propertyId, guestPhone])
+  @@index([propertyId, guestName])
+  @@index([propertyId, tags])
+  @@index([visitCount])
+  @@map("guest_memories")
+}
+
+// ============================================================
+// ZEHLA AUTO-CONFIG — AI-Driven Database Operations
+// ============================================================
+
+model AutoConfigLog {
+  id              String   @id @default(cuid())
+  propertyId      String
+  userId          String? // User que fez a solicitação
+  naturalLanguage String   @db.Text // O que o usuário pediu em linguagem natural
+  executedActions Json     // Ações executadas pela IA
+  status          String   @default("pending") // "pending", "executed", "failed", "review_required"
+  error           String?
+  reviewNotes     String?  @db.Text
+  createdAt       DateTime @default(now())
+
+  @@index([propertyId, status])
+  @@index([propertyId, createdAt])
+  @@map("auto_config_logs")
+}

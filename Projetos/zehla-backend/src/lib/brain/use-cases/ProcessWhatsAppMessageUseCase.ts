@@ -5,6 +5,8 @@ import * as LLMRouter from './llm-router';
 import { classifyIntent, type ClassifiedIntent } from './intent-classifier';
 import { PromptBuilder } from './processors/PromptBuilder';
 import { executeTool } from './zehla-tools';
+import { agentOrchestrator } from '@/lib/brain/swarm/AgentOrchestrator';
+import { guestMemoryService } from '@/lib/brain/memory/GuestMemoryService';
 
 export interface WhatsAppMessageInput {
   tenantId: string;
@@ -88,7 +90,42 @@ export async function processWhatsAppMessage(
   // 3. INTENT CLASSIFICATION
   const classified: ClassifiedIntent = await classifyIntent(incomingMessage);
 
-  // 4. CONTEXT LOADING — Guest history + property data
+  // 3.5 SWARM MODE — Route to specialist agent if enabled
+  const swarmEnabled = process.env.ZEHLA_SWARM_ENABLED === 'true';
+  if (swarmEnabled) {
+    const conversationHistory = await getConversationHistory(tenantId, guestPhone);
+    const swarmResponse = await agentOrchestrator.routeAndExecute(
+      tenantId,
+      guestPhone,
+      incomingMessage,
+      conversationHistory
+    );
+
+    // Extract guest preferences for long-term memory
+    guestMemoryService.extractPreferences(tenantId, guestPhone, incomingMessage, pushName)
+      .catch(err => console.warn('⚠️ [MEMÓRIA] Falha ao extrair preferências:', err));
+
+    // Log AI agent response
+    await logBillingEvent(tenantId, 'ai_token', swarmResponse.tokensUsed, {
+      source: `SWARM_${swarmResponse.agentName}`,
+      intent: swarmResponse.intent,
+      guestPhone,
+    });
+
+    // Persist messages
+    await persistMessages(tenantId, guestPhone, pushName, incomingMessage, swarmResponse.reply, `SWARM_${swarmResponse.agentName}`);
+
+    return {
+      reply: swarmResponse.reply,
+      source: `SWARM_${swarmResponse.agentName}` as any,
+      intent: swarmResponse.intent,
+      tokensUsed: swarmResponse.tokensUsed,
+      cost: swarmResponse.cost,
+      latency: Date.now() - startTime,
+    };
+  }
+
+  // 4. CONTEXT LOADING — Guest history + property data + long-term memory
   const guestContext = await getGuestContext(tenantId, guestPhone);
 
   // 5. TOOL CALLING — Real-time data for specific intents
@@ -337,4 +374,69 @@ ABOUT THE PROPERTY:${property.description ? ` ${property.description}` : ''}
 ${guestInfo}${dataBlock}`;
 
   return basePrompt;
+}
+
+/**
+ * Busca histórico recente de conversas para contexto do Swarm
+ */
+async function getConversationHistory(propertyId: string, guestPhone: string): Promise<Array<{ role: string; content: string }>> {
+  try {
+    const messages = await prisma.message.findMany({
+      where: { propertyId, phone: guestPhone },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: { content: true, direction: true },
+    });
+
+    return messages
+      .reverse()
+      .map(m => ({
+        role: m.direction === 'INBOUND' ? 'user' : 'assistant',
+        content: m.content,
+      }));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Persiste mensagens de entrada e saída no banco
+ */
+async function persistMessages(
+  propertyId: string,
+  guestPhone: string,
+  pushName: string | undefined,
+  incomingMessage: string,
+  reply: string,
+  source: string
+) {
+  try {
+    await prisma.message.create({
+      data: {
+        propertyId,
+        phone: guestPhone,
+        name: pushName || '',
+        content: incomingMessage,
+        direction: 'INBOUND',
+        type: 'TEXT',
+        status: 'READ',
+        agentHandled: source,
+      },
+    });
+
+    await prisma.message.create({
+      data: {
+        propertyId,
+        phone: guestPhone,
+        name: pushName || '',
+        content: reply,
+        direction: 'OUTBOUND',
+        type: 'TEXT',
+        status: 'SENT',
+        agentHandled: source,
+      },
+    });
+  } catch (error) {
+    console.warn('⚠️ [DB] Falha ao persistir mensagens:', error);
+  }
 }
