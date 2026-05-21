@@ -1,33 +1,59 @@
 import { prisma } from '@/lib/prisma';
 import { redis } from '@/lib/redis';
 import { PLANS } from '@/lib/stripe';
+import { TenantLocalizationService } from '@/lib/i18n/TenantLocalizationService';
 
 /**
- * ZEHLA FINOPS BREAKER
+ * ZEHLA FINOPS BREAKER — Multi-Currency Support (Fase 4)
  * Monitora custos por tenant e bloqueia operações caras quando o limite é excedido.
  *
  * Custo zero mantra: tudo é rastreado, mas bloqueios só ativam em produção.
+ * 
+ * Internamente: custos armazenados em centavos de USD (moeda base das APIs)
+ * Exibição: formatada para a moeda do tenant via TenantLocalizationService
  */
 
 interface TenantCostSummary {
   propertyId: string;
   plan: string;
-  currentCost: number;
-  budgetLimit: number;
+  currentCost: number; // Em USD (base currency)
+  budgetLimit: number; // Em USD (base currency)
   usagePercent: number;
   isOverBudget: boolean;
   aiTokenCount: number;
   apiCallCount: number;
 }
 
-const COST_LIMITS: Record<string, number> = {
-  LITE: 10,
-  PRO: 50,
-  MAX: 200,
+// Limites de custo por plano (em USD — moeda base do Stripe)
+const COST_LIMITS_USD: Record<string, number> = {
+  LITE: 2,    // ~R$ 10
+  PRO: 10,    // ~R$ 50
+  MAX: 40,    // ~R$ 200
 };
 
-const AI_COST_PER_1K_TOKENS = 0.02;
-const API_COST_PER_CALL = 0.001;
+// Custos operacionais em USD (preços das APIs)
+const AI_COST_PER_1K_TOKENS_USD = 0.002; // Kimi/GPT-4o-mini
+const API_COST_PER_CALL_USD = 0.001;
+
+/**
+ * Formata custo para exibição na moeda do tenant
+ */
+function formatCostForTenant(amountUSD: number, currencyCode: string, locale: string): string {
+  // Conversão aproximada (em produção, usar taxa de câmbio real via API)
+  const rates: Record<string, number> = {
+    'BRL': 5.0,
+    'EUR': 0.92,
+    'USD': 1.0,
+    'ARS': 350,
+    'CLP': 850,
+    'COP': 3900,
+    'MXN': 17,
+  };
+  const rate = rates[currencyCode] || 1.0;
+  const localAmount = amountUSD * rate;
+  
+  return TenantLocalizationService.formatCurrency(localAmount, currencyCode, locale);
+}
 
 export async function logBillingEvent(
   propertyId: string,
@@ -58,9 +84,9 @@ export async function logBillingEvent(
 function calculateCost(type: string, units: number): number {
   switch (type) {
     case 'ai_token':
-      return (units / 1000) * AI_COST_PER_1K_TOKENS;
+      return (units / 1000) * AI_COST_PER_1K_TOKENS_USD;
     case 'api_call':
-      return units * API_COST_PER_CALL;
+      return units * API_COST_PER_CALL_USD;
     case 'email':
       return units * 0.01;
     case 'storage':
@@ -71,7 +97,7 @@ function calculateCost(type: string, units: number): number {
 }
 
 export async function getTenantCostSummary(propertyId: string, plan: string): Promise<TenantCostSummary> {
-  const budgetLimit = COST_LIMITS[plan] || 10;
+  const budgetLimit = COST_LIMITS_USD[plan] || 2;
 
   const [aiTokens, apiCalls, emailCost, storageCost] = await Promise.all([
     redis.get(`finops:cost:${propertyId}:ai_token`).then(v => parseInt(v || '0')),
@@ -101,7 +127,7 @@ export async function checkFinOpsBreaker(propertyId: string, plan: string, opera
   if (summary.isOverBudget) {
     return {
       allowed: false,
-      reason: `Budget exceeded for ${plan} plan (R$${summary.currentCost.toFixed(2)} / R$${summary.budgetLimit.toFixed(2)})`,
+      reason: `Budget exceeded for ${plan} plan ($${summary.currentCost.toFixed(2)} / $${summary.budgetLimit.toFixed(2)} USD)`,
     };
   }
 
@@ -140,4 +166,22 @@ export async function getAllTenantsCostSummary(): Promise<TenantCostSummary[]> {
   return Promise.all(
     properties.map(p => getTenantCostSummary(p.id, p.plan))
   );
+}
+
+/**
+ * Helper para formatar custos na moeda do tenant (uso em APIs/UI)
+ */
+export async function getFormattedCostSummary(
+  propertyId: string,
+  plan: string,
+  currencyCode: string = 'BRL',
+  locale: string = 'pt-BR'
+) {
+  const summary = await getTenantCostSummary(propertyId, plan);
+  
+  return {
+    ...summary,
+    currentCostFormatted: formatCostForTenant(summary.currentCost, currencyCode, locale),
+    budgetLimitFormatted: formatCostForTenant(summary.budgetLimit, currencyCode, locale),
+  };
 }

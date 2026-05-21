@@ -253,8 +253,58 @@ async function buildSystemPrompt(
   guestContext: any,
   toolData: Record<string, any>
 ): Promise<string> {
+  // Configurações de internacionalização da propriedade
+  const locale = property.locale || 'pt-BR';
+  const currencyCode = property.currencyCode || 'BRL';
+  const timezone = property.timezone || 'America/Sao_Paulo';
+
+  // Mapeamento de idioma para instruções do sistema
+  const langConfig: Record<string, { lang: string; greeting: string; rules: string }> = {
+    'pt-BR': {
+      lang: 'português brasileiro',
+      greeting: 'Olá',
+      rules: `- Responda em português brasileiro
+- Use linguagem cordial e natural (não robótica)
+- Trate o hóspede com empatia e profissionalismo
+- Use "você" como pronome de tratamento`,
+    },
+    'es-ES': {
+      lang: 'español',
+      greeting: 'Hola',
+      rules: `- Responde en español
+- Usa un lenguaje cordial y natural (no robótico)
+- Trata al huésped con empatía y profesionalismo
+- Usa "usted" como pronombre de tratamiento`,
+    },
+    'en-US': {
+      lang: 'English',
+      greeting: 'Hello',
+      rules: `- Respond in English
+- Use friendly and natural language (not robotic)
+- Treat the guest with empathy and professionalism
+- Use "you" as the pronoun`,
+    },
+  };
+
+  const config = langConfig[locale] || langConfig['pt-BR'];
+
+  // Formatação de datas e valores baseado no locale/timezone
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat(locale, {
+      dateStyle: 'medium',
+      timeZone: timezone,
+    }).format(new Date(date));
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: currencyCode,
+    }).format(amount);
+  };
+
   const guestInfo = guestContext
-    ? `\n\nHISTÓRICO DO HÓSPEDE:\n- Nome: ${guestContext.guestName}\n- Última reserva: ${guestContext.status}\n- Check-in: ${new Date(guestContext.checkIn).toLocaleDateString('pt-BR')}\n- Check-out: ${new Date(guestContext.checkOut).toLocaleDateString('pt-BR')}\n- Valor: R$ ${guestContext.totalAmount}`
+    ? `\n\nGUEST HISTORY:\n- Name: ${guestContext.guestName}\n- Last reservation: ${guestContext.status}\n- Check-in: ${formatDate(guestContext.checkIn)}\n- Check-out: ${formatDate(guestContext.checkOut)}\n- Amount: ${formatCurrency(guestContext.totalAmount)}`
     : '';
 
   const toolContextBlock = Object.entries(toolData)
@@ -270,20 +320,20 @@ async function buildSystemPrompt(
     .join('\n\n');
 
   const dataBlock = toolContextBlock
-    ? `\n\n## DADOS EM TEMPO REAL\n${toolContextBlock}`
+    ? `\n\n## REAL-TIME DATA\n${toolContextBlock}`
     : '';
 
-  const basePrompt = `Você é o Concierge IA da ${property.name}. Sua função é atender hóspedes e potenciais clientes via WhatsApp de forma cordial, persuasiva e eficiente.
+  const basePrompt = `You are the AI Concierge of ${property.name}. Your role is to assist guests and potential customers via WhatsApp in a friendly, persuasive, and efficient manner.
 
-REGRAS:
-- Seja sempre cordial e use linguagem natural (não robótica)
-- Responda em português brasileiro
-- Foque em converter a venda de reservas
-- Se não souber algo, diga que vai verificar e retorne
-- Use emojis com moderação
-- Mantenha respostas concisas (máx. 3-4 frases)
+RULES:
+${config.rules}
+- Focus on converting reservation sales
+- If you don't know something, say you'll check and get back
+- Use emojis moderately
+- Keep responses concise (max 3-4 sentences)
+- IMPORTANT: Always respond in ${config.lang} — detect the guest's language and adapt accordingly
 
-SOBRE A POUSADA:${property.description ? ` ${property.description}` : ''}
+ABOUT THE PROPERTY:${property.description ? ` ${property.description}` : ''}
 ${guestInfo}${dataBlock}`;
 
   return basePrompt;

@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Settings, Building2, MessageSquare, Bell, Shield, Palette, Save, Link2, CreditCard, TrendingUp, ExternalLink, Check, X, Key, Webhook, Copy, Trash2, Plus, AlertTriangle, Clock, Activity } from 'lucide-react';
+import { Settings, Building2, MessageSquare, Bell, Shield, Palette, Save, Link2, CreditCard, TrendingUp, ExternalLink, Check, X, Key, Webhook, Copy, Trash2, Plus, AlertTriangle, Clock, Activity, Globe, DollarSign, MapPin } from 'lucide-react';
 import { ConnectEditor } from '@/components/connect/ConnectEditor';
+import { SUPPORTED_LOCALES, SUPPORTED_CURRENCIES } from '@/i18n';
 
 export default function ConfiguracoesPage() {
   const [activeTab, setActiveTab] = useState('property');
@@ -106,6 +107,56 @@ export default function ConfiguracoesPage() {
               <label className="block text-sm font-medium mb-1.5" style={{ color: '#667781' }}>Endereço</label>
               <input className="dash-input" defaultValue="Rua Exemplo, 123 - São Paulo, SP" />
             </div>
+
+            {/* Internacionalização */}
+            <div className="mt-6 pt-6 border-t border-[#E9EDEF]">
+              <h4 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: '#111B21' }}>
+                <Globe className="w-4 h-4" style={{ color: '#25D366' }} />
+                Internacionalização
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1.5 flex items-center gap-1.5" style={{ color: '#667781' }}>
+                    <Globe className="w-3.5 h-3.5" />
+                    Idioma
+                  </label>
+                  <select className="dash-input">
+                    {SUPPORTED_LOCALES.map(l => (
+                      <option key={l.code} value={l.code}>{l.flag} {l.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1.5 flex items-center gap-1.5" style={{ color: '#667781' }}>
+                    <DollarSign className="w-3.5 h-3.5" />
+                    Moeda
+                  </label>
+                  <select className="dash-input">
+                    {SUPPORTED_CURRENCIES.map(c => (
+                      <option key={c.code} value={c.code}>{c.symbol} {c.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1.5 flex items-center gap-1.5" style={{ color: '#667781' }}>
+                    <MapPin className="w-3.5 h-3.5" />
+                    Fuso Horário
+                  </label>
+                  <select className="dash-input">
+                    <option value="America/Sao_Paulo">🇧🇷 São Paulo (GMT-3)</option>
+                    <option value="America/Manaus">🇧🇷 Manaus (GMT-4)</option>
+                    <option value="Europe/Lisbon">🇵🇹 Lisboa (GMT+0/+1)</option>
+                    <option value="Europe/Madrid">🇪🇸 Madrid (GMT+1/+2)</option>
+                    <option value="America/Buenos_Aires">🇦🇷 Buenos Aires (GMT-3)</option>
+                    <option value="America/Mexico_City">🇲🇽 Cidade do México (GMT-6)</option>
+                    <option value="America/Bogota">🇨🇴 Bogotá (GMT-5)</option>
+                    <option value="America/Santiago">🇨🇱 Santiago (GMT-4/-3)</option>
+                    <option value="America/New_York">🇺🇸 Nova York (GMT-5/-4)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <div className="flex justify-end pt-4">
               <button className="dash-btn-primary">
                 <Save className="w-4 h-4" />

@@ -107,6 +107,11 @@ model Property {
   whatsappChannelType WhatsappChannelType @default(GUESTS_ONLY)
   supplierContact     String?
 
+  // Internacionalização (Fase 4 — Expansão LATAM/Europa)
+  locale              String              @default("pt-BR") // pt-BR, pt-PT, es-ES, en-US
+  currencyCode        String              @default("BRL")   // BRL, EUR, USD, ARS, CLP, COP, MXN
+  timezone            String              @default("America/Sao_Paulo")
+
   // Stripe Billing
   stripeCustomerId     String?   @unique
   stripeSubscriptionId String?   @unique
