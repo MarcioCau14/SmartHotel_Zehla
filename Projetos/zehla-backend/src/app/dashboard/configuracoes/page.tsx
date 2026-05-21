@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, Building2, MessageSquare, Bell, Shield, Palette, Save } from 'lucide-react';
+import { Settings, Building2, MessageSquare, Bell, Shield, Palette, Save, Link2 } from 'lucide-react';
+import { ConnectEditor } from '@/components/connect/ConnectEditor';
 
 export default function ConfiguracoesPage() {
   const [activeTab, setActiveTab] = useState('property');
@@ -9,6 +10,7 @@ export default function ConfiguracoesPage() {
   const tabs = [
     { id: 'property', label: 'Propriedade', icon: Building2 },
     { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
+    { id: 'connect', label: 'ZEHLA Connect', icon: Link2 },
     { id: 'notifications', label: 'Notificações', icon: Bell },
     { id: 'security', label: 'Segurança', icon: Shield },
     { id: 'appearance', label: 'Aparência', icon: Palette },
@@ -113,6 +115,18 @@ export default function ConfiguracoesPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'connect' && (
+        <div>
+          <div className="dash-section mb-6">
+            <h3 className="dash-section-title">ZEHLA Connect — Seu Link-in-Bio</h3>
+            <p className="text-sm mt-2" style={{ color: '#667781' }}>
+              Crie sua página personalizada para compartilhar no Instagram e redes sociais. Seus hóspedes acessam reservas, contato e informações com um clique.
+            </p>
+          </div>
+          <ConnectEditor />
         </div>
       )}
 
