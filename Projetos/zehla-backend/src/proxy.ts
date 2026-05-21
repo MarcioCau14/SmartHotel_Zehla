@@ -7,8 +7,30 @@ import type { NextRequest } from 'next/server';
 
 const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || 'http://localhost:3000,https://smarthotelzehla.vercel.app,https://zehla.com.br').split(',').map(s => s.trim());
 
+const PUBLIC_PATHS = [
+  '/connect/',
+  '/login',
+  '/api/auth/',
+  '/api/connect/profile/',
+  '/api/connect/analytics/track',
+  '/_next/',
+  '/favicon.ico',
+  '/termos',
+  '/privacidade',
+  '/teste-gratis',
+  '/vendas',
+  '/zcc',
+  '/zcc-login',
+];
+
+const MUTATION_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
+
 function isOriginAllowed(origin: string): boolean {
   return ALLOWED_ORIGINS.includes(origin) || ALLOWED_ORIGINS.includes('*');
+}
+
+function isPublicPath(pathname: string): boolean {
+  return PUBLIC_PATHS.some(p => pathname.startsWith(p));
 }
 
 function addCorsHeaders(response: NextResponse, origin: string | null): void {
@@ -35,6 +57,16 @@ export async function proxy(request: NextRequest) {
     const response = new NextResponse(null, { status: 204 });
     addCorsHeaders(response, origin);
     return response;
+  }
+
+  // CORS enforcement for mutation methods on non-public API routes
+  if (origin && pathname.startsWith('/api/') && !isPublicPath(pathname) && MUTATION_METHODS.includes(request.method)) {
+    if (!isOriginAllowed(origin)) {
+      return NextResponse.json(
+        { error: 'Origin not allowed', code: 'CORS_BLOCKED' },
+        { status: 403 }
+      );
+    }
   }
 
   // BYPASS ZCC AUTH FOR LOCAL DEV — check Host header (nextUrl.hostname reflects bind addr, not request host)
@@ -112,10 +144,10 @@ export async function proxy(request: NextRequest) {
   // 1. Headers de Segurança (ZEHLA Fortress)
   const response = NextResponse.next();
   addCorsHeaders(response, origin);
-  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+  response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self), payment=(self)');
   
   // 2. Verificação de Autenticação para Rotas Protegidas
   const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route));

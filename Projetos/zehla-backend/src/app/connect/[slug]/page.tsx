@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
 import { ConnectTracker } from '@/components/connect/ConnectTracker';
+import { sanitizeText } from '@/lib/security/html-sanitizer';
 
 import type { Metadata } from 'next';
 
@@ -152,15 +153,15 @@ function SchemaOrgJsonLd({ profile }: { profile: ConnectProfile }) {
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'LodgingBusiness',
-    name: profile.property?.name || profile.slug,
-    description: profile.bio || profile.seoDescription || '',
+    name: sanitizeText(profile.property?.name || profile.slug),
+    description: sanitizeText(profile.bio || profile.seoDescription || ''),
     image: profile.coverUrl || profile.avatarUrl || undefined,
     url: `${APP_URL}/connect/${profile.slug}`,
     telephone: profile.whatsappNumber || profile.property?.whatsapp || undefined,
     address: {
       '@type': 'PostalAddress',
-      addressLocality: profile.property?.city || undefined,
-      addressRegion: profile.property?.state || undefined,
+      addressLocality: profile.property?.city ? sanitizeText(profile.property.city) : undefined,
+      addressRegion: profile.property?.state ? sanitizeText(profile.property.state) : undefined,
     },
     geo: profile.property?.latitude && profile.property?.longitude
       ? {
@@ -178,9 +179,9 @@ function SchemaOrgJsonLd({ profile }: { profile: ConnectProfile }) {
       : undefined,
     review: profile.reviews.slice(0, 5).map(r => ({
       '@type': 'Review',
-      author: { '@type': 'Person', name: r.authorName },
+      author: { '@type': 'Person', name: sanitizeText(r.authorName) },
       reviewRating: { '@type': 'Rating', ratingValue: r.rating },
-      reviewBody: r.text || undefined,
+      reviewBody: r.text ? sanitizeText(r.text) : undefined,
     })),
   };
 

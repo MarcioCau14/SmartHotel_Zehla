@@ -1202,3 +1202,28 @@ model PushSubscription {
   @@index([propertyId])
   @@map("push_subscriptions")
 }
+
+// ============================================================
+// ZEHLA AUDIT LOG — LGPD Compliance & Security Audit Trail
+// ============================================================
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  tenantId    String // propertyId or userId
+  userId      String? // User who performed the action
+  action      String // PII_ACCESS, PII_UPDATE, PII_DELETE, DATA_EXPORT, etc.
+  resource    String // "connect_profile", "reservation", "guest", etc.
+  resourceId  String? // ID of the affected resource
+  severity    String   @default("INFO") // INFO, WARN, ALERT, CRITICAL
+  piiFields   String[] @default([]) // Which PII fields were accessed/modified
+  ipAddress   String?
+  userAgent   String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId, createdAt])
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+  @@index([severity, createdAt])
+  @@map("audit_logs")
+}
