@@ -531,6 +531,30 @@ model EmailTracking {
   @@map("email_tracking")
 }
 
+// ============================================================
+// ZEHLA FUNNEL — Marketing Event Tracking & Analytics
+// ============================================================
+
+model FunnelEvent {
+  id          String   @id @default(cuid())
+  leadId      String?
+  email       String? // Para leads não identificados
+  eventType   String // "email_sent", "email_opened", "email_clicked", "email_bounced", "email_unsubscribed", "landing_page_visit", "cta_clicked", "trial_started", "trial_converted"
+  campaignId  String? // ID da campanha de e-mail
+  campaignName String? // Nome da campanha (ex: "dor_financeira_v1")
+  metadata    Json? // { url: "...", subject: "...", bounce_reason: "..." }
+  ip          String?
+  userAgent   String?
+  scoreDelta  Int      @default(0) // Pontos adicionados ao lead score
+  createdAt   DateTime @default(now())
+
+  @@index([leadId, createdAt])
+  @@index([eventType, createdAt])
+  @@index([campaignId, createdAt])
+  @@index([email, createdAt])
+  @@map("funnel_events")
+}
+
 enum LeadStatus {
   PROSPECT
   QUALIFIED
