@@ -1,17 +1,26 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { DollarSign, TrendingUp, TrendingDown, Wallet, CreditCard, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, Wallet, CreditCard, ArrowUpRight, ArrowDownRight, Brain, ToggleLeft, ToggleRight, Calculator } from 'lucide-react';
 
 export default function FinanceiroPage() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [financeData, setFinanceData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [revenueData, setRevenueData] = useState<any>(null);
+  const [revenueSettings, setRevenueSettings] = useState<any>(null);
+  const [dynamicPricingEnabled, setDynamicPricingEnabled] = useState(false);
 
   useEffect(() => {
     Promise.all([
       fetch('/api/revenue/kpis').then(r => r.json()).catch(() => null),
-    ]).then(() => {
+      fetch('/api/revenue/settings').then(r => r.json()).catch(() => null),
+    ]).then(([, revenueResult]) => {
+      if (revenueResult) {
+        setRevenueData(revenueResult);
+        setRevenueSettings(revenueResult.settings);
+        setDynamicPricingEnabled(revenueResult.settings?.dynamicPricingEnabled || false);
+      }
       // Fallback to seed data if API not ready
       setTransactions([
         { id: '1', type: 'INCOME', category: 'reserva', channel: 'direto', description: 'Reserva ZEH-2026-001 — João Pereira', amount: 2660, status: 'confirmed', date: new Date() },
@@ -32,6 +41,18 @@ export default function FinanceiroPage() {
       setLoading(false);
     });
   }, []);
+
+  const toggleDynamicPricing = async () => {
+    const newValue = !dynamicPricingEnabled;
+    setDynamicPricingEnabled(newValue);
+    try {
+      await fetch('/api/revenue/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dynamicPricingEnabled: newValue }),
+      });
+    } catch {}
+  };
 
   const totalIncome = transactions.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
   const totalExpense = transactions.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
@@ -106,6 +127,113 @@ export default function FinanceiroPage() {
           <p className="text-sm" style={{ color: '#667781' }}>Custos Operacionais</p>
           <p className="text-xl font-bold mt-1" style={{ color: '#EA4335' }}>R$ {financeData?.totalCosts || 0}</p>
         </div>
+      </div>
+
+      {/* Revenue Management Section */}
+      <div className="dash-section">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(37, 211, 102, 0.1)' }}>
+              <Brain className="w-5 h-5" style={{ color: '#25D366' }} />
+            </div>
+            <div>
+              <h3 className="dash-section-title mb-0">Revenue Management — Precificação Dinâmica</h3>
+              <p className="text-xs mt-0.5" style={{ color: '#8696A0' }}>IA ajusta preços automaticamente baseado em ocupação e demanda</p>
+            </div>
+          </div>
+          <button
+            onClick={toggleDynamicPricing}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
+            style={{
+              backgroundColor: dynamicPricingEnabled ? 'rgba(37, 211, 102, 0.1)' : '#F0F2F5',
+              color: dynamicPricingEnabled ? '#25D366' : '#8696A0',
+            }}
+          >
+            {dynamicPricingEnabled ? (
+              <ToggleRight className="w-6 h-6" />
+            ) : (
+              <ToggleLeft className="w-6 h-6" />
+            )}
+            <span className="text-sm font-medium">{dynamicPricingEnabled ? 'Ativo' : 'Inativo'}</span>
+          </button>
+        </div>
+
+        {/* Revenue Stats */}
+        {revenueData?.stats && (
+          <div className="dash-grid-3 mb-4">
+            <div className="dash-section text-center">
+              <p className="text-2xl font-bold" style={{ color: '#25D366' }}>
+                R$ {revenueData.stats.extraRevenueGenerated.toFixed(2)}
+              </p>
+              <p className="text-xs mt-1" style={{ color: '#667781' }}>Receita Extra Gerada pela IA</p>
+            </div>
+            <div className="dash-section text-center">
+              <p className="text-2xl font-bold" style={{ color: '#111B21' }}>
+                {revenueData.stats.totalCalculations}
+              </p>
+              <p className="text-xs mt-1" style={{ color: '#667781' }}>Cálculos de Preço Realizados</p>
+            </div>
+            <div className="dash-section text-center">
+              <p className="text-2xl font-bold" style={{ color: '#128C7E' }}>
+                {(revenueData.stats.avgOccupancyRate * 100).toFixed(0)}%
+              </p>
+              <p className="text-xs mt-1" style={{ color: '#667781' }}>Ocupação Média nos Cálculos</p>
+            </div>
+          </div>
+        )}
+
+        {/* Pricing Thresholds */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(234, 67, 53, 0.05)' }}>
+            <p className="text-xs font-medium" style={{ color: '#EA4335' }}>Ocupação ≥ 90%</p>
+            <p className="text-lg font-bold" style={{ color: '#111B21' }}>+30%</p>
+            <p className="text-[10px]" style={{ color: '#8696A0' }}>Escassez Alta</p>
+          </div>
+          <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(255, 183, 77, 0.1)' }}>
+            <p className="text-xs font-medium" style={{ color: '#FFB74D' }}>Ocupação ≥ 70%</p>
+            <p className="text-lg font-bold" style={{ color: '#111B21' }}>+15%</p>
+            <p className="text-[10px]" style={{ color: '#8696A0' }}>Demanda Média</p>
+          </div>
+          <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(37, 211, 102, 0.05)' }}>
+            <p className="text-xs font-medium" style={{ color: '#25D366' }}>Ocupação &lt; 30%</p>
+            <p className="text-lg font-bold" style={{ color: '#111B21' }}>-10%</p>
+            <p className="text-[10px]" style={{ color: '#8696A0' }}>Estímulo Baixa Demanda</p>
+          </div>
+        </div>
+
+        {/* Recent Pricing Logs */}
+        {revenueData?.pricingLogs && revenueData.pricingLogs.length > 0 && (
+          <div className="mt-4">
+            <h4 className="text-sm font-medium mb-2" style={{ color: '#667781' }}>Últimos Ajustes de Preço</h4>
+            <div className="space-y-2">
+              {revenueData.pricingLogs.slice(0, 5).map((log: any) => {
+                const diff = log.finalPrice - log.originalPrice;
+                const isIncrease = diff > 0;
+                return (
+                  <div key={log.id} className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: '#F8F9FA' }}>
+                    <div className="flex items-center gap-3">
+                      <Calculator className="w-4 h-4" style={{ color: isIncrease ? '#25D366' : '#EA4335' }} />
+                      <div>
+                        <p className="text-sm font-medium" style={{ color: '#111B21' }}>
+                          R$ {log.originalPrice} → R$ {log.finalPrice}
+                        </p>
+                        <p className="text-xs" style={{ color: '#8696A0' }}>
+                          {new Date(log.createdAt).toLocaleDateString('pt-BR')} · Ocupação {(log.occupancyRate * 100).toFixed(0)}%
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold" style={{ color: isIncrease ? '#25D366' : '#EA4335' }}>
+                        {isIncrease ? '+' : ''}{diff.toFixed(0)}%
+                      </p>
+                      <p className="text-[10px]" style={{ color: '#8696A0' }}>{log.reason}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Transactions table */}

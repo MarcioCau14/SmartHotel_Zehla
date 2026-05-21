@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { calculateDynamicPricing } from '@/lib/revenue/use-cases/CalculateDynamicPricingUseCase';
 
 export interface ToolDefinition {
   type: 'function';
@@ -145,47 +146,49 @@ async function analisarOcupacao(args: Record<string, any>): Promise<string> {
 async function sugerirPreco(args: Record<string, any>): Promise<string> {
   const { pousada_id, tipo_quarto, data_checkin, data_checkout } = args;
 
-  const rooms = await prisma.room.findMany({
-    where: { propertyId: pousada_id },
-    include: { accommodationType: true }
+  const property = await prisma.property.findUnique({
+    where: { id: pousada_id },
+    include: { rooms: true },
   });
 
-  const matchingRooms = rooms.filter(r =>
-    r.accommodationType?.name?.toLowerCase().includes(tipo_quarto?.toLowerCase() || '')
-  );
+  if (!property) {
+    return JSON.stringify({ error: 'Propriedade não encontrada' });
+  }
+
+  const rooms = property.rooms;
+  const matchingRooms = tipo_quarto
+    ? rooms.filter(r => r.type?.toLowerCase().includes(tipo_quarto.toLowerCase()))
+    : rooms;
 
   const basePrice = matchingRooms.length > 0
-    ? matchingRooms[0].accommodationType!.basePrice
-    : 250;
+    ? matchingRooms[0].basePrice
+    : 150;
 
-  const checkin = new Date(data_checkin);
-  const checkout = new Date(data_checkout);
-  const nights = Math.ceil((checkout.getTime() - checkin.getTime()) / 86400000);
+  const checkin = data_checkin ? new Date(data_checkin) : new Date();
+  const checkout = data_checkout ? new Date(data_checkout) : new Date(Date.now() + 86400000);
 
-  const month = checkin.getMonth();
-  const isHighSeason = [0, 6, 11].includes(month) || (month === 6 && checkin.getDate() >= 15);
-  const isHoliday = [0, 6, 11].some(m => m === month);
-
-  let multiplier = 1.0;
-  if (isHoliday) multiplier = 1.35;
-  else if (isHighSeason) multiplier = 1.2;
-
-  const suggestedPrice = Math.round(basePrice * multiplier);
+  // Use the new dynamic pricing engine
+  const pricing = await calculateDynamicPricing({
+    propertyId: pousada_id,
+    checkIn: checkin,
+    checkOut: checkout,
+    basePrice,
+    totalRooms: rooms.length,
+  });
 
   return JSON.stringify({
-    tipo_quarto,
-    preco_base: basePrice,
-    multiplicador_sazonal: multiplier,
-    preco_sugerido: suggestedPrice,
-    faixa_minima: Math.round(suggestedPrice * 0.85),
-    faixa_maxima: Math.round(suggestedPrice * 1.2),
-    periodo: `${data_checkin} a ${data_checkout} (${nights} noites)`,
-    justificativa: isHoliday
-      ? 'Período de alta temporada/feriado — demanda elevada.'
-      : isHighSeason
-      ? 'Alta temporada — ajuste moderado de preço.'
-      : 'Período regular — preço base mantido.',
-    fonte: 'dados_reais_banco'
+    tipo_quarto: tipo_quarto || 'todos',
+    preco_base: pricing.originalPrice,
+    preco_final: pricing.finalPrice,
+    preco_total_estadia: pricing.totalStay,
+    noites: Math.ceil((checkout.getTime() - checkin.getTime()) / 86400000),
+    ocupacao: Math.round(pricing.occupancyRate * 100) + '%',
+    multiplicador: pricing.surgeMultiplier,
+    motivo: pricing.reason,
+    detalhes: pricing.breakdown.map((b: any) => `${b.factor}: ${b.description}`).join('; '),
+    acao_recomendada: pricing.recommendedAction,
+    periodo: `${data_checkin} a ${data_checkout}`,
+    fonte: 'revenue_engine_v2'
   }, null, 2);
 }
 

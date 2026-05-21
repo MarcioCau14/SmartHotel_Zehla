@@ -1254,3 +1254,43 @@ model BillingLog {
   @@index([propertyId, type, createdAt])
   @@map("billing_logs")
 }
+
+// ============================================================
+// ZEHLA REVENUE — Dynamic Pricing & Audit Trail
+// ============================================================
+
+model RevenuePricingLog {
+  id              String   @id @default(cuid())
+  propertyId      String
+  roomId          String?
+  originalPrice   Float
+  finalPrice      Float
+  occupancyRate   Float
+  surgeMultiplier Float
+  reason          String // BASE_RATE, HIGH_SCARCITY, MEDIUM_DEMAND, etc.
+  checkIn         DateTime
+  checkOut        DateTime
+  metadata        Json? // breakdown, lead time, etc.
+  createdAt       DateTime @default(now())
+
+  @@index([propertyId, createdAt])
+  @@index([propertyId, reason])
+  @@map("revenue_pricing_logs")
+}
+
+model RevenueSettings {
+  id                String   @id @default(cuid())
+  propertyId        String   @unique
+  dynamicPricingEnabled Boolean @default(false)
+  minPrice          Float? // Floor price (never go below)
+  maxPrice          Float? // Ceiling price (never go above)
+  weekendMultiplier Float    @default(1.10)
+  seasonalMultiplier Float   @default(1.20)
+  leadTimeDiscounts Json? // { ">60": 0.85, ">30": 0.95, etc. }
+  occupancyThresholds Json? // { high: 0.90, medium: 0.70, low: 0.30 }
+  updatedAt         DateTime @updatedAt
+  createdAt         DateTime @default(now())
+
+  @@index([propertyId])
+  @@map("revenue_settings")
+}
