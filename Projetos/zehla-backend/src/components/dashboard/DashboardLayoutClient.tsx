@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Zap,
+  Shield,
 } from 'lucide-react';
 
 const navItems = [
@@ -27,6 +28,7 @@ const navItems = [
   { key: 'reservas', label: 'Reservas', href: '/dashboard/reservas', icon: CalendarDays },
   { key: 'financeiro', label: 'Financeiro', href: '/dashboard/financeiro', icon: Wallet },
   { key: 'promocoes', label: 'Promoções', href: '/dashboard/promocoes', icon: Tag },
+  { key: 'auditoria', label: 'Auditoria', href: '/dashboard/auditoria', icon: Shield },
   { key: 'configuracoes', label: 'Configurações', href: '/dashboard/configuracoes', icon: Settings },
 ];
 

@@ -25,12 +25,28 @@ const PUBLIC_PATHS = [
 
 const MUTATION_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
+const TENANT_RATE_LIMIT = 100;
+const TENANT_WINDOW_SECONDS = 60;
+
 function isOriginAllowed(origin: string): boolean {
   return ALLOWED_ORIGINS.includes(origin) || ALLOWED_ORIGINS.includes('*');
 }
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some(p => pathname.startsWith(p));
+}
+
+async function checkTenantRateLimit(tenantId: string, ip: string): Promise<boolean> {
+  try {
+    const key = `rate_limit_tenant_${tenantId}:${ip}`;
+    const current = await redis.incr(key);
+    if (current === 1) {
+      await redis.expire(key, TENANT_WINDOW_SECONDS);
+    }
+    return current <= TENANT_RATE_LIMIT;
+  } catch {
+    return true;
+  }
 }
 
 function addCorsHeaders(response: NextResponse, origin: string | null): void {
@@ -95,6 +111,18 @@ export async function proxy(request: NextRequest) {
           { error: 'Tenant under security review' },
           { status: 503 }
         );
+      }
+
+      // Multi-tenant rate limiting: isolates rate limits per tenant
+      // Prevents one tenant's DDoS from affecting others
+      if (!isPublicPath(pathname) && pathname.startsWith('/api/')) {
+        const allowed = await checkTenantRateLimit(tenantId, ip);
+        if (!allowed) {
+          return NextResponse.json(
+            { error: 'Tenant rate limit exceeded. Contact support.', code: 'TENANT_RATE_LIMITED' },
+            { status: 429 }
+          );
+        }
       }
     }
   } catch (e) {

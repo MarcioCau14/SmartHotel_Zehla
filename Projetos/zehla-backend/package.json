@@ -67,6 +67,7 @@
     "framer-motion": "^12.23.2",
     "input-otp": "^1.4.2",
     "ioredis": "^5.10.1",
+    "isomorphic-dompurify": "^3.14.0",
     "jose": "^6.2.3",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.525.0",
