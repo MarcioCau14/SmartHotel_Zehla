@@ -1417,3 +1417,78 @@ enum FiscalStatus {
   ERRO
   HOMOLOGADA
 }
+
+// ============================================================
+// ZEHLA MARKETPLACE — API Aberta e Webhooks Públicos
+// ============================================================
+
+model ApiKey {
+  id            String   @id @default(cuid())
+  propertyId    String
+  name          String // "Fechadura Bluetooth", "ERP Contábil", etc.
+  keyPrefix     String // "zehla_live_sk_abc..." (primeiros 12 chars para UI)
+  keyHash       String // SHA-256 hash da chave completa (nunca armazenamos a chave em texto)
+  keyPlain      String // Chave completa (armazenada temporariamente para exibição única na criação)
+  permissions   String[] @default(["read"]) // "read", "write", "admin"
+  scopes        String[] @default(["reservations", "rooms"]) // Quais recursos a chave pode acessar
+  isActive      Boolean  @default(true)
+  lastUsedAt    DateTime?
+  revokedAt     DateTime?
+  revokedReason String?
+  expiresAt     DateTime? // null = nunca expira
+  rateLimit     Int      @default(100) // Requisições por minuto
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([propertyId])
+  @@index([keyPrefix])
+  @@index([isActive])
+  @@map("api_keys")
+}
+
+model WebhookSubscription {
+  id            String   @id @default(cuid())
+  propertyId    String
+  name          String // "Fechadura Eletrônica", "Sistema Contábil", etc.
+  endpointUrl   String // URL do servidor de terceiros que receberá os webhooks
+  secretKey     String // Chave secreta para assinatura HMAC-SHA256 (gerada automaticamente)
+  events        String[] // ["reservation.created", "reservation.cancelled", "payment.confirmed", etc.]
+  isActive      Boolean  @default(true)
+  lastTriggeredAt DateTime?
+  lastStatus    String? // "success", "failed", "timeout"
+  failureCount  Int      @default(0) // Contador de falhas consecutivas
+  disabledAt    DateTime? // Desabilitado automaticamente após muitas falhas
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([propertyId])
+  @@index([isActive])
+  @@index([events])
+  @@map("webhook_subscriptions")
+}
+
+model WebhookDeliveryLog {
+  id              String   @id @default(cuid())
+  subscriptionId  String
+  propertyId      String
+  eventType       String
+  endpointUrl     String
+  payload         Json?
+  responseStatus  Int? // HTTP status code da resposta do servidor terceiro
+  responseBody    String? @db.Text
+  responseTime    Int? // Tempo de resposta em ms
+  signature       String? // Assinatura HMAC enviada
+  status          String   @default("pending") // "pending", "delivered", "failed", "timeout"
+  error           String?
+  attempt         Int      @default(1)
+  maxAttempts     Int      @default(5)
+  nextRetryAt     DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([subscriptionId, createdAt])
+  @@index([propertyId, status])
+  @@index([eventType, createdAt])
+  @@map("webhook_delivery_logs")
+}
