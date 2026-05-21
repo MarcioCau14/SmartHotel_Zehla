@@ -1,16 +1,31 @@
 'use client';
 
-import { useState } from 'react';
-import { Settings, Building2, MessageSquare, Bell, Shield, Palette, Save, Link2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Settings, Building2, MessageSquare, Bell, Shield, Palette, Save, Link2, CreditCard, TrendingUp, ExternalLink, Check, X } from 'lucide-react';
 import { ConnectEditor } from '@/components/connect/ConnectEditor';
 
 export default function ConfiguracoesPage() {
   const [activeTab, setActiveTab] = useState('property');
+  const [billing, setBilling] = useState<any>(null);
+  const [usage, setUsage] = useState<any>(null);
+
+  useEffect(() => {
+    if (activeTab === 'billing') {
+      Promise.all([
+        fetch('/api/billing/subscription').then(r => r.json()),
+        fetch('/api/billing/usage').then(r => r.json()),
+      ]).then(([billingData, usageData]) => {
+        setBilling(billingData);
+        setUsage(usageData);
+      }).catch(() => {});
+    }
+  }, [activeTab]);
 
   const tabs = [
     { id: 'property', label: 'Propriedade', icon: Building2 },
     { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
     { id: 'connect', label: 'ZEHLA Connect', icon: Link2 },
+    { id: 'billing', label: 'Plano & Cobrança', icon: CreditCard },
     { id: 'notifications', label: 'Notificações', icon: Bell },
     { id: 'security', label: 'Segurança', icon: Shield },
     { id: 'appearance', label: 'Aparência', icon: Palette },
@@ -127,6 +142,126 @@ export default function ConfiguracoesPage() {
             </p>
           </div>
           <ConnectEditor />
+        </div>
+      )}
+
+      {activeTab === 'billing' && (
+        <div className="space-y-6">
+          <div>
+            <h1 className="dash-page-title">Plano & Cobrança</h1>
+            <p className="dash-page-subtitle">Gerencie sua assinatura e uso da plataforma</p>
+          </div>
+
+          {/* Current plan */}
+          {billing?.property && (
+            <div className="dash-section p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm" style={{ color: '#667781' }}>Plano Atual</p>
+                  <div className="flex items-center gap-3 mt-1">
+                    <h3 className="text-2xl font-bold" style={{ color: '#111B21' }}>
+                      {billing.property.plan}
+                    </h3>
+                    {billing.property.isTrial && (
+                      <span className="dash-status dash-status-yellow">Trial</span>
+                    )}
+                    {billing.property.cancelAtPeriodEnd && (
+                      <span className="dash-status" style={{ backgroundColor: 'rgba(234, 67, 53, 0.1)', color: '#EA4335' }}>
+                        Cancelando
+                      </span>
+                    )}
+                  </div>
+                  {billing.property.trialEndsAt && (
+                    <p className="text-xs mt-1" style={{ color: '#8696A0' }}>
+                      Trial até {new Date(billing.property.trialEndsAt).toLocaleDateString('pt-BR')}
+                    </p>
+                  )}
+                  {billing.property.currentPeriodEnd && (
+                    <p className="text-xs mt-1" style={{ color: '#8696A0' }}>
+                      Renova em {new Date(billing.property.currentPeriodEnd).toLocaleDateString('pt-BR')}
+                    </p>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  {billing.property.stripeCustomerId && (
+                    <button
+                      className="dash-btn-secondary"
+                      onClick={() => fetch('/api/billing/subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create_portal' }) }).then(r => r.json()).then(d => { if (d.url) window.open(d.url, '_blank'); })}
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      Portal do Cliente
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Usage */}
+          {usage?.summary && (
+            <div className="dash-grid-3">
+              <div className="dash-kpi">
+                <p className="text-2xl font-bold" style={{ color: '#111B21' }}>
+                  R$ {usage.summary.currentCost.toFixed(2)}
+                </p>
+                <p className="text-sm" style={{ color: '#667781' }}>
+                  Custo Atual / R$ {usage.summary.budgetLimit.toFixed(2)}
+                </p>
+                <div className="mt-2 h-2 rounded-full bg-[#F0F2F5] overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${usage.summary.usagePercent}%`,
+                      backgroundColor: usage.summary.usagePercent > 80 ? '#EA4335' : '#25D366',
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="dash-kpi">
+                <p className="text-2xl font-bold" style={{ color: '#111B21' }}>{usage.summary.aiTokenCount}</p>
+                <p className="text-sm" style={{ color: '#667781' }}>Mensagens IA</p>
+              </div>
+              <div className="dash-kpi">
+                <p className="text-2xl font-bold" style={{ color: '#111B21' }}>{usage.summary.apiCallCount}</p>
+                <p className="text-sm" style={{ color: '#667781' }}>Chamadas API</p>
+              </div>
+            </div>
+          )}
+
+          {/* Plan cards */}
+          <div className="dash-grid-3">
+            {billing?.plans?.map((plan: any) => {
+              const isCurrent = billing?.property?.plan === plan.key;
+              return (
+                <div key={plan.key} className={`dash-card p-6 ${isCurrent ? 'ring-2 ring-[#25D366]' : ''}`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold" style={{ color: '#111B21' }}>{plan.name}</h3>
+                    {isCurrent && <Check className="w-5 h-5 text-[#25D366]" />}
+                  </div>
+                  <p className="text-3xl font-bold mb-1" style={{ color: '#111B21' }}>
+                    R$ {plan.price.toFixed(2)}
+                    <span className="text-sm font-normal" style={{ color: '#8696A0' }}>/mês</span>
+                  </p>
+                  <ul className="mt-4 space-y-2">
+                    {plan.features.map((feature: string, i: number) => (
+                      <li key={i} className="flex items-start gap-2 text-sm" style={{ color: '#667781' }}>
+                        <Check className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#25D366]" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  {!isCurrent && (
+                    <button
+                      className="dash-btn-primary w-full mt-6"
+                      onClick={() => fetch('/api/billing/subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create_checkout', planKey: plan.key }) }).then(r => r.json()).then(d => { if (d.url) window.location.href = d.url; })}
+                    >
+                      Assinar {plan.name}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

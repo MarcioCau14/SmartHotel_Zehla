@@ -107,6 +107,13 @@ model Property {
   whatsappChannelType WhatsappChannelType @default(GUESTS_ONLY)
   supplierContact     String?
 
+  // Stripe Billing
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  stripePriceId        String?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean   @default(false)
+
   userId        String
   user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   rooms         Room[]
@@ -136,6 +143,7 @@ model Property {
   malProfiles       MALProfile[]
   cadasturRecord    CadasturRecord?   @relation("PropertyCadasturRecord")
   pushSubscriptions PushSubscription[]
+  billingLogs       BillingLog[]
 
   @@map("properties")
 }
@@ -1226,4 +1234,23 @@ model AuditLog {
   @@index([action, createdAt])
   @@index([severity, createdAt])
   @@map("audit_logs")
+}
+
+// ============================================================
+// ZEHLA BILLING — Stripe Integration & FinOps
+// ============================================================
+
+model BillingLog {
+  id          String   @id @default(cuid())
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  type        String // "api_call", "ai_token", "storage", "email", "sms"
+  units       Float    @default(1) // number of units consumed
+  cost        Float    @default(0) // cost in BRL
+  metadata    Json? // extra context (endpoint, model, tokens, etc.)
+  createdAt   DateTime @default(now())
+
+  @@index([propertyId, createdAt])
+  @@index([propertyId, type, createdAt])
+  @@map("billing_logs")
 }
