@@ -25,7 +25,7 @@ import { FinancialAgent } from './agents/FinancialAgent';
 
 export class AgentOrchestrator {
   private agents: Map<string, BaseAgent>;
-  private readonly classifierModel = 'gpt-4o-mini'; // Modelo barato para classificação
+  private readonly classifierModel = 'fast'; // Modelo rápido para classificação (Llama 3.3 free tier)
 
   constructor() {
     this.agents = new Map();

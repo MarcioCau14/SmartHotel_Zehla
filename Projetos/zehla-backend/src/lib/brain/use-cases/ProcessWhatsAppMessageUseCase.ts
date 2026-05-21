@@ -17,7 +17,7 @@ export interface WhatsAppMessageInput {
 
 export interface WhatsAppAgentResponse {
   reply: string;
-  source: 'MIROFISH_CACHE' | 'KIMI_K2.6' | 'GPT_FALLBACK' | 'LOCAL_FALLBACK' | 'THROTTLED' | 'RULE_BASED';
+  source: 'MIROFISH_CACHE' | 'KIMI_K2.6' | 'QWEN_FALLBACK' | 'LLAMA_FALLBACK' | 'LOCAL_FALLBACK' | 'THROTTLED' | 'RULE_BASED';
   intent: string;
   tokensUsed: number;
   cost: number;
@@ -156,7 +156,7 @@ export async function processWhatsAppMessage(
     });
 
     source = llmResult.model === 'local_fallback' ? 'LOCAL_FALLBACK'
-      : llmResult.model === 'gpt-4o-mini' ? 'GPT_FALLBACK'
+      : llmResult.model === 'fast' ? 'LLAMA_FALLBACK'
       : 'KIMI_K2.6';
   } catch (error) {
     console.error('[WhatsAppAgent] LLM generation failed:', error);

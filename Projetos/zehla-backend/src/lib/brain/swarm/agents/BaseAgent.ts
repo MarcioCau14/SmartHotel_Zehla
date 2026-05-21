@@ -47,7 +47,7 @@ export abstract class BaseAgent {
   abstract readonly name: string;
   abstract readonly description: string;
   abstract readonly intentPatterns: string[];
-  protected readonly model: string = 'gpt-4o-mini'; // Modelo padrão (barato)
+  protected readonly model: string = 'general'; // Modelo padrão (Qwen 72B free tier)
 
   /**
    * Gera o system prompt específico do agente

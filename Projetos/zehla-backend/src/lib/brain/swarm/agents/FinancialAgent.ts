@@ -34,7 +34,7 @@ export class FinancialAgent extends BaseAgent {
   ];
 
   // Agente financeiro usa modelo mais preciso
-  protected readonly model: string = 'gpt-4o';
+  protected readonly model: string = 'reasoning'; // Modelo mais preciso (Qwen 72B free tier)
 
   protected async getSystemPrompt(context: AgentContext): Promise<string> {
     const property = await prisma.property.findUnique({
