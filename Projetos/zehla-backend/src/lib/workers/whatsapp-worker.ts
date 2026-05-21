@@ -5,11 +5,16 @@ import { orchestrator } from '@/lib/brain/agent-orchestrator';
 import { ProcessPaymentProofUseCase } from '@/lib/brain/use-cases/ProcessPaymentProofUseCase';
 import { ReceiptExtractor } from '@/lib/brain/receipt-extractor';
 import { EmailService } from '@/lib/email/email-service';
+import { processWhatsAppMessage } from '@/lib/brain/use-cases/ProcessWhatsAppMessageUseCase';
 import axios from 'axios';
 
 /**
  * Worker do ZEHLA Brain para processamento assíncrono de WhatsApp.
- * Implementa Roteador de Mídia para Confirmação Autônoma de Pagamento.
+ * 
+ * Architecture:
+ * 1. Media Router → ReceiptExtractor → PaymentConfirmation
+ * 2. Text Messages → ProcessWhatsAppMessageUseCase (MiroFish + Kimi + FinOps)
+ * 3. Fallback → Legacy orchestrator (for backward compatibility)
  */
 export const whatsappWorker = new Worker('whatsapp-inbound', async (job: Job) => {
   const { messageId, evolutionMessageId, propertyId, phone, content, pushName, mediaData } = job.data;
@@ -58,8 +63,34 @@ export const whatsappWorker = new Worker('whatsapp-inbound', async (job: Job) =>
       }
     }
 
-    // --- FALLBACK: FLUXO DE CHAT CONVERSACIONAL ---
-    // Gerar resposta da IA primeiro
+    // --- NEW: AI AGENT WITH MIROFISH CACHE + FINOPS ---
+    try {
+      console.log(`🧠 [AI AGENT] Processando mensagem via ProcessWhatsAppMessageUseCase...`);
+      
+      const aiResult = await processWhatsAppMessage({
+        tenantId: propertyId,
+        guestPhone: phone,
+        incomingMessage: content || '',
+        pushName,
+      });
+
+      console.log(`📤 [AI AGENT] Resposta gerada: source=${aiResult.source}, intent=${aiResult.intent}, tokens=${aiResult.tokensUsed}, cost=R$${aiResult.cost.toFixed(4)}, latency=${aiResult.latency}ms`);
+
+      // Send AI response via Evolution API
+      await sendWhatsAppMessage(propertyId, phone, aiResult.reply);
+
+      // Mark original as read
+      await prisma.message.updateMany({
+        where: { id: messageId },
+        data: { status: 'READ' },
+      });
+
+      return { status: 'COMPLETED_AI', source: aiResult.source };
+    } catch (aiError) {
+      console.warn(`⚠️ [AI AGENT] Failed, falling back to legacy orchestrator:`, (aiError as Error).message);
+    }
+
+    // --- FALLBACK: FLUXO DE CHAT CONVERSACIONAL (Legacy) ---
     const result = await orchestrator.process({
       propertyId,
       message: content,
@@ -76,18 +107,6 @@ export const whatsappWorker = new Worker('whatsapp-inbound', async (job: Job) =>
       }
     }
 
-    // Persistir a resposta
-    await prisma.message.create({
-      data: {
-        propertyId,
-        phone,
-        content: result.response,
-        direction: 'OUTBOUND',
-        status: 'SENT',
-        agentHandled: result.agent
-      }
-    });
-
     // Enviar resposta via Evolution API
     await sendWhatsAppMessage(propertyId, phone, result.response);
 
@@ -103,7 +122,11 @@ export const whatsappWorker = new Worker('whatsapp-inbound', async (job: Job) =>
   }
 }, { 
   connection: redisWorker,
-  concurrency: 5
+  concurrency: 5,
+  limiter: {
+    max: 30,
+    duration: 1000, // 30 messages per second max
+  },
 });
 
 /**

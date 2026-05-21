@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma';
 
 import { withApiSecurity } from '@/lib/server/with-api-security';
 import { logPiiAudit, extractPiiFields } from '@/lib/security/lgpd-audit';
+import { clearTenantCache } from '@/lib/brain/mirofish-cache';
 
 async function _POST(req: NextRequest) {
   try {
@@ -66,6 +67,9 @@ async function _POST(req: NextRequest) {
         userAgent: req.headers.get('user-agent') || undefined,
       });
     }
+
+    // Invalidate MiroFish cache when settings change
+    await clearTenantCache(property.id);
 
     return NextResponse.json(profile);
   } catch (error) {
