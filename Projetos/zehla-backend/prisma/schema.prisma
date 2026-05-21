@@ -34,6 +34,8 @@ model User {
   crmDealOwners      CrmDeal[]        @relation("CrmDealOwner")
   crmTasksAssigned   CrmTask[]
 
+  pushSubscriptions PushSubscription[]
+
   @@map("users")
 }
 
@@ -128,6 +130,13 @@ model Property {
   crmDeals        CrmDeal[]
   crmTasks        CrmTask[]
 
+  transactionLogs   TransactionLog[]
+  creditAccount     CreditAccount?    @relation("PropertyCreditAccount")
+  serviceItems      ServiceItem[]
+  malProfiles       MALProfile[]
+  cadasturRecord    CadasturRecord?   @relation("PropertyCadasturRecord")
+  pushSubscriptions PushSubscription[]
+
   @@map("properties")
 }
 
@@ -198,6 +207,7 @@ model Reservation {
   propertyId String
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   payment    Payment?
+  items      ReservationItem[]
 
   @@map("reservations")
 }
@@ -938,4 +948,257 @@ model CrmTask {
   @@index([assignedToId, completed])
   @@index([propertyId, dueDate])
   @@map("crm_tasks")
+}
+
+// ============================================================
+// ZEHLA 10 — MODELS ADICIONAIS (ZEHLA_09 Anexo B + Inventário)
+// ============================================================
+
+// --- TransactionLog: Auditoria financeira completa (Gap S-06) ---
+model TransactionLog {
+  id            String   @id @default(cuid())
+  propertyId    String
+  property      Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  type          String // "reservation", "service", "refund", "adjustment"
+  amount        Float
+  currency      String   @default("BRL")
+  status        String   @default("completed") // "pending", "completed", "failed", "refunded"
+  description   String   @db.Text
+  referenceId   String? // reservationId, invoiceId, etc
+  metadata      Json? // Dados extras da transação
+  balanceBefore Float? // Saldo antes da transação
+  balanceAfter  Float? // Saldo depois da transação
+  createdAt     DateTime @default(now())
+
+  @@index([propertyId, createdAt])
+  @@index([propertyId, type])
+  @@index([status, createdAt])
+  @@map("transaction_logs")
+}
+
+// --- CreditAccount: Modelo de créditos (Gap QV-02) ---
+model CreditAccount {
+  id          String   @id @default(cuid())
+  propertyId  String   @unique
+  property    Property @relation("PropertyCreditAccount", fields: [propertyId], references: [id], onDelete: Cascade)
+  balance     Float    @default(0) // Saldo de créditos disponível
+  totalEarned Float    @default(0) // Total de créditos ganhos
+  totalSpent  Float    @default(0) // Total de créditos gastos
+  expiresAt   DateTime? // Créditos expiram em
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  transactions CreditTransaction[]
+
+  @@index([propertyId])
+  @@map("credit_accounts")
+}
+
+// --- CreditTransaction: Histórico de créditos ---
+model CreditTransaction {
+  id          String   @id @default(cuid())
+  accountId   String
+  account     CreditAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  type        String // "earn", "spend", "expire", "adjust"
+  amount      Float
+  description String
+  referenceId String? // reservationId, referralId, etc
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([accountId, createdAt])
+  @@index([type, createdAt])
+  @@map("credit_transactions")
+}
+
+// --- Referral: Programa Ambassador (Gap SH-08) ---
+model Referral {
+  id             String    @id @default(cuid())
+  referrerId     String // User que indicou
+  referredEmail  String // Email do indicado
+  referredPhone  String? // Telefone do indicado
+  status         String    @default("pending") // "pending", "signed_up", "trial_started", "converted"
+  rewardAmount   Float     @default(0) // Valor da recompensa
+  rewardPaid     Boolean   @default(false)
+  rewardPaidAt   DateTime?
+  metadata       Json?
+  convertedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([referrerId])
+  @@index([status])
+  @@index([referredEmail])
+  @@map("referrals")
+}
+
+// --- ServiceItem: Catálogo de serviços + CRM (Gap IN-01) ---
+model ServiceItem {
+  id          String   @id @default(cuid())
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  name        String // "Vinho", "Travesseiro Extra", "Late Checkout"
+  category    String // "amenity", "upsell", "service", "experience"
+  price       Float    @default(0)
+  description String?  @db.Text
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([propertyId, category])
+  @@index([propertyId, isActive])
+  @@map("service_items")
+}
+
+// --- ReservationItem: Item de reserva com serviços (Gap IN-01) ---
+model ReservationItem {
+  id            String      @id @default(cuid())
+  reservationId String
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  serviceItemId String
+  quantity      Int         @default(1)
+  unitPrice     Float
+  totalPrice    Float
+  status        String      @default("pending") // "pending", "confirmed", "delivered", "cancelled"
+  notes         String?     @db.Text
+  deliveredAt   DateTime?
+  createdAt     DateTime    @default(now())
+
+  @@index([reservationId])
+  @@index([serviceItemId])
+  @@map("reservation_items")
+}
+
+// --- Agent: Consultor/Recrutamento (Gap SH-08) ---
+model Agent {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  phone         String?
+  role          String   @default("consultant") // "consultant", "ambassador", "support"
+  status        String   @default("active") // "active", "inactive", "pending"
+  commission    Float    @default(0) // % de comissão
+  totalSales    Float    @default(0)
+  totalCommission Float  @default(0)
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status])
+  @@index([email])
+  @@map("agents")
+}
+
+// --- ConnectVisitor: Visitantes do Connect (Gap ST-02) ---
+model ConnectVisitor {
+  id          String   @id @default(cuid())
+  profileId   String
+  userAgent   String?
+  ip          String?
+  geo         Json? // { country, region, city }
+  device      String? // "mobile", "desktop", "tablet"
+  source      String? // "instagram", "google", "direct", "facebook"
+  utmCampaign String?
+  utmMedium   String?
+  utmSource   String?
+  visitedAt   DateTime @default(now())
+
+  @@index([profileId, visitedAt])
+  @@index([source, visitedAt])
+  @@map("connect_visitors")
+}
+
+// --- ConnectAffiliate: Afiliados do Connect (Gap ST-02) ---
+model ConnectAffiliate {
+  id            String   @id @default(cuid())
+  profileId     String
+  affiliateSlug String   @unique // zehla.me/pousada-x?ref=affiliate-slug
+  name          String
+  email         String?
+  phone         String?
+  commission    Float    @default(0) // % de comissão por reserva
+  totalClicks   Int      @default(0)
+  totalConversions Int   @default(0)
+  totalEarnings Float    @default(0)
+  isActive      Boolean  @default(true)
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([profileId])
+  @@index([affiliateSlug])
+  @@map("connect_affiliates")
+}
+
+// --- ConnectMessage: Rede de pousadas (Gap IN-01) ---
+model ConnectMessage {
+  id          String   @id @default(cuid())
+  fromSlug    String // Slug da pousada que envia
+  toSlug      String // Slug da pousada que recebe
+  content     String   @db.Text
+  type        String   @default("referral") // "referral", "inquiry", "partnership"
+  isRead      Boolean  @default(false)
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([fromSlug, createdAt])
+  @@index([toSlug, isRead])
+  @@map("connect_messages")
+}
+
+// --- MALProfile: Malha de Aprendizado Agêntica ---
+model MALProfile {
+  id            String   @id @default(cuid())
+  propertyId    String
+  property      Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  agentName     String // "receptionist", "concierge", "revenue", etc
+  trainingData  Json // Dados de treinamento
+  modelVersion  String   @default("1.0")
+  accuracy      Float? // Métrica de acurácia
+  lastTrainedAt DateTime?
+  isActive      Boolean  @default(false)
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([propertyId, agentName])
+  @@map("mal_profiles")
+}
+
+// --- CadasturRecord: Monitoramento regulatório ---
+model CadasturRecord {
+  id            String   @id @default(cuid())
+  propertyId    String   @unique
+  property      Property @relation("PropertyCadasturRecord", fields: [propertyId], references: [id], onDelete: Cascade)
+  cadasturNumber String? // Número do Cadastur
+  status        String   @default("pending") // "pending", "verified", "expired", "invalid"
+  validUntil    DateTime?
+  lastCheckedAt DateTime?
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status])
+  @@map("cadastur_records")
+}
+
+// --- PushSubscription: Web Push Notifications ---
+model PushSubscription {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  endpoint   String   @unique
+  p256dh     String
+  auth       String
+  userAgent  String?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+  @@index([propertyId])
+  @@map("push_subscriptions")
 }
