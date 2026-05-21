@@ -6,14 +6,14 @@ import { prisma } from '@/lib/prisma';
 import { withApiSecurity } from '@/lib/server/with-api-security';
 
 /**
- * Channel Mapping API
+ * API de Mapeamento de Canais
  * 
- * Manages the mapping between external OTA IDs (Booking.com, Airbnb)
- * and internal ZEHLA room/property IDs.
+ * Gerencia o mapeamento entre IDs externos de OTAs (Booking.com, Airbnb)
+ * e IDs internos de quartos/propriedades do ZEHLA.
  * 
- * GET: List all mappings for the property
- * POST: Create a new mapping
- * DELETE: Remove a mapping
+ * GET: Lista todos os mapeamentos da propriedade
+ * POST: Cria um novo mapeamento
+ * DELETE: Remove um mapeamento
  */
 
 async function _GET(req: NextRequest) {
@@ -45,9 +45,9 @@ async function _GET(req: NextRequest) {
 
     return NextResponse.json({ mappings, syncLogs });
   } catch (error) {
-    console.error('[API:CHANNELS:MAPPING] Error:', error);
+    console.error('❌ [API:CANAL:MAPEAMENTO] Erro:', error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Erro interno do servidor' },
       { status: 500 }
     );
   }
@@ -105,9 +105,9 @@ async function _POST(req: NextRequest) {
 
     return NextResponse.json({ mapping });
   } catch (error) {
-    console.error('[API:CHANNELS:MAPPING] Error:', error);
+    console.error('❌ [API:CANAL:MAPEAMENTO] Erro:', error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Erro interno do servidor' },
       { status: 500 }
     );
   }
@@ -145,9 +145,9 @@ async function _DELETE(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[API:CHANNELS:MAPPING] Error:', error);
+    console.error('❌ [API:CANAL:MAPEAMENTO] Erro:', error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Erro interno do servidor' },
       { status: 500 }
     );
   }

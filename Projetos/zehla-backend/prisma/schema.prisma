@@ -1331,3 +1331,89 @@ model ChannelSyncLog {
   @@index([status, createdAt])
   @@map("channel_sync_logs")
 }
+
+// ============================================================
+// ZEHLA FISCAL — Módulo Fiscal (NF-e / NFS-e)
+// ============================================================
+
+model TaxProfile {
+  id                String   @id @default(cuid())
+  propertyId        String   @unique
+  cnpj              String?
+  razaoSocial       String?
+  nomeFantasia      String?
+  inscricaoMunicipal String?
+  inscricaoEstadual String?
+  regimeTributario  String   @default("SIMPLES_NACIONAL") // SIMPLES_NACIONAL, LUCRO_PRESUMIDO, LUCRO_REAL
+  codigoAtividade   String? // CNAE
+  certificadoDigital Json? // { type, content, password, expiresAt }
+  enderecoCompleto  Json? // { logradouro, numero, complemento, bairro, cidade, uf, cep }
+  emailNF           String?
+  telefoneNF        String?
+  // Configurações de emissão
+  autoEmissaoNF     Boolean  @default(false)
+  tipoNFS           String   @default("NFS_E") // NFS_E, NF_E
+  provedorNF        String? // "focus_nfe", "enotas", "betha", "outro"
+  chaveAPIProvedor  String?
+  ambienteEmissao   String   @default("HOMOLOGACAO") // HOMOLOGACAO, PRODUCAO
+  // Metadados
+  isActive          Boolean  @default(false)
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([propertyId])
+  @@map("tax_profiles")
+}
+
+model FiscalInvoice {
+  id              String         @id @default(cuid())
+  propertyId      String
+  reservationId   String?
+  invoiceNumber   String? // Número da nota fiscal emitida
+  accessKey       String? // Chave de acesso da NF (44 dígitos)
+  type            String         @default("NFS_E") // NF_E, NFS_E, NOTA_AVULSA
+  status          FiscalStatus   @default(PENDENTE)
+  valorServicos   Float          @default(0)
+  valorDeducoes   Float          @default(0)
+  valorLiquido    Float          @default(0)
+  valorImpostos   Float          @default(0)
+  aliquota        Float          @default(0)
+  // Dados do tomador (hóspede)
+  tomadorNome     String?
+  tomadorCpfCnpj  String?
+  tomadorEmail    String?
+  tomadorEndereco Json?
+  // Dados da emissão
+  emitidoEm       DateTime?
+  canceladoEm     DateTime?
+  motivoCancelamento String?    @db.Text
+  // Integração com provedor
+  provedor        String? // "focus_nfe", "enotas", etc.
+  provedorId      String? // ID da nota no provedor externo
+  provedorResponse Json? // Resposta completa do provedor
+  // PDF e XML
+  pdfUrl          String?
+  xmlUrl          String?
+  // Metadados
+  error           String?
+  metadata        Json?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([propertyId, status])
+  @@index([propertyId, createdAt])
+  @@index([reservationId])
+  @@index([invoiceNumber])
+  @@index([accessKey])
+  @@map("fiscal_invoices")
+}
+
+enum FiscalStatus {
+  PENDENTE
+  EMITINDO
+  EMITIDA
+  CANCELADA
+  ERRO
+  HOMOLOGADA
+}
