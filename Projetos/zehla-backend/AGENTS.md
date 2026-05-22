@@ -166,4 +166,41 @@ O ZEHLA adota a postura de "Endurecimento de Contexto" para evitar a degradaçã
 
 ---
 
+---
+
+## 🚀 11. PROCEDIMENTO DE INICIALIZAÇÃO DO ZCC
+
+Quando o usuário pedir para abrir o ZCC no navegador:
+
+1. **Verificar se o servidor está rodando**:
+   ```bash
+   lsof -i :3000 2>/dev/null | head -5
+   ```
+   Se não estiver, iniciar:
+   ```bash
+   npx next dev -p 3000 &
+   sleep 12  # Aguardar compilação inicial
+   ```
+
+2. **Verificar se responde** (curl confirmatório):
+   ```bash
+   curl -s -o /dev/null -w "HTTP %{http_code} - %{size_download}bytes - %{time_total}s\n" http://localhost:3000/zcc-login
+   ```
+
+3. **Abrir no navegador** (usar AppleScript para garantir):
+   ```bash
+   osascript -e 'tell application "Google Chrome" to open location "http://localhost:3000/zcc-login"' -e 'tell application "Google Chrome" to activate'
+   ```
+
+4. **Credenciais ZCC** (client-side, armazenadas em localStorage):
+   - Email: `admin@smarthotel.com`
+   - Senha: `zehla2026`
+   - O login cria cookie `__session=fake-admin-token` com validade de 24h
+   - Após login, redireciona para `/zcc`
+
+5. **Observações**:
+   - O login é client-side (NENHUMA chamada de API é feita)
+   - A senha vem de `NEXT_PUBLIC_ZCC_ADMIN_PASSWORD` no `.env` (fallback `zehla2026`)
+   - O email vem de `NEXT_PUBLIC_ZCC_ADMIN_EMAIL` (fallback `admin@smarthotel.com`)
+
 *Que a gravidade nunca nos puxe para baixo. O ZEHLA é o futuro da hospitalidade autônoma.*
