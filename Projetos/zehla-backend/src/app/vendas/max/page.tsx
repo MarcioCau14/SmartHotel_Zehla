@@ -3,21 +3,25 @@
 import { Suspense } from 'react';
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Check, 
-  Crown, 
-  ShieldCheck, 
-  Users, 
-  Building2, 
+import {
+  Check,
+  Crown,
+  ShieldCheck,
+  Users,
+  Building2,
   Brain,
   ArrowRight,
   Gem,
   Lock,
   Globe,
-  Star
+  Star,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Navbar } from '@/components/sales/Navbar';
+import { PricingTable } from '@/components/sales/PricingTable';
+import { SocialProof } from '@/components/sales/SocialProof';
+import { FAQ } from '@/components/sales/FAQ';
 import { ExclusiveWaitlistForm } from '@/components/sales/ExclusiveWaitlistForm';
 import { PremiumUpsell } from '@/components/sales/PremiumUpsell';
 import { LandingTracker } from '@/components/sales/LandingTracker';
@@ -39,29 +43,13 @@ export default function MaxSalesPage() {
       <Suspense fallback={null}>
         <LandingTracker />
       </Suspense>
-      
-      {/* Navigation */}
-      <nav className="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
-            <Brain className="w-5 h-5 text-emerald-400" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-lg text-neutral-100 leading-none">ZEHLA</span>
-            <span className="text-[10px] text-neutral-500 leading-none">SmartHotel</span>
-          </div>
-        </Link>
-        <div className="flex items-center gap-4">
-          <Link href="/login">
-            <Button variant="ghost" className="text-neutral-400 hover:text-white text-xs">Entrar no Dashboard</Button>
-          </Link>
-        </div>
-      </nav>
+
+      <Navbar currentPlan="max" />
 
       {/* Hero Section */}
       <section className="relative pt-16 pb-32 px-4 overflow-hidden text-center">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[600px] bg-emerald-500/5 blur-[180px] -z-10" />
-        
+
         <div className="max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -70,22 +58,21 @@ export default function MaxSalesPage() {
           >
             <Crown className="w-4 h-4" /> PERFORMANCE SEM LIMITES
           </motion.div>
-          
+
           <h1 className="text-5xl md:text-7xl font-black mb-8 leading-tight tracking-tighter">
-            Domine o mercado com <br/><span className="text-emerald-400">Custo Variável ZERO.</span>
+            Domine o mercado com <br /><span className="text-emerald-400">Custo Variável ZERO.</span>
           </h1>
-          
+
           <p className="text-neutral-400 text-lg md:text-xl mb-16 max-w-3xl mx-auto leading-relaxed">
             O Plano MAX é a decisão estratégica de quem parou de dar dinheiro para as plataformas e decidiu <span className="text-white font-bold italic underline decoration-emerald-500/30">investir no próprio império.</span> Sem comissões, sem limites, suporte de elite.
           </p>
 
           <div className="grid md:grid-cols-12 gap-8 items-stretch">
-            {/* Features Detail */}
             <div className="md:col-span-7 glass-strong border border-white/5 rounded-[3rem] p-10 text-left relative overflow-hidden flex flex-col justify-between">
               <div className="absolute top-0 right-0 p-8 opacity-5">
                 <Building2 className="w-40 h-40" />
               </div>
-              
+
               <div className="relative">
                 <h3 className="text-3xl font-bold mb-8 flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-emerald-400/10 flex items-center justify-center">
@@ -98,7 +85,7 @@ export default function MaxSalesPage() {
                     { t: 'Taxa Zero em Todas as Reservas', d: 'Mantenha 100% da sua receita direta. Sua única despesa é uma assinatura fixa, transformando seu custo variável em lucro líquido.' },
                     { t: 'Consolidação de Rede (Multi-Hotel)', d: 'Visão de Monarca sobre toda a sua rede. Controle financeiro e de ocupação centralizado em um único cockpit.' },
                     { t: 'Acesso Direto à Engenharia ZEHLA', d: 'Fila prioritária com nossos desenvolvedores seniores. Sua operação é nossa prioridade absoluta, 24/7.' },
-                    { t: 'Inteligência de Mercado Exclusiva', d: 'Análise de dados de concorrência e comportamento de consumo para garantir que você esteja sempre à frente.' }
+                    { t: 'Inteligência de Mercado Exclusiva', d: 'Análise de dados de concorrência e comportamento de consumo para garantir que você esteja sempre à frente.' },
                   ].map((item) => (
                     <div key={item.t} className="group">
                       <h4 className="text-emerald-400 font-bold mb-1 flex items-center gap-2">
@@ -111,28 +98,30 @@ export default function MaxSalesPage() {
               </div>
             </div>
 
-            {/* Pricing Card */}
             <div className="md:col-span-5 bg-neutral-900/50 border border-emerald-500/20 rounded-[3rem] p-10 flex flex-col justify-center relative group">
               <div className="relative text-center">
-                 <span className="text-neutral-500 text-xs font-black uppercase tracking-[0.3em] mb-4 block">Assinatura Profissional</span>
-                 <div className="flex items-baseline justify-center gap-2 mb-6">
-                    <span className="text-2xl text-neutral-500 font-bold">R$</span>
-                    <span className="text-7xl font-black text-white">798</span>
-                    <span className="text-2xl text-neutral-500 font-bold">/mês</span>
-                 </div>
-                  <div className="py-3 px-6 rounded-2xl bg-emerald-400/10 border border-emerald-400/30 text-emerald-400 font-black text-xl mb-12 inline-block">
-                     TUDO INCLUSO
-                  </div>
+                <span className="text-neutral-500 text-xs font-black uppercase tracking-[0.3em] mb-4 block">Assinatura Profissional</span>
+                <div className="flex items-baseline justify-center gap-2 mb-6">
+                  <span className="text-2xl text-neutral-500 font-bold">R$</span>
+                  <span className="text-7xl font-black text-white">798</span>
+                  <span className="text-2xl text-neutral-500 font-bold">/mês</span>
+                </div>
+                <div className="py-3 px-6 rounded-2xl bg-emerald-400/10 border border-emerald-400/30 text-emerald-400 font-black text-xl mb-4 inline-block">
+                  TUDO INCLUSO
+                </div>
+                <div className="mb-12 px-4 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-widest inline-block">
+                  Tudo Incluso — Sem Taxas
+                </div>
 
-                 <Link href="/teste-gratis?plan=max" className="block w-full">
-                    <Button className="w-full h-20 rounded-[2rem] bg-emerald-400 hover:bg-emerald-500 text-black text-xl font-black shadow-2xl shadow-emerald-400/30 transition-all active:scale-95 group">
-                      Ativar Plano MAX
-                      <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-2 transition-transform" />
-                    </Button>
-                 </Link>
-                 <p className="mt-6 text-[10px] text-neutral-600 font-bold uppercase tracking-widest leading-relaxed">
-                   Setup Profissional • Treinamento de Equipe • Suporte VIP
-                 </p>
+                <Link href="/teste-gratis?plan=max" className="block w-full">
+                  <Button className="w-full h-20 rounded-[2rem] bg-emerald-400 hover:bg-emerald-500 text-black text-xl font-black shadow-2xl shadow-emerald-400/30 transition-all active:scale-95 group">
+                    Ativar Plano MAX
+                    <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                  </Button>
+                </Link>
+                <p className="mt-6 text-[10px] text-neutral-600 font-bold uppercase tracking-widest leading-relaxed">
+                  Setup Profissional • Treinamento de Equipe • Suporte VIP
+                </p>
               </div>
             </div>
           </div>
@@ -142,24 +131,33 @@ export default function MaxSalesPage() {
       {/* Trust Grid */}
       <section className="py-32 px-4 relative">
         <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8">
-           {[
-             { i: Lock, t: 'Segurança de Dados', d: 'Proteção total das informações dos seus hóspedes e da sua pousada.' },
-             { i: Globe, t: 'Alta Disponibilidade', d: 'Sistema operando 24h por dia, 7 dias por semana, sem interrupções.' },
-             { i: Users, t: 'Equipe Conectada', d: 'Múltiplos acessos para sua recepção, gerência e financeiro.' },
-             { i: Star, t: 'IA de Elite', d: 'Atendimento personalizado que mimetiza o tom de voz da sua marca.' }
-           ].map((card, i) => (
-             <div key={i} className="p-8 rounded-[2rem] glass-strong border border-white/5 hover:border-emerald-400/30 transition-all group">
-                <card.i className="w-8 h-8 text-neutral-600 group-hover:text-emerald-400 transition-colors mb-6" />
-                <h4 className="font-bold text-lg mb-2">{card.t}</h4>
-                <p className="text-neutral-500 text-sm">{card.d}</p>
-             </div>
-           ))}
+          {[
+            { i: Lock, t: 'Segurança de Dados', d: 'Proteção total das informações dos seus hóspedes e da sua pousada.' },
+            { i: Globe, t: 'Alta Disponibilidade', d: 'Sistema operando 24h por dia, 7 dias por semana, sem interrupções.' },
+            { i: Users, t: 'Equipe Conectada', d: 'Múltiplos acessos para sua recepção, gerência e financeiro.' },
+            { i: Star, t: 'IA de Elite', d: 'Atendimento personalizado que mimetiza o tom de voz da sua marca.' },
+          ].map((card, i) => (
+            <div key={i} className="p-8 rounded-[2rem] glass-strong border border-white/5 hover:border-emerald-400/30 transition-all group">
+              <card.i className="w-8 h-8 text-neutral-600 group-hover:text-emerald-400 transition-colors mb-6" />
+              <h4 className="font-bold text-lg mb-2">{card.t}</h4>
+              <p className="text-neutral-500 text-sm">{card.d}</p>
+            </div>
+          ))}
         </div>
       </section>
 
+      {/* Social Proof */}
+      <SocialProof />
+
+      {/* Pricing Table */}
+      <PricingTable />
+
+      {/* FAQ */}
+      <FAQ />
+
       {/* Exclusive Section */}
       <section className="scroll-mt-24">
-        <PremiumUpsell 
+        <PremiumUpsell
           currentPlan="MAX"
           targetPlan="EXCLUSIVE"
           title="Precisa de uma solução sob medida?"
@@ -168,14 +166,14 @@ export default function MaxSalesPage() {
             'Integrações customizadas',
             'Treinamento presencial de IA',
             'Hardware proprietário ZEHLA',
-            'Consultoria Mensal de Resultados'
+            'Consultoria Mensal de Resultados',
           ]}
           onTargetClick={handleExclusiveClick}
         />
-        
+
         <AnimatePresence>
           {showWaitlist && (
-            <motion.div 
+            <motion.div
               ref={waitlistRef}
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
@@ -187,10 +185,10 @@ export default function MaxSalesPage() {
                   <Star className="w-8 h-8 text-emerald-400 animate-pulse" />
                 </div>
                 <div className="text-center mb-12">
-                   <h3 className="text-3xl font-bold mb-4">Entre na Lista VIP Exclusive</h3>
-                   <p className="text-neutral-500 max-w-lg mx-auto">
-                     Avaliamos individualmente cada solicitação para garantir o mais alto padrão de entrega. Preencha os dados abaixo e nossa equipe entrará em contato.
-                   </p>
+                  <h3 className="text-3xl font-bold mb-4">Entre na Lista VIP Exclusive</h3>
+                  <p className="text-neutral-500 max-w-lg mx-auto">
+                    Avaliamos individualmente cada solicitação para garantir o mais alto padrão de entrega. Preencha os dados abaixo e nossa equipe entrará em contato.
+                  </p>
                 </div>
                 <ExclusiveWaitlistForm />
               </div>

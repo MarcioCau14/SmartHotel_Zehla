@@ -2,17 +2,21 @@
 
 import { Suspense } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Check, 
-  ArrowRight, 
-  ShieldCheck, 
-  Zap, 
+import {
+  Check,
+  ArrowRight,
+  ShieldCheck,
+  Zap,
   Brain,
   TrendingUp,
   Clock,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Navbar } from '@/components/sales/Navbar';
+import { PricingTable } from '@/components/sales/PricingTable';
+import { SocialProof } from '@/components/sales/SocialProof';
+import { FAQ } from '@/components/sales/FAQ';
 import { PremiumUpsell } from '@/components/sales/PremiumUpsell';
 import { LandingTracker } from '@/components/sales/LandingTracker';
 import { MainFooter } from '@/components/landing/MainFooter';
@@ -23,30 +27,13 @@ export default function LiteSalesPage() {
       <Suspense fallback={null}>
         <LandingTracker />
       </Suspense>
-      
-      {/* Navigation */}
-      <nav className="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
-            <Brain className="w-5 h-5 text-orange-500" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-lg text-neutral-100 leading-none">ZEHLA</span>
-            <span className="text-[10px] text-neutral-500 leading-none">SmartHotel</span>
-          </div>
-        </Link>
-        <div className="flex items-center gap-4">
-          <span className="text-xs text-neutral-500 hidden sm:inline">Pousadas de 5 a 10 quartos</span>
-          <Link href="/login">
-            <Button variant="ghost" className="text-neutral-400 hover:text-white text-xs">Entrar</Button>
-          </Link>
-        </div>
-      </nav>
+
+      <Navbar currentPlan="lite" />
 
       {/* Hero Section */}
       <section className="relative pt-12 pb-24 px-4 overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-orange-500/5 blur-[120px] -z-10" />
-        
+
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -55,11 +42,11 @@ export default function LiteSalesPage() {
           >
             <Zap className="w-3 h-3" /> Plano Lite: Comece agora
           </motion.div>
-          
+
           <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight tracking-tighter">
-            Pare de sustentar plataformas e <br/><span className="text-orange-500">recupere seu lucro agora.</span>
+            Pare de sustentar plataformas e <br /><span className="text-orange-500">recupere seu lucro agora.</span>
           </h1>
-          
+
           <p className="text-neutral-400 text-lg md:text-xl mb-12 max-w-2xl mx-auto leading-relaxed">
             O Plano Lite elimina a demora no WhatsApp e a dependência de sites que levam 15% do seu faturamento. Atendimento inteligente 24h para você focar no que importa: <span className="text-white font-bold">dinheiro no seu bolso.</span>
           </p>
@@ -74,6 +61,9 @@ export default function LiteSalesPage() {
                   <span className="text-6xl font-black text-white">248</span>
                   <span className="text-xl text-neutral-500">/mês</span>
                 </div>
+                <div className="mt-3 px-4 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-widest">
+                  Assinatura 100% Fixa — TAXA ZERO
+                </div>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4 mb-10 text-left">
@@ -83,7 +73,7 @@ export default function LiteSalesPage() {
                   'Agenda de Reservas no Celular',
                   'Suporte via Email',
                   'Lembrete para quem não fechou',
-                  'Recebimento via PIX Direto'
+                  'Recebimento via PIX Direto',
                 ].map((feat) => (
                   <div key={feat} className="flex items-center gap-3 text-neutral-400">
                     <Check className="w-4 h-4 text-orange-500" />
@@ -106,7 +96,7 @@ export default function LiteSalesPage() {
         </div>
       </section>
 
-      {/* Persuasion Section */}
+      {/* Grid de Features */}
       <section className="py-24 bg-neutral-900/30 border-y border-white/5">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-12 text-center md:text-left">
@@ -141,8 +131,17 @@ export default function LiteSalesPage() {
         </div>
       </section>
 
-      {/* Upsell Strategic Section */}
-      <PremiumUpsell 
+      {/* Social Proof */}
+      <SocialProof />
+
+      {/* Pricing Table */}
+      <PricingTable />
+
+      {/* FAQ */}
+      <FAQ />
+
+      {/* Upsell LITE → PRO */}
+      <PremiumUpsell
         currentPlan="LITE"
         targetPlan="PRO"
         title="Quer aumentar seu lucro com Preços Inteligentes?"
@@ -150,8 +149,8 @@ export default function LiteSalesPage() {
         benefits={[
           'Preços Inteligentes (Venda mais na Alta)',
           'Busca Automática de Clientes',
-          'Suporte via WhatsApp',
-          'Taxa menor (só 2%)'
+          'Suporte via WhatsApp VIP',
+          'Recuperação de vendas perdidas',
         ]}
       />
 
