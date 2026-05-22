@@ -1,5 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { dispatchWelcomeMessage } from '@/lib/queues/welcome-queue';
+
+async function triggerWelcomeMessage(userId: string, property: any, user: any, body: any) {
+  try {
+    const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    await dispatchWelcomeMessage({
+      userId,
+      propertyName: property?.nome || user.name,
+      ownerName: user.name,
+      email: user.email,
+      whatsapp: user.phone || '',
+      trialEndsAt: trialEndsAt.toISOString(),
+      utmCampaign: body.utm?.utm_campaign,
+    });
+  } catch (err) {
+    console.error('[ONBOARDING] Welcome message dispatch failed:', err);
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -87,6 +105,9 @@ export async function POST(request: NextRequest) {
         })),
       });
     }
+
+    // Fire-and-forget: dispatch welcome message via BullMQ
+    triggerWelcomeMessage(userId, property, user, body);
 
     return NextResponse.json({
       success: true,
