@@ -119,6 +119,14 @@ model Property {
   currentPeriodEnd     DateTime?
   cancelAtPeriodEnd    Boolean   @default(false)
 
+  // UTM Attribution (Fase 6 — Landing Pages Dinâmicas)
+  utmSource            String?
+  utmMedium            String?
+  utmCampaign          String?
+  utmTerm              String?
+  utmContent           String?
+  refSource            String?
+
   userId        String
   user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   rooms         Room[]

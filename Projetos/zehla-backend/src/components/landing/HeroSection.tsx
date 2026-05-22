@@ -5,9 +5,16 @@ import { Brain, ChevronRight, ChevronDown } from 'lucide-react';
 
 interface HeroSectionProps {
   onNavigate?: () => void;
+  headline?: string;
+  highlight?: string;
+  subtitle?: string;
 }
 
-export function HeroSection({ onNavigate }: HeroSectionProps) {
+export function HeroSection({ onNavigate, headline, highlight, subtitle }: HeroSectionProps) {
+  const h1 = headline || 'Sua pousada no';
+  const h1Highlight = highlight || 'piloto automático';
+  const sub = subtitle || 'Automatize <span style="color: \'#DCF8C6\', fontWeight: 600">reservas</span>, <span style="color: \'#DCF8C6\', fontWeight: 600">WhatsApp</span>, <span style="color: \'#DCF8C6\', fontWeight: 600">precificação</span> e <span style="color: \'#DCF8C6\', fontWeight: 600">financeiro</span> — tudo em um só lugar. Sem planilhas, sem estresse.';
+
   return (
     <section
       className="relative overflow-hidden"
@@ -41,8 +48,8 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
                 fontFamily: "'Rubik', sans-serif",
               }}
             >
-              Sua pousada no<br />
-              <span style={{ color: '#DCF8C6' }}>piloto automático</span>
+              {h1}<br />
+              <span style={{ color: '#DCF8C6' }}>{h1Highlight}</span>
             </h1>
 
             {/* Subtitle */}
@@ -54,9 +61,8 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
                 lineHeight: 1.7,
                 fontFamily: "'Rubik', sans-serif",
               }}
-            >
-              Automatize <span style={{ color: '#DCF8C6', fontWeight: 600 }}>reservas</span>, <span style={{ color: '#DCF8C6', fontWeight: 600 }}>WhatsApp</span>, <span style={{ color: '#DCF8C6', fontWeight: 600 }}>precificação</span> e <span style={{ color: '#DCF8C6', fontWeight: 600 }}>financeiro</span> — tudo em um só lugar. Sem planilhas, sem estresse.
-            </p>
+              dangerouslySetInnerHTML={{ __html: sub }}
+            />
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">

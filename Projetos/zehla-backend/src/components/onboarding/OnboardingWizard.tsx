@@ -62,9 +62,17 @@ const defaultData: OnboardingData = {
 
 interface OnboardingWizardProps {
   onComplete: () => void;
+  utmData?: {
+    utm_source: string;
+    utm_medium: string;
+    utm_campaign: string;
+    utm_term: string;
+    utm_content: string;
+    ref: string;
+  };
 }
 
-export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
+export function OnboardingWizard({ onComplete, utmData }: OnboardingWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [data, setData] = useState<OnboardingData>(defaultData);
   const [isActivating, setIsActivating] = useState(false);
@@ -174,6 +182,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           rooms: data.rooms,
           services: data.services,
           payment: data.payment,
+          utm: utmData,
         }),
       });
 

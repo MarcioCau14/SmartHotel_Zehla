@@ -53,6 +53,12 @@ export async function POST(request: NextRequest) {
         plan: 'PRO',
         isTrial: true,
         trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        utmSource: body.utm?.utm_source || null,
+        utmMedium: body.utm?.utm_medium || null,
+        utmCampaign: body.utm?.utm_campaign || null,
+        utmTerm: body.utm?.utm_term || null,
+        utmContent: body.utm?.utm_content || null,
+        refSource: body.utm?.ref || null,
       },
     });
 

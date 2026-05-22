@@ -11,6 +11,8 @@ import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
 import { PricingSection } from '@/components/landing/PricingSection';
 import { CTASection } from '@/components/landing/CTASection';
+import { useUTMParams, getUTMQueryString } from '@/hooks/useUTMParams';
+import { getDynamicHeadline } from '@/lib/landing/dynamicHeadlines';
 
 const navLinks = [
   { label: 'Funcionalidades', href: '#funcionalidades' },
@@ -23,6 +25,8 @@ export default function Home() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const utm = useUTMParams();
+  const dynamicHeadline = getDynamicHeadline(utm.utm_campaign);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -38,7 +42,8 @@ export default function Home() {
 
   const goToTesteGratis = () => {
     setMobileMenuOpen(false);
-    router.push('/teste-gratis');
+    const utmQuery = getUTMQueryString();
+    router.push(`/teste-gratis${utmQuery}`);
   };
 
   const goToLogin = () => {
@@ -132,7 +137,12 @@ export default function Home() {
 
       {/* ===== MAIN CONTENT ===== */}
       <main className="flex-1" style={{ paddingTop: '64px' }}>
-        <HeroSection onNavigate={goToTesteGratis} />
+        <HeroSection
+          onNavigate={goToTesteGratis}
+          headline={dynamicHeadline.h1}
+          highlight={dynamicHeadline.h1Highlight}
+          subtitle={dynamicHeadline.subtitle}
+        />
 
         {/* Social proof strip */}
         <section style={{ backgroundColor: '#F0F2F5', padding: '40px 0' }}>
