@@ -39,13 +39,13 @@ export function ExclusiveWaitlistForm() {
 
   if (status === 'success') {
     return (
-      <div className="p-8 text-center bg-white rounded-3xl border border-neutral-100 shadow-xl animate-in fade-in zoom-in duration-500">
-        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="p-8 text-center rounded-[2.5rem] glass-strong border border-white/5 animate-in fade-in zoom-in duration-500">
+        <div className="w-16 h-16 bg-emerald-400/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6">
           <CheckCircle2 className="w-8 h-8" />
         </div>
-        <h3 className="text-2xl font-bold text-neutral-900 mb-2">Entramos na Frequência!</h3>
-        <p className="text-neutral-500">
-          Você acaba de dar o primeiro passo para o <strong>ZEHLA Exclusive</strong>. 
+        <h3 className="text-2xl font-bold text-white mb-2">Entramos na Frequência!</h3>
+        <p className="text-neutral-400">
+          Você acaba de dar o primeiro passo para o <strong className="text-white">ZEHLA Exclusive</strong>. 
           Nossa equipe entrará em contato em breve para um diagnóstico personalizado.
         </p>
       </div>
@@ -53,40 +53,42 @@ export function ExclusiveWaitlistForm() {
   }
 
   return (
-    <div className="p-8 bg-white rounded-3xl border border-neutral-100 shadow-2xl">
+    <div className="p-8 rounded-[2.5rem] glass-strong border border-white/5">
       <div className="flex items-center gap-2 mb-6">
-        <Sparkles className="w-5 h-5 text-orange-500" />
+        <Sparkles className="w-5 h-5 text-emerald-400" />
         <span className="text-xs font-bold uppercase tracking-widest text-neutral-400">Acesso Exclusivo</span>
       </div>
       
-      <h3 className="text-2xl font-bold text-neutral-900 mb-6">Lista de Espera Exclusive</h3>
+      <h3 className="text-2xl font-bold text-white mb-6">Lista de Espera Exclusive</h3>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Seu Nome</Label>
+            <Label htmlFor="name" className="text-neutral-400">Seu Nome</Label>
             <Input 
               id="name" 
               placeholder="Ex: Marciano Silva" 
               required 
               value={formData.name}
               onChange={(e) => setFormData({...formData, name: e.target.value})}
+              className="bg-white/5 border-white/10 text-white placeholder:text-neutral-600"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="pousada">Nome da Pousada</Label>
+            <Label htmlFor="pousada" className="text-neutral-400">Nome da Pousada</Label>
             <Input 
               id="pousada" 
               placeholder="Ex: Pousada do Sol" 
               required 
               value={formData.pousadaName}
               onChange={(e) => setFormData({...formData, pousadaName: e.target.value})}
+              className="bg-white/5 border-white/10 text-white placeholder:text-neutral-600"
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email">E-mail Profissional</Label>
+          <Label htmlFor="email" className="text-neutral-400">E-mail Profissional</Label>
           <Input 
             id="email" 
             type="email" 
@@ -94,22 +96,24 @@ export function ExclusiveWaitlistForm() {
             required 
             value={formData.email}
             onChange={(e) => setFormData({...formData, email: e.target.value})}
+            className="bg-white/5 border-white/10 text-white placeholder:text-neutral-600"
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="phone">WhatsApp</Label>
+            <Label htmlFor="phone" className="text-neutral-400">WhatsApp</Label>
             <Input 
               id="phone" 
               placeholder="(00) 00000-0000" 
               required 
               value={formData.phone}
               onChange={(e) => setFormData({...formData, phone: e.target.value})}
+              className="bg-white/5 border-white/10 text-white placeholder:text-neutral-600"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="rooms">Quantidade de Quartos</Label>
+            <Label htmlFor="rooms" className="text-neutral-400">Quantidade de Quartos</Label>
             <Input 
               id="rooms" 
               type="number" 
@@ -117,6 +121,7 @@ export function ExclusiveWaitlistForm() {
               required 
               value={formData.roomCount}
               onChange={(e) => setFormData({...formData, roomCount: e.target.value})}
+              className="bg-white/5 border-white/10 text-white placeholder:text-neutral-600"
             />
           </div>
         </div>
@@ -124,7 +129,7 @@ export function ExclusiveWaitlistForm() {
         <Button 
           type="submit" 
           disabled={status === 'loading'}
-          className="w-full bg-neutral-900 hover:bg-neutral-800 text-white py-6 rounded-xl font-bold text-lg shadow-lg shadow-neutral-200 transition-all active:scale-[0.98]"
+          className="w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-black py-6 rounded-xl font-bold text-lg shadow-lg shadow-emerald-400/20 transition-all active:scale-[0.98]"
         >
           {status === 'loading' ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -133,7 +138,7 @@ export function ExclusiveWaitlistForm() {
           )}
         </Button>
         
-        <p className="text-[10px] text-center text-neutral-400 mt-4">
+        <p className="text-[10px] text-center text-neutral-600 mt-4">
           Ao entrar na lista, você aceita nossos termos de privacidade. Entraremos em contato via WhatsApp/E-mail.
         </p>
       </form>
