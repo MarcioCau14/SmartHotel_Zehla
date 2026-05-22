@@ -81,9 +81,6 @@ export default function VendasProPage() {
                   <span className="text-7xl font-black text-white">448</span>
                   <span className="text-xl text-neutral-500">/mês</span>
                 </div>
-                <div className="mt-4 px-6 py-2 rounded-2xl bg-orange-500/10 border border-orange-500/30 text-orange-500 font-bold text-lg">
-                  + 2% por reserva
-                </div>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-6 mb-12 text-left">
@@ -169,10 +166,10 @@ export default function VendasProPage() {
       <PremiumUpsell 
         currentPlan="PRO"
         targetPlan="MAX"
-        title="Quer crescer sem pagar taxas por reserva?"
-        description="O Plano MAX é para pousadas que já vendem muito e querem previsibilidade total. Você para de pagar os 2% por reserva e ganha suporte de elite para toda sua rede."
+        title="Quer escala máxima para sua pousada?"
+        description="O Plano MAX é para pousadas que já vendem muito e querem previsibilidade total. Quartos ilimitados, ZCC completo e suporte de elite para toda sua rede."
         benefits={[
-          'TAXA ZERO por reserva',
+          'Quartos ilimitados',
           'Gestão de várias pousadas',
           'Prioridade Total de Suporte',
           'Relatórios Profissionais'

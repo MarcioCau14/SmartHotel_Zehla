@@ -8,21 +8,21 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy
 export const PLANS = {
   LITE: {
     name: 'Lite',
-    price: 49.90,
+    price: 248,
     stripePriceId: process.env.STRIPE_PRICE_LITE || 'price_lite_test',
     features: ['Até 8 quartos', 'WhatsApp Bot básico', 'Connect page', 'Dashboard completo'],
     limits: { rooms: 8, aiMessages: 100, connectViews: 1000 },
   },
   PRO: {
     name: 'Pro',
-    price: 99.90,
+    price: 448,
     stripePriceId: process.env.STRIPE_PRICE_PRO || 'price_pro_test',
     features: ['Até 20 quartos', 'WhatsApp Bot IA', 'Connect page + temas', 'Revenue Management', 'CRM básico'],
     limits: { rooms: 20, aiMessages: 1000, connectViews: 10000 },
   },
   MAX: {
     name: 'Max',
-    price: 199.90,
+    price: 798,
     stripePriceId: process.env.STRIPE_PRICE_MAX || 'price_max_test',
     features: ['Quartos ilimitados', 'WhatsApp Bot IA avançado', 'Connect page + afiliados', 'Revenue Management + IA', 'CRM completo', 'Channel Manager'],
     limits: { rooms: Infinity, aiMessages: Infinity, connectViews: Infinity },

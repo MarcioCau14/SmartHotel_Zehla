@@ -11,15 +11,15 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 
 const mockReports = [
-  { id: 'rep-1', period: 'Março 2026', totalGross: 84200.00, totalNet: 75780.00, fees: 8420.00, status: 'Fechado' },
-  { id: 'rep-2', period: 'Fevereiro 2026', totalGross: 92500.00, totalNet: 83250.00, fees: 9250.00, status: 'Fechado' },
-  { id: 'rep-3', period: 'Janeiro 2026', totalGross: 115000.00, totalNet: 103500.00, fees: 11500.00, status: 'Fechado' },
+  { id: 'rep-1', period: 'Março 2026', totalRevenue: 84200.00, totalCost: 448.00, status: 'Fechado' },
+  { id: 'rep-2', period: 'Fevereiro 2026', totalRevenue: 92500.00, totalCost: 448.00, status: 'Fechado' },
+  { id: 'rep-3', period: 'Janeiro 2026', totalRevenue: 115000.00, totalCost: 448.00, status: 'Fechado' },
 ];
 
 const mockTransactions = [
-  { id: 'tx-1', guest: 'Claudio J. Silveira', date: '28/03/2026', gross: 2450.00, fee: 245.00, net: 2205.00, status: 'CONFIRMADO' },
-  { id: 'tx-2', guest: 'Mariana P. Costa', date: '27/03/2026', gross: 1800.00, fee: 180.00, net: 1620.00, status: 'CONFIRMADO' },
-  { id: 'tx-3', guest: 'Roberto F. Lima', date: '26/03/2026', gross: 3200.00, fee: 320.00, net: 2880.00, status: 'PENDENTE' },
+  { id: 'tx-1', guest: 'Claudio J. Silveira', date: '28/03/2026', amount: 2450.00, status: 'CONFIRMADO' },
+  { id: 'tx-2', guest: 'Mariana P. Costa', date: '27/03/2026', amount: 1800.00, status: 'CONFIRMADO' },
+  { id: 'tx-3', guest: 'Roberto F. Lima', date: '26/03/2026', amount: 3200.00, status: 'PENDENTE' },
 ];
 
 export function FinancialReport() {
@@ -110,7 +110,7 @@ export function FinancialReport() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {/* Fixed package fee */}
+              {/* Monthly subscription */}
               <tr className="bg-orange-500/[0.02]">
                 <td className="px-6 py-4">
                   <div className="text-xs font-bold text-[#efefef]">Mensalidade ZEHLA Pro</div>
@@ -119,25 +119,6 @@ export function FinancialReport() {
                 <td className="px-6 py-4 text-xs text-[#898989]">05/03/2026 09:00</td>
                 <td className="px-6 py-4 text-xs text-[#4d4d4d]">N/A</td>
                 <td className="px-6 py-4 text-xs text-[#efefef] font-bold text-right">R$ 448,00</td>
-              </tr>
-              {/* Dynamic commission items */}
-              <tr className="hover:bg-white/[0.02] transition-colors">
-                <td className="px-6 py-4">
-                  <div className="text-xs font-bold text-[#efefef]">Comissão de Reserva (2%)</div>
-                  <div className="text-[10px] text-[#4d4d4d]">Hóspede: Claudio J. Silveira</div>
-                </td>
-                <td className="px-6 py-4 text-xs text-[#898989]">28/03/2026 14:45</td>
-                <td className="px-6 py-4 text-[10px] text-[#4d4d4d] font-mono">ID: E123456789</td>
-                <td className="px-6 py-4 text-xs text-orange-400 font-bold text-right">R$ 49,00</td>
-              </tr>
-              <tr className="hover:bg-white/[0.02] transition-colors">
-                <td className="px-6 py-4">
-                  <div className="text-xs font-bold text-[#efefef]">Comissão de Reserva (2%)</div>
-                  <div className="text-[10px] text-[#4d4d4d]">Hóspede: Mariana P. Costa</div>
-                </td>
-                <td className="px-6 py-4 text-xs text-[#898989]">27/03/2026 11:20</td>
-                <td className="px-6 py-4 text-[10px] text-[#4d4d4d] font-mono">ID: E987654321</td>
-                <td className="px-6 py-4 text-xs text-orange-400 font-bold text-right">R$ 36,00</td>
               </tr>
             </tbody>
           </table>
@@ -148,8 +129,8 @@ export function FinancialReport() {
             * Valores debitados automaticamente no cartão de crédito final <b>4455</b>.
           </div>
           <div className="text-right">
-            <span className="text-xs text-[#4d4d4d] mr-4">Total de Débitos: R$ 533,00</span>
-            <span className="text-lg font-bold text-orange-500">Valor Final: R$ 533,00</span>
+            <span className="text-xs text-[#4d4d4d] mr-4">Total de Débitos: R$ 448,00</span>
+            <span className="text-lg font-bold text-orange-500">Valor Final: R$ 448,00</span>
           </div>
         </div>
       </div>

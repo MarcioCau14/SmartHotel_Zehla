@@ -11,7 +11,6 @@ const plans = [
   {
     name: 'Lite',
     price: '248',
-    fee: '5%',
     description: 'Ideal para quem está começando a automatizar.',
     features: [
       'WhatsApp ZEHLA 24/7',
@@ -24,7 +23,6 @@ const plans = [
   {
     name: 'Pro',
     price: '448',
-    fee: '2%',
     description: 'O equilíbrio perfeito entre custo e performance.',
     features: [
       'Tudo do Lite',
@@ -38,11 +36,9 @@ const plans = [
   {
     name: 'Max',
     price: '798',
-    fee: '0%',
-    description: 'Taxa Zero. Para quem quer escala máxima.',
+    description: 'Para quem quer escala máxima.',
     features: [
       'Tudo do Pro',
-      'TAXA ZERO por reserva',
       'Zehla Control Center (ZCC)',
       'Multi-propriedades',
       'Gestor de Conta Dedicado',
@@ -103,12 +99,6 @@ export function PricingSection({ onNavigate }: PricingSectionProps) {
                     {plan.price}
                   </span>
                   <span style={{ color: '#667781', fontSize: '14px' }}>/mês</span>
-                </div>
-                <div className="mt-2 text-sm">
-                  <span style={{ fontWeight: 500, color: plan.fee === '0%' ? '#25D366' : '#667781' }}>
-                    + {plan.fee}
-                  </span>
-                  <span style={{ color: '#667781', marginLeft: '4px' }}>por reserva</span>
                 </div>
                 <p className="mt-3" style={{ color: '#667781', fontSize: '13px', lineHeight: 1.6 }}>
                   {plan.description}

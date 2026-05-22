@@ -74,9 +74,6 @@ export default function LiteSalesPage() {
                   <span className="text-6xl font-black text-white">248</span>
                   <span className="text-xl text-neutral-500">/mês</span>
                 </div>
-                <div className="mt-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-orange-500 font-bold text-sm">
-                  + 5% por reserva fechada
-                </div>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4 mb-10 text-left">

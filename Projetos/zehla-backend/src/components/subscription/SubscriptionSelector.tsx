@@ -13,7 +13,6 @@ const plans = [
     id: 'LITE',
     name: 'ZEHLA Lite',
     price: '248',
-    fee: '5%',
     features: [
       'WhatsApp ZEHLA 24/7',
       'Dashboard Financeiro Básico',
@@ -26,7 +25,6 @@ const plans = [
     id: 'PRO',
     name: 'ZEHLA Pro',
     price: '448',
-    fee: '2%',
     popular: true,
     features: [
       'Tudo do Lite',
@@ -41,10 +39,8 @@ const plans = [
     id: 'MAX',
     name: 'ZEHLA Max',
     price: '798',
-    fee: '0%',
     features: [
       'Tudo do Pro',
-      'TAXA ZERO por reserva',
       'Zehla Control Center (ZCC)',
       'Multi-propriedades',
       'Gestor de Conta Dedicado'
@@ -86,9 +82,6 @@ export function SubscriptionSelector() {
                     <div className="flex items-baseline gap-1 mt-1">
                       <span className="text-2xl font-bold text-orange-400">R$ {plan.price}</span>
                       <span className="text-xs text-neutral-500">/mês</span>
-                    </div>
-                    <div className="text-[10px] text-neutral-400 mt-1 uppercase font-bold tracking-tight">
-                      Taxa de Reserva: {plan.fee}
                     </div>
                   </div>
 

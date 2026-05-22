@@ -120,9 +120,9 @@ export default function MaxSalesPage() {
                     <span className="text-7xl font-black text-white">798</span>
                     <span className="text-2xl text-neutral-500 font-bold">/mês</span>
                  </div>
-                 <div className="py-3 px-6 rounded-2xl bg-emerald-400/10 border border-emerald-400/30 text-emerald-400 font-black text-xl mb-12 inline-block">
-                    SEM TAXA POR RESERVA
-                 </div>
+                  <div className="py-3 px-6 rounded-2xl bg-emerald-400/10 border border-emerald-400/30 text-emerald-400 font-black text-xl mb-12 inline-block">
+                     TUDO INCLUSO
+                  </div>
 
                  <Link href="/teste-gratis?plan=max" className="block w-full">
                     <Button className="w-full h-20 rounded-[2rem] bg-emerald-400 hover:bg-emerald-500 text-black text-xl font-black shadow-2xl shadow-emerald-400/30 transition-all active:scale-95 group">

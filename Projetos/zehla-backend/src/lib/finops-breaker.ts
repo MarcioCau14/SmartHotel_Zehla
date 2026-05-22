@@ -25,11 +25,12 @@ interface TenantCostSummary {
 }
 
 // Limites de custo por plano (em USD — moeda base do Stripe)
+// Proporcionais ao valor real de cada plano
 const COST_LIMITS_USD: Record<string, number> = {
-  TRIAL: 0.5,   // Hard-limit trial: ~R$ 2.50 (máximo 250 msgs IA)
-  LITE: 2,    // ~R$ 10
-  PRO: 10,    // ~R$ 50
-  MAX: 40,    // ~R$ 200
+  TRIAL: 0.5,   // Hard-limit trial: ~R$ 2.50 (máximo 50 msgs IA/dia)
+  LITE: 5,      // ~R$ 25 (proporcional ao plano R$248)
+  PRO: 20,      // ~R$ 100 (proporcional ao plano R$448)
+  MAX: 80,      // ~R$ 400 (proporcional ao plano R$798)
 };
 
 // Custos operacionais em USD (preços das APIs)

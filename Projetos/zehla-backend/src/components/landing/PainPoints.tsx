@@ -14,12 +14,12 @@ export function PainPoints() {
   const otaLoss = totalRevenue * otaCommission;
 
   const planData = {
-    Lite: { fee: 0.05, base: 248, label: 'Lite (5%)' },
-    Pro: { fee: 0.02, base: 448, label: 'Pro (2%)' },
-    Max: { fee: 0.00, base: 798, label: 'Max (0%)' },
+    Lite: { base: 248, label: 'Lite' },
+    Pro: { base: 448, label: 'Pro' },
+    Max: { base: 798, label: 'Max' },
   };
 
-  const zehlaCost = totalRevenue * planData[selectedPlan].fee + planData[selectedPlan].base;
+  const zehlaCost = planData[selectedPlan].base;
   const netSavings = otaLoss - zehlaCost;
 
   return (
