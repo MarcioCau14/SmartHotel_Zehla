@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Users, DollarSign, Clock, Percent, TrendingUp, BedDouble, RefreshCw } from 'lucide-react';
 import { MetricCard } from '@/components/dashboard/MetricCard';
+import Link from 'next/link';
 
 interface KPI {
   active_guests: number;
@@ -29,11 +30,11 @@ export default function PainelPage() {
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4">
+      <div className="flex flex-col items-center justify-center h-64 gap-4 bg-[#0a0a0c]/60 border border-white/5 rounded-2xl backdrop-blur-md">
         <p className="text-sm text-red-400">Erro ao carregar dados: {(error as Error).message}</p>
         <button
           onClick={() => refetch()}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 text-sm font-medium hover:bg-orange-500/20 transition-all"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#FF5500]/10 border border-[#FF5500]/25 text-[#FF5500] text-sm font-medium hover:bg-[#FF5500]/20 transition-all duration-300 shadow-[0_0_15px_rgba(255,85,0,0.1)]"
         >
           <RefreshCw className="w-4 h-4" />
           Tentar novamente
@@ -43,7 +44,7 @@ export default function PainelPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 relative">
       {/* KPI Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         <MetricCard
@@ -105,45 +106,45 @@ export default function PainelPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="glass-strong border border-white/5 rounded-2xl p-6">
-        <h3 className="text-sm font-bold text-neutral-400 mb-4 uppercase tracking-wider">Ações Rápidas</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="bg-[#0a0a0c]/60 border border-white/5 rounded-2xl p-6 backdrop-blur-md shadow-lg relative overflow-hidden">
+        <h3 className="text-xs font-bold text-neutral-500 mb-4 uppercase tracking-wider">Ações Rápidas</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 z-10 relative">
           {[
-            { label: 'Nova Reserva', href: '/dashboard/reservas', accent: 'border-orange-500/20 hover:bg-orange-500/5' },
-            { label: 'Mapa de Quartos', href: '/dashboard/quartos', accent: 'border-emerald-500/20 hover:bg-emerald-500/5' },
-            { label: 'Relatório Financeiro', href: '/dashboard/financeiro', accent: 'border-blue-500/20 hover:bg-blue-500/5' },
-            { label: 'Criar Promoção', href: '/dashboard/promocoes', accent: 'border-rose-500/20 hover:bg-rose-500/5' },
+            { label: 'Nova Reserva', href: '/cliente/reservas', style: 'border-[#FF5500]/15 hover:border-[#FF5500]/30 hover:bg-[#FF5500]/5 text-neutral-400 hover:text-white shadow-[0_0_10px_rgba(255,85,0,0.02)] hover:shadow-[0_0_15px_rgba(255,85,0,0.06)]' },
+            { label: 'Mapa de Quartos', href: '/cliente/quartos', style: 'border-[#00FF88]/15 hover:border-[#00FF88]/30 hover:bg-[#00FF88]/5 text-neutral-400 hover:text-white shadow-[0_0_10px_rgba(0,255,136,0.02)] hover:shadow-[0_0_15px_rgba(0,255,136,0.06)]' },
+            { label: 'Relatório Financeiro', href: '/cliente/financeiro', style: 'border-[#00CCFF]/15 hover:border-[#00CCFF]/30 hover:bg-[#00CCFF]/5 text-neutral-400 hover:text-white shadow-[0_0_10px_rgba(0,204,255,0.02)] hover:shadow-[0_0_15px_rgba(0,204,255,0.06)]' },
+            { label: 'Criar Promoção', href: '/cliente/promocoes', style: 'border-[#FF3366]/15 hover:border-[#FF3366]/30 hover:bg-[#FF3366]/5 text-neutral-400 hover:text-white shadow-[0_0_10px_rgba(255,51,102,0.02)] hover:shadow-[0_0_15px_rgba(255,51,102,0.06)]' },
           ].map((action) => (
-            <a
+            <Link
               key={action.label}
               href={action.href}
-              className={`flex items-center justify-center p-4 rounded-xl bg-white/[0.02] border ${action.accent} transition-all text-sm font-medium text-neutral-400 hover:text-white text-center`}
+              className={`flex items-center justify-center p-4 rounded-xl bg-white/[0.01] border ${action.style} transition-all duration-300 text-sm font-semibold text-center`}
             >
               {action.label}
-            </a>
+            </Link>
           ))}
         </div>
       </div>
 
       {/* Atividade Recente */}
-      <div className="glass-strong border border-white/5 rounded-2xl p-6">
-        <h3 className="text-sm font-bold text-neutral-400 mb-4 uppercase tracking-wider">Atividade Recente</h3>
-        <div className="space-y-3">
+      <div className="bg-[#0a0a0c]/60 border border-white/5 rounded-2xl p-6 backdrop-blur-md shadow-lg">
+        <h3 className="text-xs font-bold text-neutral-500 mb-4 uppercase tracking-wider">Atividade Recente</h3>
+        <div className="space-y-4">
           {[
-            { time: '10:32', text: 'Nova reserva — João Pereira (Quarto 101)', type: 'emerald' },
-            { time: '09:15', text: 'Check-out — Fernanda Costa (Quarto 102)', type: 'neutral' },
-            { time: '08:47', text: 'IA respondeu pergunta sobre Wi-Fi via WhatsApp', type: 'orange' },
-            { time: '08:00', text: 'Alerta: Ocupação abaixo da meta hoje', type: 'rose' },
+            { time: '10:32', text: 'Nova reserva — João Pereira (Quarto 101)', type: 'emerald', glow: 'shadow-[0_0_8px_#00FF88]' },
+            { time: '09:15', text: 'Check-out — Fernanda Costa (Quarto 102)', type: 'neutral', glow: '' },
+            { time: '08:47', text: 'IA respondeu pergunta sobre Wi-Fi via WhatsApp', type: 'orange', glow: 'shadow-[0_0_8px_#FF5500]' },
+            { time: '08:00', text: 'Alerta: Ocupação abaixo da meta hoje', type: 'rose', glow: 'shadow-[0_0_8px_#FF3366]' },
           ].map((activity, i) => (
-            <div key={i} className="flex items-start gap-3 py-2">
-              <span className="text-[10px] font-mono text-neutral-700 mt-0.5 w-10 shrink-0">{activity.time}</span>
-              <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
-                activity.type === 'emerald' ? 'bg-emerald-500' :
-                activity.type === 'orange' ? 'bg-orange-500' :
-                activity.type === 'rose' ? 'bg-rose-500' :
+            <div key={i} className="flex items-start gap-4 py-1.5 border-b border-white/[0.02] last:border-b-0">
+              <span className="text-[10px] font-mono text-neutral-600 mt-1 w-10 shrink-0">{activity.time}</span>
+              <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${activity.glow} ${
+                activity.type === 'emerald' ? 'bg-[#00FF88]' :
+                activity.type === 'orange' ? 'bg-[#FF5500]' :
+                activity.type === 'rose' ? 'bg-[#FF3366]' :
                 'bg-neutral-700'
               }`} />
-              <p className="text-sm text-neutral-400">{activity.text}</p>
+              <p className="text-sm text-neutral-400 group-hover:text-neutral-300">{activity.text}</p>
             </div>
           ))}
         </div>

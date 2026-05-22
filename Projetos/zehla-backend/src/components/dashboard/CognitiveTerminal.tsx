@@ -94,12 +94,12 @@ export function CognitiveTerminal({ placeholder = "Ex: Mude o preço dos quartos
       {/* Trigger button */}
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-sm text-neutral-500 w-full max-w-md group"
+        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0a0a0c]/60 border border-white/5 hover:bg-[#0a0a0c]/90 hover:border-white/10 transition-all text-sm text-neutral-400 w-full max-w-md group shadow-md"
       >
-        <Search className="w-4 h-4 text-neutral-600 group-hover:text-neutral-400" />
-        <span className="flex-1 text-left text-xs text-neutral-600">{placeholder}</span>
-        <kbd className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] text-neutral-600 font-mono">
-          <Command className="w-2.5 h-2.5" />K
+        <Search className="w-4 h-4 text-neutral-500 group-hover:text-[#FF5500] transition-colors duration-300" />
+        <span className="flex-1 text-left text-xs text-neutral-500 truncate group-hover:text-neutral-400 transition-colors">{placeholder}</span>
+        <kbd className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] text-neutral-500 font-mono transition-colors group-hover:text-[#FF5500] group-hover:border-[#FF5500]/30 duration-300">
+          <Command className="w-2.5 h-2.5 animate-pulse" />K
         </kbd>
       </button>
 
@@ -110,11 +110,11 @@ export function CognitiveTerminal({ placeholder = "Ex: Mude o preço dos quartos
           onClick={() => setOpen(false)}
         >
           <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/75 backdrop-blur-md"
             onClick={() => setOpen(false)}
           />
           <div
-            className="relative w-full max-w-lg mx-4 bg-neutral-900 border border-white/10 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden"
+            className="relative w-full max-w-lg mx-4 bg-[#0a0a0c]/95 border border-white/10 rounded-2xl shadow-2xl shadow-black/80 overflow-hidden backdrop-blur-xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Input */}
@@ -127,9 +127,9 @@ export function CognitiveTerminal({ placeholder = "Ex: Mude o preço dos quartos
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={placeholder}
-                className="flex-1 bg-transparent text-sm text-neutral-200 placeholder-neutral-600 outline-none"
+                className="flex-1 bg-transparent text-sm text-neutral-200 placeholder-neutral-700 outline-none"
               />
-              <kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] text-neutral-600 font-mono">
+              <kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] text-neutral-600 font-mono">
                 ESC
               </kbd>
             </div>
@@ -146,15 +146,15 @@ export function CognitiveTerminal({ placeholder = "Ex: Mude o preço dos quartos
                     key={suggestion.label}
                     onClick={() => handleSelect(suggestion)}
                     className={cn(
-                      'flex items-center gap-3 w-full px-4 py-2.5 text-left transition-colors',
+                      'flex items-center gap-3 w-full px-4 py-2.5 text-left transition-all duration-200 border-y border-transparent',
                       index === selectedIndex
-                        ? 'bg-orange-500/10 text-orange-400'
-                        : 'text-neutral-400 hover:bg-white/5'
+                        ? 'bg-[#FF5500]/10 text-[#FF5500] border-y-[#FF5500]/15'
+                        : 'text-neutral-400 hover:bg-white/[0.02]'
                     )}
                   >
                     <div className={cn(
-                      'w-7 h-7 rounded-lg flex items-center justify-center shrink-0',
-                      index === selectedIndex ? 'bg-orange-500/20' : 'bg-white/5'
+                      'w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all duration-300',
+                      index === selectedIndex ? 'bg-[#FF5500]/20 text-[#FF5500] shadow-[0_0_8px_rgba(255,85,0,0.25)]' : 'bg-white/5 text-neutral-400'
                     )}>
                       {iconMap[suggestion.icon || ''] || <ArrowRight className="w-3.5 h-3.5" />}
                     </div>
@@ -163,8 +163,8 @@ export function CognitiveTerminal({ placeholder = "Ex: Mude o preço dos quartos
                       <p className="text-[10px] text-neutral-600 truncate">{suggestion.description}</p>
                     </div>
                     <ArrowRight className={cn(
-                      'w-4 h-4 shrink-0',
-                      index === selectedIndex ? 'text-orange-500' : 'text-neutral-700'
+                      'w-4 h-4 shrink-0 transition-transform duration-300',
+                      index === selectedIndex ? 'text-[#FF5500] translate-x-0.5' : 'text-neutral-700'
                     )} />
                   </button>
                 ))
@@ -183,3 +183,4 @@ export function CognitiveTerminal({ placeholder = "Ex: Mude o preço dos quartos
     </>
   );
 }
+
