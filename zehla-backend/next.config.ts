@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  optimizeFonts: false,
   turbopack: {
     root: process.cwd(),
   },
@@ -29,4 +30,5 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
 

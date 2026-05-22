@@ -31,20 +31,23 @@ const steps = [
 ];
 
 const colorMap: Record<string, string> = {
-  orange: 'text-[#FF5500] bg-[#FF5500]/10 border-orange-500/20',
-  purple: 'text-[#FF5500] bg-[#FF5500]/10 border-purple-500/20',
-  amber: 'text-[#FF5500] bg-[#FF5500]/10 border-amber-500/20',
+  orange: 'text-[#FF5500] bg-[#FF5500]/10 border-[#FF5500]/20 shadow-[0_0_15px_rgba(255,85,0,0.1)]',
+  purple: 'text-[#FF5500] bg-[#FF5500]/10 border-[#FF5500]/20 shadow-[0_0_15px_rgba(255,85,0,0.1)]',
+  amber: 'text-[#FF5500] bg-[#FF5500]/10 border-[#FF5500]/20 shadow-[0_0_15px_rgba(255,85,0,0.1)]',
 };
 
 const lineColorMap: Record<string, string> = {
-  orange: 'bg-orange-500',
-  purple: 'bg-purple-500',
-  amber: 'bg-amber-500',
+  orange: 'bg-[#FF5500] shadow-md shadow-[#FF5500]/20',
+  purple: 'bg-[#FF5500] shadow-md shadow-[#FF5500]/20',
+  amber: 'bg-[#FF5500] shadow-md shadow-[#FF5500]/20',
 };
 
 export function HowItWorksSection() {
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+    <section className="relative py-24 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto z-10">
+      {/* Subtle Background Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#FF5500]/3 rounded-full blur-[120px] pointer-events-none -z-10" />
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -52,17 +55,17 @@ export function HowItWorksSection() {
         transition={{ duration: 0.6 }}
         className="text-center mb-16"
       >
-        <h2 className="text-3xl sm:text-4xl font-bold text-[#fafafa] mb-4">
-          Em <span className="gradient-text">3 passos simples</span>
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4">
+          Em <span className="text-[#FF5500]">3 passos simples</span>
         </h2>
-        <p className="text-[#898989] text-lg max-w-2xl mx-auto">
-          Do zero ao piloto automático em minutos. Sem complicação técnica.
+        <p className="text-[#898989] text-base max-w-2xl mx-auto">
+          Do zero ao piloto automático em minutos. Sem complicação técnica e pronto para faturar.
         </p>
       </motion.div>
 
       <div className="relative max-w-4xl mx-auto">
         {/* Connecting line */}
-        <div className="hidden md:block absolute top-16 left-[16.67%] right-[16.67%] h-0.5 bg-gradient-to-r from-orange-500/40 via-purple-500/40 to-amber-500/40" />
+        <div className="hidden md:block absolute top-16 left-[16.67%] right-[16.67%] h-px bg-gradient-to-r from-[#FF5500]/20 via-[#FF5500]/60 to-[#FF5500]/20" />
 
         <div className="grid md:grid-cols-3 gap-8 md:gap-12">
           {steps.map((item, i) => (
@@ -88,7 +91,7 @@ export function HowItWorksSection() {
                 </div>
               </div>
 
-              <h3 className="text-xl font-semibold text-[#fafafa] mb-3">
+              <h3 className="text-xl font-bold text-white tracking-tight mb-3">
                 {item.title}
               </h3>
               <p className="text-sm text-[#898989] leading-relaxed max-w-xs mx-auto">

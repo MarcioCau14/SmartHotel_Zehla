@@ -83,15 +83,15 @@ export default function Home() {
       >
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
-              <Brain className="w-5 h-5 text-orange-500" />
+          <div className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-xl bg-[#FF5500]/10 border border-[#FF5500]/20 flex items-center justify-center group-hover:bg-[#FF5500]/20 transition-all duration-300 shadow-[0_0_12px_rgba(255,85,0,0.15)] group-hover:shadow-[0_0_20px_rgba(255,85,0,0.3)]">
+              <Brain className="w-5 h-5 text-[#FF5500] group-hover:rotate-12 transition-transform duration-300" />
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-lg text-neutral-100 leading-none">
+              <span className="font-black text-lg text-white leading-none tracking-tight">
                 ZEHLA
               </span>
-              <span className="text-[10px] text-neutral-500 leading-none">
+              <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest leading-none mt-0.5">
                 SmartHotel
               </span>
             </div>
@@ -103,9 +103,10 @@ export default function Home() {
               <button
                 key={link.href}
                 onClick={() => handleNavClick(link.href)}
-                className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
+                className="text-sm text-neutral-400 hover:text-white font-semibold transition-colors duration-300 relative group/link"
               >
                 {link.label}
+                <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#FF5500] group-hover/link:w-full transition-all duration-300 rounded-full" />
               </button>
             ))}
           </div>
@@ -114,14 +115,14 @@ export default function Home() {
           <div className="hidden md:flex items-center gap-3">
             <button
               onClick={goToLogin}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-neutral-400 hover:text-neutral-200 transition-colors rounded-lg hover:bg-white/5"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-neutral-400 hover:text-white transition-colors rounded-xl hover:bg-white/5"
             >
               <LogIn className="w-4 h-4" />
               Entrar
             </button>
             <button
               onClick={goToTesteGratis}
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors shadow-lg shadow-orange-500/20 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#FF5500] hover:bg-[#ff6611] text-white text-sm font-black rounded-xl transition-all duration-300 shadow-[0_10px_20px_rgba(255,85,0,0.25)] hover:shadow-[0_12px_30px_rgba(255,85,0,0.45)] cursor-pointer active:scale-95 border border-white/10"
             >
               <Zap className="w-3.5 h-3.5" />
               Testar Grátis
@@ -164,7 +165,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={goToTesteGratis}
-                  className="flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-lg transition-colors w-full cursor-pointer"
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-[#FF5500] hover:bg-[#ff6611] text-white text-sm font-extrabold rounded-xl transition-all duration-300 w-full cursor-pointer border border-white/10"
                 >
                   <Zap className="w-4 h-4" />
                   Testar Grátis
@@ -176,15 +177,15 @@ export default function Home() {
       </nav>
 
       {/* Style Tweak Switcher */}
-      <div className="fixed top-24 right-4 z-[60] glass-strong flex flex-col p-3 gap-2 border border-orange-500/30 rounded-2xl shadow-xl shadow-black/50 animate-fade-in max-w-[180px]">
-        <div className="text-[10px] text-orange-500 font-bold uppercase tracking-wider mb-1">
+      <div className="fixed top-24 right-4 z-[60] bg-[#090909]/80 backdrop-blur-md flex flex-col p-3 gap-2 border border-[#FF5500]/30 rounded-2xl shadow-xl shadow-black/50 animate-fade-in max-w-[180px]">
+        <div className="text-[10px] text-[#FF5500] font-bold uppercase tracking-wider mb-1">
           Estilo Visual
         </div>
         <button
           onClick={() => setStyleOption('1')}
-          className={`px-3 py-2 text-xs font-medium rounded-lg text-left transition-all ${
+          className={`px-3 py-2 text-xs font-bold rounded-lg text-left transition-all ${
             styleOption === '1' 
-              ? 'bg-orange-500 text-white' 
+              ? 'bg-[#FF5500] text-white' 
               : 'bg-white/5 text-neutral-400 hover:text-neutral-200'
           }`}
         >
@@ -192,19 +193,19 @@ export default function Home() {
         </button>
         <button
           onClick={() => setStyleOption('2')}
-          className={`px-3 py-2 text-xs font-medium rounded-lg text-left transition-all ${
+          className={`px-3 py-2 text-xs font-bold rounded-lg text-left transition-all ${
             styleOption === '2' 
-              ? 'bg-orange-500 text-white' 
+              ? 'bg-[#FF5500] text-white' 
               : 'bg-white/5 text-neutral-400 hover:text-neutral-200'
           }`}
         >
-          2. Experiência (Default)
+          2. Experiência
         </button>
         <button
           onClick={() => setStyleOption('3')}
-          className={`px-3 py-2 text-xs font-medium rounded-lg text-left transition-all ${
+          className={`px-3 py-2 text-xs font-bold rounded-lg text-left transition-all ${
             styleOption === '3' 
-              ? 'bg-orange-500 text-white' 
+              ? 'bg-[#FF5500] text-white' 
               : 'bg-white/5 text-neutral-400 hover:text-neutral-200'
           }`}
         >
@@ -314,20 +315,20 @@ export default function Home() {
         </div>
         <button
           onClick={goToTesteGratis}
-          className="px-4 py-2 bg-[#FF5500] hover:bg-[#EA580C] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap shadow-md shadow-[#FF5500]/20"
+          className="px-4 py-2 bg-[#FF5500] hover:bg-[#ff6a1a] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap shadow-md shadow-[#FF5500]/20"
         >
           Testar Grátis
         </button>
       </div>
 
       {/* ===== FOOTER ===== */}
-      <footer className="border-t border-white/5 py-12 px-4">
+      <footer className="border-t border-white/5 py-12 px-4 bg-[#050505]/40 backdrop-blur-md">
         <div className="max-w-6xl mx-auto">
           <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8 mb-10">
             {/* Logo & description */}
             <div className="sm:col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 mb-4">
-                <Brain className="w-5 h-5 text-orange-500" />
+                <Brain className="w-5 h-5 text-[#FF5500]" />
                 <span className="font-bold text-neutral-100">ZEHLA</span>
                 <span className="text-xs text-neutral-500">SmartHotel</span>
               </div>
@@ -406,7 +407,7 @@ export default function Home() {
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => window.open('https://antigo.turismo.gov.br', '_blank')} className="text-sm text-orange-500 hover:text-orange-400 transition-colors cursor-pointer">
+                  <button onClick={() => window.open('https://antigo.turismo.gov.br', '_blank')} className="text-sm text-[#FF5500] hover:text-[#ff6a1a] transition-colors cursor-pointer">
                     Regras MTur (FNRH/24h)
                   </button>
                 </li>
@@ -421,7 +422,7 @@ export default function Home() {
               © 2026 SMARTHOTEL / ZEHLA Technologies. Todos os direitos reservados.
             </div>
             <div className="flex items-center gap-1 text-xs text-neutral-600">
-              <span className="w-2 h-2 rounded-full bg-orange-500 animate-zehla-pulse" />
+              <span className="w-2 h-2 rounded-full bg-[#FF5500] animate-zehla-pulse" />
               <span>Todos os sistemas operacionais</span>
             </div>
           </div>
