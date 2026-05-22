@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import {
   DndContext,
   closestCenter,
   PointerSensor,
@@ -8,12 +9,14 @@ import { useState, useEffect, useCallback } from 'react';
   useSensors,
   type DragEndEvent,
 } from '@dnd-kit/core';
+import {
   arrayMove,
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import {
   GripVertical,
   Plus,
   Trash2,
@@ -184,7 +187,8 @@ function AnalyticsSection() {
 
   const load = useCallback(async () => {
     setLoading(true);
-  const res = await fetch(`/api/connect/analytics?days=${days}`);
+    try {
+      const res = await fetch(`/api/connect/analytics?days=${days}`);
       if (res.ok) setData(await res.json());
     } catch {
       // silent
@@ -302,7 +306,8 @@ export function ConnectEditor() {
   );
 
   const loadProfile = useCallback(async () => {
-  const res = await fetch('/api/connect/profile');
+    try {
+      const res = await fetch('/api/connect/profile');
       if (res.ok) {
         const data = await res.json();
         setProfile(data);
@@ -318,7 +323,8 @@ export function ConnectEditor() {
   }, []);
 
   const loadLinks = useCallback(async () => {
-  const res = await fetch('/api/connect/links');
+    try {
+      const res = await fetch('/api/connect/links');
       if (res.ok) {
         const data = await res.json();
         setLinks(data);
@@ -335,7 +341,8 @@ export function ConnectEditor() {
 
   const saveProfile = async () => {
     setSaving(true);
-  await fetch('/api/connect/profile', {
+    try {
+      await fetch('/api/connect/profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -356,7 +363,8 @@ export function ConnectEditor() {
   };
 
   const saveLink = async (data: Partial<ConnectLink>) => {
-  if (editingLink) {
+    try {
+      if (editingLink) {
         await fetch(`/api/connect/links/${editingLink.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -378,7 +386,8 @@ export function ConnectEditor() {
   };
 
   const deleteLink = async (id: string) => {
-  await fetch(`/api/connect/links/${id}`, { method: 'DELETE' });
+    try {
+      await fetch(`/api/connect/links/${id}`, { method: 'DELETE' });
       await loadLinks();
     } catch {
       // silent

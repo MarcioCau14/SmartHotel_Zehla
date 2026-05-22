@@ -57,6 +57,23 @@ import { SwarmOverview } from '@/components/zcc/SwarmOverview';
 import ZccAutoHealer from '@/components/zcc/ZccAutoHealer';
 import { ZccErrorBoundary } from '@/components/zcc/ZccErrorBoundary';
 
+// Explictly import sub-panels to resolve page.tsx unresolved names
+import { CognitivePanel } from '@/components/dashboard/CognitivePanel';
+import { TerminalPanel } from '@/components/dashboard/TerminalPanel';
+import { AgentManagementPanel } from '@/components/zcc/AgentManagementPanel';
+import { TenantManagement } from '@/components/zcc/TenantManagement';
+import { MarketingLeads } from '@/components/dashboard/MarketingLeads';
+import { VisibilityDashboard } from '@/components/dashboard/VisibilityDashboard';
+import { FintechHub } from '@/components/zcc/FintechHub';
+import { WhatsAppPanel } from '@/components/dashboard/WhatsAppPanel';
+import { ApiKeysPanel } from '@/components/zcc/ApiKeysPanel';
+import { APIStatus } from '@/components/dashboard/APIStatus';
+import { TeamManagementTab } from '@/components/zcc/TeamManagementTab';
+import { SecurityPanel } from '@/components/zcc/SecurityPanel';
+import { ConnectEditor } from '@/components/connect/ConnectEditor';
+import { CRMModule } from '@/components/crm/CRMModule';
+import { SystemStatusBar } from '@/components/dashboard/SystemStatusBar';
+
 
 
 // ===== TAB CONFIGURATION =====
@@ -190,16 +207,16 @@ export default function ZCCPage() {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#09090b] text-[#b4b4b4] font-sans overflow-hidden">
+    <div className="min-h-screen flex bg-[#050505] text-[#b4b4b4] font-sans overflow-hidden">
       
       {/* ===== SIDEBAR ===== */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-[#0f0f0f] border-r border-[#2e2e2e] transition-all duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-[#050505]/90 backdrop-blur-md border-r border-white/5 transition-all duration-300 ease-in-out ${
           sidebarOpen ? 'w-64' : 'w-0 -translate-x-full md:w-20 md:translate-x-0'
         }`}
       >
         {/* Sidebar Header */}
-        <div className="h-16 flex items-center justify-center md:justify-start px-4 border-b border-[#2e2e2e]">
+        <div className="h-16 flex items-center justify-center md:justify-start px-4 border-b border-white/5">
           <Command className="w-6 h-6 text-[#FF5500] flex-shrink-0" />
           <div className={`ml-3 whitespace-nowrap transition-opacity duration-200 ${sidebarOpen ? 'opacity-100' : 'opacity-0 md:hidden'}`}>
             <h1 className="font-bold text-sm text-[#fafafa] tracking-tight">ZEHLA Control</h1>
@@ -226,8 +243,8 @@ export default function ZCCPage() {
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group relative ${
                   isActive
-                    ? 'text-[#FF5500] bg-[#FF5500]/10'
-                    : 'text-[#898989] hover:text-[#efefef] hover:bg-[#242424]'
+                    ? 'text-[#FF5500] bg-[#FF5500]/10 border border-[#FF5500]/10 shadow-[0_0_15px_rgba(255,85,0,0.05)]'
+                    : 'text-[#898989] hover:text-[#efefef] hover:bg-[#111111]'
                 }`}
                 title={!sidebarOpen ? tab.label : ''}
               >
@@ -242,9 +259,9 @@ export default function ZCCPage() {
             );
           })}
         </nav>
-
+ 
         {/* Sidebar Footer */}
-        <div className="p-4 border-t border-[#2e2e2e]">
+        <div className="p-4 border-t border-white/5">
           <button
             onClick={() => { localStorage.removeItem('zehla-admin-token'); router.push('/zcc-login'); }}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#898989] hover:text-rose-400 hover:bg-rose-400/10 transition-all ${!sidebarOpen && 'justify-center md:justify-start'}`}
@@ -257,16 +274,16 @@ export default function ZCCPage() {
           </button>
         </div>
       </aside>
-
+ 
       {/* ===== MAIN CONTENT WRAPPER ===== */}
       <div className={`flex-1 flex flex-col h-screen overflow-hidden transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
         
         {/* Top Header */}
-        <header className="h-16 flex-shrink-0 bg-[#0f0f0f]/80 backdrop-blur-md border-b border-[#2e2e2e] flex items-center justify-between px-4 sm:px-6 z-40">
+        <header className="h-16 flex-shrink-0 bg-[#050505]/80 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 sm:px-6 z-40">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 text-[#898989] hover:text-[#efefef] hover:bg-[#242424] rounded-lg transition-colors"
+              className="p-2 text-[#898989] hover:text-[#efefef] hover:bg-[#111111] rounded-lg transition-colors"
               aria-label="Toggle Sidebar"
             >
               <Menu className="w-5 h-5" />
@@ -288,9 +305,9 @@ export default function ZCCPage() {
             </Badge>
           </div>
         </header>
-
+ 
         {/* Dynamic Content Area */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 zehla-scroll-y bg-[#09090b]">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 zehla-scroll-y bg-[#050505]">
           <div className="max-w-7xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div

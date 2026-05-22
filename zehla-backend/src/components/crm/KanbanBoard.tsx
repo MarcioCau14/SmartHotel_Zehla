@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import {
   DndContext,
   DragOverlay,
   PointerSensor,
@@ -134,7 +135,8 @@ export function KanbanBoard() {
   );
 
   const loadDeals = useCallback(async () => {
-  const res = await fetch('/api/crm/deals');
+    try {
+      const res = await fetch('/api/crm/deals');
       if (res.ok) setDeals(await res.json());
     } catch {
       // silent
@@ -165,7 +167,8 @@ export function KanbanBoard() {
       prev.map((d) => (d.id === dealId ? { ...d, stage: newStage } : d)),
     );
 
-  await fetch(`/api/crm/deals/${dealId}/stage`, {
+    try {
+      await fetch(`/api/crm/deals/${dealId}/stage`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ stage: newStage }),

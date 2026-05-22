@@ -90,7 +90,7 @@ export default function ZccAutoHealer() {
 
   const fetchAll = useCallback(async () => {
     try {
-  const [hRes, healRes, errRes] = await Promise.all([
+      const [hRes, healRes, errRes] = await Promise.all([
         fetch('/api/system/health'),
         fetch('/api/system/heal'),
         fetch('/api/telemetry/events'),
@@ -126,9 +126,9 @@ export default function ZccAutoHealer() {
 
   const triggerHeal = async (actionId: string) => {
     try {
-    setExecuting(actionId);
-    setExecResult(null);
-  const res = await fetch('/api/system/heal', {
+      setExecuting(actionId);
+      setExecResult(null);
+      const res = await fetch('/api/system/heal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: actionId }),
@@ -146,10 +146,10 @@ export default function ZccAutoHealer() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="glass-card p-6">
+        <div className="glass-card p-6 border border-white/5 bg-[#050505]">
           <div className="flex items-center gap-3">
-            <RefreshCw className="w-5 h-5 text-[#F97316] animate-spin" />
-            <span className="text-sm text-[#4d4d4d]">Inicializando Auto-Healer...</span>
+            <RefreshCw className="w-5 h-5 text-[#FF5500] animate-spin" />
+            <span className="text-sm font-mono text-[#898989]">Inicializando Auto-Healer...</span>
           </div>
         </div>
       </div>
@@ -161,17 +161,17 @@ export default function ZccAutoHealer() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Zap className="w-5 h-5 text-[#F97316]" />
+          <Zap className="w-5 h-5 text-[#FF5500] animate-pulse" />
           <h2 className="text-sm font-semibold text-[#efefef]">Auto-Healer & Telemetria</h2>
           {health && (
-            <Badge variant="outline" className={`border-0 text-[10px] ${statusColor(health.status)} bg-current/5`}>
+            <Badge variant="outline" className={`border-0 text-[10px] ${statusColor(health.status)} bg-current/5 px-2 py-0.5`}>
               {health.status === 'healthy' ? 'Saudável' : health.status === 'degraded' ? 'Degradado' : 'Crítico'}
             </Badge>
           )}
         </div>
         <button
           onClick={fetchAll}
-          className="flex items-center gap-1.5 text-[10px] text-[#898989] hover:text-[#efefef] px-2.5 py-1.5 rounded-lg hover:bg-[#242424] transition-colors"
+          className="flex items-center gap-1.5 text-[10px] font-mono text-[#898989] hover:text-[#efefef] px-2.5 py-1.5 rounded-lg hover:bg-[#242424] border border-transparent hover:border-white/5 transition-all duration-200"
         >
           <RefreshCw className="w-3 h-3" />
           Atualizar
@@ -186,18 +186,18 @@ export default function ZccAutoHealer() {
 
       {/* Row 1: System Status Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="glass-card p-4">
+        <div className="glass-card p-4 border border-white/5 bg-[#050505] hover:border-white/10 transition-all duration-300">
           <div className="flex items-center gap-2 mb-3">
-            <Server className="w-4 h-4 text-[#F97316]" />
-            <span className="text-[10px] text-[#4d4d4d] uppercase tracking-wider">Redis</span>
+            <Server className="w-4 h-4 text-[#FF5500]" />
+            <span className="text-[10px] text-[#5f5f5f] font-mono uppercase tracking-wider font-semibold">Redis</span>
           </div>
           <div className="space-y-2">
             {(['session', 'worker', 'ai'] as const).map((db) => (
-              <div key={db} className="flex items-center justify-between">
+              <div key={db} className="flex items-center justify-between p-1 rounded hover:bg-white/[0.01] transition-all duration-200">
                 <span className="text-[11px] text-[#898989] font-mono">{db}</span>
                 <div className="flex items-center gap-1.5">
                   {statusIcon(health?.redis[db] || 'ERROR')}
-                  <span className={`text-[11px] font-mono ${statusColor(health?.redis[db] || 'ERROR')}`}>
+                  <span className={`text-[11px] font-mono font-bold ${statusColor(health?.redis[db] || 'ERROR')}`}>
                     {health?.redis[db] || 'ERROR'}
                   </span>
                 </div>
@@ -206,72 +206,72 @@ export default function ZccAutoHealer() {
           </div>
         </div>
 
-        <div className="glass-card p-4">
+        <div className="glass-card p-4 border border-white/5 bg-[#050505] hover:border-white/10 transition-all duration-300">
           <div className="flex items-center gap-2 mb-3">
-            <Database className="w-4 h-4 text-[#F97316]" />
-            <span className="text-[10px] text-[#4d4d4d] uppercase tracking-wider">Database</span>
+            <Database className="w-4 h-4 text-[#FF5500]" />
+            <span className="text-[10px] text-[#5f5f5f] font-mono uppercase tracking-wider font-semibold">Database</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mt-1">
             {statusIcon(health?.database || 'ERROR')}
             <span className={`text-sm font-mono font-bold ${statusColor(health?.database || 'ERROR')}`}>
               {health?.database || 'ERROR'}
             </span>
           </div>
-          <div className="mt-3 text-[10px] text-[#4d4d4d]">
-            Response: {health?.responseTime || '-'}ms
+          <div className="mt-4 text-[10px] font-mono text-[#5f5f5f]">
+            Response: <span className="text-[#b4b4b4]">{health?.responseTime || '-'}ms</span>
           </div>
         </div>
 
-        <div className="glass-card p-4">
+        <div className="glass-card p-4 border border-white/5 bg-[#050505] hover:border-white/10 transition-all duration-300">
           <div className="flex items-center gap-2 mb-3">
-            <Activity className="w-4 h-4 text-[#F97316]" />
-            <span className="text-[10px] text-[#4d4d4d] uppercase tracking-wider">Erros (5min)</span>
+            <Activity className="w-4 h-4 text-[#FF5500]" />
+            <span className="text-[10px] text-[#5f5f5f] font-mono uppercase tracking-wider font-semibold">Erros (5min)</span>
           </div>
-          <div className={`text-2xl font-mono font-bold ${(health?.errorRate5m || 0) > 10 ? 'text-rose-400' : 'text-emerald-400'}`}>
+          <div className={`text-2xl font-mono font-bold mt-1 ${(health?.errorRate5m || 0) > 10 ? 'text-rose-400' : 'text-emerald-400'}`}>
             {health?.errorRate5m ?? '-'}
           </div>
-          <div className="text-[10px] text-[#4d4d4d]">ocorrências</div>
+          <div className="text-[10px] font-mono text-[#5f5f5f] mt-1">ocorrências ativas</div>
         </div>
 
-        <div className="glass-card p-4">
+        <div className="glass-card p-4 border border-white/5 bg-[#050505] hover:border-white/10 transition-all duration-300">
           <div className="flex items-center gap-2 mb-3">
-            <Shield className="w-4 h-4 text-[#F97316]" />
-            <span className="text-[10px] text-[#4d4d4d] uppercase tracking-wider">Segurança</span>
+            <Shield className="w-4 h-4 text-[#FF5500]" />
+            <span className="text-[10px] text-[#5f5f5f] font-mono uppercase tracking-wider font-semibold">Segurança</span>
           </div>
-          <div className={`text-2xl font-mono font-bold ${(health?.securityAlerts24h || 0) > 5 ? 'text-rose-400' : 'text-emerald-400'}`}>
+          <div className={`text-2xl font-mono font-bold mt-1 ${(health?.securityAlerts24h || 0) > 5 ? 'text-rose-400' : 'text-[#FF5500]'}`}>
             {health?.securityAlerts24h ?? '-'}
           </div>
-          <div className="text-[10px] text-[#4d4d4d]">alertas / 24h</div>
+          <div className="text-[10px] font-mono text-[#5f5f5f] mt-1">alertas / 24h</div>
         </div>
       </div>
 
       {/* Row 2: Uptime + Queue Depths */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="glass-card p-4">
+        <div className="glass-card p-4 border border-white/5 bg-[#050505] hover:border-white/10 transition-all duration-300">
           <div className="flex items-center gap-2 mb-3">
-            <Clock className="w-4 h-4 text-[#F97316]" />
-            <span className="text-[10px] text-[#4d4d4d] uppercase tracking-wider">Uptime</span>
+            <Clock className="w-4 h-4 text-[#FF5500]" />
+            <span className="text-[10px] text-[#5f5f5f] font-mono uppercase tracking-wider font-semibold">Uptime</span>
           </div>
-          <div className="text-xl font-mono font-bold text-[#efefef]">
+          <div className="text-xl font-mono font-bold text-[#efefef] mt-1">
             {health ? fmtUptime(health.uptime) : '-'}
           </div>
         </div>
 
-        <div className="glass-card p-4 md:col-span-2">
+        <div className="glass-card p-4 md:col-span-2 border border-white/5 bg-[#050505] hover:border-white/10 transition-all duration-300">
           <div className="flex items-center gap-2 mb-3">
-            <Cpu className="w-4 h-4 text-[#F97316]" />
-            <span className="text-[10px] text-[#4d4d4d] uppercase tracking-wider">Filas BullMQ</span>
+            <Cpu className="w-4 h-4 text-[#FF5500]" />
+            <span className="text-[10px] text-[#5f5f5f] font-mono uppercase tracking-wider font-semibold">Filas BullMQ</span>
           </div>
           <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
             {health?.queues && Object.entries(health.queues).map(([name, q]) => {
               const w = queueWarnings(q);
               return (
-                <div key={name} className="bg-white/[0.02] rounded-lg p-2 text-center">
-                  <div className="text-[9px] text-[#4d4d4d] font-mono truncate">{name}</div>
-                  <div className={`text-xs font-mono ${w.waitingColor}`}>{q.waiting}</div>
-                  <div className="text-[9px] text-[#363636]">espera</div>
-                  <div className={`text-[9px] font-mono ${w.failedColor}`}>{q.failed}</div>
-                  <div className="text-[8px] text-[#363636]">falhas</div>
+                <div key={name} className="bg-[#050505] border border-white/5 rounded-lg p-2.5 text-center hover:bg-white/[0.02] hover:border-white/10 transition-all duration-200 shadow-inner">
+                  <div className="text-[9px] text-[#898989] font-mono truncate font-medium">{name}</div>
+                  <div className={`text-xs font-mono font-bold mt-1 ${w.waitingColor}`}>{q.waiting}</div>
+                  <div className="text-[8px] text-[#5f5f5f] tracking-tight">espera</div>
+                  <div className={`text-[9px] font-mono font-bold mt-0.5 ${w.failedColor}`}>{q.failed}</div>
+                  <div className="text-[7px] text-[#5f5f5f] tracking-tight">falhas</div>
                 </div>
               );
             })}
@@ -281,41 +281,42 @@ export default function ZccAutoHealer() {
 
       {/* Row 3: Error Bar Chart + Healing Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="glass-card p-4">
+        <div className="glass-card p-4 border border-white/5 bg-[#050505] hover:border-white/10 transition-all duration-300">
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle className="w-4 h-4 text-rose-400" />
-            <span className="text-[10px] text-[#4d4d4d] uppercase tracking-wider">Erros (últimas horas)</span>
+            <span className="text-[10px] text-[#5f5f5f] font-mono uppercase tracking-wider font-semibold">Erros (últimas horas)</span>
           </div>
           {errorHistory.length > 0 ? (
-            <div className="h-48">
+            <div className="h-48 mt-2">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={errorHistory}>
-                  <XAxis dataKey="hour" tick={{ fontSize: 10, fill: '#4d4d4d' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: '#4d4d4d' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <XAxis dataKey="hour" tick={{ fontSize: 10, fill: '#5f5f5f', fontFamily: 'monospace' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: '#5f5f5f', fontFamily: 'monospace' }} axisLine={false} tickLine={false} allowDecimals={false} />
                   <Tooltip
                     contentStyle={{
-                      background: '#1a1a1a',
-                      border: '1px solid #2e2e2e',
+                      background: '#050505',
+                      border: '1px solid rgba(255,255,255,0.05)',
                       borderRadius: '8px',
-                      fontSize: '12px',
+                      fontSize: '11px',
+                      fontFamily: 'monospace',
                     }}
-                    labelStyle={{ color: '#b4b4b4' }}
+                    labelStyle={{ color: '#a3a3a3' }}
                   />
-                  <Bar dataKey="errors" fill="#F97316" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="errors" fill="#FF5500" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-48 flex items-center justify-center text-xs text-[#4d4d4d]">
+            <div className="h-48 flex items-center justify-center text-xs font-mono text-[#5f5f5f]">
               Nenhum erro registrado nas últimas horas
             </div>
           )}
         </div>
 
-        <div className="glass-card p-4">
+        <div className="glass-card p-4 border border-white/5 bg-[#050505] hover:border-white/10 transition-all duration-300">
           <div className="flex items-center gap-2 mb-3">
-            <Zap className="w-4 h-4 text-amber-400" />
-            <span className="text-[10px] text-[#4d4d4d] uppercase tracking-wider">Ações de Auto-Healing</span>
+            <Zap className="w-4 h-4 text-amber-400 animate-pulse" />
+            <span className="text-[10px] text-[#5f5f5f] font-mono uppercase tracking-wider font-semibold">Ações de Auto-Healing</span>
           </div>
 
           <div className="flex flex-wrap gap-2 mb-4">
@@ -324,37 +325,37 @@ export default function ZccAutoHealer() {
                 key={a.id}
                 onClick={() => triggerHeal(a.id)}
                 disabled={executing === a.id}
-                className="flex items-center gap-1.5 text-[10px] bg-[#242424] hover:bg-[#2e2e2e] text-[#b4b4b4] px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 text-[10px] font-mono bg-[#1a1a1a] hover:bg-[#242424] text-[#b4b4b4] border border-white/5 px-2.5 py-1.5 rounded-lg transition-all duration-200 disabled:opacity-50"
               >
-                {executing === a.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
+                {executing === a.id ? <RefreshCw className="w-3 h-3 animate-spin text-[#FF5500]" /> : <Zap className="w-3 h-3 text-[#FF5500]" />}
                 {a.label}
               </button>
             ))}
           </div>
 
-          <div className="space-y-1.5 max-h-64 overflow-y-auto zehla-scroll-y">
+          <div className="space-y-1.5 max-h-64 overflow-y-auto zehla-scroll-y pr-1">
             {healData?.actions.length === 0 && (
-              <p className="text-xs text-[#4d4d4d] py-4 text-center">Nenhuma ação registrada</p>
+              <p className="text-xs font-mono text-[#5f5f5f] py-4 text-center">Nenhuma ação registrada</p>
             )}
             {healData?.actions.map((a) => (
-              <div key={a.id} className="flex items-start gap-2 p-2 rounded-lg bg-white/[0.02]">
+              <div key={a.id} className="flex items-start gap-2.5 p-2 rounded-lg bg-white/[0.01] border border-white/5 hover:bg-white/[0.02] transition-all duration-200">
                 <div className="mt-0.5">
                   {a.level === 'success' ? (
                     <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
                   ) : a.level === 'warn' ? (
                     <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
                   ) : (
-                    <Activity className="w-3.5 h-3.5 text-[#F97316]" />
+                    <Activity className="w-3.5 h-3.5 text-[#FF5500]" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono text-[#4d4d4d]">
+                    <span className="text-[10px] font-mono text-[#5f5f5f]">
                       {new Date(a.createdAt).toLocaleTimeString('pt-BR')}
                     </span>
-                    <span className="text-[10px] font-medium text-[#898989]">{a.component}</span>
+                    <span className="text-[10px] font-mono text-[#898989] font-medium">{a.component}</span>
                   </div>
-                  <p className="text-[11px] text-[#b4b4b4] truncate">{a.message}</p>
+                  <p className="text-[11px] text-[#efefef] truncate mt-0.5">{a.message}</p>
                 </div>
               </div>
             ))}

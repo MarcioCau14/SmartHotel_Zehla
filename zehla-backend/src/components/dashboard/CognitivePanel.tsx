@@ -9,9 +9,9 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 import type { AIAgent, IntentStat } from '@/lib/store';
 
 const sourceColors: Record<string, string> = {
-  fast_path: '#10B981',
-  slow_path: '#8B5CF6',
-  swarm: '#F59E0B',
+  fast_path: '#FF5500',
+  slow_path: '#FF8833',
+  swarm: '#FFAA66',
 };
 
 interface LLMMarketplaceItem {
@@ -20,17 +20,19 @@ interface LLMMarketplaceItem {
   pricing: string;
   rateLimit: string;
   description: string;
+  latencyMs: number;
+  pathType: 'fast' | 'slow';
 }
 
 const llmMarketplace: LLMMarketplaceItem[] = [
-  { name: 'z-ai-web-dev-sdk', status: 'active', pricing: 'Incluída no plano', rateLimit: '—', description: 'Modelo atual' },
-  { name: 'Google Gemini Flash', status: 'free', pricing: '🆓 GRATUITA', rateLimit: '15 req/min', description: '' },
-  { name: 'Google Gemini Pro', status: 'free', pricing: '🆓 GRATUITA (limitado)', rateLimit: '2 req/min', description: '' },
-  { name: 'Groq (Llama 3)', status: 'free', pricing: '🆓 GRATUITA', rateLimit: 'Alta velocidade', description: '' },
-  { name: 'OpenAI GPT-4o-mini', status: 'paid', pricing: '💰 $0.15/1M tokens', rateLimit: '', description: '' },
-  { name: 'OpenAI GPT-4o', status: 'paid', pricing: '💰 $2.50/1M tokens', rateLimit: '', description: '' },
-  { name: 'Anthropic Claude 3.5 Haiku', status: 'free', pricing: '🆓 GRATUITA (limitado)', rateLimit: '', description: '' },
-  { name: 'Anthropic Claude 3.5 Sonnet', status: 'paid', pricing: '💰 $3/1M tokens', rateLimit: '', description: '' },
+  { name: 'z-ai-web-dev-sdk', status: 'active', pricing: 'Incluída no plano', rateLimit: '—', description: 'Modelo atual', latencyMs: 45, pathType: 'fast' },
+  { name: 'Google Gemini Flash', status: 'free', pricing: '🆓 GRATUITA', rateLimit: '15 req/min', description: '', latencyMs: 120, pathType: 'fast' },
+  { name: 'Google Gemini Pro', status: 'free', pricing: '🆓 GRATUITA (limitado)', rateLimit: '2 req/min', description: '', latencyMs: 280, pathType: 'slow' },
+  { name: 'Groq (Llama 3)', status: 'free', pricing: '🆓 GRATUITA', rateLimit: 'Alta velocidade', description: '', latencyMs: 38, pathType: 'fast' },
+  { name: 'OpenAI GPT-4o-mini', status: 'paid', pricing: '💰 $0.15/1M tokens', rateLimit: '', description: '', latencyMs: 140, pathType: 'fast' },
+  { name: 'OpenAI GPT-4o', status: 'paid', pricing: '💰 $2.50/1M tokens', rateLimit: '', description: '', latencyMs: 350, pathType: 'slow' },
+  { name: 'Anthropic Claude 3.5 Haiku', status: 'free', pricing: '🆓 GRATUITA (limitado)', rateLimit: '', description: '', latencyMs: 180, pathType: 'fast' },
+  { name: 'Anthropic Claude 3.5 Sonnet', status: 'paid', pricing: '💰 $3/1M tokens', rateLimit: '', description: '', latencyMs: 420, pathType: 'slow' },
 ];
 
 export function CognitivePanel() {
@@ -115,7 +117,7 @@ export function CognitivePanel() {
             const isFree = llm.status === 'free';
             return (
               <div key={llm.name} className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
-                isActive ? 'bg-orange-500/[0.05] border border-orange-500/10' : 'bg-white/[0.02] hover:bg-white/[0.04]'
+                isActive ? 'bg-[#FF5500]/[0.05] border border-[#FF5500]/10' : 'bg-white/[0.02] hover:bg-white/[0.04]'
               }`}>
                 <div className="flex items-center gap-3">
                   {isActive && <span className="w-2 h-2 rounded-full bg-[#FF5500] animate-zehla-pulse" />}
@@ -129,7 +131,7 @@ export function CognitivePanel() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className={`text-[10px] ${isFree ? 'text-[#FF5500]' : 'text-[#FF5500]'}`}>
+                      <span className="text-[10px] text-[#FF5500]">
                         {llm.pricing}
                       </span>
                       {llm.rateLimit && (
@@ -141,18 +143,46 @@ export function CognitivePanel() {
                     </div>
                   </div>
                 </div>
-                {isActive ? (
-                  <span className="text-[10px] text-[#FF5500] font-medium">✅ ATIVA</span>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-[10px] text-[#898989] hover:text-[#efefef] hover:bg-[#242424] px-3"
-                  >
-                    Configurar
-                    <ArrowRight className="w-3 h-3 ml-1" />
-                  </Button>
-                )}
+
+                <div className="flex items-center gap-4">
+                  {/* Latency and Path Type Visualization */}
+                  <div className="text-right flex flex-col items-end gap-1 mr-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className={`text-[10px] font-mono font-medium ${
+                        llm.latencyMs < 100 ? 'text-[#FF5500]' : llm.latencyMs < 250 ? 'text-[#FF8833]' : 'text-[#FFAA66]'
+                      }`}>
+                        ⚡ {llm.latencyMs}ms
+                      </span>
+                      <span className={`text-[8px] px-1 py-0.5 rounded border font-mono ${
+                        llm.pathType === 'fast'
+                          ? 'bg-[#FF5500]/10 border-[#FF5500]/20 text-[#FF5500]'
+                          : 'bg-white/5 border-white/10 text-[#898989]'
+                      }`}>
+                        {llm.pathType.toUpperCase()}
+                      </span>
+                    </div>
+                    {/* Micro-sparkline dynamic visual bar */}
+                    <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-[#FF5500] to-[#FF8833] rounded-full" 
+                        style={{ width: `${Math.min(100, (450 - llm.latencyMs) / 4.5)}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {isActive ? (
+                    <span className="text-[10px] text-[#FF5500] font-medium tracking-wider">✅ ATIVA</span>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-[10px] text-[#898989] hover:text-[#efefef] hover:bg-[#242424] px-3 h-7"
+                    >
+                      Configurar
+                      <ArrowRight className="w-3 h-3 ml-1" />
+                    </Button>
+                  )}
+                </div>
               </div>
             );
           })}
