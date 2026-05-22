@@ -21,6 +21,9 @@ import { Button } from '@/components/ui/button';
 import { ExclusiveWaitlistForm } from '@/components/sales/ExclusiveWaitlistForm';
 import { PremiumUpsell } from '@/components/sales/PremiumUpsell';
 import { LandingTracker } from '@/components/sales/LandingTracker';
+import { SocialProof } from '@/components/sales/SocialProof';
+import { FAQ } from '@/components/sales/FAQ';
+import { PricingTable } from '@/components/sales/PricingTable';
 import { MainFooter } from '@/components/landing/MainFooter';
 
 export default function MaxSalesPage() {
@@ -55,7 +58,10 @@ export default function MaxSalesPage() {
             <span className="text-[10px] text-neutral-500 leading-none mt-0.5 tracking-wider font-semibold">SmartHotel</span>
           </div>
         </Link>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <Link href="/vendas/free" className="text-[10px] text-neutral-500 hover:text-white uppercase tracking-widest font-bold hidden sm:inline transition-colors">Grátis</Link>
+          <Link href="/vendas/lite" className="text-[10px] text-neutral-500 hover:text-white uppercase tracking-widest font-bold hidden sm:inline transition-colors">Lite</Link>
+          <Link href="/vendas/pro" className="text-[10px] text-neutral-500 hover:text-white uppercase tracking-widest font-bold hidden sm:inline transition-colors">PRO</Link>
           <Link href="/login">
             <Button variant="ghost" className="text-neutral-400 hover:text-white text-xs hover:bg-white/5 rounded-xl px-4 py-2 transition-all">
               Entrar no Dashboard
@@ -216,6 +222,11 @@ export default function MaxSalesPage() {
           )}
         </AnimatePresence>
       </section>
+
+      {/* Social Proof & FAQ */}
+      <SocialProof />
+      <PricingTable />
+      <FAQ />
 
       {/* Footer */}
       <MainFooter />

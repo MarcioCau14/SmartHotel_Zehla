@@ -15,6 +15,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { PremiumUpsell } from '@/components/sales/PremiumUpsell';
 import { LandingTracker } from '@/components/sales/LandingTracker';
+import { SocialProof } from '@/components/sales/SocialProof';
+import { FAQ } from '@/components/sales/FAQ';
+import { PricingTable } from '@/components/sales/PricingTable';
 import { MainFooter } from '@/components/landing/MainFooter';
 
 export const metadata = {
@@ -49,7 +52,10 @@ export default function VendasProPage() {
             <span className="text-[10px] text-neutral-500 leading-none mt-0.5 tracking-wider font-semibold">SmartHotel</span>
           </div>
         </Link>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <Link href="/vendas/free" className="text-[10px] text-neutral-500 hover:text-white uppercase tracking-widest font-bold hidden sm:inline transition-colors">Grátis</Link>
+          <Link href="/vendas/lite" className="text-[10px] text-neutral-500 hover:text-white uppercase tracking-widest font-bold hidden sm:inline transition-colors">Lite</Link>
+          <Link href="/vendas/max" className="text-[10px] text-neutral-500 hover:text-white uppercase tracking-widest font-bold hidden sm:inline transition-colors">MAX</Link>
           <span className="text-[10px] text-[#FF5500] font-black uppercase tracking-[0.15em] bg-[#FF5500]/10 px-4 py-2 rounded-full border border-[#FF5500]/20 shadow-[0_0_15px_rgba(255,85,0,0.15)]">
             Plano Mais Escolhido
           </span>
@@ -218,7 +224,7 @@ export default function VendasProPage() {
           currentPlan="PRO"
           targetPlan="MAX"
           title="Quer crescer sem pagar taxas por reserva?"
-          description="O Plano MAX é para pousadas que já vendem muito e querem previsibilidade total. Você para de pagar os 2% por reserva e ganha suporte de elite para toda sua rede."
+          description="O Plano MAX é para pousadas que já vendem muito e querem previsibilidade total. Você para de pagar comissão por reserva e ganha suporte de elite para toda sua rede."
           benefits={[
             'TAXA ZERO por reserva',
             'Gestão de várias pousadas',
@@ -227,6 +233,11 @@ export default function VendasProPage() {
           ]}
         />
       </div>
+
+      {/* Social Proof & FAQ */}
+      <SocialProof />
+      <PricingTable />
+      <FAQ />
 
       {/* Footer */}
       <MainFooter />

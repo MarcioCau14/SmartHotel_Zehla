@@ -15,6 +15,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { PremiumUpsell } from '@/components/sales/PremiumUpsell';
 import { LandingTracker } from '@/components/sales/LandingTracker';
+import { SocialProof } from '@/components/sales/SocialProof';
+import { FAQ } from '@/components/sales/FAQ';
+import { PricingTable } from '@/components/sales/PricingTable';
 import { MainFooter } from '@/components/landing/MainFooter';
 
 export default function LiteSalesPage() {
@@ -39,14 +42,13 @@ export default function LiteSalesPage() {
             <span className="text-[10px] text-neutral-500 leading-none mt-0.5 tracking-wider font-semibold">SmartHotel</span>
           </div>
         </Link>
-        <div className="flex items-center gap-4">
-          <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest hidden sm:inline-block bg-white/5 border border-white/10 px-4 py-2 rounded-full">
-            Pousadas de 5 a 10 quartos
-          </span>
+        <div className="flex items-center gap-3">
+          <Link href="/vendas/free" className="text-[10px] text-neutral-500 hover:text-white uppercase tracking-widest font-bold hidden sm:inline transition-colors">Grátis</Link>
+          <Link href="/vendas/pro" className="text-[10px] text-neutral-500 hover:text-white uppercase tracking-widest font-bold hidden sm:inline transition-colors">PRO</Link>
+          <Link href="/vendas/max" className="text-[10px] text-neutral-500 hover:text-white uppercase tracking-widest font-bold hidden sm:inline transition-colors">MAX</Link>
+          <span className="text-xs text-neutral-500 hidden sm:inline">Pousadas de 5 a 10 quartos</span>
           <Link href="/login">
-            <Button variant="ghost" className="text-neutral-400 hover:text-white text-xs hover:bg-white/5 rounded-xl px-4 py-2 transition-all">
-              Entrar
-            </Button>
+            <Button variant="ghost" className="text-neutral-400 hover:text-white text-xs">Entrar</Button>
           </Link>
         </div>
       </nav>
@@ -178,10 +180,15 @@ export default function LiteSalesPage() {
             'Preços Inteligentes (Venda mais na Alta)',
             'Busca Automática de Clientes',
             'Suporte via WhatsApp',
-            'Taxa menor (só 2%)'
+            'TAXA ZERO por reserva'
           ]}
         />
       </div>
+
+      {/* Social Proof & FAQ */}
+      <SocialProof />
+      <PricingTable />
+      <FAQ />
 
       {/* Footer */}
       <MainFooter />
