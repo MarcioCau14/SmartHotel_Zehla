@@ -1,118 +1,151 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { Users, DollarSign, Clock, Percent, TrendingUp, MessageSquare, CalendarCheck, BedDouble } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Users, DollarSign, Clock, Percent, TrendingUp, BedDouble, RefreshCw } from 'lucide-react';
+import { MetricCard } from '@/components/dashboard/MetricCard';
+
+interface KPI {
+  active_guests: number;
+  today_revenue: number;
+  pending_checkins: number;
+  occupancy_rate: number;
+  avg_daily_rate: number;
+  total_rooms: number;
+  revpar: number;
+}
+
+async function fetchKPIs(): Promise<KPI> {
+  const res = await fetch('/api/revenue/kpis');
+  if (!res.ok) throw new Error('Falha ao carregar KPIs');
+  return res.json();
+}
 
 export default function PainelPage() {
-  const { data: session } = useSession();
-  const [propertyData, setPropertyData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ['dashboard-kpis'],
+    queryFn: fetchKPIs,
+    refetchInterval: 30000,
+  });
 
-  useEffect(() => {
-    fetch('/api/properties/me')
-      .then(res => res.json())
-      .then(data => {
-        if (!data.error) setPropertyData(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
-
-  const kpis = [
-    { label: 'Hóspedes Hoje', value: '3', icon: Users, color: '#25D366', bg: 'rgba(37, 211, 102, 0.1)', change: '+12%' },
-    { label: 'Receita Hoje', value: 'R$ 1.280', icon: DollarSign, color: '#128C7E', bg: 'rgba(18, 140, 126, 0.1)', change: '+8%' },
-    { label: 'Check-ins Pendentes', value: '2', icon: Clock, color: '#FFB74D', bg: 'rgba(255, 183, 77, 0.15)', change: '' },
-    { label: 'Taxa Ocupação', value: '67%', icon: Percent, color: '#25D366', bg: 'rgba(37, 211, 102, 0.1)', change: '+5%' },
-    { label: 'ADR Médio', value: 'R$ 320', icon: TrendingUp, color: '#075E54', bg: 'rgba(7, 94, 84, 0.1)', change: '+3%' },
-    { label: 'Msg WhatsApp', value: '47', icon: MessageSquare, color: '#25D366', bg: 'rgba(37, 211, 102, 0.1)', change: '+34%' },
-  ];
-
-  if (loading) {
+  if (isError) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 rounded-full border-2 border-[#25D366]/20 border-t-[#25D366] animate-spin" />
-          <span className="text-sm" style={{ color: '#8696A0' }}>Carregando painel...</span>
-        </div>
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <p className="text-sm text-red-400">Erro ao carregar dados: {(error as Error).message}</p>
+        <button
+          onClick={() => refetch()}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 text-sm font-medium hover:bg-orange-500/20 transition-all"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Tentar novamente
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Welcome header */}
-      <div>
-        <h1 className="dash-page-title">
-          Olá, {session?.user?.name?.split(' ')[0] || 'Proprietário'} 👋
-        </h1>
-        <p className="dash-page-subtitle">
-          {propertyData?.name || 'Sua Pousada'} — Visão geral da operação
-        </p>
-      </div>
-
+    <div className="space-y-8">
       {/* KPI Grid */}
-      <div className="dash-grid-3">
-        {kpis.map((kpi, i) => (
-          <div key={i} className="dash-kpi">
-            <div className="flex items-start justify-between">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: kpi.bg }}>
-                <kpi.icon className="w-5 h-5" style={{ color: kpi.color }} />
-              </div>
-              {kpi.change && (
-                <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ backgroundColor: 'rgba(37, 211, 102, 0.1)', color: '#25D366' }}>
-                  {kpi.change}
-                </span>
-              )}
-            </div>
-            <div className="mt-4">
-              <p className="text-2xl font-bold" style={{ color: '#111B21' }}>{kpi.value}</p>
-              <p className="text-sm mt-1" style={{ color: '#667781' }}>{kpi.label}</p>
-            </div>
-          </div>
-        ))}
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <MetricCard
+          label="Hóspedes Ativos"
+          value={data ? String(data.active_guests) : '—'}
+          icon={Users}
+          accent="orange"
+          loading={isLoading}
+          delay={0}
+        />
+        <MetricCard
+          label="Receita Hoje"
+          value={data ? `R$ ${data.today_revenue.toLocaleString('pt-BR')}` : '—'}
+          icon={DollarSign}
+          accent="emerald"
+          loading={isLoading}
+          delay={0.05}
+        />
+        <MetricCard
+          label="Check-ins Pendentes"
+          value={data ? String(data.pending_checkins) : '—'}
+          icon={Clock}
+          accent="rose"
+          loading={isLoading}
+          delay={0.1}
+        />
+        <MetricCard
+          label="Taxa de Ocupação"
+          value={data ? `${data.occupancy_rate}%` : '—'}
+          icon={Percent}
+          accent="blue"
+          loading={isLoading}
+          delay={0.15}
+        />
+        <MetricCard
+          label="ADR Médio"
+          value={data ? `R$ ${data.avg_daily_rate.toLocaleString('pt-BR')}` : '—'}
+          icon={TrendingUp}
+          accent="orange"
+          loading={isLoading}
+          delay={0.2}
+        />
+        <MetricCard
+          label="RevPAR"
+          value={data ? `R$ ${data.revpar.toLocaleString('pt-BR')}` : '—'}
+          icon={TrendingUp}
+          accent="emerald"
+          loading={isLoading}
+          delay={0.25}
+        />
+        <MetricCard
+          label="Total de Quartos"
+          value={data ? String(data.total_rooms) : '—'}
+          icon={BedDouble}
+          accent="blue"
+          loading={isLoading}
+          delay={0.3}
+        />
       </div>
 
-      {/* Quick actions + Recent activity */}
-      <div className="dash-grid-2">
-        {/* Quick actions */}
-        <div className="dash-section">
-          <h3 className="dash-section-title">Ações Rápidas</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { icon: CalendarCheck, label: 'Nova Reserva', color: '#25D366' },
-              { icon: BedDouble, label: 'Mapa Quartos', color: '#128C7E' },
-              { icon: MessageSquare, label: 'WhatsApp', color: '#075E54' },
-              { icon: DollarSign, label: 'Financeiro', color: '#25D366' },
-            ].map((action, i) => (
-              <button
-                key={i}
-                className="flex items-center gap-3 p-4 rounded-xl border border-[#E9EDEF] hover:border-[#25D366] hover:bg-[rgba(37,211,102,0.04)] transition-all text-left"
-              >
-                <action.icon className="w-5 h-5" style={{ color: action.color }} />
-                <span className="text-sm font-medium" style={{ color: '#111B21' }}>{action.label}</span>
-              </button>
-            ))}
-          </div>
+      {/* Quick Actions */}
+      <div className="glass-strong border border-white/5 rounded-2xl p-6">
+        <h3 className="text-sm font-bold text-neutral-400 mb-4 uppercase tracking-wider">Ações Rápidas</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: 'Nova Reserva', href: '/dashboard/reservas', accent: 'border-orange-500/20 hover:bg-orange-500/5' },
+            { label: 'Mapa de Quartos', href: '/dashboard/quartos', accent: 'border-emerald-500/20 hover:bg-emerald-500/5' },
+            { label: 'Relatório Financeiro', href: '/dashboard/financeiro', accent: 'border-blue-500/20 hover:bg-blue-500/5' },
+            { label: 'Criar Promoção', href: '/dashboard/promocoes', accent: 'border-rose-500/20 hover:bg-rose-500/5' },
+          ].map((action) => (
+            <a
+              key={action.label}
+              href={action.href}
+              className={`flex items-center justify-center p-4 rounded-xl bg-white/[0.02] border ${action.accent} transition-all text-sm font-medium text-neutral-400 hover:text-white text-center`}
+            >
+              {action.label}
+            </a>
+          ))}
         </div>
+      </div>
 
-        {/* Recent activity */}
-        <div className="dash-section">
-          <h3 className="dash-section-title">Atividade Recente</h3>
-          <div className="space-y-4">
-            {[
-              { time: '10:32', text: 'Nova reserva — João Pereira (Quarto 101)', type: 'green' },
-              { time: '09:15', text: 'Check-out — Fernanda Costa (Quarto 102)', type: 'gray' },
-              { time: '08:47', text: 'WhatsApp IA respondeu pergunta sobre Wi-Fi', type: 'green' },
-              { time: '08:00', text: 'Alerta: Ocupação abaixo da meta hoje', type: 'yellow' },
-            ].map((activity, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <span className="text-xs font-mono flex-shrink-0 mt-0.5" style={{ color: '#8696A0' }}>{activity.time}</span>
-                <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: activity.type === 'green' ? '#25D366' : activity.type === 'yellow' ? '#FFB74D' : '#8696A0' }} />
-                <p className="text-sm" style={{ color: '#111B21' }}>{activity.text}</p>
-              </div>
-            ))}
-          </div>
+      {/* Atividade Recente */}
+      <div className="glass-strong border border-white/5 rounded-2xl p-6">
+        <h3 className="text-sm font-bold text-neutral-400 mb-4 uppercase tracking-wider">Atividade Recente</h3>
+        <div className="space-y-3">
+          {[
+            { time: '10:32', text: 'Nova reserva — João Pereira (Quarto 101)', type: 'emerald' },
+            { time: '09:15', text: 'Check-out — Fernanda Costa (Quarto 102)', type: 'neutral' },
+            { time: '08:47', text: 'IA respondeu pergunta sobre Wi-Fi via WhatsApp', type: 'orange' },
+            { time: '08:00', text: 'Alerta: Ocupação abaixo da meta hoje', type: 'rose' },
+          ].map((activity, i) => (
+            <div key={i} className="flex items-start gap-3 py-2">
+              <span className="text-[10px] font-mono text-neutral-700 mt-0.5 w-10 shrink-0">{activity.time}</span>
+              <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
+                activity.type === 'emerald' ? 'bg-emerald-500' :
+                activity.type === 'orange' ? 'bg-orange-500' :
+                activity.type === 'rose' ? 'bg-rose-500' :
+                'bg-neutral-700'
+              }`} />
+              <p className="text-sm text-neutral-400">{activity.text}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

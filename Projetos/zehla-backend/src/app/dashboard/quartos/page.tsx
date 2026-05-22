@@ -1,145 +1,62 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { BedDouble, Plus, Filter, Search } from 'lucide-react';
+import { BedDouble } from 'lucide-react';
 
-const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-  AVAILABLE: { label: 'Disponível', color: '#25D366', bg: 'rgba(37, 211, 102, 0.1)' },
-  OCCUPIED: { label: 'Ocupado', color: '#EA4335', bg: 'rgba(234, 67, 53, 0.1)' },
-  CLEANING: { label: 'Limpeza', color: '#FFB74D', bg: 'rgba(255, 183, 77, 0.15)' },
-  MAINTENANCE: { label: 'Manutenção', color: '#8696A0', bg: 'rgba(0,0,0,0.06)' },
-  BLOCKED: { label: 'Bloqueado', color: '#8696A0', bg: 'rgba(0,0,0,0.06)' },
+const rooms = [
+  { number: '101', type: 'Standard', status: 'AVAILABLE' as const, price: 198 },
+  { number: '102', type: 'Standard', status: 'OCCUPIED' as const, price: 198 },
+  { number: '103', type: 'Standard', status: 'CLEANING' as const, price: 198 },
+  { number: '201', type: 'Deluxe', status: 'AVAILABLE' as const, price: 298 },
+  { number: '202', type: 'Deluxe', status: 'MAINTENANCE' as const, price: 298 },
+  { number: '203', type: 'Deluxe', status: 'OCCUPIED' as const, price: 298 },
+  { number: '301', type: 'Suíte', status: 'OCCUPIED' as const, price: 448 },
+  { number: '302', type: 'Suíte', status: 'AVAILABLE' as const, price: 448 },
+];
+
+const statusConfig: Record<string, { label: string; color: string; dot: string }> = {
+  AVAILABLE: { label: 'Disponível', color: 'border-emerald-500/30 bg-emerald-500/5', dot: 'bg-emerald-400' },
+  OCCUPIED: { label: 'Ocupado', color: 'border-orange-500/30 bg-orange-500/5', dot: 'bg-orange-400' },
+  CLEANING: { label: 'Limpeza', color: 'border-blue-500/30 bg-blue-500/5', dot: 'bg-blue-400' },
+  MAINTENANCE: { label: 'Manutenção', color: 'border-rose-500/30 bg-rose-500/5', dot: 'bg-rose-400' },
 };
 
 export default function QuartosPage() {
-  const [rooms, setRooms] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-
-  useEffect(() => {
-    fetch('/api/rooms')
-      .then(res => res.json())
-      .then(data => {
-        if (data.rooms) setRooms(data.rooms);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
-
-  const filtered = rooms.filter(r =>
-    r.number?.toLowerCase().includes(search.toLowerCase()) ||
-    r.name?.toLowerCase().includes(search.toLowerCase()) ||
-    r.type?.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const stats = {
-    total: rooms.length,
-    available: rooms.filter(r => r.status === 'AVAILABLE').length,
-    occupied: rooms.filter(r => r.status === 'OCCUPIED').length,
-    cleaning: rooms.filter(r => r.status === 'CLEANING').length,
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-10 h-10 rounded-full border-2 border-[#25D366]/20 border-t-[#25D366] animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="dash-page-title">Mapa de Quartos</h1>
-          <p className="dash-page-subtitle">{stats.available} disponíveis de {stats.total} quartos</p>
-        </div>
-        <button className="dash-btn-primary">
-          <Plus className="w-4 h-4" />
-          Novo Quarto
-        </button>
+      <div className="flex items-center gap-3 mb-2">
+        <BedDouble className="w-5 h-5 text-orange-400" />
+        <h2 className="text-lg font-bold text-white">Mapa de Quartos</h2>
       </div>
 
-      {/* Stats row */}
-      <div className="dash-grid-4">
-        {Object.entries(statusConfig).map(([key, cfg]) => {
-          const count = rooms.filter(r => r.status === key).length;
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {rooms.map((room) => {
+          const config = statusConfig[room.status];
           return (
-            <div key={key} className="dash-kpi flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: cfg.bg }}>
-                <BedDouble className="w-5 h-5" style={{ color: cfg.color }} />
+            <div
+              key={room.number}
+              className={`rounded-2xl border p-5 ${config.color} transition-all hover:brightness-110`}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-lg font-black text-white">#{room.number}</span>
+                <div className={`w-2.5 h-2.5 rounded-full ${config.dot}`} />
               </div>
-              <div>
-                <p className="text-xl font-bold" style={{ color: '#111B21' }}>{count}</p>
-                <p className="text-xs" style={{ color: '#667781' }}>{cfg.label}</p>
-              </div>
+              <p className="text-xs text-neutral-500 mb-1">{room.type}</p>
+              <p className="text-sm font-bold text-orange-400">R$ {room.price}</p>
+              <p className="text-[10px] font-medium mt-2 text-neutral-500">{config.label}</p>
             </div>
           );
         })}
       </div>
 
-      {/* Search + filter */}
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#8696A0' }} />
-          <input
-            type="text"
-            placeholder="Buscar quarto..."
-            className="dash-input pl-9"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-        </div>
-        <button className="dash-btn-secondary">
-          <Filter className="w-4 h-4" />
-          Filtrar
-        </button>
+      {/* Legenda */}
+      <div className="flex flex-wrap gap-4 text-xs text-neutral-500">
+        {Object.entries(statusConfig).map(([key, config]) => (
+          <div key={key} className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${config.dot}`} />
+            {config.label}
+          </div>
+        ))}
       </div>
-
-      {/* Room grid */}
-      <div className="dash-grid-4">
-        {filtered.map((room) => {
-          const status = statusConfig[room.status] || statusConfig.AVAILABLE;
-          return (
-            <div key={room.id} className="dash-card p-5">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <p className="text-lg font-bold" style={{ color: '#111B21' }}>
-                    {room.number} {room.name ? `— ${room.name}` : ''}
-                  </p>
-                  <p className="text-xs mt-0.5" style={{ color: '#8696A0' }}>
-                    {room.type} • {room.capacity} pessoas
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="dash-status" style={{ backgroundColor: status.bg, color: status.color }}>
-                  {status.label}
-                </span>
-                <span className="text-sm font-semibold" style={{ color: '#25D366' }}>
-                  R$ {room.basePrice}
-                </span>
-              </div>
-              {room.amenities?.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1">
-                  {room.amenities.slice(0, 3).map((a: string, i: number) => (
-                    <span key={i} className="text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: '#F0F2F5', color: '#667781' }}>
-                      {a}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {filtered.length === 0 && (
-        <div className="dash-section text-center py-12">
-          <BedDouble className="w-12 h-12 mx-auto mb-3" style={{ color: '#8696A0' }} />
-          <p className="text-sm font-medium" style={{ color: '#667781' }}>Nenhum quarto encontrado</p>
-        </div>
-      )}
     </div>
   );
 }

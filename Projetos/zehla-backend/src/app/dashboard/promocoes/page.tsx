@@ -1,99 +1,92 @@
 'use client';
 
 import { useState } from 'react';
-import { Tag, Plus, Megaphone, CalendarDays, Users, DollarSign } from 'lucide-react';
+import { Tag, Send, Users, MessageSquare } from 'lucide-react';
+
+type Channel = 'whatsapp' | 'email';
+type Audience = 'all' | 'recent' | 'inactive' | 'vip';
 
 export default function PromocoesPage() {
-  const [promos] = useState([
-    { id: 1, name: 'Pacote Réveillon 2026', discount: 20, type: 'percentage', startDate: '2026-12-28', endDate: '2027-01-02', status: 'active', bookings: 12, revenue: 15840 },
-    { id: 2, name: 'Desconto Última Hora', discount: 15, type: 'percentage', startDate: '2026-05-01', endDate: '2026-06-30', status: 'active', bookings: 8, revenue: 4320 },
-    { id: 3, name: 'Feriado Tiradentes', discount: 10, type: 'percentage', startDate: '2026-04-17', endDate: '2026-04-21', status: 'ended', bookings: 15, revenue: 8550 },
-    { id: 4, name: 'Stay 4 Pay 3', discount: 25, type: 'percentage', startDate: '2026-07-01', endDate: '2026-08-31', status: 'scheduled', bookings: 0, revenue: 0 },
-  ]);
-
-  const totalBookings = promos.reduce((s, p) => s + p.bookings, 0);
-  const totalRevenue = promos.reduce((s, p) => s + p.revenue, 0);
-
-  const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-    active: { label: 'Ativa', color: '#25D366', bg: 'rgba(37, 211, 102, 0.1)' },
-    ended: { label: 'Encerrada', color: '#8696A0', bg: 'rgba(0,0,0,0.06)' },
-    scheduled: { label: 'Agendada', color: '#FFB74D', bg: 'rgba(255, 183, 77, 0.15)' },
-  };
+  const [channel, setChannel] = useState<Channel>('whatsapp');
+  const [audience, setAudience] = useState<Audience>('all');
+  const [message, setMessage] = useState('');
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="dash-page-title">Promoções</h1>
-          <p className="dash-page-subtitle">{totalBookings} reservas via promoções · R$ {totalRevenue.toLocaleString('pt-BR')} em receita</p>
-        </div>
-        <button className="dash-btn-primary">
-          <Plus className="w-4 h-4" />
-          Nova Promoção
-        </button>
-      </div>
+    <div className="space-y-6 max-w-3xl">
+      <div className="glass-strong border border-white/5 rounded-2xl p-6">
+        <h3 className="text-sm font-bold text-neutral-400 mb-4 uppercase tracking-wider flex items-center gap-2">
+          <Tag className="w-4 h-4 text-orange-400" />
+          Nova Campanha
+        </h3>
 
-      {/* Stats */}
-      <div className="dash-grid-3">
-        <div className="dash-kpi">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(37, 211, 102, 0.1)' }}>
-              <Tag className="w-5 h-5" style={{ color: '#25D366' }} />
+        <div className="space-y-5">
+          {/* Canal */}
+          <div>
+            <label className="text-xs text-neutral-600 mb-2 block">Canal de Disparo</label>
+            <div className="flex gap-3">
+              {[
+                { key: 'whatsapp' as const, label: 'WhatsApp', icon: MessageSquare },
+                { key: 'email' as const, label: 'E-mail', icon: Send },
+              ].map((c) => (
+                <button
+                  key={c.key}
+                  onClick={() => setChannel(c.key)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                    channel === c.key
+                      ? 'bg-orange-500/10 border border-orange-500/20 text-orange-400'
+                      : 'bg-white/[0.02] border border-white/5 text-neutral-500 hover:text-neutral-300'
+                  }`}
+                >
+                  <c.icon className="w-4 h-4" />
+                  {c.label}
+                </button>
+              ))}
             </div>
           </div>
-          <p className="text-2xl font-bold" style={{ color: '#111B21' }}>{promos.filter(p => p.status === 'active').length}</p>
-          <p className="text-sm" style={{ color: '#667781' }}>Promoções Ativas</p>
-        </div>
-        <div className="dash-kpi">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(18, 140, 126, 0.1)' }}>
-              <CalendarDays className="w-5 h-5" style={{ color: '#128C7E' }} />
-            </div>
-          </div>
-          <p className="text-2xl font-bold" style={{ color: '#111B21' }}>{totalBookings}</p>
-          <p className="text-sm" style={{ color: '#667781' }}>Reservas Geradas</p>
-        </div>
-        <div className="dash-kpi">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(7, 94, 84, 0.1)' }}>
-              <DollarSign className="w-5 h-5" style={{ color: '#075E54' }} />
-            </div>
-          </div>
-          <p className="text-2xl font-bold" style={{ color: '#111B21' }}>R$ {totalRevenue.toLocaleString('pt-BR')}</p>
-          <p className="text-sm" style={{ color: '#667781' }}>Receita Total</p>
-        </div>
-      </div>
 
-      {/* Promo cards */}
-      <div className="space-y-4">
-        {promos.map((promo) => {
-          const status = statusConfig[promo.status] || statusConfig.ended;
-          return (
-            <div key={promo.id} className="dash-card p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(37, 211, 102, 0.1)' }}>
-                    <Megaphone className="w-6 h-6" style={{ color: '#25D366' }} />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-semibold" style={{ color: '#111B21' }}>{promo.name}</h3>
-                    <p className="text-sm mt-1" style={{ color: '#667781' }}>
-                      {promo.discount}% de desconto · {new Date(promo.startDate).toLocaleDateString('pt-BR')} — {new Date(promo.endDate).toLocaleDateString('pt-BR')}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="dash-status" style={{ backgroundColor: status.bg, color: status.color }}>
-                    {status.label}
-                  </span>
-                  <span className="text-sm font-medium" style={{ color: '#111B21' }}>
-                    {promo.bookings} reservas
-                  </span>
-                </div>
-              </div>
+          {/* Público */}
+          <div>
+            <label className="text-xs text-neutral-600 mb-2 block">Público-Alvo</label>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: 'all' as const, label: 'Todos os hóspedes' },
+                { key: 'recent' as const, label: 'Hóspedes recentes' },
+                { key: 'inactive' as const, label: 'Inativos (30d)' },
+                { key: 'vip' as const, label: 'VIP' },
+              ].map((a) => (
+                <button
+                  key={a.key}
+                  onClick={() => setAudience(a.key)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    audience === a.key
+                      ? 'bg-orange-500/10 border border-orange-500/20 text-orange-400'
+                      : 'bg-white/[0.02] border border-white/5 text-neutral-600 hover:text-neutral-400'
+                  }`}
+                >
+                  <Users className="w-3 h-3 inline mr-1" />
+                  {a.label}
+                </button>
+              ))}
             </div>
-          );
-        })}
+          </div>
+
+          {/* Mensagem */}
+          <div>
+            <label className="text-xs text-neutral-600 mb-2 block">Mensagem</label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Digite sua mensagem de campanha..."
+              rows={5}
+              className="w-full bg-white/[0.02] border border-white/10 rounded-xl p-4 text-sm text-neutral-300 placeholder-neutral-700 resize-none outline-none focus:border-orange-500/30 transition-colors"
+            />
+          </div>
+
+          <button className="w-full py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50" disabled={!message.trim()}>
+            <Send className="w-4 h-4 inline mr-2" />
+            Disparar Campanha
+          </button>
+        </div>
       </div>
     </div>
   );
