@@ -1,0 +1,112 @@
+# 🚫 ANTI-GRAVITY RULES — ZEHLA SmartHotel
+# Este arquivo define restrições ABSOLUTAS para qualquer agente de IA
+# que trabalhar neste repositório. VIOLAR ESTAS REGRAS = QUEBRAR PRODUÇÃO.
+
+# ============================================================
+# 🔴 ZONA PROIBIDA — NUNCA MODIFICAR ESTES ARQUIVOS/DIRETÓRIOS
+# ============================================================
+# Estes arquivos contêm toda a lógica de negócio, segurança,
+# infraestrutura e banco de dados. São 100% funcionais e testados.
+
+## NEVER MODIFY:
+src/app/api/**/*              ← 132 rotas de API (auth, billing, CRM, WhatsApp, AI, fiscal, marketplace)
+src/lib/**/*                  ← Toda lógica de negócio (workers, queues, finops, auth, security, i18n, brain)
+src/workers/**/*              ← Workers BullMQ (capture, validate, enrich, classify, act)
+src/proxy.ts                  ← Middleware de segurança (CORS, auth, trial guard, rate limiting)
+prisma/schema.prisma          ← Schema do banco (63 models, 40 cascade relations)
+prisma/migrations/**/*        ← Migrações do banco
+.github/workflows/**/*        ← CI/CD pipeline
+.env*                         ← Variáveis de ambiente (nunca commitar)
+
+# ============================================================
+# 🟡 ZONA DE ATENÇÃO — MODIFICAR COM EXTREMO CUIDADO
+# ============================================================
+# Estes arquivos têm contratos de API e estados que não podem
+# ser quebrados. Layout pode mudar, mas props e hooks NÃO.
+
+## MODIFY CAREFULLY (preserve props, hooks, API contracts):
+src/components/onboarding/OnboardingWizard.tsx
+src/app/teste-gratis/page.tsx
+src/app/dashboard/configuracoes/page.tsx
+src/components/dashboard/MarketingLeads.tsx
+src/components/zcc/marketing/FunnelAnalyticsDashboard.tsx
+
+# ============================================================
+# 🟢 ZONA LIVRE — PODE REFACTORAR LAYOUT À VONTADE
+# ============================================================
+# Estes arquivos são puramente visuais. Mude cores, espaçamento,
+# tipografia, animações, responsividade — mas NÃO remova
+# componentes, handlers de evento, ou chamadas de API.
+
+## FREE TO RESTYLE:
+src/app/page.tsx                    ← Landing page (SSR)
+src/components/landing/**/*         ← Hero, Pricing, Features, etc
+src/app/vendas/**/*                 ← Páginas de venda (lite, pro, max)
+src/app/zcc/page.tsx                ← ZCC layout principal
+src/components/zcc/**/*             ← Componentes do ZCC (exceto FunnelAnalyticsDashboard)
+src/app/dashboard/page.tsx          ← Dashboard do cliente
+src/app/dashboard/painel/page.tsx   ← Painel principal
+src/app/dashboard/upgrade/page.tsx  ← Página de upgrade
+src/components/dashboard/**/*       ← Componentes do dashboard
+src/components/ui/**/*              ← Componentes shadcn/ui
+src/components/subscription/**/*    ← SubscriptionSelector
+src/components/client/**/*          ← Client settings panels
+
+# ============================================================
+# ⚙️ REGRAS DE COMPORTAMENTO
+# ============================================================
+
+## RULES:
+1. NUNCA remover imports, exports, ou variáveis de estado
+2. NUNCA alterar nomes de props, funções, ou handlers
+3. NUNCA modificar chamadas fetch() ou URLs de API
+4. NUNCA alterar contratos de tipagem (interfaces, types)
+5. NUNCA adicionar/remover dependências sem autorização
+6. NUNCA modificar arquivos .env ou adicionar secrets
+7. NUNCA alterar o Prisma schema ou migrations
+8. SEMPRE manter 'use client' onde já existe
+9. SEMPRE manter Suspense boundaries onde já existem
+10. SEMPRE rodar `npx next build` após modificar qualquer arquivo
+
+## ALLOWED CHANGES:
+- Cores, gradientes, backgrounds
+- Espaçamento (padding, margin, gap)
+- Tipografia (font-size, font-weight, line-height)
+- Bordas, border-radius, sombras
+- Animações e transições CSS/Framer Motion
+- Layout grid/flex (sem remover elementos)
+- Responsividade (breakpoints, mobile-first)
+- Ícones (trocar lucide icons)
+- Texto de labels, headings, placeholders
+- Ordem visual de elementos (sem remover)
+
+# ============================================================
+# 📋 CHECKLIST PÓS-MODIFICAÇÃO
+# ============================================================
+# Após qualquer modificação, execute:
+# 1. npx next build          ← Deve compilar com zero erros
+# 2. git diff --stat         ← Verifique quais arquivos mudaram
+# 3. Confirme que NENHUM arquivo da ZONA PROIBIDA foi tocado
+# 4. Confirme que props/hooks/API calls estão intactos
+
+# ============================================================
+# 🏗️ ARQUITETURA DO PROJETO (REFERÊNCIA)
+# ============================================================
+#
+# Framework:    Next.js 16.2.4 (Turbopack, App Router)
+# Database:     PostgreSQL 16 + Prisma 5.22.0
+# Cache/Queue:  Redis + BullMQ (20 filas ativas)
+# Auth:         NextAuth + JWT + jose
+# Payments:     Stripe (checkout + billing portal)
+# Email:        Resend
+# WhatsApp:     Evolution API
+# AI:           OpenRouter (Kimi → Qwen → Llama → Local Rules)
+# UI:           Tailwind CSS 4 + shadcn/ui + Radix + Framer Motion
+# State:        Zustand (UI) + React Query (instalado, não usado)
+# i18n:         pt-BR, es-ES, en-US
+#
+# Planos:       Lite R$248/mês | Pro R$448/mês | Max R$798/mês
+#               (assinatura fixa, ZERO comissão por reserva)
+# Trial:        7 dias, hard-limits: 50 msgs IA/dia, $0.50 USD cap
+#
+# ============================================================
