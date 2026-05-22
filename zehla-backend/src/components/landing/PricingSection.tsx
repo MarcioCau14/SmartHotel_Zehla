@@ -92,7 +92,7 @@ export function PricingSection({ onNavigate }: PricingSectionProps) {
             transition={{ duration: 0.5, delay: i * 0.1 }}
             className={`relative rounded-3xl p-8 flex flex-col h-full border ${
               plan.popular 
-                ? 'bg-neutral-900/60 border-[#F97316] shadow-[0_0_40px_rgba(249,115,22,0.2)] ring-1 ring-[#F97316]/30' 
+                ? 'bg-neutral-900/60 border-[#FF5500] shadow-[0_0_40px_rgba(255,85,0,0.2)] ring-1 ring-[#FF5500]/30' 
                 : 'bg-neutral-900/30 border-[#2e2e2e]'
             } glass-strong transition-all duration-300 hover:border-white/20`}
           >
@@ -145,7 +145,7 @@ export function PricingSection({ onNavigate }: PricingSectionProps) {
               onClick={onNavigate}
               className={`w-full py-4 rounded-xl font-bold text-sm transition-all duration-200 ${
                 plan.popular
-                  ? 'bg-[#F97316] hover:bg-[#EA580C] text-white shadow-lg shadow-[#F97316]/30'
+                  ? 'bg-[#FF5500] hover:bg-[#EA580C] text-white shadow-lg shadow-[#FF5500]/30'
                   : 'bg-[#242424] hover:bg-[#2e2e2e] text-[#efefef]'
               }`}
             >

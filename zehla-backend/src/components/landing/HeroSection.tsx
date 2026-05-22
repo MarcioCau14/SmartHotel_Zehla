@@ -14,7 +14,7 @@ export function HeroSection({ onNavigate, styleOption = '2' }: HeroSectionProps)
     return (
       <section className="relative min-h-screen flex items-center justify-start bg-[#000000] overflow-hidden text-left py-32 border-b border-neutral-800">
         <div className="max-w-4xl mx-auto px-6 lg:px-12 w-full font-sans">
-          <div className="text-[12px] uppercase tracking-[0.2em] font-bold text-[#F97316] mb-8">
+          <div className="text-[12px] uppercase tracking-[0.2em] font-bold text-[#FF5500] mb-8">
             ZEHLA SmartHotel — Sistema Operacional
           </div>
           <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold tracking-tighter text-white mb-8 uppercase leading-none">
@@ -28,7 +28,7 @@ export function HeroSection({ onNavigate, styleOption = '2' }: HeroSectionProps)
           <div className="flex gap-4">
             <button
               onClick={onNavigate}
-              className="px-8 py-4 bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-sm uppercase tracking-wider rounded-none transition-all cursor-pointer"
+              className="px-8 py-4 bg-[#FF5500] hover:bg-[#EA580C] text-white font-bold text-sm uppercase tracking-wider rounded-none transition-all cursor-pointer"
             >
               Começar Teste Grátis
             </button>
@@ -78,7 +78,7 @@ export function HeroSection({ onNavigate, styleOption = '2' }: HeroSectionProps)
           transition={{ duration: 0.8 }}
         >
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card mb-8 text-sm text-[#F97316]">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card mb-8 text-sm text-[#FF5500]">
             <Brain className="w-4 h-4" />
             <span>Perfis completos no Google recebem 7x mais visitas</span>
           </div>
@@ -87,7 +87,7 @@ export function HeroSection({ onNavigate, styleOption = '2' }: HeroSectionProps)
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-tight" style={{ textWrap: 'pretty' }}>
             <span className="text-[#fafafa]">Recupere os 25% de comissão</span>
             <br />
-            <span className="text-[#F97316] drop-shadow-[0_0_15px_rgba(249,115,22,0.4)]">que as OTAs levam de você</span>
+            <span className="text-[#FF5500] drop-shadow-[0_0_15px_rgba(255,85,0,0.4)]">que as OTAs levam de você</span>
           </h1>
 
           {/* Subtitle */}
@@ -103,9 +103,9 @@ export function HeroSection({ onNavigate, styleOption = '2' }: HeroSectionProps)
               whileTap={{ scale: 0.95 }}
               animate={{ 
                 boxShadow: [
-                  "0 4px 20px rgba(249,115,22,0.3)", 
-                  "0 4px 35px rgba(249,115,22,0.6)", 
-                  "0 4px 20px rgba(249,115,22,0.3)"
+                  "0 4px 20px rgba(255,85,0,0.3)", 
+                  "0 4px 35px rgba(255,85,0,0.6)", 
+                  "0 4px 20px rgba(255,85,0,0.3)"
                 ] 
               }}
               transition={{ 
@@ -118,7 +118,7 @@ export function HeroSection({ onNavigate, styleOption = '2' }: HeroSectionProps)
               <button
                 type="button"
                 onClick={onNavigate}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white font-semibold rounded-xl transition-all duration-200 cursor-pointer text-lg shadow-[0_4px_20px_rgba(249,115,22,0.2)]"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#FF5500] to-[#FF7733] hover:from-[#FF5500] hover:to-[#FF6611] text-white font-semibold rounded-xl transition-all duration-200 cursor-pointer text-lg shadow-[0_4px_20px_rgba(255,85,0,0.2)]"
               >
                 <Zap className="w-5 h-5" />
                 Começar Teste Grátis
@@ -152,8 +152,8 @@ export function HeroSection({ onNavigate, styleOption = '2' }: HeroSectionProps)
               { icon: Clock, value: '7 dias', label: 'Teste Grátis' },
             ].map((stat, i) => (
               <div key={i} className="glass-card p-4 sm:p-6 text-center">
-                <stat.icon className="w-5 h-5 text-[#F97316] mx-auto mb-2" />
-                <div className="text-xl sm:text-3xl font-bold text-[#F97316]">{stat.value}</div>
+                <stat.icon className="w-5 h-5 text-[#FF5500] mx-auto mb-2" />
+                <div className="text-xl sm:text-3xl font-bold text-[#FF5500]">{stat.value}</div>
                 <div className="text-xs sm:text-sm text-[#4d4d4d] mt-1">{stat.label}</div>
               </div>
             ))}

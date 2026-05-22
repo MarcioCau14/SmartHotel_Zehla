@@ -266,14 +266,14 @@ export default function Home() {
         .theme-3 button, .theme-3 a {
           border-radius: 9999px !important;
         }
-        .theme-3 .text-[#F97316], .theme-3 .text-rose-400 {
+        .theme-3 .text-[#FF5500], .theme-3 .text-rose-400 {
           color: #d97706 !important;
         }
-        .theme-3 .bg-[#F97316], .theme-3 .bg-orange-500 {
+        .theme-3 .bg-[#FF5500], .theme-3 .bg-orange-500 {
           background-color: #171717 !important;
           color: #F9F6F0 !important;
         }
-        .theme-3 .bg-[#F97316]:hover, .theme-3 .bg-orange-500:hover {
+        .theme-3 .bg-[#FF5500]:hover, .theme-3 .bg-orange-500:hover {
           background-color: #262626 !important;
         }
       `}} />
@@ -303,18 +303,18 @@ export default function Home() {
       </main>
 
       {/* Persistent Sticky Conversion Bar */}
-      <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-lg glass-strong border border-[#F97316]/30 rounded-2xl p-4 shadow-[0_10px_30px_rgba(249,115,22,0.2)] flex items-center justify-between gap-4 transition-all duration-500 ${
+      <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-lg glass-strong border border-[#FF5500]/30 rounded-2xl p-4 shadow-[0_10px_30px_rgba(255,85,0,0.2)] flex items-center justify-between gap-4 transition-all duration-500 ${
         hideConversionBar ? 'opacity-0 pointer-events-none translate-y-20' : 'opacity-100 translate-y-0'
       }`}>
         <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-[#F97316] animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-[#FF5500] animate-pulse" />
           <p className="text-xs sm:text-sm text-neutral-200 font-medium">
             Atenda no WhatsApp 24/7 sem taxas da Booking
           </p>
         </div>
         <button
           onClick={goToTesteGratis}
-          className="px-4 py-2 bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap shadow-md shadow-[#F97316]/20"
+          className="px-4 py-2 bg-[#FF5500] hover:bg-[#EA580C] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap shadow-md shadow-[#FF5500]/20"
         >
           Testar Grátis
         </button>

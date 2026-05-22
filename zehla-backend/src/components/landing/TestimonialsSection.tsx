@@ -92,7 +92,7 @@ export function TestimonialsSection() {
 
             {/* Author */}
             <div className="flex items-center gap-4">
-              <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-[#363636] group-hover:border-[#F97316]/30 transition-colors">
+              <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-[#363636] group-hover:border-[#FF5500]/30 transition-colors">
                 <Image
                   src={t.image}
                   alt={t.name}

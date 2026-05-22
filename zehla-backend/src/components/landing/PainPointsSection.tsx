@@ -57,10 +57,10 @@ const painPoints = [
 
 const colorMap: Record<string, string> = {
   rose: 'text-rose-400 bg-rose-500/10 border-rose-500/20',
-  amber: 'text-[#F97316] bg-[#F97316]/10 border-amber-500/20',
-  orange: 'text-orange-400 bg-orange-500/10 border-orange-500/20',
-  purple: 'text-[#F97316] bg-[#F97316]/10 border-purple-500/20',
-  cyan: 'text-[#F97316] bg-[#F97316]/10 border-cyan-500/20',
+  amber: 'text-[#FF5500] bg-[#FF5500]/10 border-amber-500/20',
+  orange: 'text-[#FF5500] bg-[#FF5500]/10 border-orange-500/20',
+  purple: 'text-[#FF5500] bg-[#FF5500]/10 border-purple-500/20',
+  cyan: 'text-[#FF5500] bg-[#FF5500]/10 border-cyan-500/20',
   red: 'text-red-400 bg-red-500/10 border-red-500/20',
 };
 

@@ -182,7 +182,7 @@ export default function ZCCPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0f0f0f]">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-[#F97316]/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-8 h-8 border-2 border-[#FF5500]/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4" />
           <p className="text-sm text-[#4d4d4d]">Verificando acesso administrativo...</p>
         </div>
       </div>
@@ -190,7 +190,7 @@ export default function ZCCPage() {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#171717] text-[#b4b4b4] font-sans overflow-hidden">
+    <div className="min-h-screen flex bg-[#09090b] text-[#b4b4b4] font-sans overflow-hidden">
       
       {/* ===== SIDEBAR ===== */}
       <aside
@@ -200,7 +200,7 @@ export default function ZCCPage() {
       >
         {/* Sidebar Header */}
         <div className="h-16 flex items-center justify-center md:justify-start px-4 border-b border-[#2e2e2e]">
-          <Command className="w-6 h-6 text-[#F97316] flex-shrink-0" />
+          <Command className="w-6 h-6 text-[#FF5500] flex-shrink-0" />
           <div className={`ml-3 whitespace-nowrap transition-opacity duration-200 ${sidebarOpen ? 'opacity-100' : 'opacity-0 md:hidden'}`}>
             <h1 className="font-bold text-sm text-[#fafafa] tracking-tight">ZEHLA Control</h1>
             <p className="text-[10px] text-[#4d4d4d] font-mono">v2.1.0-admin</p>
@@ -226,15 +226,15 @@ export default function ZCCPage() {
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group relative ${
                   isActive
-                    ? 'text-[#F97316] bg-[#F97316]/10'
+                    ? 'text-[#FF5500] bg-[#FF5500]/10'
                     : 'text-[#898989] hover:text-[#efefef] hover:bg-[#242424]'
                 }`}
                 title={!sidebarOpen ? tab.label : ''}
               >
                 {isActive && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#F97316] rounded-r-full shadow-[0_0_10px_rgba(255,85,0,0.5)]" />
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#FF5500] rounded-r-full shadow-[0_0_10px_rgba(255,85,0,0.5)]" />
                 )}
-                <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-[#F97316]' : 'text-[#4d4d4d] group-hover:text-[#b4b4b4]'}`} />
+                <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-[#FF5500]' : 'text-[#4d4d4d] group-hover:text-[#b4b4b4]'}`} />
                 <span className={`whitespace-nowrap transition-opacity duration-200 ${sidebarOpen ? 'opacity-100' : 'opacity-0 md:hidden'}`}>
                   {tab.label}
                 </span>
@@ -283,14 +283,14 @@ export default function ZCCPage() {
           </div>
           
           <div className="flex items-center gap-3">
-            <Badge variant="outline" className="border-[#F97316]/30 text-[#F97316] bg-[#F97316]/10 text-[10px] uppercase font-mono tracking-wider">
+            <Badge variant="outline" className="border-[#FF5500]/30 text-[#FF5500] bg-[#FF5500]/10 text-[10px] uppercase font-mono tracking-wider">
               {userSession?.role === 'admin' ? 'Super Admin' : 'Team'}
             </Badge>
           </div>
         </header>
 
         {/* Dynamic Content Area */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 zehla-scroll-y bg-[#171717]">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 zehla-scroll-y bg-[#09090b]">
           <div className="max-w-7xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div
