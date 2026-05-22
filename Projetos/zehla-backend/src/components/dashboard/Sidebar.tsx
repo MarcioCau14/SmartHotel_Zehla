@@ -18,19 +18,19 @@ import {
 import { useState } from 'react';
 
 const navItems = [
-  { key: 'painel', label: 'Painel', href: '/dashboard/painel', icon: LayoutDashboard },
-  { key: 'reservas', label: 'Reservas', href: '/dashboard/reservas', icon: CalendarDays },
-  { key: 'quartos', label: 'Quartos', href: '/dashboard/quartos', icon: BedDouble },
-  { key: 'financeiro', label: 'Financeiro', href: '/dashboard/financeiro', icon: Wallet },
-  { key: 'promocoes', label: 'Promoções', href: '/dashboard/promocoes', icon: Tag },
-  { key: 'configuracoes', label: 'Configurações', href: '/dashboard/configuracoes', icon: Settings },
+  { key: 'painel', label: 'Painel', href: '/cliente/painel', icon: LayoutDashboard },
+  { key: 'reservas', label: 'Reservas', href: '/cliente/reservas', icon: CalendarDays },
+  { key: 'quartos', label: 'Quartos', href: '/cliente/quartos', icon: BedDouble },
+  { key: 'financeiro', label: 'Financeiro', href: '/cliente/financeiro', icon: Wallet },
+  { key: 'promocoes', label: 'Promoções', href: '/cliente/promocoes', icon: Tag },
+  { key: 'configuracoes', label: 'Configurações', href: '/cliente/configuracoes', icon: Settings },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const currentPath = pathname.replace('/dashboard/', '') || 'painel';
+  const currentPath = pathname.replace(/^\/(dashboard|cliente)\//, '') || 'painel';
 
   return (
     <>
@@ -61,7 +61,7 @@ export function Sidebar() {
       >
         {/* Logo */}
         <div className="flex items-center h-16 px-5 border-b border-white/5 shrink-0">
-          <Link href="/dashboard/painel" className="flex items-center gap-2.5">
+          <Link href="/cliente/painel" className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center">
               <Brain className="w-5 h-5 text-white" />
             </div>
@@ -107,7 +107,7 @@ export function Sidebar() {
         {/* Upgrade CTA */}
         <div className="px-3 pb-4">
           <Link
-            href="/dashboard/upgrade"
+            href="/cliente/upgrade"
             className="flex items-center gap-3 px-3 py-3 rounded-xl bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 hover:from-orange-500/20 hover:to-amber-500/20 transition-all group"
           >
             <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center">

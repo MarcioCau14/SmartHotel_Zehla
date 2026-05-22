@@ -47,7 +47,7 @@ export function TrialBanner({ daysLeft }: TrialBannerProps) {
           </p>
         </div>
         <Link
-          href="/dashboard/upgrade"
+          href="/cliente/upgrade"
           className={cn(
             'flex items-center gap-1.5 text-xs font-bold transition-all',
             isUrgent ? 'text-red-400 hover:text-red-300' : 'text-orange-400 hover:text-orange-300'

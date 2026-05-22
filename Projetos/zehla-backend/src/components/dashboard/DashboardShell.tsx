@@ -15,7 +15,7 @@ interface DashboardShellProps {
 
 export function DashboardShell({ children, propertyName, daysLeft, isTrialing }: DashboardShellProps) {
   const pathname = usePathname();
-  const currentPath = pathname.replace('/dashboard/', '') || 'painel';
+  const currentPath = pathname.replace(/^\/(dashboard|cliente)\//, '') || 'painel';
   const pageLabels: Record<string, string> = {
     painel: 'Painel',
     reservas: 'Reservas',

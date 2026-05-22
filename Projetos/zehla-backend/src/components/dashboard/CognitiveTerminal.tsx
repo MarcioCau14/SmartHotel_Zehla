@@ -14,13 +14,13 @@ interface Suggestion {
 }
 
 const suggestions: Suggestion[] = [
-  { label: 'Ir para Painel', description: 'Visão geral da operação', href: '/dashboard/painel', icon: 'dashboard' },
-  { label: 'Nova Reserva', description: 'Registrar uma nova reserva manualmente', href: '/dashboard/reservas', icon: 'calendar' },
-  { label: 'Mapa de Quartos', description: 'Ver status de ocupação', href: '/dashboard/quartos', icon: 'bed' },
-  { label: 'Relatório Financeiro', description: 'Receitas, despesas e métricas', href: '/dashboard/financeiro', icon: 'wallet' },
-  { label: 'Criar Promoção', description: 'Disparar campanha para hóspedes', href: '/dashboard/promocoes', icon: 'tag' },
-  { label: 'Configurar IA', description: 'Ajustar comportamento dos agentes', href: '/dashboard/configuracoes', icon: 'settings' },
-  { label: 'Fazer Upgrade', description: 'Conhecer planos PRO e MAX', href: '/dashboard/upgrade', icon: 'upgrade' },
+  { label: 'Ir para Painel', description: 'Visão geral da operação', href: '/cliente/painel', icon: 'dashboard' },
+  { label: 'Nova Reserva', description: 'Registrar uma nova reserva manualmente', href: '/cliente/reservas', icon: 'calendar' },
+  { label: 'Mapa de Quartos', description: 'Ver status de ocupação', href: '/cliente/quartos', icon: 'bed' },
+  { label: 'Relatório Financeiro', description: 'Receitas, despesas e métricas', href: '/cliente/financeiro', icon: 'wallet' },
+  { label: 'Criar Promoção', description: 'Disparar campanha para hóspedes', href: '/cliente/promocoes', icon: 'tag' },
+  { label: 'Configurar IA', description: 'Ajustar comportamento dos agentes', href: '/cliente/configuracoes', icon: 'settings' },
+  { label: 'Fazer Upgrade', description: 'Conhecer planos PRO e MAX', href: '/cliente/upgrade', icon: 'upgrade' },
 ];
 
 const iconMap: Record<string, React.ReactNode> = {
