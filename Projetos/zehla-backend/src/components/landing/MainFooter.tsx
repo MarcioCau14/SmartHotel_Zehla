@@ -21,10 +21,10 @@ export function MainFooter() {
           <div>
             <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-5">Planos</h4>
             <ul className="space-y-3">
-              <li><Link href="/vendas/free" className="text-sm text-neutral-600 hover:text-neutral-300 transition-colors">Grátis</Link></li>
-              <li><Link href="/vendas/lite" className="text-sm text-neutral-600 hover:text-neutral-300 transition-colors">Lite — R$ 248/mês</Link></li>
-              <li><Link href="/vendas/pro" className="text-sm text-neutral-600 hover:text-neutral-300 transition-colors">PRO — R$ 448/mês</Link></li>
-              <li><Link href="/vendas/max" className="text-sm text-neutral-600 hover:text-neutral-300 transition-colors">MAX — R$ 798/mês</Link></li>
+              <li><Link href="/vendas#gratis" className="text-sm text-neutral-600 hover:text-neutral-300 transition-colors">Grátis</Link></li>
+              <li><Link href="/vendas#lite" className="text-sm text-neutral-600 hover:text-neutral-300 transition-colors">Lite — R$ 248/mês</Link></li>
+              <li><Link href="/vendas#pro" className="text-sm text-neutral-600 hover:text-neutral-300 transition-colors">PRO — R$ 448/mês</Link></li>
+              <li><Link href="/vendas#max" className="text-sm text-neutral-600 hover:text-neutral-300 transition-colors">MAX — R$ 798/mês</Link></li>
             </ul>
           </div>
 
