@@ -182,7 +182,7 @@ export async function proxy(request: NextRequest) {
   const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
   
   if (isProtectedRoute) {
-    const token = request.cookies.get('zehla-token')?.value || request.headers.get('Authorization');
+    const token = request.cookies.get('zehla-token')?.value || request.headers.get('Authorization')?.replace('Bearer ', '');
     
     if (!token) {
       // Se for API, retorna 401

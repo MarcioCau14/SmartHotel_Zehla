@@ -645,7 +645,7 @@ model PousadaFinance {
   id         String       @id @default(cuid())
   propertyId String
   scope      FinanceScope @default(CLIENT)
-  date       DateTime     @unique // YYYY-MM-DD
+  date       DateTime     // YYYY-MM-DD
 
   // Receita
   grossRevenue     Float // Receita bruta do dia

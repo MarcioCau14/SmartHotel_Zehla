@@ -1,3 +1,4 @@
+import { prisma } from '@/lib/prisma';
 import { Guardian } from '@/lib/security/guardian';
 import { getServerSession } from 'next-auth';
 import { subconsciousQueue } from '@/lib/ml/subconscious-worker';
