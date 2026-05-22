@@ -21,6 +21,7 @@ const PUBLIC_PATHS = [
   '/vendas',
   '/zcc',
   '/zcc-login',
+  '/dashboard/upgrade',
 ];
 
 const MUTATION_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
@@ -197,6 +198,50 @@ export async function proxy(request: NextRequest) {
     if (isAdminRoute) {
       // Em produção, decodificaríamos o JWT aqui para checar a role.
       // Por enquanto, permitimos se houver token, mas o backend validará a role.
+    }
+
+    // 4. Trial Expiration Guard — redireciona para /dashboard/upgrade se trial expirado
+    if (pathname.startsWith('/dashboard') && !pathname.startsWith('/dashboard/upgrade') && !pathname.startsWith('/dashboard/configuracoes')) {
+      try {
+        const { payload } = await jwtVerify(token, SECRET_KEY, { clockTolerance: 60 });
+        const propertyId = (payload as any).propertyId || (payload as any).tenantId;
+        
+        if (propertyId) {
+          const statusKey = `trial:status:${propertyId}`;
+          const cached = await redis.get(statusKey);
+          
+          let isExpired = false;
+          
+          if (cached) {
+            isExpired = cached === 'expired';
+          } else {
+            const { prisma } = await import('@/lib/prisma');
+            const property = await prisma.property.findUnique({
+              where: { id: propertyId },
+              select: { isTrial: true, trialEndsAt: true, stripeSubscriptionId: true },
+            });
+            
+            if (property?.isTrial && property.trialEndsAt) {
+              isExpired = property.trialEndsAt < new Date() && !property.stripeSubscriptionId;
+            }
+            
+            await redis.setex(statusKey, 300, isExpired ? 'expired' : 'active');
+          }
+          
+          if (isExpired) {
+            if (pathname.startsWith('/api')) {
+              return NextResponse.json({
+                error: 'Trial expirado. Faça upgrade para continuar.',
+                code: 'TRIAL_EXPIRED',
+                redirectTo: '/dashboard/upgrade',
+              }, { status: 402 });
+            }
+            return NextResponse.redirect(new URL('/dashboard/upgrade', request.url));
+          }
+        }
+      } catch {
+        // Token inválido — deixa o fluxo normal tratar
+      }
     }
   }
 

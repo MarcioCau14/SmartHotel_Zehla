@@ -26,6 +26,7 @@ interface TenantCostSummary {
 
 // Limites de custo por plano (em USD — moeda base do Stripe)
 const COST_LIMITS_USD: Record<string, number> = {
+  TRIAL: 0.5,   // Hard-limit trial: ~R$ 2.50 (máximo 250 msgs IA)
   LITE: 2,    // ~R$ 10
   PRO: 10,    // ~R$ 50
   MAX: 40,    // ~R$ 200
@@ -34,6 +35,14 @@ const COST_LIMITS_USD: Record<string, number> = {
 // Custos operacionais em USD (preços das APIs)
 const AI_COST_PER_1K_TOKENS_USD = 0.002; // Kimi/GPT-4o-mini
 const API_COST_PER_CALL_USD = 0.001;
+
+// Limites rígidos por operação para TRIAL (FinOps Breaker)
+const TRIAL_HARD_LIMITS = {
+  aiMessagesPerDay: 50,
+  whatsappMessagesPerDay: 100,
+  apiCallsPerDay: 200,
+  maxTokensPerRequest: 2000,
+};
 
 /**
  * Formata custo para exibição na moeda do tenant
@@ -124,6 +133,29 @@ export async function getTenantCostSummary(propertyId: string, plan: string): Pr
 export async function checkFinOpsBreaker(propertyId: string, plan: string, operation: string): Promise<{ allowed: boolean; reason?: string }> {
   const summary = await getTenantCostSummary(propertyId, plan);
 
+  // TRIAL HARD-LIMITS (FinOps Breaker — custo zero)
+  if (plan === 'TRIAL' || (plan === 'PRO' && summary.currentCost < 0.5)) {
+    const today = new Date().toISOString().split('T')[0];
+    const todayKey = `finops:daily:${propertyId}:${today}`;
+    const [aiToday, waToday] = await Promise.all([
+      redis.get(`${todayKey}:ai`).then(v => parseInt(v || '0')),
+      redis.get(`${todayKey}:wa`).then(v => parseInt(v || '0')),
+    ]);
+
+    if (operation === 'ai_token' && aiToday >= TRIAL_HARD_LIMITS.aiMessagesPerDay) {
+      return {
+        allowed: false,
+        reason: `Limite diário de IA do trial atingido (${TRIAL_HARD_LIMITS.aiMessagesPerDay} mensagens). Faça upgrade para ilimitado.`,
+      };
+    }
+    if (operation === 'whatsapp' && waToday >= TRIAL_HARD_LIMITS.whatsappMessagesPerDay) {
+      return {
+        allowed: false,
+        reason: `Limite diário de WhatsApp do trial atingido (${TRIAL_HARD_LIMITS.whatsappMessagesPerDay} mensagens).`,
+      };
+    }
+  }
+
   if (summary.isOverBudget) {
     return {
       allowed: false,
@@ -149,6 +181,13 @@ export async function checkFinOpsBreaker(propertyId: string, plan: string, opera
   }
 
   return { allowed: true };
+}
+
+export async function incrementTrialDailyCounter(propertyId: string, type: 'ai' | 'wa') {
+  const today = new Date().toISOString().split('T')[0];
+  const key = `finops:daily:${propertyId}:${today}:${type}`;
+  await redis.incr(key);
+  await redis.expire(key, 86400 * 2);
 }
 
 export async function resetTenantCosts(propertyId: string) {
