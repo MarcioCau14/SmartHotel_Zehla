@@ -31,7 +31,8 @@ import {
   Shield,
   Eye,
   BarChart3,
-  CheckCircle2 } from
+  CheckCircle2,
+  Sparkles } from
 'lucide-react';
 import {
   Accordion,

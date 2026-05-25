@@ -1,6 +1,8 @@
+import { NextRequest, NextResponse } from 'next/server';
 import { Guardian } from '@/lib/security/guardian';
 import { getServerSession } from 'next-auth';
 import { subconsciousQueue } from '@/lib/ml/subconscious-worker';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
   // 1. BLINDAGEM: Rate Limiting (50 req/min)

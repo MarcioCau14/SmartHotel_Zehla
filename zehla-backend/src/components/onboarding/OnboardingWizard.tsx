@@ -42,10 +42,11 @@ const defaultData: OnboardingData = {
     cep: '',
     tipo: '',
     site: '',
+    instagram: '',
     descricao: '',
   },
   rooms: [
-    { id: `room-init-${Date.now()}`, nome: '101', tipo: 'standard', capacidade: 2, preco: 150 },
+    { id: `room-init-${Date.now()}`, nome: '101', tipo: 'standard', pricingType: 'PER_ROOM', capacidade: 2, preco: 150 },
   ],
   services: { selected: [] },
   payment: {

@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { llmRouter } from '@/lib/ai/llm-router'
-import { semanticCache } from '../ai/semanticCache'
+import { getCachedResponse } from '@/lib/ai/semanticCache'
 
 export interface SwarmConfig {
   tenantId: string
@@ -18,7 +18,7 @@ export class SwarmEngine {
     const { tenantId, title, context, rounds = 3, agentCount = 5 } = config
 
     // 1. ESCUDO SEMÂNTICO (MiroFish Cache Intercept)
-    const cachedResult = await semanticCache.get(tenantId, `sim:${context}`);
+    const cachedResult = await getCachedResponse(`sim:${context}`, tenantId);
     if (cachedResult) {
       console.log('💰 [MIROFISH] Simulação interceptada pelo cache semântico ($0).');
       // Retornaria um cenário simulado ou o resultado anterior

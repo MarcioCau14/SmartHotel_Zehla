@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     // ----- GUARDIAN VALIDATION -----
     const bodyText = await request.text();
-    const validation = await validateRequest(request, bodyText);
+    const validation = await validateRequest(request);
     if (!validation.allowed) {
       return NextResponse.json({ error: validation.reason, code: 'GUARDIAN_BLOCKED' }, { status: 429 });
     }
@@ -15,13 +15,10 @@ export async function POST(request: NextRequest) {
     if (!question) return NextResponse.json({ error: 'Pergunta obrigatória' }, { status: 400 });
 
     // ----- INPUT SANITIZATION -----
-    const { sanitized, threats } = sanitizeInput(question);
-    if (threats.length > 0) {
-      console.warn(`[GUARDIAN] Sanitization applied to help chat input: ${threats.join(', ')}`);
-    }
+    const sanitized = sanitizeInput(question);
 
     // ----- ZDR -----
-    const { sanitized: piiSafe, found } = scanPII(sanitized);
+    const piiSafe = scanPII(sanitized).sanitized;
 
     const zai = await ZAI.create();
     const completion = await zai.chat.completions.create({

@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,28 +8,27 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String
-  password      String
-  role          Role      @default(CLIENT)
-  phone         String?
-  cpf           String?
-  isActive      Boolean   @default(true)
-  emailVerified DateTime?
-  permissions   String[]  @default([]) // Para controle granular de acesso (Equipe ZCC)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  properties Property[]
-  sessions   Session[]
-  accounts   Account[]
-
-  crmContactOwners   CrmContact[]     @relation("CrmContactOwner")
-  crmContactAssigned CrmContact[]     @relation("CrmContactAssigned")
+  id                 String               @id @default(cuid())
+  email              String               @unique
+  name               String
+  password           String
+  role               Role                 @default(CLIENT)
+  phone              String?
+  cpf                String?
+  isActive           Boolean              @default(true)
+  emailVerified      DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  permissions        String[]             @default([])
+  accounts           Account[]
+  crmContactAssigned CrmContact[]         @relation("CrmContactAssigned")
+  crmContactOwners   CrmContact[]         @relation("CrmContactOwner")
+  crmDealOwners      CrmDeal[]            @relation("CrmDealOwner")
   crmInteractions    CrmInteraction[]
-  crmDealOwners      CrmDeal[]        @relation("CrmDealOwner")
   crmTasksAssigned   CrmTask[]
+  properties         Property[]
+  push_subscriptions push_subscriptions[]
+  sessions           Session[]
 
   @@map("users")
 }
@@ -43,15 +39,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -77,79 +72,96 @@ model VerificationToken {
 }
 
 model Property {
-  id                  String              @id @default(cuid())
-  registrationNumber  String?             @unique // Format: 0001/PRO/SC
-  name                String
-  slug                String              @unique
-  description         String?             @db.Text
-  address             String
-  city                String              @default("Imbituba")
-  state               String              @default("SC")
-  zipCode             String?
-  latitude            Float?
-  longitude           Float?
-  capacity            Int                 @default(10)
-  status              PropertyStatus      @default(ACTIVE)
-  plan                Plan                @default(LITE)
-  trialEndsAt         DateTime?
-  isTrial             Boolean             @default(true)
-  phone               String?
-  whatsapp            String?
-  email               String?
-  website             String?
-  pixKey              String?
-  pixKeyType          PixKeyType?
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  isCanary            Boolean             @default(false)
-  whatsappChannelType WhatsappChannelType @default(GUESTS_ONLY)
-  supplierContact     String?
-
-  userId        String
-  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rooms         Room[]
-  reservations  Reservation[]
-  services      Service[]
-  payments      Payment[]
-  agentLogs     AgentLog[]
-  messages      Message[]
-  pricingRules  PricingRule[]
-  invoices      Invoice[]
-  leads         Lead[]               @relation("PropertyLeads")
-  finances      PousadaFinance[]
-  transactions  FinanceTransaction[]
-  financeAlerts FinanceAlert[]
-
-  connectProfile ConnectProfile?
-
-  crmPipelines    CrmPipeline[]
-  crmContacts     CrmContact[]
-  crmInteractions CrmInteraction[]
-  crmDeals        CrmDeal[]
-  crmTasks        CrmTask[]
+  id                   String               @id @default(cuid())
+  name                 String
+  slug                 String               @unique
+  description          String?
+  address              String
+  city                 String               @default("Imbituba")
+  state                String               @default("SC")
+  zipCode              String?
+  latitude             Float?
+  longitude            Float?
+  capacity             Int                  @default(10)
+  status               PropertyStatus       @default(ACTIVE)
+  plan                 Plan                 @default(LITE)
+  trialEndsAt          DateTime?
+  isTrial              Boolean              @default(true)
+  phone                String?
+  whatsapp             String?
+  email                String?
+  website              String?
+  pixKey               String?
+  pixKeyType           PixKeyType?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  userId               String
+  isCanary             Boolean              @default(false)
+  registrationNumber   String?              @unique
+  supplierContact      String?
+  whatsappChannelType  WhatsappChannelType  @default(GUESTS_ONLY)
+  cancelAtPeriodEnd    Boolean              @default(false)
+  currentPeriodEnd     DateTime?
+  stripeCustomerId     String?              @unique
+  stripePriceId        String?
+  stripeSubscriptionId String?              @unique
+  currencyCode         String               @default("BRL")
+  locale               String               @default("pt-BR")
+  timezone             String               @default("America/Sao_Paulo")
+  refSource            String?
+  utmCampaign          String?
+  utmContent           String?
+  utmMedium            String?
+  utmSource            String?
+  utmTerm              String?
+  agentLogs            AgentLog[]
+  billing_logs         billing_logs[]
+  cadastur_records     cadastur_records?
+  connectProfile       ConnectProfile?
+  credit_accounts      credit_accounts?
+  crmContacts          CrmContact[]
+  crmDeals             CrmDeal[]
+  crmInteractions      CrmInteraction[]
+  crmPipelines         CrmPipeline[]
+  crmTasks             CrmTask[]
+  financeAlerts        FinanceAlert[]
+  transactions         FinanceTransaction[]
+  invoices             Invoice[]
+  leads                Lead[]               @relation("PropertyLeads")
+  mal_profiles         mal_profiles[]
+  messages             Message[]
+  payments             Payment[]
+  finances             PousadaFinance[]
+  pricingRules         PricingRule[]
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  push_subscriptions   push_subscriptions[]
+  reservations         Reservation[]
+  rooms                Room[]
+  service_items        service_items[]
+  services             Service[]
+  transaction_logs     transaction_logs[]
 
   @@map("properties")
 }
 
 model Room {
-  id          String      @id @default(cuid())
-  number      String
-  name        String?
-  type        RoomType    @default(STANDARD)
-  pricingType PricingType @default(PER_ROOM)
-  capacity    Int         @default(2)
-  basePrice   Float       @default(150.00)
-  description String?     @db.Text
-  amenities   String[]    @default([])
-  status      RoomStatus  @default(AVAILABLE)
-  images      String[]    @default([])
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  isCanary    Boolean     @default(false)
-
+  id           String        @id @default(cuid())
+  number       String
+  name         String?
+  type         RoomType      @default(STANDARD)
+  capacity     Int           @default(2)
+  basePrice    Float         @default(150.00)
+  description  String?
+  amenities    String[]      @default([])
+  status       RoomStatus    @default(AVAILABLE)
+  images       String[]      @default([])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   propertyId   String
-  property     Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  isCanary     Boolean       @default(false)
+  pricingType  PricingType   @default(PER_ROOM)
   reservations Reservation[]
+  property     Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@unique([propertyId, number])
   @@map("rooms")
@@ -163,41 +175,41 @@ model Service {
   isIncluded  Boolean  @default(false)
   icon        String?
   createdAt   DateTime @default(now())
-
-  propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@map("services")
 }
 
 model Reservation {
-  id            String            @id @default(cuid())
-  code          String            @unique
-  guestName     String
-  guestEmail    String?
-  guestPhone    String
-  guestCpf      String?
-  guestCount    Int               @default(1)
-  checkIn       DateTime
-  checkOut      DateTime
-  nights        Int
-  roomPrice     Float
-  totalAmount   Float
-  discount      Float             @default(0)
-  paidAmount    Float             @default(0)
-  status        ReservationStatus @default(CONFIRMED)
-  checkInStatus CheckInStatus     @default(PENDING)
-  source        String            @default("WHATSAPP")
-  notes         String?           @db.Text
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-  isCanary      Boolean           @default(false)
-
-  roomId     String
-  room       Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  payment    Payment?
+  id                String              @id @default(cuid())
+  code              String              @unique
+  guestName         String
+  guestEmail        String?
+  guestPhone        String
+  guestCpf          String?
+  guestCount        Int                 @default(1)
+  checkIn           DateTime
+  checkOut          DateTime
+  nights            Int
+  roomPrice         Float
+  totalAmount       Float
+  discount          Float               @default(0)
+  paidAmount        Float               @default(0)
+  status            ReservationStatus   @default(CONFIRMED)
+  checkInStatus     CheckInStatus       @default(PENDING)
+  source            String              @default("WHATSAPP")
+  notes             String?
+  fnrhSubmittedAt   DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  roomId            String
+  propertyId        String
+  isCanary          Boolean             @default(false)
+  payment           Payment?
+  reservation_items reservation_items[]
+  property          Property            @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  room              Room                @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@map("reservations")
 }
@@ -207,19 +219,18 @@ model Payment {
   amount        Float
   method        PaymentMethod @default(PIX)
   status        PaymentStatus @default(PENDING)
-  pixQrCode     String?       @db.Text
-  pixCode       String?       @db.Text
+  pixQrCode     String?
+  pixCode       String?
   pixExpiration DateTime?
   externalId    String?
   paidAt        DateTime?
   refundedAt    DateTime?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
-
-  reservationId String      @unique
-  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  reservationId String        @unique
   propertyId    String
-  property      Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  property      Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  reservation   Reservation   @relation(fields: [reservationId], references: [id], onDelete: Cascade)
 
   @@map("payments")
 }
@@ -235,9 +246,8 @@ model PricingRule {
   fixedAmount Float?
   isActive    Boolean   @default(true)
   createdAt   DateTime  @default(now())
-
-  propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId  String
+  property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@map("pricing_rules")
 }
@@ -248,14 +258,13 @@ model AgentLog {
   action     String
   intent     String?
   confidence Float?
-  input      String?  @db.Text
-  output     String?  @db.Text
+  input      String?
+  output     String?
   tokensUsed Int      @default(0)
   cost       Float    @default(0)
   duration   Int      @default(0)
   status     String   @default("SUCCESS")
   createdAt  DateTime @default(now())
-
   propertyId String
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
@@ -267,15 +276,14 @@ model Message {
   id           String   @id @default(cuid())
   phone        String
   name         String?
-  content      String   @db.Text
+  content      String
   direction    String
   type         String   @default("TEXT")
   status       String   @default("SENT")
   agentHandled String?
   createdAt    DateTime @default(now())
-
-  propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId   String
+  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@index([propertyId, phone, createdAt])
   @@map("messages")
@@ -285,8 +293,8 @@ model SystemLog {
   id        String   @id @default(cuid())
   level     String
   component String
-  message   String   @db.Text
-  metadata  String?  @db.Text
+  message   String
+  metadata  String?
   createdAt DateTime @default(now())
 
   @@index([level, component, createdAt])
@@ -310,9 +318,9 @@ model ZeladorAction {
 model SecurityAlert {
   id        String   @id @default(cuid())
   tenantId  String
-  alertType String // CANARY_TOUCHED, HMAC_FAIL, etc.
-  severity  String // LOW, MEDIUM, HIGH, CRITICAL
-  metadata  String?  @db.Text
+  alertType String
+  severity  String
+  metadata  String?
   createdAt DateTime @default(now())
 
   @@index([tenantId, createdAt])
@@ -325,10 +333,942 @@ model PixTransaction {
   endToEndId String   @unique
   amount     Float
   status     String
-  metadata   String?  @db.Text
+  metadata   String?
   createdAt  DateTime @default(now())
 
   @@map("pix_transactions")
+}
+
+model TrialBlacklist {
+  id        String   @id @default(cuid())
+  value     String   @unique
+  type      String
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@map("trial_blacklist")
+}
+
+model Lead {
+  id                    String          @id @default(cuid())
+  name                  String
+  email                 String?         @unique
+  phone                 String?         @unique
+  whatsapp              String?         @unique
+  property              String?
+  category              String?         @default("pousada")
+  city                  String?
+  state                 String?         @default("SC")
+  region                String?
+  googleRating          Float?
+  score                 Int?
+  painPoints            String?
+  source                String          @default("SECRETARIA_AI")
+  status                LeadStatus      @default(PROSPECT)
+  metadata              String?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  propertyId            String?
+  latitude              Float?
+  longitude             Float?
+  scoreValid            Int?            @default(0)
+  localPraia            String?
+  observacoes           String?
+  notes                 String?
+  isCanary              Boolean         @default(false)
+  estimatedValues       String?
+  intentSignals         String?
+  location              String?
+  phoneSecondary        String?
+  qualification         String?
+  socialMedia           String?
+  site                  String?
+  validationScore       Int?            @default(0)
+  validationStatus      String?         @default("pendente")
+  conversionScore       Int?            @default(0)
+  funnelStage           String?         @default("NEUTRAL")
+  lastInteractionAt     DateTime?
+  behavioralProfile     String?
+  cluster               String?         @default("COLD")
+  previousCluster       String?
+  lastSwipeAction       String?
+  lastSwipeUsedId       String?
+  tierConfidence        Float?
+  tierSugerido          String?
+  tierSugeridoEm        DateTime?
+  roomsCount            Int?            @default(0)
+  instagramFollowers    Int?            @default(0)
+  googleReviewsCount    Int?            @default(0)
+  otaCommissionLost     Float?          @default(0.0)
+  hasWebsite            Boolean         @default(false)
+  otaDependenceLevel    String?         @default("MEDIUM")
+  buyingBehavior        String?
+  conversionProbability Float?          @default(0.0)
+  objectKeywords        String?
+  recommendedPitch      String?
+  leadTier              String          @default("COLD")
+  emailTracking         EmailTracking[]
+  propertyRef           Property?       @relation("PropertyLeads", fields: [propertyId], references: [id])
+
+  @@map("leads")
+}
+
+model EmailTracking {
+  id         String   @id @default(cuid())
+  leadId     String
+  campaignId String?
+  openedAt   DateTime @default(now())
+  ip         String?
+  userAgent  String?
+  lead       Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([campaignId])
+  @@map("email_tracking")
+}
+
+model SecurityIncident {
+  id         String    @id @default(cuid())
+  tenantId   String
+  type       String
+  reason     String
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@map("security_incidents")
+}
+
+model Invoice {
+  id          String        @id @default(cuid())
+  propertyId  String
+  month       Int
+  year        Int
+  status      InvoiceStatus @default(PENDING)
+  totalAmount Float
+  createdAt   DateTime      @default(now())
+  items       InvoiceItem[]
+  property    Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String          @id @default(cuid())
+  invoiceId   String
+  type        InvoiceItemType
+  description String
+  amount      Float
+  metadata    String?
+  createdAt   DateTime        @default(now())
+  invoice     Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("invoice_items")
+}
+
+model PousadaFinance {
+  id               String       @id @default(cuid())
+  propertyId       String
+  scope            FinanceScope @default(CLIENT)
+  date             DateTime     @unique
+  grossRevenue     Float
+  netRevenue       Float
+  channelBreakdown Json?
+  totalRooms       Int
+  occupiedRooms    Int
+  occupancyRate    Float
+  adr              Float
+  revpar           Float
+  operatingCosts   Json?
+  totalCosts       Float
+  aiInsight        String?
+  healthScore      Int?
+  alertLevel       String?
+  property         Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, date])
+  @@map("pousada_finance")
+}
+
+model FinanceTransaction {
+  id          String                 @id @default(cuid())
+  propertyId  String
+  scope       FinanceScope           @default(CLIENT)
+  date        DateTime
+  type        FinanceTransactionType
+  category    String
+  channel     String?
+  description String
+  amount      Float
+  status      String
+  metadata    Json?
+  property    Property               @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, date])
+  @@map("finance_transactions")
+}
+
+model FinanceAlert {
+  id          String          @id @default(cuid())
+  propertyId  String
+  scope       FinanceScope    @default(CLIENT)
+  type        String
+  severity    FinanceSeverity @default(INFO)
+  agentName   String
+  message     String
+  metric      Json?
+  isRead      Boolean         @default(false)
+  actionTaken String?
+  createdAt   DateTime        @default(now())
+  property    Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, createdAt])
+  @@map("finance_alerts")
+}
+
+model ConnectProfile {
+  id             String             @id @default(cuid())
+  slug           String             @unique
+  bio            String             @default("")
+  avatarUrl      String?
+  coverUrl       String?
+  whatsappNumber String?
+  status         String             @default("draft")
+  isVerified     Boolean            @default(false)
+  seoTitle       String?
+  seoDescription String?
+  totalViews     Int                @default(0)
+  totalClicks    Int                @default(0)
+  publishedAt    DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  propertyId     String             @unique
+  analytics      ConnectAnalytics[]
+  links          ConnectLink[]
+  media          ConnectMedia[]
+  property       Property           @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  reviews        ConnectReview[]
+  theme          ConnectTheme?
+
+  @@index([slug])
+  @@index([status])
+  @@map("connect_profiles")
+}
+
+model ConnectLink {
+  id         String         @id @default(cuid())
+  label      String
+  url        String
+  icon       String         @default("link")
+  type       String         @default("external")
+  order      Int            @default(0)
+  clickCount Int            @default(0)
+  isActive   Boolean        @default(true)
+  profileId  String
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  profile    ConnectProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId, order])
+  @@index([profileId, isActive])
+  @@map("connect_links")
+}
+
+model ConnectTheme {
+  id            String         @id @default(cuid())
+  layout        String         @default("centered")
+  fontFamily    String         @default("inter")
+  colors        Json           @default("{\"text\": \"#1F2937\", \"accent\": \"#F59E0B\", \"primary\": \"#10B981\", \"secondary\": \"#0F172A\", \"background\": \"#FFFFFF\"}")
+  buttonStyle   String         @default("rounded")
+  galleryLayout String         @default("carousel")
+  profileId     String         @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  profile       ConnectProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("connect_themes")
+}
+
+model ConnectAnalytics {
+  id        String         @id @default(cuid())
+  date      DateTime       @db.Date
+  views     Int            @default(0)
+  clicks    Int            @default(0)
+  ctr       Float          @default(0)
+  geo       Json           @default("{}")
+  device    Json           @default("{}")
+  source    Json           @default("{}")
+  profileId String
+  createdAt DateTime       @default(now())
+  profile   ConnectProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, date])
+  @@index([profileId, date(sort: Desc)])
+  @@map("connect_analytics")
+}
+
+model ConnectReview {
+  id         String         @id @default(cuid())
+  authorName String
+  rating     Int
+  text       String         @default("")
+  source     String         @default("manual")
+  isApproved Boolean        @default(true)
+  profileId  String
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  profile    ConnectProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId, isApproved])
+  @@map("connect_reviews")
+}
+
+model ConnectMedia {
+  id        String         @id @default(cuid())
+  type      String         @default("image")
+  url       String
+  publicId  String
+  alt       String         @default("")
+  order     Int            @default(0)
+  profileId String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  profile   ConnectProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId, order])
+  @@map("connect_media")
+}
+
+model CrmPipeline {
+  id         String    @id @default(cuid())
+  name       String
+  stages     Json
+  isDefault  Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  propertyId String
+  deals      CrmDeal[]
+  property   Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@map("crm_pipelines")
+}
+
+model CrmContact {
+  id              String           @id @default(cuid())
+  name            String
+  email           String?
+  phone           String?
+  whatsapp        String?
+  instagram       String?
+  facebook        String?
+  tags            Json             @default("[]")
+  customFields    Json             @default("{}")
+  source          String           @default("MANUAL")
+  lastContactedAt DateTime?
+  nextFollowUpAt  DateTime?
+  deletedAt       DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  propertyId      String
+  ownerId         String?
+  assignedToId    String?
+  assignedTo      User?            @relation("CrmContactAssigned", fields: [assignedToId], references: [id])
+  owner           User?            @relation("CrmContactOwner", fields: [ownerId], references: [id])
+  property        Property         @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  deals           CrmDeal[]
+  interactions    CrmInteraction[]
+  tasks           CrmTask[]
+
+  @@index([propertyId])
+  @@index([propertyId, name])
+  @@index([propertyId, email])
+  @@index([propertyId, phone])
+  @@index([propertyId, whatsapp])
+  @@index([propertyId, deletedAt])
+  @@map("crm_contacts")
+}
+
+model CrmInteraction {
+  id         String             @id @default(cuid())
+  type       CrmInteractionType
+  content    String
+  metadata   Json?
+  createdAt  DateTime           @default(now())
+  contactId  String
+  userId     String?
+  propertyId String
+  contact    CrmContact         @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  property   Property           @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user       User?              @relation(fields: [userId], references: [id])
+
+  @@index([contactId, createdAt])
+  @@index([propertyId, createdAt])
+  @@map("crm_interactions")
+}
+
+model CrmDeal {
+  id                String      @id @default(cuid())
+  title             String
+  value             Float       @default(0)
+  stage             String
+  expectedCloseDate DateTime?
+  probability       Int         @default(0)
+  notes             String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  pipelineId        String
+  contactId         String?
+  propertyId        String
+  ownerId           String?
+  contact           CrmContact? @relation(fields: [contactId], references: [id])
+  owner             User?       @relation("CrmDealOwner", fields: [ownerId], references: [id])
+  pipeline          CrmPipeline @relation(fields: [pipelineId], references: [id])
+  property          Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  tasks             CrmTask[]
+
+  @@index([propertyId, stage])
+  @@index([pipelineId, stage])
+  @@index([contactId])
+  @@map("crm_deals")
+}
+
+model CrmTask {
+  id           String          @id @default(cuid())
+  title        String
+  description  String?
+  dueDate      DateTime?
+  completed    Boolean         @default(false)
+  priority     CrmTaskPriority @default(MEDIUM)
+  type         CrmTaskType     @default(OTHER)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  contactId    String?
+  dealId       String?
+  assignedToId String?
+  propertyId   String
+  assignedTo   User?           @relation(fields: [assignedToId], references: [id])
+  contact      CrmContact?     @relation(fields: [contactId], references: [id])
+  deal         CrmDeal?        @relation(fields: [dealId], references: [id])
+  property     Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, completed])
+  @@index([assignedToId, completed])
+  @@index([propertyId, dueDate])
+  @@map("crm_tasks")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  tenantId   String
+  userId     String?
+  action     String
+  resource   String
+  resourceId String?
+  severity   String   @default("INFO")
+  piiFields  String[] @default([])
+  ipAddress  String?
+  userAgent  String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([action, createdAt])
+  @@index([severity, createdAt])
+  @@index([tenantId, createdAt])
+  @@index([userId, createdAt])
+  @@map("audit_logs")
+}
+
+model agents {
+  id              String   @id
+  name            String
+  email           String   @unique
+  phone           String?
+  role            String   @default("consultant")
+  status          String   @default("active")
+  commission      Float    @default(0)
+  totalSales      Float    @default(0)
+  totalCommission Float    @default(0)
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime
+
+  @@index([email])
+  @@index([status])
+}
+
+model api_keys {
+  id            String    @id
+  propertyId    String
+  name          String
+  keyPrefix     String
+  keyHash       String
+  keyPlain      String
+  permissions   String[]  @default(["read"])
+  scopes        String[]  @default(["reservations", "rooms"])
+  isActive      Boolean   @default(true)
+  lastUsedAt    DateTime?
+  revokedAt     DateTime?
+  revokedReason String?
+  expiresAt     DateTime?
+  rateLimit     Int       @default(100)
+  metadata      Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
+
+  @@index([isActive])
+  @@index([keyPrefix])
+  @@index([propertyId])
+}
+
+model auto_config_logs {
+  id              String   @id
+  propertyId      String
+  userId          String?
+  naturalLanguage String
+  executedActions Json
+  status          String   @default("pending")
+  error           String?
+  reviewNotes     String?
+  createdAt       DateTime @default(now())
+
+  @@index([propertyId, createdAt])
+  @@index([propertyId, status])
+}
+
+model billing_logs {
+  id         String   @id
+  propertyId String
+  type       String
+  units      Float    @default(1)
+  cost       Float    @default(0)
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  properties Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, createdAt])
+  @@index([propertyId, type, createdAt])
+}
+
+model cadastur_records {
+  id             String    @id
+  propertyId     String    @unique
+  cadasturNumber String?
+  status         String    @default("pending")
+  validUntil     DateTime?
+  lastCheckedAt  DateTime?
+  metadata       Json?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime
+  properties     Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}
+
+model channel_mappings {
+  id         String   @id
+  propertyId String
+  channel    String
+  externalId String
+  internalId String
+  type       String
+  metadata   Json?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
+
+  @@unique([propertyId, channel, externalId, type])
+  @@index([propertyId, channel])
+}
+
+model channel_sync_logs {
+  id         String   @id
+  propertyId String
+  channel    String
+  eventType  String
+  externalId String?
+  status     String   @default("pending")
+  payload    Json?
+  error      String?
+  createdAt  DateTime @default(now())
+
+  @@index([propertyId, channel, createdAt])
+  @@index([status, createdAt])
+}
+
+model connect_affiliates {
+  id               String   @id
+  profileId        String
+  affiliateSlug    String   @unique
+  name             String
+  email            String?
+  phone            String?
+  commission       Float    @default(0)
+  totalClicks      Int      @default(0)
+  totalConversions Int      @default(0)
+  totalEarnings    Float    @default(0)
+  isActive         Boolean  @default(true)
+  metadata         Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime
+
+  @@index([affiliateSlug])
+  @@index([profileId])
+}
+
+model connect_messages {
+  id        String   @id
+  fromSlug  String
+  toSlug    String
+  content   String
+  type      String   @default("referral")
+  isRead    Boolean  @default(false)
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([fromSlug, createdAt])
+  @@index([toSlug, isRead])
+}
+
+model connect_visitors {
+  id          String   @id
+  profileId   String
+  userAgent   String?
+  ip          String?
+  geo         Json?
+  device      String?
+  source      String?
+  utmCampaign String?
+  utmMedium   String?
+  utmSource   String?
+  visitedAt   DateTime @default(now())
+
+  @@index([profileId, visitedAt])
+  @@index([source, visitedAt])
+}
+
+model credit_accounts {
+  id                  String                @id
+  propertyId          String                @unique
+  balance             Float                 @default(0)
+  totalEarned         Float                 @default(0)
+  totalSpent          Float                 @default(0)
+  expiresAt           DateTime?
+  updatedAt           DateTime
+  createdAt           DateTime              @default(now())
+  properties          Property              @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  credit_transactions credit_transactions[]
+
+  @@index([propertyId])
+}
+
+model credit_transactions {
+  id              String          @id
+  accountId       String
+  type            String
+  amount          Float
+  description     String
+  referenceId     String?
+  metadata        Json?
+  createdAt       DateTime        @default(now())
+  credit_accounts credit_accounts @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, createdAt])
+  @@index([type, createdAt])
+}
+
+model fiscal_invoices {
+  id                 String       @id
+  propertyId         String
+  reservationId      String?
+  invoiceNumber      String?
+  accessKey          String?
+  type               String       @default("NFS_E")
+  status             FiscalStatus @default(PENDENTE)
+  valorServicos      Float        @default(0)
+  valorDeducoes      Float        @default(0)
+  valorLiquido       Float        @default(0)
+  valorImpostos      Float        @default(0)
+  aliquota           Float        @default(0)
+  tomadorNome        String?
+  tomadorCpfCnpj     String?
+  tomadorEmail       String?
+  tomadorEndereco    Json?
+  emitidoEm          DateTime?
+  canceladoEm        DateTime?
+  motivoCancelamento String?
+  provedor           String?
+  provedorId         String?
+  provedorResponse   Json?
+  pdfUrl             String?
+  xmlUrl             String?
+  error              String?
+  metadata           Json?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime
+
+  @@index([accessKey])
+  @@index([invoiceNumber])
+  @@index([propertyId, createdAt])
+  @@index([propertyId, status])
+  @@index([reservationId])
+}
+
+model funnel_events {
+  id           String   @id
+  leadId       String?
+  email        String?
+  eventType    String
+  campaignId   String?
+  campaignName String?
+  metadata     Json?
+  ip           String?
+  userAgent    String?
+  scoreDelta   Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  @@index([campaignId, createdAt])
+  @@index([email, createdAt])
+  @@index([eventType, createdAt])
+  @@index([leadId, createdAt])
+}
+
+model guest_memories {
+  id          String    @id
+  propertyId  String
+  guestPhone  String
+  guestName   String?
+  guestEmail  String?
+  preferences Json      @default("{}")
+  tags        String[]  @default([])
+  notes       String?
+  embedding   Float[]   @default([])
+  visitCount  Int       @default(0)
+  totalSpent  Float     @default(0)
+  lastVisitAt DateTime?
+  firstSeenAt DateTime  @default(now())
+  source      String    @default("WHATSAPP")
+  isActive    Boolean   @default(true)
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+
+  @@unique([propertyId, guestPhone])
+  @@index([propertyId, guestName])
+  @@index([propertyId, tags])
+  @@index([visitCount])
+}
+
+model mal_profiles {
+  id            String    @id
+  propertyId    String
+  agentName     String
+  trainingData  Json
+  modelVersion  String    @default("1.0")
+  accuracy      Float?
+  lastTrainedAt DateTime?
+  isActive      Boolean   @default(false)
+  metadata      Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
+  properties    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, agentName])
+}
+
+model push_subscriptions {
+  id         String    @id
+  userId     String?
+  propertyId String?
+  endpoint   String    @unique
+  p256dh     String
+  auth       String
+  userAgent  String?
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime
+  properties Property? @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  users      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@index([userId])
+}
+
+model referrals {
+  id            String    @id
+  referrerId    String
+  referredEmail String
+  referredPhone String?
+  status        String    @default("pending")
+  rewardAmount  Float     @default(0)
+  rewardPaid    Boolean   @default(false)
+  rewardPaidAt  DateTime?
+  metadata      Json?
+  convertedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
+
+  @@index([referredEmail])
+  @@index([referrerId])
+  @@index([status])
+}
+
+model reservation_items {
+  id            String      @id
+  reservationId String
+  serviceItemId String
+  quantity      Int         @default(1)
+  unitPrice     Float
+  totalPrice    Float
+  status        String      @default("pending")
+  notes         String?
+  deliveredAt   DateTime?
+  createdAt     DateTime    @default(now())
+  reservations  Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@index([reservationId])
+  @@index([serviceItemId])
+}
+
+model revenue_pricing_logs {
+  id              String   @id
+  propertyId      String
+  roomId          String?
+  originalPrice   Float
+  finalPrice      Float
+  occupancyRate   Float
+  surgeMultiplier Float
+  reason          String
+  checkIn         DateTime
+  checkOut        DateTime
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  @@index([propertyId, createdAt])
+  @@index([propertyId, reason])
+}
+
+model revenue_settings {
+  id                    String   @id
+  propertyId            String   @unique
+  dynamicPricingEnabled Boolean  @default(false)
+  minPrice              Float?
+  maxPrice              Float?
+  weekendMultiplier     Float    @default(1.10)
+  seasonalMultiplier    Float    @default(1.20)
+  leadTimeDiscounts     Json?
+  occupancyThresholds   Json?
+  updatedAt             DateTime
+  createdAt             DateTime @default(now())
+
+  @@index([propertyId])
+}
+
+model service_items {
+  id          String   @id
+  propertyId  String
+  name        String
+  category    String
+  price       Float    @default(0)
+  description String?
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  properties  Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, category])
+  @@index([propertyId, isActive])
+}
+
+model tax_profiles {
+  id                 String   @id
+  propertyId         String   @unique
+  cnpj               String?
+  razaoSocial        String?
+  nomeFantasia       String?
+  inscricaoMunicipal String?
+  inscricaoEstadual  String?
+  regimeTributario   String   @default("SIMPLES_NACIONAL")
+  codigoAtividade    String?
+  certificadoDigital Json?
+  enderecoCompleto   Json?
+  emailNF            String?
+  telefoneNF         String?
+  autoEmissaoNF      Boolean  @default(false)
+  tipoNFS            String   @default("NFS_E")
+  provedorNF         String?
+  chaveAPIProvedor   String?
+  ambienteEmissao    String   @default("HOMOLOGACAO")
+  isActive           Boolean  @default(false)
+  metadata           Json?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime
+
+  @@index([propertyId])
+}
+
+model transaction_logs {
+  id            String   @id
+  propertyId    String
+  type          String
+  amount        Float
+  currency      String   @default("BRL")
+  status        String   @default("completed")
+  description   String
+  referenceId   String?
+  metadata      Json?
+  balanceBefore Float?
+  balanceAfter  Float?
+  createdAt     DateTime @default(now())
+  properties    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, createdAt])
+  @@index([propertyId, type])
+  @@index([status, createdAt])
+}
+
+model webhook_delivery_logs {
+  id             String    @id
+  subscriptionId String
+  propertyId     String
+  eventType      String
+  endpointUrl    String
+  payload        Json?
+  responseStatus Int?
+  responseBody   String?
+  responseTime   Int?
+  signature      String?
+  status         String    @default("pending")
+  error          String?
+  attempt        Int       @default(1)
+  maxAttempts    Int       @default(5)
+  nextRetryAt    DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([eventType, createdAt])
+  @@index([propertyId, status])
+  @@index([subscriptionId, createdAt])
+}
+
+model webhook_subscriptions {
+  id              String    @id
+  propertyId      String
+  name            String
+  endpointUrl     String
+  secretKey       String
+  events          String[]
+  isActive        Boolean   @default(true)
+  lastTriggeredAt DateTime?
+  lastStatus      String?
+  failureCount    Int       @default(0)
+  disabledAt      DateTime?
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime
+
+  @@index([events])
+  @@index([isActive])
+  @@index([propertyId])
 }
 
 enum Role {
@@ -412,116 +1352,12 @@ enum PaymentStatus {
   CANCELLED
 }
 
-model TrialBlacklist {
-  id        String   @id @default(cuid())
-  value     String   @unique // Email ou Telefone (WhatsApp)
-  type      String // 'EMAIL' ou 'PHONE'
-  reason    String?
-  createdAt DateTime @default(now())
-
-  @@map("trial_blacklist")
-}
-
-model Lead {
-  id           String     @id @default(cuid())
-  name         String
-  email        String?    @unique
-  phone        String?    @unique
-  whatsapp     String?    @unique
-  property     String?
-  category     String?    @default("pousada")
-  city         String?
-  state        String?    @default("SC")
-  region       String? // Sul, Sudeste, Norte, Nordeste, Centro-Oeste
-  googleRating Float?
-  score        Int?
-  painPoints   String?    @db.Text
-  source       String     @default("SECRETARIA_AI")
-  status       LeadStatus @default(PROSPECT)
-  metadata     String?    @db.Text // Dados brutos da planilha
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-
-  propertyId  String?
-  propertyRef Property? @relation("PropertyLeads", fields: [propertyId], references: [id])
-
-  emailTracking EmailTracking[]
-
-  // --- ZEHLA FISH EXTENSIONS ---
-  roomsCount            Int?    @default(0)
-  instagramFollowers    Int?    @default(0)
-  googleReviewsCount    Int?    @default(0)
-  otaCommissionLost     Float?  @default(0.0) // Estimativa de comissões perdidas por dependência de OTA (22%)
-  hasWebsite            Boolean @default(false)
-  otaDependenceLevel    String? @default("MEDIUM") // LOW, MEDIUM, HIGH, TOTAL
-  buyingBehavior        String? // Tradicional, Inovador, Sob-Pressão, Premium
-  conversionProbability Float?  @default(0.0) // Probabilidade calculada via MiroFish
-  objectKeywords        String? @db.Text // JSON ou string com objeções
-  recommendedPitch      String? @db.Text // Roteiro customizado gerado
-  leadTier              String  @default("COLD") // HOT, WARM, WARM_LOW, COLD, DEAD
-
-  @@map("leads")
-}
-
-model EmailTracking {
-  id         String   @id @default(cuid())
-  leadId     String
-  campaignId String?
-  openedAt   DateTime @default(now())
-  ip         String?
-  userAgent  String?
-
-  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
-
-  @@index([leadId])
-  @@index([campaignId])
-  @@map("email_tracking")
-}
-
 enum LeadStatus {
   PROSPECT
   QUALIFIED
   TRIAL_STARTED
   CONVERTED
   BLACKLISTED
-}
-
-model SecurityIncident {
-  id         String    @id @default(cuid())
-  tenantId   String
-  type       String
-  reason     String
-  resolvedAt DateTime?
-  createdAt  DateTime  @default(now())
-
-  @@map("security_incidents")
-}
-
-model Invoice {
-  id          String        @id @default(cuid())
-  propertyId  String
-  property    Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  month       Int
-  year        Int
-  status      InvoiceStatus @default(PENDING)
-  totalAmount Float
-  items       InvoiceItem[]
-  createdAt   DateTime      @default(now())
-
-  @@map("invoices")
-}
-
-model InvoiceItem {
-  id          String          @id @default(cuid())
-  invoiceId   String
-  invoice     Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  type        InvoiceItemType
-  description String
-  amount      Float
-  metadata    String?         @db.Text // reservationId, timestamp, etc
-  createdAt   DateTime        @default(now())
-
-  @@map("invoice_items")
 }
 
 enum PricingType {
@@ -541,8 +1377,8 @@ enum InvoiceItemType {
 }
 
 enum FinanceScope {
-  CORPORATE // Financeiro Interno SmartHotel
-  CLIENT // Dashboard do Dono da Pousada
+  CORPORATE
+  CLIENT
 }
 
 enum FinanceTransactionType {
@@ -555,210 +1391,6 @@ enum FinanceSeverity {
   WARNING
   CRITICAL
 }
-
-model PousadaFinance {
-  id         String       @id @default(cuid())
-  propertyId String
-  scope      FinanceScope @default(CLIENT)
-  date       DateTime     @unique // YYYY-MM-DD
-
-  // Receita
-  grossRevenue     Float // Receita bruta do dia
-  netRevenue       Float // Receita líquida
-  channelBreakdown Json? // { "booking": 4500, "airbnb": 1200, "direto": 2800 }
-
-  // Ocupação & Métricas
-  totalRooms    Int
-  occupiedRooms Int
-  occupancyRate Float
-  adr           Float // Average Daily Rate
-  revpar        Float // Revenue Per Available Room
-
-  // Gastos
-  operatingCosts Json? // { "limpeza": 800, "manutencao": 200 }
-  totalCosts     Float
-
-  // Agentes & Insights
-  aiInsight   String? @db.Text
-  healthScore Int? // 0-100
-  alertLevel  String? // "green", "yellow", "red"
-
-  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
-  @@index([propertyId, date])
-  @@map("pousada_finance")
-}
-
-model FinanceTransaction {
-  id          String                 @id @default(cuid())
-  propertyId  String
-  scope       FinanceScope           @default(CLIENT)
-  date        DateTime
-  type        FinanceTransactionType
-  category    String // "reserva", "extra", "limpeza", "marketing", etc.
-  channel     String? // "booking", "airbnb", "direto", "pagarme"
-  description String                 @db.Text
-  amount      Float
-  status      String // "confirmed", "pending", "cancelled"
-  metadata    Json? // Dados extras da auditoria da Maria
-
-  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
-  @@index([propertyId, date])
-  @@map("finance_transactions")
-}
-
-model FinanceAlert {
-  id          String          @id @default(cuid())
-  propertyId  String
-  scope       FinanceScope    @default(CLIENT)
-  type        String // "low_occupancy", "cost_spike", "auditory_mismatch"
-  severity    FinanceSeverity @default(INFO)
-  agentName   String // "Jony", "Maria" ou "Tedd"
-  message     String          @db.Text
-  metric      Json? // Dados do alerta para visualização
-  isRead      Boolean         @default(false)
-  actionTaken String?         @db.Text
-  createdAt   DateTime        @default(now())
-
-  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
-  @@index([propertyId, createdAt])
-  @@map("finance_alerts")
-}
-
-// ============================================================
-// ZEHLA CONNECT — Link-in-Bio Models
-// ============================================================
-
-model ConnectProfile {
-  id             String    @id @default(cuid())
-  slug           String    @unique
-  bio            String    @default("")
-  avatarUrl      String?
-  coverUrl       String?
-  whatsappNumber String?
-  status         String    @default("draft")
-  isVerified     Boolean   @default(false)
-  seoTitle       String?
-  seoDescription String?
-  totalViews     Int       @default(0)
-  totalClicks    Int       @default(0)
-  publishedAt    DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
-  propertyId String   @unique
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
-  links     ConnectLink[]
-  theme     ConnectTheme?
-  analytics ConnectAnalytics[]
-  reviews   ConnectReview[]
-  media     ConnectMedia[]
-
-  @@index([slug])
-  @@index([status])
-  @@map("connect_profiles")
-}
-
-model ConnectLink {
-  id         String  @id @default(cuid())
-  label      String
-  url        String
-  icon       String  @default("link")
-  type       String  @default("external")
-  order      Int     @default(0)
-  clickCount Int     @default(0)
-  isActive   Boolean @default(true)
-
-  profileId String
-  profile   ConnectProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([profileId, order])
-  @@index([profileId, isActive])
-  @@map("connect_links")
-}
-
-model ConnectTheme {
-  id            String @id @default(cuid())
-  layout        String @default("centered")
-  fontFamily    String @default("inter")
-  colors        Json   @default("{\"primary\":\"#10B981\",\"secondary\":\"#0F172A\",\"accent\":\"#F59E0B\",\"background\":\"#FFFFFF\",\"text\":\"#1F2937\"}")
-  buttonStyle   String @default("rounded")
-  galleryLayout String @default("carousel")
-
-  profileId String         @unique
-  profile   ConnectProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("connect_themes")
-}
-
-model ConnectAnalytics {
-  id     String   @id @default(cuid())
-  date   DateTime @db.Date
-  views  Int      @default(0)
-  clicks Int      @default(0)
-  ctr    Float    @default(0)
-  geo    Json     @default("{}")
-  device Json     @default("{}")
-  source Json     @default("{}")
-
-  profileId String
-  profile   ConnectProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-
-  @@unique([profileId, date])
-  @@index([profileId, date(sort: Desc)])
-  @@map("connect_analytics")
-}
-
-model ConnectReview {
-  id         String  @id @default(cuid())
-  authorName String
-  rating     Int
-  text       String  @default("")
-  source     String  @default("manual")
-  isApproved Boolean @default(true)
-
-  profileId String
-  profile   ConnectProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([profileId, isApproved])
-  @@map("connect_reviews")
-}
-
-model ConnectMedia {
-  id       String @id @default(cuid())
-  type     String @default("image")
-  url      String
-  publicId String
-  alt      String @default("")
-  order    Int    @default(0)
-
-  profileId String
-  profile   ConnectProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([profileId, order])
-  @@map("connect_media")
-}
-
-// ============================================================
-// ZEHLA CRM — Phase 1 Models
-// ============================================================
 
 enum CrmInteractionType {
   NOTE
@@ -783,129 +1415,103 @@ enum CrmTaskType {
   OTHER
 }
 
-model CrmPipeline {
+enum FiscalStatus {
+  PENDENTE
+  EMITINDO
+  EMITIDA
+  CANCELADA
+  ERRO
+  HOMOLOGADA
+}
+
+// ===== MISSING MODELS (adicionados pelo ZehlaTestAgent) =====
+
+model Tenant {
   id        String   @id @default(cuid())
   name      String
-  stages    Json // Array<{ name: string; color: string }>
-  isDefault Boolean  @default(false)
+  slug      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  apiConfigs ApiConfig[]
 
-  deals CrmDeal[]
-
-  @@index([propertyId])
-  @@map("crm_pipelines")
+  @@map("tenants")
 }
 
-model CrmContact {
-  id              String    @id @default(cuid())
-  name            String
-  email           String?
-  phone           String?
-  whatsapp        String?
-  instagram       String?
-  facebook        String?
-  tags            Json      @default("[]")
-  customFields    Json      @default("{}")
-  source          String    @default("MANUAL")
-  lastContactedAt DateTime?
-  nextFollowUpAt  DateTime?
-  deletedAt       DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+model ApiConfig {
+  id        String   @id @default(cuid())
+  provider  String
+  model     String   @default("default")
+  isActive  Boolean  @default(true)
+  hasKey    Boolean  @default(false)
+  usageCurrent Int   @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  propertyId   String
-  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  ownerId      String?
-  owner        User?    @relation("CrmContactOwner", fields: [ownerId], references: [id])
-  assignedToId String?
-  assignedTo   User?    @relation("CrmContactAssigned", fields: [assignedToId], references: [id])
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  interactions CrmInteraction[]
-  deals        CrmDeal[]
-  tasks        CrmTask[]
-
-  @@index([propertyId])
-  @@index([propertyId, name])
-  @@index([propertyId, email])
-  @@index([propertyId, phone])
-  @@index([propertyId, whatsapp])
-  @@index([propertyId, deletedAt])
-  @@map("crm_contacts")
+  @@map("api_configs")
 }
 
-model CrmInteraction {
-  id        String             @id @default(cuid())
-  type      CrmInteractionType
-  content   String             @db.Text
-  metadata  Json?
-  createdAt DateTime           @default(now())
-
-  contactId  String
-  contact    CrmContact @relation(fields: [contactId], references: [id], onDelete: Cascade)
-  userId     String?
-  user       User?      @relation(fields: [userId], references: [id])
+model CognitiveTerminalLog {
+  id         String   @id @default(cuid())
+  level      String   @default("info")
+  source     String
+  message    String   @db.Text
+  metadata   Json?
+  createdAt  DateTime @default(now())
   propertyId String
-  property   Property   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
-  @@index([contactId, createdAt])
   @@index([propertyId, createdAt])
-  @@map("crm_interactions")
+  @@map("cognitive_terminal_logs")
 }
 
-model CrmDeal {
-  id                String    @id @default(cuid())
-  title             String
-  value             Float     @default(0)
-  stage             String
-  expectedCloseDate DateTime?
-  probability       Int       @default(0)
-  notes             String?   @db.Text
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+model BrainSimulationScenario {
+  id        String   @id @default(cuid())
+  tenantId  String
+  title     String
+  context   String   @db.Text
+  status    String   @default("pending")
+  rounds    Int      @default(3)
+  result    Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  pipelineId String
-  pipeline   CrmPipeline @relation(fields: [pipelineId], references: [id])
-  contactId  String?
-  contact    CrmContact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
-  propertyId String
-  property   Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  ownerId    String?
-  owner      User?       @relation("CrmDealOwner", fields: [ownerId], references: [id])
+  roundsRel SimulationRound[]
+  agents    SimulationAgent[]
 
-  tasks CrmTask[]
-
-  @@index([propertyId, stage])
-  @@index([pipelineId, stage])
-  @@index([contactId])
-  @@map("crm_deals")
+  @@index([tenantId])
+  @@map("brain_simulation_scenarios")
 }
 
-model CrmTask {
-  id          String          @id @default(cuid())
-  title       String
-  description String?         @db.Text
-  dueDate     DateTime?
-  completed   Boolean         @default(false)
-  priority    CrmTaskPriority @default(MEDIUM)
-  type        CrmTaskType     @default(OTHER)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+model SimulationRound {
+  id        String   @id @default(cuid())
+  round     Int
+  input     String   @db.Text
+  output    String   @db.Text
+  metadata  Json?
+  createdAt DateTime @default(now())
 
-  contactId    String?
-  contact      CrmContact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
-  dealId       String?
-  deal         CrmDeal?    @relation(fields: [dealId], references: [id], onDelete: SetNull)
-  assignedToId String?
-  assignedTo   User?       @relation(fields: [assignedToId], references: [id])
-  propertyId   String
-  property     Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  scenarioId String
+  scenario   BrainSimulationScenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
 
-  @@index([propertyId, completed])
-  @@index([assignedToId, completed])
-  @@index([propertyId, dueDate])
-  @@map("crm_tasks")
+  @@index([scenarioId, round])
+  @@map("simulation_rounds")
+}
+
+model SimulationAgent {
+  id         String   @id @default(cuid())
+  role       String
+  name       String
+  config     Json?
+  status     String   @default("idle")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  scenarioId String
+  scenario   BrainSimulationScenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+
+  @@index([scenarioId])
+  @@map("simulation_agents")
 }
