@@ -30,10 +30,10 @@ export class CognitiveTerminal {
       const entry = await prisma.cognitiveTerminalLog.create({
         data: {
           level,
-          component,
+          source: component,
           message: sanitizedMessage,
           metadata: sanitizedMetadata,
-          tenantId,
+          propertyId: tenantId || '',
         },
       });
 

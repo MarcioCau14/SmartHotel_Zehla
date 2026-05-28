@@ -15,7 +15,8 @@ export const scraperWorker = new Worker(
 
     
 
-  const scrapedData = await scraperService.deepScrape(url);
+    try {
+      const scrapedData = await scraperService.deepScrape(url);
 
       if (Object.keys(scrapedData).length === 0) {
         console.warn(`⚠️ [Scraper 2.0] Nenhum dado extraído para ${url}`);
@@ -43,12 +44,12 @@ export const scraperWorker = new Worker(
 
       
 
-      return { 
-        status: 'success', 
-        leadId, 
-        fieldsUpdated: Object.keys(scrapedData).filter(k => scrapedData[k as keyof typeof scrapedData]).length 
+      return {
+        status: 'success',
+        leadId,
+        fieldsUpdated: Object.keys(scrapedData).filter(k => scrapedData[k as keyof typeof scrapedData]).length
       };
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error(`❌ [Scraper 2.0] Falha crítica no worker:`, error.message);
       throw error;
     }

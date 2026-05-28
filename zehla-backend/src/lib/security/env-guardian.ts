@@ -198,9 +198,10 @@ if (!instance) {
 export function secureLog(...args: unknown[]): void {
   const guardian = getEnvGuardian();
   const masked = args.map(arg => {
-    if (typeof arg === 'string') return guardian.mask(arg);
-    if (arg instanceof Error) return guardian.mask(arg.message);
-  return guardian.mask(JSON.stringify(arg));
+    try {
+      if (typeof arg === 'string') return guardian.mask(arg);
+      if (arg instanceof Error) return guardian.mask(arg.message);
+      return guardian.mask(JSON.stringify(arg));
     } catch {
       return String(arg);
     }

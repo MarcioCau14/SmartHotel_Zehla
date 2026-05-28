@@ -29,7 +29,7 @@ async function startAllWorkers() {
       
     });
 
-    worker.on('error', (err) => {
+    worker.on('error', (err: any) => {
       console.error(`  ❌ [${name}] Erro:`, err.message);
     });
   }
@@ -43,9 +43,9 @@ async function shutdown(signal: string) {
   
 
   const closePromises = workers.map(async ({ name, worker }) => {
-  await worker.close();
-      
-    } catch (err: unknown) {
+    try {
+      await worker.close();
+    } catch (err: any) {
       console.error(`  ❌ [${name}] Erro ao encerrar:`, err.message);
     }
   });

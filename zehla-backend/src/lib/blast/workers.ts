@@ -1,7 +1,8 @@
 import { Worker, Job } from 'bullmq';
 import { redis } from '@/lib/redis';
 import { prisma } from '@/lib/prisma';
-import { EvolutionClient } from './evolution-client';
+import { decrypt } from '@/lib/security/encryption';
+import { EvolutionWhatsAppAdapter } from '@/infrastructure/external/evolution/EvolutionWhatsAppAdapter';
 import { trackBlastEvent } from '@/services/blast/brain-integration';
 
 export const blastProcessWorker = new Worker(
@@ -25,20 +26,18 @@ export const blastProcessWorker = new Worker(
         throw new Error(`Limite diário da instância ${instance.name} atingido (${instance.dailyLimit}).`);
       }
 
-      const client = new EvolutionClient(instance);
+      const port = new EvolutionWhatsAppAdapter({
+        baseUrl: instance.evolutionUrl,
+        apiKey: decrypt(instance.apiKey),
+        defaultInstance: instance.instanceName,
+      });
 
       // 2. Enviar a mensagem
       let response;
       if (content.mediaUrl) {
-        response = await client.sendMedia(
-          phoneNumber,
-          content.mediaUrl,
-          content.mediaType,
-          content.text,
-          30
-        );
+        response = await port.sendText({ to: phoneNumber, content: content.text, delay: 30 });
       } else {
-        response = await client.sendText(phoneNumber, content.text, 30);
+        response = await port.sendText({ to: phoneNumber, content: content.text, delay: 30 });
       }
 
       // 3. Registrar Evento de Envio no ZEHLA Brain (Blueprint Section 5.1)

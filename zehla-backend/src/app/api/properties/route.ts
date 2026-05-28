@@ -1,25 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { PropertyControllerFactory } from '../../../infrastructure/http/property/PropertyControllerFactory'
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const id = searchParams.get('id')
+    const body = await request.json()
+    const { id, name, slug, description, capacity, state, address, contactInfo, isCanary, refSource, utmTracking } = body
 
-    if (id) {
-      const property = await prisma.property.findUnique({
-        where: { id },
-        include: { rooms: true, services: true }
-      })
-      return NextResponse.json({ success: true, data: property })
+    if (!id || !name || !slug || !capacity || !state || !address || !contactInfo) {
+      return NextResponse.json({
+        success: false,
+        error: 'id, name, slug, capacity, state, address e contactInfo são obrigatórios',
+      }, { status: 400 })
     }
 
-    const properties = await prisma.property.findMany({
-      include: { rooms: true }
+    const useCase = PropertyControllerFactory.makeCriarPropertyUseCase()
+    const result = await useCase.execute({
+      id,
+      name,
+      slug,
+      description,
+      capacity: parseInt(capacity),
+      state,
+      address,
+      contactInfo,
+      isCanary,
+      refSource,
+      utmTracking,
     })
 
-    return NextResponse.json({ success: true, data: properties })
+    if (result.isFail) {
+      const status = result.error.includes('já existe') || result.error.includes('duplicado') ? 409 : 400
+      return NextResponse.json({ success: false, error: result.error }, { status })
+    }
+
+    return NextResponse.json({ success: true, data: result.value }, { status: 201 })
   } catch (error) {
+    console.error('Property create error:', error)
     return NextResponse.json({ success: false, error: 'Erro interno' }, { status: 500 })
   }
 }

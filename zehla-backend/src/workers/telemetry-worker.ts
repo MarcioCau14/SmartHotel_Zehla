@@ -38,9 +38,9 @@ export const telemetryWorker = new Worker(
       const endDate = new Date();
 
       for (const prop of properties) {
+        try {
           const metrics = await TelemetryEngine.calculateMetrics(prop.id, startDate, endDate);
           await TelemetryEngine.saveTelemetry(prop.id, metrics);
-          
         } catch (error) {
           console.error(`❌ [TELEMETRY-WORKER] Erro na propriedade ${prop.id}:`, error);
         }
@@ -54,7 +54,7 @@ export const telemetryWorker = new Worker(
 );
 
 // Schedule the job (Run every hour)
-export async function scheduleTelemetry() : void {
+export async function scheduleTelemetry(): Promise<void> {
   const jobs = await telemetryQueue.getRepeatableJobs();
   
   // Clean existing repeatable jobs to avoid duplicates during dev
@@ -72,7 +72,7 @@ export async function scheduleTelemetry() : void {
     }
   );
 
-  ');
+  console.log('Telemetry worker scheduled');
 }
 
 // Start scheduling if this file is run directly or imported

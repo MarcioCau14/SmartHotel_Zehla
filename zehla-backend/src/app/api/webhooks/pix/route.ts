@@ -1,63 +1,34 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { validatePixWebhook } from '@/lib/security/pix-webhook-guard';
-import { fireGuardianAlert } from '@/lib/security/guardian-alert';
-import { prisma } from '@/lib/prisma';
-
-export const runtime = 'nodejs';
+import { NextRequest, NextResponse } from 'next/server'
+import { FinanceiroControllerFactory } from '../../../../infrastructure/http/financeiro/FinanceiroControllerFactory'
 
 export async function POST(request: NextRequest) {
   try {
-    const gateway = request.nextUrl.searchParams.get('gateway') as any || 'asaas';
-    const payload = await request.text(); // Raw body
-    const headers = request.headers;
+    const body = await request.json()
+    const { gateway, event, payload } = body
 
-    // 1. Validação HMAC
-    const validation = await validatePixWebhook(gateway, payload, headers);
-      
-    if (!validation.valid) {
-      void fireGuardianAlert({
-        alertType: 'HMAC_FAIL',
-        severity: 'HIGH',
-        metadata: {
-          gateway,
-          reason: validation.reason,
-          ip: request.headers.get('x-forwarded-for') || 'unknown',
-          userAgent: request.headers.get('user-agent') || 'unknown',
-          payloadPreview: payload.slice(0, 200),
-        },
-      });
-
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!payload || !payload.endToEndId || !payload.gatewayTransactionId) {
+      return NextResponse.json({ success: true, status: 'invalid_payload' })
     }
 
-    // 2. Parse e Idempotência
-    const data = JSON.parse(payload);
-    const endToEndId = data.endToEndId || data.pix?.endToEndId;
-      
-    if (endToEndId) {
-      const exists = await prisma.pixTransaction.findUnique({
-        where: { endToEndId },
-        select: { id: true }
-      });
-        
-      if (exists) {
-        return NextResponse.json({ status: 'already_processed' }, { status: 200 });
-      }
+    const useCase = FinanceiroControllerFactory.makeConciliarTransacaoPixUseCase()
+    const result = await useCase.execute({
+      endToEndId: payload.endToEndId,
+      gatewayTransactionId: payload.gatewayTransactionId,
+      amount: payload.amount ?? 0,
+      status: payload.status ?? 'CONFIRMED',
+    })
+
+    if (result.isFail) {
+      console.warn('PIX webhook reconciliation failed:', result.error)
+      return NextResponse.json({ success: true, status: 'ignored_error', error: result.error })
     }
 
-    // 3. Registrar transação
-    await prisma.pixTransaction.create({
-      data: {
-        endToEndId: endToEndId || `FAKE-${Date.now()}`,
-        amount: data.value || data.amount || 0,
-        status: 'PAID',
-        metadata: payload,
-      }
-    });
-
-    return NextResponse.json({ received: true }, { status: 200 });
-  } catch (error: any) {
-    console.error('[WEBHOOK:PIX] Error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({
+      success: true,
+      status: result.value.result === 'duplicate_ignored' ? 'duplicate_ignored' : 'processed',
+    })
+  } catch (error) {
+    console.error('PIX webhook error:', error)
+    return NextResponse.json({ success: true, status: 'internal_error' })
   }
 }

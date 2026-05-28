@@ -1,0 +1,83 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+  ],
+  "exclude": [
+    "node_modules",
+    "temp_api",
+    "scratch",
+    "BLUEPRINTS",
+    "INTELLIGENCE",
+    "packages",
+    "automation",
+    "tests/xtress",
+    "prisma/seed",
+    "scripts",
+    "prisma.config.ts",
+    "prisma/seed-trends.ts",
+    "next.config.ts",
+    "src/proxy.ts",
+    "src/lib",
+    "src/services/**",
+    "src/workers/**",
+    "src/components/FlowBuilder/**",
+    "src/components/leads/**",
+    "src/components/zcc/marketing/**",
+    "src/app/api/agents/**",
+    "src/app/api/auth/**",
+    "src/app/api/blast/**",
+    "src/app/api/brain/**",
+    "src/app/api/checkout/**",
+    "src/app/api/config/**",
+    "src/app/api/connect/**",
+    "src/app/api/crm/**",
+    "src/app/api/fish/**",
+    "src/app/api/help/**",
+    "src/app/api/marketing/**",
+    "src/app/api/metrics/**",
+    "src/app/api/mkt/**",
+    "src/app/api/sales/**",
+    "src/app/api/security/**",
+    "src/app/api/swipes/**",
+    "src/app/api/system/**",
+    "src/app/api/tenant/**",
+    "src/app/api/track/**",
+    "src/app/api/trends/**",
+    "src/app/api/visibility/**",
+    "src/app/api/webhooks/**",
+    "src/app/api/zcc/**",
+    "src/app/api/zmg/**",
+    "src/app/dashboard/**",
+    "src/app/zcc/**",
+    "INFRA"
+  ]
+}

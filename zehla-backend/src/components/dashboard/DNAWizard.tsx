@@ -19,7 +19,8 @@ import {
   AlertCircle,
   FileText,
   Loader2,
-  Share2 } from
+  Share2,
+  Sparkles } from
 'lucide-react';
 
 const archetypes = [
@@ -130,12 +131,20 @@ export default function DNAWizard() {
   const [chatLog, setChatLog] = useState('');
   const [clonedDNA, setClonedDNA] = useState<Record<string, number> | null>(null);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    tone: number
+    proactivity: string
+    emojiLevel: string
+    formality: string
+    discounts: Record<string, number>
+    pains: number[]
+    voiceSamples: Record<string, string>
+  }>({
     tone: 3,
     proactivity: 'HYBRID',
     emojiLevel: 'MODERATE',
     formality: 'ADAPTIVE',
-    discounts: useMemo(() => discountKeys.reduce((acc, k) => ({ ...acc, [k.id]: k.default }), {}), []),
+    discounts: discountKeys.reduce<Record<string, number>>((acc, k) => ({ ...acc, [k.id]: k.default }), {}),
     pains: Array(10).fill(3),
     voiceSamples: { s1: '', s2: '', s3: '' }
   });

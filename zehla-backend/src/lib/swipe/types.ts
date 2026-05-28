@@ -1,5 +1,9 @@
 // src/lib/swipe/types.ts
-import { type Cluster, type DorType, type FunnelStage } from "../events/types";
+
+// Tipos locais (originalmente importados de ../events/types, que não existe mais)
+export type Cluster = "hotel" | "pousada" | "resort" | "hostel" | "outro";
+export type DorType = "financeiro" | "operacional" | "ocupacao" | "desconhecida";
+export type FunnelStage = "NEUTRAL" | "WARM" | "HOT" | "COLD";
 
 export const PLAN_TIERS = ["lite", "pro", "max", "universal"] as const;
 export type PlanTier = (typeof PLAN_TIERS)[number];
@@ -83,6 +87,7 @@ export interface LeadProfile {
   email: string;
   pousada: string;
   score: number;
+  tier: string;
   cluster: Cluster;
   dor: DorType | null;
   funnelStage: FunnelStage;
@@ -107,6 +112,7 @@ export interface SwipeMatchResult {
   matches: SwipeMatch[];
   tierRecommendation: TierRecommendation;
   timestamp: Date;
+  metadata?: Record<string, unknown>;
 }
 
 export interface TierRecommendation {
@@ -116,6 +122,8 @@ export interface TierRecommendation {
   alternativeTier?: PlanTier;
   alternativeConfidence?: number;
   signals: TierSignal[];
+  roiProjection?: number;
+  monthlyPrice?: number;
 }
 
 export interface TierSignal {

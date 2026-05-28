@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma';
 import { MessagingIntent, ZMGStatus } from './types';
 import { detectChannels } from './channel-detector';
 import { ZMGRouter } from './router';
-import { WhatsAppProvider } from './providers/whatsapp';
+import { getWhatsAppPort } from '@/infrastructure/external/evolution';
 import { SMSProvider } from './providers/sms';
 import { EmailProvider } from './providers/email';
 import { ZMGContentTransformer } from './content-transformer';
@@ -260,7 +260,7 @@ export class ZMG {
     switch (message.sentChannel) {
       case 'whatsapp':
         if (!message.recipientPhone) throw new Error('Phone required for WhatsApp');
-        result = await WhatsAppProvider.sendText(message.recipientPhone, finalContent);
+        result = await getWhatsAppPort().sendText({ to: message.recipientPhone, content: finalContent });
         break;
       
       case 'sms':

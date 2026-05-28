@@ -98,7 +98,7 @@ export const enrichWorker = new Worker(
       enrichedMetadata: enrichedData,
     });
 
-    .length} campos adicionados)`);
+    console.log(`[Enrich] Evento ${eventId} enriquecido com ${Object.keys(enrichedData).length} campos adicionados`);
 
     return { status: 'enriched', eventId, enrichmentsApplied: Object.keys(enrichedData).length };
   },

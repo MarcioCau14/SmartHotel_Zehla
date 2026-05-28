@@ -20,7 +20,7 @@ export const classifyWorker = new Worker(
       where: { id: leadId },
       select: {
         id: true, score: true, conversionScore: true, cluster: true,
-        funnelStage: true, email: true, name: true,
+        funnelStage: true, email: true, name: true, previousCluster: true,
       },
     });
 
@@ -81,7 +81,7 @@ export const classifyWorker = new Worker(
       profile,
     };
 
-      `[Classify] Lead ${lead.email}: ${lead.conversionScore} (${previousCluster}) ` +
+      console.log(`[Classify] Lead ${lead.email}: ${lead.conversionScore} (${previousCluster}) ` +
       `→ ${newConversionScore} (${newCluster})${clusterChanged ? ' *** TRANSIÇÃO ***' : ''}`
     );
 

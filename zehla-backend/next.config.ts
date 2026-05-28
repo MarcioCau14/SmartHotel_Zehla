@@ -2,7 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  optimizeFonts: false,
   turbopack: {
     root: process.cwd(),
   },
@@ -23,10 +22,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-
 };
 
 export default nextConfig;

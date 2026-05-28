@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Wifi, Car, Coffee, Waves, AirVent, Tv, UtensilsCrossed, Sparkles, Shirt, Bus, Check } from 'lucide-react';
 
