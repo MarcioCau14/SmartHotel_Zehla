@@ -198,15 +198,15 @@ export class ZehlaRouter {
   async route(input: string, tenantId: string): Promise<Result<RouterDecision>> {
     const complexity = this.classifier.classify(input)
 
-    const tierOverride: Record<RequestComplexity, TierLevel> = {
-      simple: 1,
-      routine: 2,
-      complex: 3,
+    const tierOverride: Record<RequestComplexity, { min: TierLevel; max: TierLevel }> = {
+      simple: { min: 1, max: 1 },
+      routine: { min: 2, max: 3 },
+      complex: { min: 3, max: 3 },
     }
-    const preferredTier = tierOverride[complexity]
+    const override = tierOverride[complexity]
 
     const tier = this.sampler.sample()
-    const selected = Math.max(tier, preferredTier) as TierLevel
+    const selected = Math.min(Math.max(tier, override.min), override.max) as TierLevel
 
     const config = TIERS[selected]
     const cost = config.costPerCall

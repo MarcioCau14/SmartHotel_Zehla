@@ -18,6 +18,7 @@ class MockPixGateway {
       qrCodeBase64: 'iVBORw0KGgoAAAANSUhEUg...',
       copyPasteKey: '00020126580014br.gov.bcb.pix0136abc123',
       expiration: new Date(Date.now() + 30 * 60 * 1000),
+      gatewayTransactionId: 'gw-txn-123',
     })
   }
   checkTransactionStatus = async (_endToEndId: string) => {
@@ -72,7 +73,7 @@ describe('ProcessarPagamentoPixUseCase', () => {
     expect(result.value.paymentId).toBeDefined()
     expect(result.value.qrCode).toBe('pixdata://qr-code-string')
     expect(result.value.copyPasteKey).toContain('000201')
-    expect(result.value.status).toBe('PROCESSING')
+    expect(result.value.status).toBe('CONFIRMED')
   })
 
   it('should fail if invoice not found', async () => {
@@ -141,7 +142,7 @@ describe('ProcessarPagamentoPixUseCase', () => {
     const savedPayment = await paymentRepo.findById(result.value.paymentId)
     expect(savedPayment).not.toBeNull()
     expect(savedPayment!.method).toBe(PaymentMethod.PIX)
-    expect(savedPayment!.status).toBe('PROCESSING')
+    expect(savedPayment!.status).toBe('CONFIRMED')
   })
 
   it('should emit events during payment flow', async () => {
