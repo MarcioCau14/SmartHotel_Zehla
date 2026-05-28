@@ -196,6 +196,14 @@ export class RalphLoop {
       })
     }
 
+    if (lower.includes('limpe') || lower.includes('faxina') || lower.includes('arruma') || lower.includes('sujei') || lower.includes('manuten') || lower.includes('quebr') || lower.includes('conserto') || lower.includes('repar') || lower.includes('operac')) {
+      subgoals.push({
+        id: `sg-${++idCounter}`,
+        description: 'Acionar equipe operacional para resolver problema de infraestrutura ou limpeza',
+        requiredRoles: ['concierge'],
+      })
+    }
+
     if (lower.includes('reserva') || lower.includes('hospede') || lower.includes('check') || lower.includes('concierge') || lower.includes('servico')) {
       subgoals.push({
         id: `sg-${++idCounter}`,

@@ -2261,3 +2261,131 @@ model TestResult {
   @@index([status])
   @@map("test_results")
 }
+
+model ComercialLead {
+  id               String              @id
+  canal            String
+  propriedadeId    String
+  dataCaptura      DateTime
+  nome             String?
+  email            String?
+  telefone         String?
+  documento        String?
+  documentoTipo    String?
+  score            Int?
+  status           String
+  origemUrl        String?
+  tags             String?
+  ultimaInteracao  DateTime?
+
+  propostas        ComercialProposta[]
+  conversoes       ComercialConversao[]
+
+  @@unique([email, propriedadeId])
+  @@unique([documento, propriedadeId])
+  @@index([propriedadeId])
+  @@map("comercial_leads")
+}
+
+model ComercialPacote {
+  id                         String              @id
+  propriedadeId              String
+  nome                       String
+  descricao                  String?
+  tipoQuarto                 String?
+  capacidadeMaxima           Int?
+  servicosInclusos           String?
+  status                     String
+  versao                     Int                 @default(1)
+  categorias                 String?
+  midias                     String?
+  regraTipo                  String
+  regraValorBase             Int
+  regraValorPorNoite         Int?
+  regraValorPorPessoa        Int?
+  regraAcrescimoPessoa       Float?
+  regraDescontoEstanciaLonga Float?
+  regraNoitesParaDesconto    Int?
+  regraSazonalidade          String?
+  validadeInicio             DateTime?
+  validadeFim                DateTime?
+
+  propostas                  ComercialProposta[]
+
+  @@index([propriedadeId])
+  @@map("comercial_pacotes")
+}
+
+model ComercialProposta {
+  id                 String              @id
+  leadId             String
+  propriedadeId      String
+  pacoteId           String
+  dataCriacao        DateTime
+  dataCheckIn        DateTime?
+  dataCheckOut       DateTime?
+  quantidadeHospedes Int?
+  valorTotal         Int?
+  valorSinal         Int?
+  descontoAplicado   Int?
+  status             String
+  validade           DateTime?
+  observacoes        String?
+  historicoVersoes   String?
+
+  lead               ComercialLead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  pacote             ComercialPacote     @relation(fields: [pacoteId], references: [id])
+  pagamentos         ComercialPagamento[]
+  conversoes         ComercialConversao[]
+
+  @@index([propriedadeId])
+  @@index([leadId])
+  @@index([pacoteId])
+  @@map("comercial_propostas")
+}
+
+model ComercialPagamento {
+  id                 String              @id
+  propostaId         String
+  propriedadeId      String
+  valor              Int
+  metodoPagamento    String?
+  transactionId      String?
+  dataCriacao        DateTime?
+  dataProcessamento  DateTime?
+  status             String
+  codigoAutorizacao  String?
+  mensagemRecusa     String?
+  observacoes        String?
+
+  proposta           ComercialProposta   @relation(fields: [propostaId], references: [id], onDelete: Cascade)
+  conversoes         ComercialConversao[]
+
+  @@index([propriedadeId])
+  @@index([propostaId])
+  @@map("comercial_pagamentos")
+}
+
+model ComercialConversao {
+  id                 String              @id
+  leadId             String
+  propostaId         String
+  propriedadeId      String
+  pagamentoId        String
+  dataConversao      DateTime?
+  dataConfirmacao    DateTime?
+  status             String
+  motivoCancelamento String?
+  observacoes        String?
+
+  lead               ComercialLead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  proposta           ComercialProposta   @relation(fields: [propostaId], references: [id], onDelete: Cascade)
+  pagamento          ComercialPagamento  @relation(fields: [pagamentoId], references: [id], onDelete: Cascade)
+
+  @@index([propriedadeId])
+  @@index([leadId])
+  @@index([propostaId])
+  @@index([pagamentoId])
+  @@map("comercial_conversoes")
+}
+

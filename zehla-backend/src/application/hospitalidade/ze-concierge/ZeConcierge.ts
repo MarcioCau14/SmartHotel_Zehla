@@ -11,6 +11,7 @@ import { CreateReservaUseCase, CreateReservaInput } from '../use-cases/CreateRes
 import { ConfirmarReservaUseCase } from '../use-cases/ConfirmarReservaUseCase'
 import { CancelarReservaUseCase } from '../use-cases/CancelarReservaUseCase'
 import { ZeConciergeInput, ZeConciergeOutput } from './ZeConciergeTypes'
+import { EscalacaoUseCase } from './EscalacaoUseCase'
 
 function generateId(): string {
   return `zcp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
@@ -64,6 +65,7 @@ export class ZeConcierge {
     private readonly createReservaUseCase: CreateReservaUseCase,
     private readonly confirmarReservaUseCase: ConfirmarReservaUseCase,
     private readonly cancelarReservaUseCase: CancelarReservaUseCase,
+    private readonly escalacaoUseCase?: EscalacaoUseCase,
   ) {}
 
   async processIntent(input: ZeConciergeInput): Promise<ZeConciergeOutput> {
@@ -323,12 +325,27 @@ export class ZeConcierge {
       return this.output(false, 'Erro ao salvar feedback. Tente novamente.', input.messageId, 0.4)
     }
     if (feedback.value.ehCritico) {
+      let escPackage
+      if (this.escalacaoUseCase && comentario) {
+        const escResult = this.escalacaoUseCase.execute({
+          bookingId: bookingId as string,
+          guestId: input.guestId ?? '',
+          notaGeral: notaGeral as number,
+          comentario: comentario as string,
+        })
+        if (escResult.isOk) {
+          escPackage = escResult.value
+        }
+      }
       return this.output(
         true,
-      'Obrigado pelo seu feedback! Lamento que sua experiência não tenha sido excelente. Já encaminhei seu relato para nossa gerência.',
+        'Obrigado pelo seu feedback! Lamento que sua experiência não tenha sido excelente. Já encaminhei seu relato para nossa gerência.',
         input.messageId,
         0.9,
         true,
+        null,
+        null,
+        escPackage,
       )
     }
     return this.output(
@@ -407,6 +424,7 @@ export class ZeConcierge {
     needsEscalation = false,
     suggestedUpsellId: string | null = null,
     data?: unknown,
+    escalacaoPackage?: unknown,
   ): ZeConciergeOutput {
     return {
       responseId: generateId(),
@@ -415,6 +433,7 @@ export class ZeConcierge {
       needsEscalation,
       suggestedUpsellId,
       data,
+      escalacaoPackage: escalacaoPackage as ZeConciergeOutput['escalacaoPackage'] | undefined,
     }
   }
 }
