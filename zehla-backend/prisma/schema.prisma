@@ -1757,6 +1757,98 @@ model BusinessTelemetry {
   @@map("business_telemetry")
 }
 
+// ===== HOSPITALIDADE DOMAIN MODELS (ZEHLA PRIME) =====
+
+model Hospede {
+  id              String    @id @default(cuid())
+  nomeCompleto    String
+  documentoTipo   String?
+  documentoValor  String?
+  dataNascimento  DateTime?
+  email           String?
+  telefone        String?
+  preferencias    Json?
+  observacoes     String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  propertyId      String
+
+  @@unique([propertyId, documentoValor])
+  @@map("hospedes")
+}
+
+model QuartoHosp {
+  id                    String    @id @default(cuid())
+  nome                  String
+  tipo                  String    @default("suite_master")
+  capacidadeMaxima      Int       @default(2)
+  andar                 Int       @default(1)
+  diariaBase            Int       @default(0)
+  status                String    @default("disponivel")
+  amenities             String[]  @default([])
+  descricao             String?
+  dataRetornoManutencao DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  propertyId            String
+
+  @@index([propertyId, status])
+  @@map("quartos_hospitalidade")
+}
+
+model ReservaHosp {
+  id                 String    @id @default(cuid())
+  hospedeId          String
+  quartoId           String
+  dataInicio         DateTime
+  dataFim            DateTime
+  status             String    @default("pendente")
+  numeroHospedes     Int       @default(1)
+  diariaBase         Int       @default(0)
+  checkInRealizado   DateTime?
+  checkOutRealizado  DateTime?
+  dataCancelamento   DateTime?
+  motivoCancelamento String?
+  descontoAplicado   Int       @default(0)
+  servicos           Json?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  propertyId         String
+
+  @@index([propertyId, status])
+  @@index([hospedeId])
+  @@index([quartoId])
+  @@map("reservas_hospitalidade")
+}
+
+model ServicoHosp {
+  id         String   @id @default(cuid())
+  nome       String
+  descricao  String?
+  preco      Int      @default(0)
+  categoria  String   @default("outro")
+  disponivel Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  propertyId String
+
+  @@index([propertyId, categoria])
+  @@map("servicos_hospitalidade")
+}
+
+model FeedbackHosp {
+  id         String   @id @default(cuid())
+  reservaId  String
+  notaGeral  Int
+  comentario String?
+  categorias Json?
+  createdAt  DateTime @default(now())
+  propertyId String
+
+  @@index([propertyId, createdAt])
+  @@map("feedbacks_hospitalidade")
+}
+
 model BlastCampaign {
   id            String   @id @default(cuid())
   name          String
