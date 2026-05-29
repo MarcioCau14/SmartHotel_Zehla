@@ -1487,6 +1487,139 @@ enum LeadEventType {
   CONVERSION
 }
 
+// ===== OPERACIONAL DOMAIN MODELS (ZEHLA PRIME SB12) =====
+
+model OperacionalTarefa {
+  id              String   @id
+  propriedadeId   String
+  dataCriacao     DateTime
+  tipo            String
+  titulo          String
+  descricao       String?
+  prioridade      String
+  status          String   @default("pendente")
+  responsavelId   String?
+  tipoResponsavel String?
+  ativoId         String?
+  tipoAtivo       String?
+  dataLimite      DateTime?
+  dataConclusao   DateTime?
+  observacoes     String?
+
+  manutencoes     OperacionalManutencao[]
+
+  @@index([propriedadeId, status])
+  @@index([propriedadeId, tipo])
+  @@index([propriedadeId, dataCriacao])
+  @@index([responsavelId, propriedadeId])
+  @@index([propriedadeId, dataLimite])
+  @@map("operacional_tarefas")
+}
+
+model OperacionalManutencao {
+  id                    String   @id
+  tarefaId              String
+  propriedadeId         String
+  dataAbertura          DateTime
+  tipo                  String
+  gravidade             String
+  categoria             String
+  ativoId               String?
+  tipoAtivo             String?
+  descricaoProblema     String
+  descricaoSolucao      String?
+  dataInicio            DateTime?
+  dataFim               DateTime?
+  fornecedorId          String?
+  custoPecas            Int?
+  custoServico          Int?
+  status                String   @default("aberta")
+  interditaQuarto       Boolean  @default(false)
+  requerAprovacaoHumana Boolean  @default(false)
+
+  tarefa                OperacionalTarefa @relation(fields: [tarefaId], references: [id], onDelete: Cascade)
+
+  @@index([propriedadeId, status])
+  @@index([propriedadeId, gravidade])
+  @@index([propriedadeId, dataAbertura])
+  @@index([fornecedorId, propriedadeId])
+  @@index([tarefaId])
+  @@map("operacional_manutencoes")
+}
+
+model OperacionalStaff {
+  id                  String   @id
+  propriedadeId       String
+  dataContratacao     DateTime
+  nome                String
+  email               String?
+  telefone            String?
+  cargo               String
+  turno               String
+  ativo               Boolean  @default(true)
+  habilidades         String[] @default([])
+  cargaHorariaSemanal Int      @default(44)
+  tarefasEmAndamento  Int      @default(0)
+
+  @@index([propriedadeId, ativo])
+  @@index([propriedadeId, cargo])
+  @@index([propriedadeId, turno])
+  @@map("operacional_staff")
+}
+
+model OperacionalFornecedor {
+  id              String   @id
+  dataCadastro    DateTime
+  razaoSocial     String
+  cnpj            String   @unique
+  nomeContato     String
+  emailContato    String
+  telefoneContato String
+  especialidades  String[] @default([])
+  status          String   @default("ativo")
+  slaMedioHoras   Int?
+  taxaAvaliacao   Int?
+  webhookUrl      String?
+  webhookSecret   String?
+
+  @@index([status])
+  @@index([cnpj])
+  @@index([especialidades])
+  @@map("operacional_fornecedores")
+}
+
+model OperacionalChecklist {
+  id              String   @id
+  propriedadeId   String
+  nome            String
+  tipoTrigger     String
+  ativoId         String?
+  itens           Json
+  status          String   @default("pendente")
+  responsavelId   String?
+  dataCriacao     DateTime
+  dataConclusao   DateTime?
+
+  @@index([propriedadeId, status])
+  @@index([propriedadeId, tipoTrigger])
+  @@index([ativoId, propriedadeId])
+  @@map("operacional_checklists")
+}
+
+model OperacionalSla {
+  id            String   @id
+  tipoTarefa    String
+  prioridade    String
+  prazoHoras    Int
+  prazoMinutos  Int?
+  regraEscalacao String?
+  notificarEm   Float    @default(0.8)
+  ativo         Boolean  @default(true)
+
+  @@unique([tipoTarefa, prioridade])
+  @@map("operacional_slas")
+}
+
 // ===== MISSING MODELS (adicionados pelo ZehlaTestAgent) =====
 
 model Tenant {

@@ -1,6 +1,6 @@
 import { ILeadPort } from '../../../application/comercial/ports/ILeadPort'
 import { Lead } from '../../../domain/comercial/entities/Lead'
-import { Result } from '../../../../shared/Result'
+import { Result } from '../../../shared/Result'
 import { Email } from '../../../domain/comercial/value-objects/Email'
 import { Documento } from '../../../domain/comercial/value-objects/Documento'
 import { Score } from '../../../domain/comercial/value-objects/Score'
@@ -186,14 +186,11 @@ export class LeadInMemoryRepository implements ILeadPort {
       
       let scoreObj: Score | undefined
       if (dados.score !== undefined && dados.score !== null) {
-        try {
-          scoreObj = Score.criar(dados.score)
-          if (scoreObj.isFail) {
-            return Result.fail(scoreObj.error)
-          }
-        } catch (error) {
-          return Result.fail(new Error('Invalid score value'))
+        const scoreResult = Score.criar(dados.score)
+        if (scoreResult.isFail) {
+          return Result.fail(scoreResult.error)
         }
+        scoreObj = scoreResult.value
       }
       
       const leadAtualizado = new Lead(
@@ -233,15 +230,11 @@ export class LeadInMemoryRepository implements ILeadPort {
       }
       
       // Validar score
-      let scoreObj: Score
-      try {
-        scoreObj = Score.criar(score)
-        if (scoreObj.isFail) {
-          return Result.fail(scoreObj.error)
-        }
-      } catch (error) {
-        return Result.fail(new Error('Invalid score value'))
+      const scoreResult = Score.criar(score)
+      if (scoreResult.isFail) {
+        return Result.fail(scoreResult.error)
       }
+      const scoreObj = scoreResult.value
       
       const leadAtualizado = new Lead(
         lead.id,

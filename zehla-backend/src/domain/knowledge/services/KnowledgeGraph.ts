@@ -200,45 +200,71 @@ export class KnowledgeGraph {
     const nodeCount = this.nodes.size
     if (nodeCount === 0) return new Map()
 
-    let ranks = new Map<string, number>()
-    for (const id of Array.from(this.nodes.keys())) {
-      ranks.set(id, 1 / nodeCount)
+    const nodeIds = Array.from(this.nodes.keys())
+
+    const outDegrees = new Float64Array(nodeCount)
+    for (let i = 0; i < nodeCount; i++) {
+      outDegrees[i] = (this.adjacency.get(nodeIds[i]) ?? []).length
+    }
+
+    const incomingList: Array<Array<{ sourceIdx: number; weight: number }>> = []
+    for (let i = 0; i < nodeCount; i++) {
+      incomingList.push([])
+    }
+    const nodeIndex = new Map<string, number>()
+    for (let i = 0; i < nodeCount; i++) {
+      nodeIndex.set(nodeIds[i], i)
+    }
+    for (const edge of this.edges.values()) {
+      const tgtIdx = nodeIndex.get(edge.target)
+      if (tgtIdx !== undefined) {
+        incomingList[tgtIdx].push({ sourceIdx: nodeIndex.get(edge.source) ?? -1, weight: edge.weight })
+      }
+    }
+
+    let ranks = new Float64Array(nodeCount)
+    const initialRank = 1 / nodeCount
+    for (let i = 0; i < nodeCount; i++) {
+      ranks[i] = initialRank
     }
 
     for (let iter = 0; iter < maxIterations; iter++) {
-      const newRanks = new Map<string, number>()
+      const newRanks = new Float64Array(nodeCount)
       let totalDiff = 0
       let danglingRank = 0
 
-      for (const nodeId of Array.from(this.nodes.keys())) {
-        const outDegree = (this.adjacency.get(nodeId) ?? []).length
-        if (outDegree === 0) {
-          danglingRank += dampingFactor * (ranks.get(nodeId) ?? 0) / nodeCount
+      for (let i = 0; i < nodeCount; i++) {
+        if (outDegrees[i] === 0) {
+          danglingRank += dampingFactor * ranks[i] / nodeCount
         }
       }
 
-      for (const nodeId of Array.from(this.nodes.keys())) {
+      for (let i = 0; i < nodeCount; i++) {
         let sum = danglingRank
-        const incomingEdges = Array.from(this.edges.values()).filter(e => e.target === nodeId)
+        const inEdges = incomingList[i]
 
-        for (const edge of incomingEdges) {
-          const sourceRank = ranks.get(edge.source) ?? 0
-          const outDegree = (this.adjacency.get(edge.source) ?? []).length
-          if (outDegree > 0) {
-            sum += dampingFactor * sourceRank * edge.weight / outDegree
+        for (let e = 0; e < inEdges.length; e++) {
+          const edge = inEdges[e]
+          const srcOut = outDegrees[edge.sourceIdx]
+          if (srcOut > 0) {
+            sum += dampingFactor * ranks[edge.sourceIdx] * edge.weight / srcOut
           }
         }
 
         const rank = (1 - dampingFactor) / nodeCount + sum
-        newRanks.set(nodeId, rank)
-        totalDiff += Math.abs(rank - (ranks.get(nodeId) ?? 0))
+        newRanks[i] = rank
+        totalDiff += Math.abs(rank - ranks[i])
       }
 
       ranks = newRanks
       if (totalDiff < convergenceThreshold) break
     }
 
-    return ranks
+    const result = new Map<string, number>()
+    for (let i = 0; i < nodeCount; i++) {
+      result.set(nodeIds[i], ranks[i])
+    }
+    return result
   }
 
   private addToAdjacency(source: string, target: string): void {

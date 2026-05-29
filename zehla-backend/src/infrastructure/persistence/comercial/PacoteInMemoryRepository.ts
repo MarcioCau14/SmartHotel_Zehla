@@ -1,6 +1,6 @@
 import { IPacotePort } from '../../../application/comercial/ports/IPacotePort'
 import { Pacote } from '../../../domain/comercial/entities/Pacote'
-import { Result } from '../../../../shared/Result'
+import { Result } from '../../../shared/Result'
 import { RegraPrecificacao } from '../../../domain/comercial/value-objects/RegraPrecificacao'
 import { Money } from '../../../domain/comercial/value-objects/Money'
 

@@ -1,6 +1,6 @@
 import { IPagamentoPort } from '../../../application/comercial/ports/IPagamentoPort'
 import { Pagamento } from '../../../domain/comercial/entities/Pagamento'
-import { Result } from '../../../../shared/Result'
+import { Result } from '../../../shared/Result'
 import { Money } from '../../../domain/comercial/value-objects/Money'
 import { Proposta } from '../../../domain/comercial/entities/Proposta'
 

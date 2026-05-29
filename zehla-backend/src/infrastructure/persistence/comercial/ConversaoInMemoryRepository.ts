@@ -1,9 +1,9 @@
 import { IConversaoPort } from '../../../application/comercial/ports/IConversaoPort'
 import { Conversao } from '../../../domain/comercial/entities/Conversao'
-import { Result } from '../../../../shared/Result>
-import { Lead } from '../../../domain/comercial/entities/Lead>
-import { Proposta } from '../../../domain/comercial/entities/Proposta>
-import { Pagamento } from '../../../domain/comercial/entities/Pagamento>
+import { Result } from '../../../shared/Result'
+import { Lead } from '../../../domain/comercial/entities/Lead'
+import { Proposta } from '../../../domain/comercial/entities/Proposta'
+import { Pagamento } from '../../../domain/comercial/entities/Pagamento'
 
 export class ConversaoInMemoryRepository implements IConversaoPort {
   private versoes: Map<string, Conversao> = new Map()

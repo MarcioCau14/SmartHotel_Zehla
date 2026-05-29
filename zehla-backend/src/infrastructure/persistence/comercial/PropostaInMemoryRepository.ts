@@ -1,6 +1,6 @@
 import { IPropostaPort } from '../../../application/comercial/ports/IPropostaPort'
 import { Proposta } from '../../../domain/comercial/entities/Proposta'
-import { Result } from '../../../../shared/Result'
+import { Result } from '../../../shared/Result'
 import { Money } from '../../../domain/comercial/value-objects/Money'
 import { Lead } from '../../../domain/comercial/entities/Lead'
 import { Pacote } from '../../../domain/comercial/entities/Pacote'
