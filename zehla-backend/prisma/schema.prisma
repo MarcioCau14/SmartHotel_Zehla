@@ -1470,6 +1470,94 @@ enum FiscalStatus {
   HOMOLOGADA
 }
 
+// ===== MARKETING DOMAIN MODELS (ZEHLA PRIME SB19) =====
+
+model MarketingReview {
+  id              String   @id
+  pousadaId       String
+  hospedeNome     String
+  portal          String
+  nota            Int
+  texto           String
+  sentimento      String
+  resposta        String?
+  tom             String?
+  status          String   @default("recebido")
+  dataEstadia     DateTime
+  quartoId        String?
+  problemaRelatado String?
+  dataCriacao     DateTime @default(now())
+
+  @@index([pousadaId, status])
+  @@index([pousadaId, dataCriacao])
+  @@index([pousadaId, sentimento])
+  @@map("marketing_reviews")
+}
+
+model MarketingCampanha {
+  id                        String   @id
+  pousadaId                 String
+  nome                      String
+  publicoAlvo               String
+  tipo                      String
+  conteudo                  String?
+  dataInicio                DateTime
+  dataFim                   DateTime
+  status                    String   @default("draft")
+  possuiPromiseFinanceira   Boolean  @default(false)
+  promiseFinanceiraValidada Boolean  @default(false)
+  dataCriacao               DateTime @default(now())
+
+  @@index([pousadaId, status])
+  @@index([pousadaId, dataInicio, dataFim])
+  @@map("marketing_campanhas")
+}
+
+model MarketingConteudo {
+  id                String   @id
+  texto             String
+  tom               String
+  versao            Int      @default(1)
+  conteudoAnteriorId String?
+  dataCriacao       DateTime @default(now())
+
+  @@map("marketing_conteudos")
+}
+
+model MarketingPost {
+  id              String    @id
+  pousadaId       String
+  canal           String
+  tipo            String
+  conteudoId      String
+  midias          String[]  @default([])
+  dataAgendamento DateTime?
+  status          String    @default("draft")
+  dataPublicacao  DateTime?
+  dataCriacao     DateTime  @default(now())
+
+  @@index([pousadaId, status])
+  @@index([pousadaId, canal])
+  @@map("marketing_posts")
+}
+
+model MarketingMetrica {
+  id              String   @id
+  pousadaId       String
+  dataInicio      DateTime
+  dataFim         DateTime
+  notaMedia       Float?
+  taxaResposta    Float?
+  sentimentoMedio Float?
+  totalReviews    Int      @default(0)
+  totalRespondidos Int     @default(0)
+  totalCampanhas  Int      @default(0)
+  dataCriacao     DateTime @default(now())
+
+  @@index([pousadaId, dataInicio, dataFim])
+  @@map("marketing_metricas")
+}
+
 enum LeadEventType {
   EMAIL_OPEN
   LINK_CLICK
