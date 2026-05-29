@@ -182,7 +182,7 @@ export class ZMG {
           smsAvailable: detection.sms,
           instagramAvailable: detection.instagram,
           lineType: detection.lineType,
-          carrierName: detection.carrierName,
+          carrierName: detection.carrier,
         }
       });
     }

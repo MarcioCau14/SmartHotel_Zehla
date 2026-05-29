@@ -21,7 +21,11 @@ export class ZRouter {
    */
   static getRoute(plan: Plan, hint: ModelHint): RouteDecision {
     // 1. Definição de capacidades por plano
-    const capabilities = {
+    const capabilities: Record<Plan, any> = {
+      [Plan.FREE]: {
+        allowedHints: ['fast'],
+        defaultModel: { provider: 'zai', model: 'gemma-3-27b-it', maxTokens: 256, temperature: 0.3 }
+      },
       [Plan.LITE]: {
         allowedHints: ['fast'],
         defaultModel: { provider: 'zai', model: 'gemma-3-27b-it', maxTokens: 256, temperature: 0.3 }
@@ -95,7 +99,8 @@ export class ZRouter {
    * Verifica se uma feature está disponível para o plano
    */
   static hasFeature(plan: Plan, feature: 'memory_tree' | 'cross_guest_patterns' | 'proactive_sync'): boolean {
-    const featureMap = {
+    const featureMap: Record<Plan, any> = {
+      [Plan.FREE]: { memory_tree: false, cross_guest_patterns: false, proactive_sync: false },
       [Plan.LITE]: { memory_tree: false, cross_guest_patterns: false, proactive_sync: false },
       [Plan.PRO]: { memory_tree: true, cross_guest_patterns: false, proactive_sync: true },
       [Plan.MAX]: { memory_tree: true, cross_guest_patterns: true, proactive_sync: true },

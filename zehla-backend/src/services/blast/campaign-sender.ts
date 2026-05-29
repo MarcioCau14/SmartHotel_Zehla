@@ -57,7 +57,7 @@ export async function launchCampaign(campaignId: string) {
   // Distribuição entre instâncias (Round-Robin) com Throttling
   let instanceIdx = 0;
   let batchCounter = 0;
-  let currentDelay = 0;const blastContactBatch = await prisma.blastContact.findMany({ where: { phone: { in: messages.map((msg) => msg.contactPhone) } } });const blastContactMap = new Map(blastContactBatch.map((r) => [r.phone, r]));
+  let currentDelay = 0;const blastContactBatch = await prisma.blastContact.findMany({ where: { phone: { in: messages.map((msg) => msg.contactPhone) } } });const blastContactMap = new Map<string, any>(blastContactBatch.map((r) => [r.phone, r]));
 
   for (const msg of messages) {
     // Verificar se o contato optou por sair em outra campanha entre a criação e o lançamento desta
