@@ -1,410 +1,135 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  ArrowLeft,
-  Command,
-  Brain,
-  Terminal,
-  Bot,
-  Building2,
-  Megaphone,
-  CreditCard,
-  MessageSquare,
-  Plug,
-  Shield,
-  Eye,
-  Cpu,
-  BarChart3,
-  TrendingUp,
-  Activity,
-  Clock,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-  Loader2,
-  Zap,
-  Hash,
-  Gauge,
-  Wifi,
-  Database,
-  Server,
-  Lock,
-  FileCheck,
-  Users,
-  LockKeyhole,
-  Link2,
-  Sparkles,
-  RefreshCw,
-  Menu,
-  ChevronRight,
-  LogOut,
-  Plus,
-  User,
-  Edit3,
-  Trash2,
-  LayoutDashboard,
-  HeartPulse,
-  Network,
-} from 'lucide-react';
+import React, { useState } from 'react'
+import { CognitiveTerminal } from '../../components/zcc/CognitiveTerminal'
+import { LeadKanban } from '../../components/zcc/LeadKanban'
+import { RoomsGrid } from '../../components/zcc/RoomsGrid'
+import { useDashboardMetrics } from '../../hooks/useDashboardMetrics'
 
-import { SwarmOverview } from '@/components/zcc/SwarmOverview';
-import ZccAutoHealer from '@/components/zcc/ZccAutoHealer';
-import { ZccErrorBoundary } from '@/components/zcc/ZccErrorBoundary';
+export default function ZCCDashboardPage() {
+  const [periodo] = useState({
+    inicio: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+    fim: new Date().toISOString(),
+  })
 
-// Explictly import sub-panels to resolve page.tsx unresolved names
-import { CognitivePanel } from '@/components/dashboard/CognitivePanel';
-import { TerminalPanel } from '@/components/dashboard/TerminalPanel';
-import { AgentManagementPanel } from '@/components/zcc/AgentManagementPanel';
-import { TenantManagement } from '@/components/zcc/TenantManagement';
-import { MarketingLeads } from '@/components/dashboard/MarketingLeads';
-import { VisibilityDashboard } from '@/components/dashboard/VisibilityDashboard';
-import { FintechHub } from '@/components/zcc/FintechHub';
-import { WhatsAppPanel } from '@/components/dashboard/WhatsAppPanel';
-import { ApiKeysPanel } from '@/components/zcc/ApiKeysPanel';
-import { APIStatus } from '@/components/dashboard/APIStatus';
-import { TeamManagementTab } from '@/components/zcc/TeamManagementTab';
-import { SecurityPanel } from '@/components/zcc/SecurityPanel';
-import { ConnectEditor } from '@/components/connect/ConnectEditor';
-import { CRMModule } from '@/components/crm/CRMModule';
-import { SystemStatusBar } from '@/components/dashboard/SystemStatusBar';
+  const { metrics, loading, recalcularBreakEven } = useDashboardMetrics(periodo)
+  const [breakEvenInput, setBreakEvenInput] = useState('')
 
-
-
-// ===== TAB CONFIGURATION =====
-
-type ZCCTab =
-  | 'overview'
-  | 'cognitivo'
-  | 'terminal'
-  | 'agentes'
-  | 'swarm'
-  | 'propriedades'
-  | 'marketing'
-  | 'visibilidade'
-  | 'financeiro'
-  | 'whatsapp'
-  | 'apis'
-  | 'equipe'
-  | 'seguranca'
-  | 'connect'
-  | 'crm'
-  | 'autohealer';
-
-interface TabConfig {
-  id: ZCCTab;
-  label: string;
-  shortLabel: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement> & { className?: string }>;
-  permission?: string;
-}
-
-const tabs: TabConfig[] = [
-  { id: 'overview', label: 'Overview', shortLabel: 'Overview', icon: Eye },
-  { id: 'cognitivo', label: 'Cognitivo', shortLabel: 'Cognitivo', icon: Brain, permission: 'view_cognitivo' },
-  { id: 'terminal', label: 'Terminal', shortLabel: 'Terminal', icon: Terminal, permission: 'view_terminal' },
-  { id: 'agentes', label: 'Agentes', shortLabel: 'Agentes', icon: Bot, permission: 'view_agents' },
-  { id: 'swarm', label: 'Swarm', shortLabel: 'Swarm', icon: Network, permission: 'view_agents' },
-  { id: 'propriedades', label: 'Propriedades', shortLabel: 'Props', icon: Building2, permission: 'view_properties' },
-  { id: 'marketing', label: 'Marketing', shortLabel: 'Marketing', icon: Megaphone, permission: 'view_marketing' },
-  { id: 'visibilidade', label: 'Visibilidade', shortLabel: 'Visibilidade', icon: Eye, permission: 'view_marketing' },
-  { id: 'financeiro', label: 'Financeiro', shortLabel: 'Financeiro', icon: CreditCard, permission: 'view_financial' },
-  { id: 'whatsapp', label: 'WhatsApp', shortLabel: 'WhatsApp', icon: MessageSquare, permission: 'view_whatsapp' },
-  { id: 'apis', label: 'APIs', shortLabel: 'APIs', icon: Plug, permission: 'view_apis' },
-  { id: 'equipe', label: 'Equipe', shortLabel: 'Equipe', icon: Users, permission: 'manage_team' },
-  { id: 'seguranca', label: 'Segurança', shortLabel: 'Segurança', icon: Shield, permission: 'view_security' },
-  { id: 'connect', label: 'Connect', shortLabel: 'Connect', icon: Link2, permission: 'view_marketing' },
-  { id: 'crm', label: 'CRM', shortLabel: 'CRM', icon: LayoutDashboard, permission: 'view_marketing' },
-  { id: 'autohealer', label: 'Auto-Healer', shortLabel: 'Healer', icon: HeartPulse, permission: 'view_security' },
-];
-
-
-// ===== MAIN PAGE COMPONENT =====
-
-export default function ZCCPage() {
-  const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [userSession, setUserSession] = useState<{ role: string; permissions: string[] } | null>(null);
-  const [activeTab, setActiveTab] = useState<ZCCTab>('overview');
-  const [brainHealth, setBrainHealth] = useState<Record<string, unknown> | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-
-  // Admin login gate
-  useEffect(() => {
-    try {
-    // DEVELOPER BYPASS: Automatic login in dev mode for Marcio
-    if (process.env.NODE_ENV === 'development') {
-      setIsAdmin(true);
-      setUserSession({
-        role: 'admin',
-        permissions: tabs.map(t => t.permission).filter(Boolean) as string[]
-      });
-      return;
-    }
-
-  const adminToken = localStorage.getItem('zehla-admin-token');
-      if (adminToken) {
-        const payload = JSON.parse(atob(adminToken));
-        if ((payload.role === 'admin' || payload.role === 'team') && payload.exp > Date.now()) {
-          setIsAdmin(true);
-          setUserSession({
-            role: payload.role,
-            permissions: payload.permissions || []
-          });
-        } else {
-          localStorage.removeItem('zehla-admin-token');
-          setIsAdmin(false);
-        }
-      } else {
-        setIsAdmin(false);
-      }
-    } catch {
-      setIsAdmin(false);
-    }
-  }, []);
-
-  // Redirect to admin login if not authenticated
-  useEffect(() => {
-    if (isAdmin === false) {
-      router.push('/zcc-login');
-    }
-  }, [isAdmin, router]);
-
-  // Load brain health (must be BEFORE any early return to respect Rules of Hooks)
-  useEffect(() => {
-    if (isAdmin !== true) return;
-    let cancelled = false;
-    const load = async () => {
-      try {
-  const res = await fetch('/api/brain/health');
-        const data = await res.json();
-        if (!cancelled) setBrainHealth(data);
-      } catch {
-        // silent
-      }
-    };
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [isAdmin]);
-
-  // Loading state while checking admin session
-  if (isAdmin === null || isAdmin === false) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0f0f0f]">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-[#FF5500]/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-[#4d4d4d]">Verificando acesso administrativo...</p>
-        </div>
-      </div>
-    );
+  const handleBreakEvenSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const val = parseFloat(breakEvenInput)
+    if (isNaN(val) || val <= 0) return
+    await recalcularBreakEven(val)
+    setBreakEvenInput('')
   }
 
   return (
-    <div className="min-h-screen flex bg-[#050505] text-[#b4b4b4] font-sans overflow-hidden">
-      
-      {/* ===== SIDEBAR ===== */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-[#050505]/90 backdrop-blur-md border-r border-white/5 transition-all duration-300 ease-in-out ${
-          sidebarOpen ? 'w-64' : 'w-0 -translate-x-full md:w-20 md:translate-x-0'
-        }`}
-      >
-        {/* Sidebar Header */}
-        <div className="h-16 flex items-center justify-center md:justify-start px-4 border-b border-white/5">
-          <Command className="w-6 h-6 text-[#FF5500] flex-shrink-0" />
-          <div className={`ml-3 whitespace-nowrap transition-opacity duration-200 ${sidebarOpen ? 'opacity-100' : 'opacity-0 md:hidden'}`}>
-            <h1 className="font-bold text-sm text-[#fafafa] tracking-tight">ZEHLA Control</h1>
-            <p className="text-[10px] text-[#4d4d4d] font-mono">v2.1.0-admin</p>
+    <div className="min-h-screen bg-[#0F172A] text-slate-50 font-sans p-6 space-y-6">
+      {/* Premium Dashboard Header & KPIs */}
+      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-lg">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-orange-500 animate-ping" />
+            <h1 className="text-2xl font-bold tracking-tight text-slate-50 font-display">
+              Zehla Control Center
+            </h1>
           </div>
+          <p className="text-xs text-slate-400 font-mono">
+            Sincronização Mestra: Cognição, CRM e Hospitalidade Conectados
+          </p>
         </div>
 
-        {/* Sidebar Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 zehla-scroll-y">
-          {tabs.filter(tab => {
-            if (userSession?.role === 'admin') return true;
-            // @ts-ignore
-            if (tab.permission && !userSession?.permissions.includes(tab.permission)) return false;
-            return true;
-          }).map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id);
-                  if (typeof window !== 'undefined' && window.innerWidth < 768) setSidebarOpen(false); // Auto close on mobile
-                }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group relative ${
-                  isActive
-                    ? 'text-[#FF5500] bg-[#FF5500]/10 border border-[#FF5500]/10 shadow-[0_0_15px_rgba(255,85,0,0.05)]'
-                    : 'text-[#898989] hover:text-[#efefef] hover:bg-[#111111]'
-                }`}
-                title={!sidebarOpen ? tab.label : ''}
-              >
-                {isActive && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#FF5500] rounded-r-full shadow-[0_0_10px_rgba(255,85,0,0.5)]" />
-                )}
-                <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-[#FF5500]' : 'text-[#4d4d4d] group-hover:text-[#b4b4b4]'}`} />
-                <span className={`whitespace-nowrap transition-opacity duration-200 ${sidebarOpen ? 'opacity-100' : 'opacity-0 md:hidden'}`}>
-                  {tab.label}
+        {/* Real-time Yield Metrics Cards (0% mocks / fetched from useDashboardMetrics) */}
+        <div className="flex flex-wrap gap-4 w-full lg:w-auto">
+          {loading ? (
+            <div className="text-slate-500 font-mono text-xs animate-pulse">Sincronizando Yield KPIs...</div>
+          ) : (
+            <>
+              {/* Card 1: Faturamento */}
+              <div className="px-4 py-3 bg-slate-950 border border-slate-800 rounded-lg flex flex-col justify-between min-w-[150px]">
+                <span className="text-[10px] text-slate-500 font-mono font-bold tracking-wider">FATURAMENTO</span>
+                <span className="text-lg font-bold font-mono text-emerald-400 mt-1">
+                  R$ {metrics?.faturamentoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </span>
-              </button>
-            );
-          })}
-        </nav>
- 
-        {/* Sidebar Footer */}
-        <div className="p-4 border-t border-white/5">
-          <button
-            onClick={() => { localStorage.removeItem('zehla-admin-token'); router.push('/zcc-login'); }}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#898989] hover:text-rose-400 hover:bg-rose-400/10 transition-all ${!sidebarOpen && 'justify-center md:justify-start'}`}
-            title={!sidebarOpen ? 'Sair do ZCC' : ''}
-          >
-            <LogOut className="w-5 h-5 flex-shrink-0" />
-            <span className={`whitespace-nowrap transition-opacity duration-200 ${sidebarOpen ? 'opacity-100' : 'opacity-0 md:hidden'}`}>
-              Sair do ZCC
-            </span>
-          </button>
-        </div>
-      </aside>
- 
-      {/* ===== MAIN CONTENT WRAPPER ===== */}
-      <div className={`flex-1 flex flex-col h-screen overflow-hidden transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
-        
-        {/* Top Header */}
-        <header className="h-16 flex-shrink-0 bg-[#050505]/80 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 sm:px-6 z-40">
-          <div className="flex items-center gap-4">
+              </div>
+
+              {/* Card 2: Ocupação */}
+              <div className="px-4 py-3 bg-slate-950 border border-slate-800 rounded-lg flex flex-col justify-between min-w-[120px]">
+                <span className="text-[10px] text-slate-500 font-mono font-bold tracking-wider">TAXA OCUPAÇÃO</span>
+                <span className="text-lg font-bold font-mono text-orange-400 mt-1">
+                  {metrics?.taxaOcupacao}%
+                </span>
+              </div>
+
+              {/* Card 3: Break-Even Status */}
+              <div className="px-4 py-3 bg-slate-950 border border-slate-800 rounded-lg flex flex-col justify-between min-w-[140px]">
+                <span className="text-[10px] text-slate-500 font-mono font-bold tracking-wider">BREAK-EVEN YIELD</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <span
+                    className={`h-2.5 w-2.5 rounded-full ${
+                      metrics?.breakEvenStatus === 'safe'
+                        ? 'bg-emerald-500'
+                        : metrics?.breakEvenStatus === 'warning'
+                        ? 'bg-amber-500'
+                        : 'bg-red-500 animate-pulse'
+                    }`}
+                  />
+                  <span className="text-xs font-bold uppercase tracking-wider font-mono text-slate-300">
+                    {metrics?.breakEvenStatus}
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Form to manual adjust yield rules (confirming standard error-handling Result) */}
+          <form onSubmit={handleBreakEvenSubmit} className="flex gap-2 items-center">
+            <input
+              type="number"
+              value={breakEvenInput}
+              onChange={(e) => setBreakEvenInput(e.target.value)}
+              placeholder="Break-Even (R$)"
+              className="w-28 px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded text-slate-200 outline-none focus:border-orange-500 font-mono"
+            />
             <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 text-[#898989] hover:text-[#efefef] hover:bg-[#111111] rounded-lg transition-colors"
-              aria-label="Toggle Sidebar"
+              type="submit"
+              className="px-3 py-2 bg-slate-800 hover:bg-orange-500 text-white hover:text-white font-bold text-xs rounded border border-slate-700 hover:border-orange-500 transition-colors"
             >
-              <Menu className="w-5 h-5" />
+              Ajustar
             </button>
-            
-            {/* Breadcrumb */}
-            <div className="hidden sm:flex items-center gap-2 text-sm">
-              <span className="text-[#4d4d4d] font-mono tracking-tight">ZCC</span>
-              <ChevronRight className="w-4 h-4 text-[#363636]" />
-              <span className="text-[#efefef] font-medium">
-                {tabs.find(t => t.id === activeTab)?.label}
-              </span>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <Badge variant="outline" className="border-[#FF5500]/30 text-[#FF5500] bg-[#FF5500]/10 text-[10px] uppercase font-mono tracking-wider">
-              {userSession?.role === 'admin' ? 'Super Admin' : 'Team'}
-            </Badge>
-          </div>
-        </header>
- 
-        {/* Dynamic Content Area */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 zehla-scroll-y bg-[#050505]">
-          <div className="max-w-7xl mx-auto">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
-              >
-            {/* Tab 1: Overview */}
-            {activeTab === 'overview' && (
-              <ZccErrorBoundary fallbackName="Visão Global (SwarmOverview)">
-                {brainHealth ? (
-                  <SwarmOverview brainHealth={brainHealth} />
-                ) : (
-                  <div className="space-y-4">
-                    <Skeleton className="h-48 w-full rounded-xl" />
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {Array.from({ length: 8 }).map((_, i) => (
-                        <Skeleton key={i} className="h-40 rounded-xl" />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </ZccErrorBoundary>
-            )}
-
-            {/* Tab 2: Cognitivo */}
-            {activeTab === 'cognitivo' && <ZccErrorBoundary fallbackName="Painel Cognitivo"><CognitivePanel /></ZccErrorBoundary>}
-
-            {/* Tab 3: Terminal */}
-            {activeTab === 'terminal' && <ZccErrorBoundary fallbackName="Terminal Principal"><TerminalPanel /></ZccErrorBoundary>}
-
-            {/* Tab 4: Agentes */}
-            {activeTab === 'agentes' && <ZccErrorBoundary fallbackName="Gestão de Agentes"><AgentManagementPanel /></ZccErrorBoundary>}
-
-            {/* Tab 4.5: Swarm */}
-            {activeTab === 'swarm' && (
-              <ZccErrorBoundary fallbackName="Swarm Overview">
-                <SwarmOverview />
-              </ZccErrorBoundary>
-            )}
-
-            {/* Tab 5: Propriedades */}
-            {activeTab === 'propriedades' && <ZccErrorBoundary fallbackName="Gestão de Propriedades"><TenantManagement /></ZccErrorBoundary>}
-
-            {/* Tab 6: Marketing */}
-            {activeTab === 'marketing' && <ZccErrorBoundary fallbackName="Marketing Leads"><MarketingLeads /></ZccErrorBoundary>}
-
-            {/* Tab 6.5: Visibilidade */}
-            {activeTab === 'visibilidade' && <ZccErrorBoundary fallbackName="Visibilidade SEO"><VisibilityDashboard /></ZccErrorBoundary>}
-
-            {/* Tab 7: Financeiro */}
-            {activeTab === 'financeiro' && <ZccErrorBoundary fallbackName="Fintech Hub"><FintechHub /></ZccErrorBoundary>}
-
-            {/* Tab 8: WhatsApp */}
-            {activeTab === 'whatsapp' && <ZccErrorBoundary fallbackName="Painel WhatsApp"><WhatsAppPanel /></ZccErrorBoundary>}
-
-            {/* Tab 9: APIs */}
-            {activeTab === 'apis' && (
-              <ZccErrorBoundary fallbackName="Gestão de APIs">
-                <ApiKeysPanel />
-                <div className="mt-6" />
-                <APIStatus />
-              </ZccErrorBoundary>
-            )}
-
-
-
-            {/* Tab 11: Equipe */}
-            {activeTab === 'equipe' && <ZccErrorBoundary fallbackName="Equipe Operacional"><TeamManagementTab /></ZccErrorBoundary>}
-
-            {/* Tab 12: Segurança */}
-            {activeTab === 'seguranca' && <ZccErrorBoundary fallbackName="Painel de Segurança"><SecurityPanel /></ZccErrorBoundary>}
-
-            {/* Tab 13: Connect */}
-            {activeTab === 'connect' && <ZccErrorBoundary fallbackName="Connect Profile"><ConnectEditor /></ZccErrorBoundary>}
-
-            {/* Tab 14: CRM */}
-            {activeTab === 'crm' && <CRMModule />}
-
-            {/* Tab 15: Auto-Healer */}
-            {activeTab === 'autohealer' && (
-              <ZccErrorBoundary fallbackName="Auto-Healer Dashboard">
-                <ZccAutoHealer />
-              </ZccErrorBoundary>
-            )}
-          </motion.div>
-        </AnimatePresence>
+          </form>
         </div>
-      </main>
+      </header>
 
-      {/* ===== BOTTOM STATUS BAR ===== */}
-      <div className="z-40 relative">
-        <SystemStatusBar />
-      </div>
+      {/* Main Grid Layout */}
+      <main className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Col: Rooms and CRM Kanban */}
+        <section className="lg:col-span-2 space-y-6 flex flex-col justify-between">
+          {/* Rooms Grid Module */}
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4">
+            <h2 className="text-md font-bold tracking-wide font-display text-slate-100 flex items-center gap-2">
+              <span>🏨</span> Painel de Disponibilidade e Higienização
+            </h2>
+            <RoomsGrid />
+          </div>
+
+          {/* CRM Leads Kanban Module */}
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4 flex-1">
+            <h2 className="text-md font-bold tracking-wide font-display text-slate-100 flex items-center gap-2">
+              <span>💼</span> Funil de Negociação de Vendas (CRM)
+            </h2>
+            <LeadKanban />
+          </div>
+        </section>
+
+        {/* Right Col: Intelligent Terminal Swarm Radar */}
+        <section className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between">
+          <h2 className="text-md font-bold tracking-wide font-display text-slate-100 flex items-center gap-2 mb-4">
+            <span>⚡</span> Swarm Cognitivo & Escalabilidade
+          </h2>
+          <CognitiveTerminal />
+        </section>
+      </main>
     </div>
-    </div>
-  );
+  )
 }
