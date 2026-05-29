@@ -1,12 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
 
-
 /**
  * Configuração otimizada para o iMac (Safari/Webkit).
  * Foco em baixo consumo de recursos e alta velocidade.
  */
 export default defineConfig({
-  testDir: './automation/recipes',
+  testDir: './automation/e2e',
   /* Rodar testes em paralelo pode travar o iMac, então limitamos a 1 */
   fullyParallel: false,
   /* Falha o build no CI se você esqueceu de remover um .only no código */
@@ -16,28 +15,36 @@ export default defineConfig({
   /* Optamos por apenas 1 worker para economizar CPU */
   workers: 1,
   /* Repórter minimalista para não poluir o terminal */
-  reporter: 'line',
-  
+  reporter: 'list',
+
   use: {
-    /* Base URL se necessário */
-    // baseURL: 'http://localhost:3000',
+    /* Base URL */
+    baseURL: 'http://localhost:3000',
 
     /* Coletar trace apenas em falhas para economizar disco/CPU */
     trace: 'on-first-retry',
-    
-    /* DEFINIÇÃO CRÍTICA: Usar Webkit (Safari) para ser leve no iMac */
+
+    /* Usar Webkit (Safari) para ser leve no iMac */
     browserName: 'webkit',
-    
-    /* Rodar sem janela (headless) por padrão para máxima performance */
+
+    /* Rodar sem janela (headless) por padrão */
     headless: true,
 
-    /* Otimização de Performance: Bloquear recursos pesados */
+    /* Otimização de Performance */
     launchOptions: {
       args: [
         '--disable-gpu',
         '--disable-dev-shm-usage',
       ],
     },
+  },
+
+  /* Iniciar o servidor Next.js antes dos testes */
+  webServer: {
+    command: 'npm run dev',
+    port: 3000,
+    timeout: 180 * 1000,
+    reuseExistingServer: !process.env.CI,
   },
 
   /* Projetos configurados */

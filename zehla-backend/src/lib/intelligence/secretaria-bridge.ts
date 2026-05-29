@@ -76,6 +76,7 @@ export class SecretariaBridge {
 
       if (candidates.length > 0) {
         const topCandidate = candidates[0];
+        const isQualified = topCandidate.validationScore > 70;
         
         // 2. Enriquecimento de Perfil
         return await prisma.lead.update({
@@ -83,7 +84,8 @@ export class SecretariaBridge {
           data: {
             qualification: topCandidate.match_explanation || 'Perfil validado via busca profunda.',
             validationScore: topCandidate.validationScore,
-            status: topCandidate.validationScore > 70 ? 'QUALIFIED' : 'REVIEW_NEEDED',
+            status: isQualified ? 'QUALIFIED' : 'PROSPECT',
+            validationStatus: isQualified ? 'validado' : 'pendente',
             // Enriquecer cidade se for desconhecida
             city: lead.city === 'Unknown' ? (topCandidate.metadata?.city || lead.city) : lead.city,
             state: lead.state === 'Unknown' ? (topCandidate.metadata?.state || lead.state) : lead.state,
@@ -97,7 +99,8 @@ export class SecretariaBridge {
         data: {
           qualification: 'Nenhum sinal social claro encontrado. Aguardando interação humana.',
           validationScore: 30,
-          status: 'UNQUALIFIED'
+          status: 'PROSPECT',
+          validationStatus: 'pendente',
         }
       });
 

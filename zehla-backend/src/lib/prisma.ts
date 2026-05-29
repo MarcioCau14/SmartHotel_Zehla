@@ -71,3 +71,16 @@ export const prisma = basePrisma.$extends({
 })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = basePrisma
+
+export function getBasePrisma(): PrismaClient {
+  return basePrisma
+}
+
+/** 
+ * Retorna o PrismaClient estendido (com multi-tenant) tipado como PrismaClient.
+ * A extensão $extends do Prisma remove $on/$use (deprecados), causando
+ * incompatibilidade de tipo em tempo de compilação. O runtime é o mesmo objeto.
+ */
+export function getRepoPrisma(): PrismaClient {
+  return prisma as unknown as PrismaClient
+}

@@ -1,6 +1,5 @@
 import { prisma } from '@/lib/prisma';
 import { blastProcessQueue } from '@/lib/blast/queues';
-import { EvolutionClient } from '@/lib/blast/evolution-client';
 
 export async function launchCampaign(campaignId: string) {
   const campaign = await prisma.blastCampaign.findUniqueOrThrow({
@@ -91,6 +90,7 @@ export async function launchCampaign(campaignId: string) {
       console.log(`⏳ [BLAST] Lote concluído. Aplicando pausa de ${batchPause / 60000} min.`);
     }
 
+    if (!blastProcessQueue) throw new Error('blastProcessQueue não disponível')
     await blastProcessQueue.add(
       'send-message',
       {

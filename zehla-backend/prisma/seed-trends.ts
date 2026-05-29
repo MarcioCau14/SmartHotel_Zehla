@@ -27,7 +27,6 @@ const TYPES = [
 ];
 
 async function main() {
-  try {
   
 
   // Destinos
@@ -73,7 +72,6 @@ async function main() {
     });
   }
 
-  
 }
 
 main()

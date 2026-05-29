@@ -1,34 +1,22 @@
+import { getWhatsAppPort } from '@/infrastructure/external/evolution';
+
+/**
+ * Envia alerta administrativo via WhatsApp.
+ * Usa a porta IWhatsAppPort (Evolution API) — sem dependência direta de axios/fetch.
+ */
 export async function sendWhatsAppAlert(message: string): Promise<boolean> {
   try {
-    const evoUrl = process.env.EVOLUTION_API_URL || 'http://localhost:8080';
-    const evoKey = process.env.EVOLUTION_API_KEY || '';
     const targetPhone = process.env.ADMIN_WHATSAPP_NUMBER || '';
-
-    if (!evoKey || !targetPhone) {
-      console.log('Evolution API não configurada. Simulando envio de mensagem:', message);
+    if (!targetPhone) {
+      console.log('ADMIN_WHATSAPP_NUMBER não configurado. Simulando envio:', message);
       return true;
     }
 
-    const res = await fetch(`${evoUrl}/message/sendText/zehla-bot`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': evoKey
-      },
-      body: JSON.stringify({
-        number: targetPhone,
-        options: {
-          delay: 1200,
-          presence: 'composing'
-        },
-        textMessage: {
-          text: message
-        }
-      })
-    });
+    const port = getWhatsAppPort();
+    const result = await port.sendText({ to: targetPhone, content: message });
 
-    if (!res.ok) {
-      console.error('Falha ao enviar notificação via Evolution API', await res.text());
+    if (!result.success) {
+      console.error('Falha ao enviar notificação WhatsApp:', result.error);
       return false;
     }
 

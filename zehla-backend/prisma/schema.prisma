@@ -114,6 +114,26 @@ model Property {
   utmMedium            String?
   utmSource            String?
   utmTerm              String?
+  cadastur             String?              @unique
+  cadasturStatus       String?              @default("VALID")
+  cadasturExpiry       DateTime?
+  fnrhEnabled          Boolean              @default(false)
+  fnrhManagerCpf       String?
+  checkInWindow        Int                  @default(24)
+  cleaningWindow       Int                  @default(3)
+  voiceTokensUsed      Int                  @default(0)
+  voiceTokensLimit     Int                  @default(100000)
+
+  // Domain-driven JSON columns (added during refactoring)
+  addressJson          Json?
+  contactInfoJson      Json?
+  configJson           Json?
+  trialJson            Json?
+  subscriptionJson     Json?
+  utmJson              Json?
+  cadasturJson         Json?
+  voiceBudgetJson      Json?
+  operationalWindowJson Json?
   agentLogs            AgentLog[]
   billing_logs         billing_logs[]
   cadastur_records     cadastur_records?
@@ -122,9 +142,11 @@ model Property {
   crmContacts          CrmContact[]
   crmDeals             CrmDeal[]
   crmInteractions      CrmInteraction[]
+  discountKeys         DiscountKey[]
   crmPipelines         CrmPipeline[]
   crmTasks             CrmTask[]
   financeAlerts        FinanceAlert[]
+  operationalPains     OperationalPain[]
   transactions         FinanceTransaction[]
   invoices             Invoice[]
   leads                Lead[]               @relation("PropertyLeads")
@@ -139,7 +161,14 @@ model Property {
   rooms                Room[]
   service_items        service_items[]
   services             Service[]
+  stripeConfig         StripeConfig?
+  telemetries          BusinessTelemetry[]
+  toneProfile          ToneProfile?
   transaction_logs     transaction_logs[]
+  voicePrints          VoicePrint[]
+  workflows            Workflow[]
+  financeiroInvoices   FinanceiroInvoice[]
+  financeiroPayments   FinanceiroPayment[]
 
   @@map("properties")
 }
@@ -201,6 +230,18 @@ model Reservation {
   source            String              @default("WHATSAPP")
   notes             String?
   fnrhSubmittedAt   DateTime?
+  guestNationality  String?              @default("Brasileira")
+  guestBirthDate    String?
+  guestGender       String?
+  guestAddress      String?
+  guestDistrict     String?
+  guestZipCode      String?
+  guestCity         String?
+  guestState        String?
+  travelMotive      String?
+  transportMethod   String?
+  nextDestination   String?
+  preferencesSnapshot Json?
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
   roomId            String
@@ -408,6 +449,9 @@ model Lead {
   recommendedPitch      String?
   leadTier              String          @default("COLD")
   emailTracking         EmailTracking[]
+  events                LeadEvent[]
+  actionLogs            ActionLog[]
+  swipeUsages           SwipeUsage[]
   propertyRef           Property?       @relation("PropertyLeads", fields: [propertyId], references: [id])
 
   @@map("leads")
@@ -1289,6 +1333,8 @@ enum Plan {
   LITE
   PRO
   MAX
+  BETA_TESTER
+  EARLY_ADOPTER
 }
 
 enum WhatsappChannelType {
@@ -1424,6 +1470,244 @@ enum FiscalStatus {
   HOMOLOGADA
 }
 
+// ===== MARKETING DOMAIN MODELS (ZEHLA PRIME SB19) =====
+
+model MarketingReview {
+  id              String   @id
+  pousadaId       String
+  hospedeNome     String
+  portal          String
+  nota            Int
+  texto           String
+  sentimento      String
+  resposta        String?
+  tom             String?
+  status          String   @default("recebido")
+  dataEstadia     DateTime
+  quartoId        String?
+  problemaRelatado String?
+  dataCriacao     DateTime @default(now())
+
+  @@index([pousadaId, status])
+  @@index([pousadaId, dataCriacao])
+  @@index([pousadaId, sentimento])
+  @@map("marketing_reviews")
+}
+
+model MarketingCampanha {
+  id                        String   @id
+  pousadaId                 String
+  nome                      String
+  publicoAlvo               String
+  tipo                      String
+  conteudo                  String?
+  dataInicio                DateTime
+  dataFim                   DateTime
+  status                    String   @default("draft")
+  possuiPromiseFinanceira   Boolean  @default(false)
+  promiseFinanceiraValidada Boolean  @default(false)
+  dataCriacao               DateTime @default(now())
+
+  @@index([pousadaId, status])
+  @@index([pousadaId, dataInicio, dataFim])
+  @@map("marketing_campanhas")
+}
+
+model MarketingConteudo {
+  id                String   @id
+  texto             String
+  tom               String
+  versao            Int      @default(1)
+  conteudoAnteriorId String?
+  dataCriacao       DateTime @default(now())
+
+  @@map("marketing_conteudos")
+}
+
+model MarketingPost {
+  id              String    @id
+  pousadaId       String
+  canal           String
+  tipo            String
+  conteudoId      String
+  midias          String[]  @default([])
+  dataAgendamento DateTime?
+  status          String    @default("draft")
+  dataPublicacao  DateTime?
+  dataCriacao     DateTime  @default(now())
+
+  @@index([pousadaId, status])
+  @@index([pousadaId, canal])
+  @@map("marketing_posts")
+}
+
+model MarketingMetrica {
+  id              String   @id
+  pousadaId       String
+  dataInicio      DateTime
+  dataFim         DateTime
+  notaMedia       Float?
+  taxaResposta    Float?
+  sentimentoMedio Float?
+  totalReviews    Int      @default(0)
+  totalRespondidos Int     @default(0)
+  totalCampanhas  Int      @default(0)
+  dataCriacao     DateTime @default(now())
+
+  @@index([pousadaId, dataInicio, dataFim])
+  @@map("marketing_metricas")
+}
+
+enum LeadEventType {
+  EMAIL_OPEN
+  LINK_CLICK
+  LANDING_VISIT
+  WHATSAPP_OPEN
+  WHATSAPP_REPLY
+  WHATSAPP_SENT
+  WHATSAPP_DELIVERED
+  WHATSAPP_BLOCKED
+  WHATSAPP_OPTED_OUT
+  WHATSAPP_LINK_CLICKED
+  AD_VIEW
+  TRIAL_STARTED
+  PAYMENT_MADE
+  CONVERSION
+}
+
+// ===== OPERACIONAL DOMAIN MODELS (ZEHLA PRIME SB12) =====
+
+model OperacionalTarefa {
+  id              String   @id
+  propriedadeId   String
+  dataCriacao     DateTime
+  tipo            String
+  titulo          String
+  descricao       String?
+  prioridade      String
+  status          String   @default("pendente")
+  responsavelId   String?
+  tipoResponsavel String?
+  ativoId         String?
+  tipoAtivo       String?
+  dataLimite      DateTime?
+  dataConclusao   DateTime?
+  observacoes     String?
+
+  manutencoes     OperacionalManutencao[]
+
+  @@index([propriedadeId, status])
+  @@index([propriedadeId, tipo])
+  @@index([propriedadeId, dataCriacao])
+  @@index([responsavelId, propriedadeId])
+  @@index([propriedadeId, dataLimite])
+  @@map("operacional_tarefas")
+}
+
+model OperacionalManutencao {
+  id                    String   @id
+  tarefaId              String
+  propriedadeId         String
+  dataAbertura          DateTime
+  tipo                  String
+  gravidade             String
+  categoria             String
+  ativoId               String?
+  tipoAtivo             String?
+  descricaoProblema     String
+  descricaoSolucao      String?
+  dataInicio            DateTime?
+  dataFim               DateTime?
+  fornecedorId          String?
+  custoPecas            Int?
+  custoServico          Int?
+  status                String   @default("aberta")
+  interditaQuarto       Boolean  @default(false)
+  requerAprovacaoHumana Boolean  @default(false)
+
+  tarefa                OperacionalTarefa @relation(fields: [tarefaId], references: [id], onDelete: Cascade)
+
+  @@index([propriedadeId, status])
+  @@index([propriedadeId, gravidade])
+  @@index([propriedadeId, dataAbertura])
+  @@index([fornecedorId, propriedadeId])
+  @@index([tarefaId])
+  @@map("operacional_manutencoes")
+}
+
+model OperacionalStaff {
+  id                  String   @id
+  propriedadeId       String
+  dataContratacao     DateTime
+  nome                String
+  email               String?
+  telefone            String?
+  cargo               String
+  turno               String
+  ativo               Boolean  @default(true)
+  habilidades         String[] @default([])
+  cargaHorariaSemanal Int      @default(44)
+  tarefasEmAndamento  Int      @default(0)
+
+  @@index([propriedadeId, ativo])
+  @@index([propriedadeId, cargo])
+  @@index([propriedadeId, turno])
+  @@map("operacional_staff")
+}
+
+model OperacionalFornecedor {
+  id              String   @id
+  dataCadastro    DateTime
+  razaoSocial     String
+  cnpj            String   @unique
+  nomeContato     String
+  emailContato    String
+  telefoneContato String
+  especialidades  String[] @default([])
+  status          String   @default("ativo")
+  slaMedioHoras   Int?
+  taxaAvaliacao   Int?
+  webhookUrl      String?
+  webhookSecret   String?
+
+  @@index([status])
+  @@index([cnpj])
+  @@index([especialidades])
+  @@map("operacional_fornecedores")
+}
+
+model OperacionalChecklist {
+  id              String   @id
+  propriedadeId   String
+  nome            String
+  tipoTrigger     String
+  ativoId         String?
+  itens           Json
+  status          String   @default("pendente")
+  responsavelId   String?
+  dataCriacao     DateTime
+  dataConclusao   DateTime?
+
+  @@index([propriedadeId, status])
+  @@index([propriedadeId, tipoTrigger])
+  @@index([ativoId, propriedadeId])
+  @@map("operacional_checklists")
+}
+
+model OperacionalSla {
+  id            String   @id
+  tipoTarefa    String
+  prioridade    String
+  prazoHoras    Int
+  prazoMinutos  Int?
+  regraEscalacao String?
+  notificarEm   Float    @default(0.8)
+  ativo         Boolean  @default(true)
+
+  @@unique([tipoTarefa, prioridade])
+  @@map("operacional_slas")
+}
+
 // ===== MISSING MODELS (adicionados pelo ZehlaTestAgent) =====
 
 model Tenant {
@@ -1515,3 +1799,891 @@ model SimulationAgent {
   @@index([scenarioId])
   @@map("simulation_agents")
 }
+
+// ===== MODELS CONSOLIDADOS DO INFRA =====
+
+model VoicePrint {
+  id              String   @id @default(cuid())
+  propertyId      String
+  name            String
+  modelType       String   @default("GPT_SOVITS")
+  status          String   @default("TRAINING")
+  referenceAudio  String?
+  similarityScore Float?
+  isDefault       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  property        Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("voice_prints")
+}
+
+model ToneProfile {
+  id                    String   @id @default(cuid())
+  propertyId            String   @unique
+  property              Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  tonePosition          Int      @default(3)
+  toneProactivity       String   @default("HYBRID")
+  toneEmojiLevel        String   @default("MODERATE")
+  toneFormality         String   @default("ADAPTIVE")
+  toneStyle             String   @default("CONSULTATIVE")
+  toneGrammar           String   @default("NORMAL")
+  toneHumor             String   @default("FRIENDLY")
+
+  voiceSample1          String?  @db.Text
+  voiceSample2          String?  @db.Text
+  voiceSample3          String?  @db.Text
+  generatedSystemPrompt String?  @db.Text
+
+  updatedAt             DateTime @updatedAt
+
+  @@map("tone_profiles")
+}
+
+model DiscountKey {
+  id                String   @id @default(cuid())
+  propertyId        String
+  property          Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  type              String
+  maxPercent        Float
+  triggerCondition  String?  @db.Text
+  isActive          Boolean  @default(true)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("discount_keys")
+}
+
+model OperationalPain {
+  id                String   @id @default(cuid())
+  propertyId        String
+  property          Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  questionId        Int
+  score             Int
+  priority          Boolean  @default(false)
+
+  createdAt         DateTime @default(now())
+
+  @@map("operational_pains")
+}
+
+model StripeConfig {
+  id                String   @id @default(cuid())
+  propertyId        String   @unique
+  property          Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  stripeAccountId   String?
+  chargesEnabled    Boolean  @default(false)
+  payoutsEnabled    Boolean  @default(false)
+
+  allowInstallments Boolean  @default(true)
+  maxInstallments   Int      @default(12)
+  interestFreeLimit Int      @default(3)
+
+  updatedAt         DateTime @updatedAt
+
+  @@map("stripe_configs")
+}
+
+model FinancialAudit {
+  id            String   @id @default(cuid())
+  tenantId      String
+  action        String
+  amount        Float
+  currency      String   @default("BRL")
+  source        String
+  externalId    String?
+  metadata      String?
+  hash          String
+  createdAt     DateTime @default(now())
+
+  @@index([tenantId, createdAt])
+  @@map("financial_audit")
+}
+
+model LeadEvent {
+  id          String        @id @default(cuid())
+  leadId      String
+  type        LeadEventType
+  scoreImpact Int           @default(0)
+  dedupHash   String?
+  sessionId   String?
+  fingerprint String?
+  eventSource String        @default("api")
+  status      String        @default("received")
+  metadata    Json?
+  timestamp   DateTime      @default(now())
+
+  lead        Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, type, timestamp])
+  @@index([dedupHash])
+  @@index([status])
+  @@map("lead_events")
+}
+
+model ActionLog {
+  id          String   @id @default(cuid())
+  leadId      String
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  actionType  String
+  trigger     String
+  cluster     String
+  payload     Json?
+  status      String   @default("pending")
+  error       String?
+  retriedAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([leadId])
+  @@index([actionType])
+  @@index([status])
+  @@map("action_logs")
+}
+
+model WebhookLog {
+  id          String   @id @default(cuid())
+  source      String
+  eventType   String?
+  payload     Json
+  headers     Json?
+  status      String   @default("received")
+  response    String?
+  createdAt   DateTime @default(now())
+
+  @@index([source])
+  @@index([status])
+  @@map("webhook_logs")
+}
+
+model BusinessTelemetry {
+  id                  String   @id @default(cuid())
+  propertyId          String
+  date                DateTime
+  leadConversionRate  Float    @default(0)
+  avgResponseTimeMs   Float    @default(0)
+  bookingSuccessRate  Float    @default(0)
+  agentCloseRate      Float    @default(0)
+  abandonmentCount    Int      @default(0)
+
+  property            Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt           DateTime @default(now())
+
+  @@unique([propertyId, date])
+  @@map("business_telemetry")
+}
+
+// ===== HOSPITALIDADE DOMAIN MODELS (ZEHLA PRIME) =====
+
+model Hospede {
+  id              String    @id @default(cuid())
+  nomeCompleto    String
+  documentoTipo   String?
+  documentoValor  String?
+  dataNascimento  DateTime?
+  email           String?
+  telefone        String?
+  preferencias    Json?
+  observacoes     String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  propertyId      String
+
+  @@unique([propertyId, documentoValor])
+  @@map("hospedes")
+}
+
+model QuartoHosp {
+  id                    String    @id @default(cuid())
+  nome                  String
+  tipo                  String    @default("suite_master")
+  capacidadeMaxima      Int       @default(2)
+  andar                 Int       @default(1)
+  diariaBase            Int       @default(0)
+  status                String    @default("disponivel")
+  amenities             String[]  @default([])
+  descricao             String?
+  dataRetornoManutencao DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  propertyId            String
+
+  @@index([propertyId, status])
+  @@map("quartos_hospitalidade")
+}
+
+model ReservaHosp {
+  id                 String    @id @default(cuid())
+  hospedeId          String
+  quartoId           String
+  dataInicio         DateTime
+  dataFim            DateTime
+  status             String    @default("pendente")
+  numeroHospedes     Int       @default(1)
+  diariaBase         Int       @default(0)
+  checkInRealizado   DateTime?
+  checkOutRealizado  DateTime?
+  dataCancelamento   DateTime?
+  motivoCancelamento String?
+  descontoAplicado   Int       @default(0)
+  servicos           Json?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  propertyId         String
+
+  @@index([propertyId, status])
+  @@index([hospedeId])
+  @@index([quartoId])
+  @@map("reservas_hospitalidade")
+}
+
+model ServicoHosp {
+  id         String   @id @default(cuid())
+  nome       String
+  descricao  String?
+  preco      Int      @default(0)
+  categoria  String   @default("outro")
+  disponivel Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  propertyId String
+
+  @@index([propertyId, categoria])
+  @@map("servicos_hospitalidade")
+}
+
+model FeedbackHosp {
+  id         String   @id @default(cuid())
+  reservaId  String
+  notaGeral  Int
+  comentario String?
+  categorias Json?
+  createdAt  DateTime @default(now())
+  propertyId String
+
+  @@index([propertyId, createdAt])
+  @@map("feedbacks_hospitalidade")
+}
+
+model BlastCampaign {
+  id            String   @id @default(cuid())
+  name          String
+  status        String   @default("draft")
+  messageTemplate String
+  mediaUrl      String?
+  mediaType     String?
+  contactGroup  String
+  totalContacts Int      @default(0)
+  sentCount     Int      @default(0)
+  deliveredCount Int     @default(0)
+  readCount     Int      @default(0)
+  repliedCount  Int      @default(0)
+  failedCount   Int      @default(0)
+  optedOutCount Int      @default(0)
+  scheduledAt   DateTime?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  config        Json?
+  instanceIds   String[]
+
+  messages      BlastMessage[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("blast_campaigns")
+}
+
+model BlastMessage {
+  id              String   @id @default(cuid())
+  campaignId      String
+  campaign        BlastCampaign @relation(fields: [campaignId], references: [id])
+  contactPhone    String
+  contactName     String?
+  leadId          String?
+  status          String   @default("pending")
+  renderedMessage String?
+  mediaUrl        String?
+  instanceId      String?
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  readAt          DateTime?
+  repliedAt       DateTime?
+  failedReason    String?
+  optedOutAt      DateTime?
+  brainEventId    String?
+  createdAt       DateTime @default(now())
+
+  @@index([campaignId])
+  @@index([status])
+  @@index([contactPhone])
+  @@map("blast_messages")
+}
+
+model BlastInstance {
+  id            String   @id @default(cuid())
+  name          String
+  phone         String   @unique
+  evolutionUrl  String
+  apiKey        String
+  instanceName  String
+  status        String   @default("disconnected")
+  createdAt     DateTime @default(now())
+  warmupStage   Int      @default(0)
+  dailyLimit    Int      @default(20)
+  hourlyLimit   Int      @default(10)
+  sentToday     Int      @default(0)
+  sentThisHour  Int      @default(0)
+  lastError     String?
+  lastErrorAt   DateTime?
+  bannedAt      DateTime?
+  qualityScore  Float?
+
+  @@map("blast_instances")
+}
+
+model BlastContact {
+  id            String   @id @default(cuid())
+  phone         String   @unique
+  name          String?
+  email         String?
+  pousadaName   String?
+  city          String?
+  state         String?
+  group         String   @default("geral")
+  optIn         Boolean  @default(false)
+  optInSource   String?
+  optInDate     DateTime?
+  optedOut      Boolean  @default(false)
+  optedOutAt    DateTime?
+  optedOutReason String?
+  leadId        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([group])
+  @@index([optedOut])
+  @@map("blast_contacts")
+}
+
+model ExclusiveWaitlist {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  phone       String?
+  pousadaName String?
+  roomCount   Int?     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("exclusive_waitlist")
+}
+
+model Workflow {
+  id          String   @id @default(cuid())
+  propertyId  String
+  name        String
+  description String?  @db.Text
+  isActive    Boolean  @default(false)
+  version     Int      @default(1)
+
+  nodes       WorkflowNode[]
+  edges       WorkflowEdge[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@map("workflows")
+}
+
+model WorkflowNode {
+  id          String   @id @default(cuid())
+  workflowId  String
+  propertyId  String
+  type        String
+  positionX   Float
+  positionY   Float
+  data        Json
+
+  workflow    Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
+  @@index([propertyId])
+  @@map("workflow_nodes")
+}
+
+model WorkflowEdge {
+  id          String   @id @default(cuid())
+  workflowId  String
+  propertyId  String
+  sourceNode  String
+  targetNode  String
+  sourceHandle String?
+  targetHandle String?
+  condition   Json?
+
+  workflow    Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
+  @@index([propertyId])
+  @@map("workflow_edges")
+}
+
+model WorkflowTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  nodes       Json
+  edges       Json
+  category    String
+  isGlobal    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("workflow_templates")
+}
+
+model SwipeTemplate {
+  id                  String   @id @default(cuid())
+  title               String
+  content             String
+  variables           String   @default("[]")
+  channel             String   @default("whatsapp")
+  category            String   @default("saudacao")
+  tone                String   @default("casual")
+  tier                String   @default("universal")
+  painType            String?
+  tags                String[] @default([])
+  timesUsed           Int      @default(0)
+  conversions         Int      @default(0)
+  convRate            Float    @default(0)
+  lastUsedAt          DateTime?
+  isAiGenerated       Boolean  @default(false)
+  provenByConversion  Boolean  @default(false)
+  createdBy           String?
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  usages              SwipeUsage[]
+
+  @@index([channel])
+  @@index([category])
+  @@index([tier])
+  @@index([painType])
+  @@index([convRate])
+  @@index([isActive])
+  @@map("swipe_templates")
+}
+
+model SwipeUsage {
+  id              String   @id @default(cuid())
+  swipeId         String
+  leadId          String
+  wasUsed         Boolean
+  converted       Boolean?
+  agentId         String?
+  responseTimeMs  Int?
+  feedback        String?
+  createdAt       DateTime @default(now())
+
+  swipe           SwipeTemplate @relation(fields: [swipeId], references: [id], onDelete: Cascade)
+  lead            Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@unique([swipeId, leadId])
+  @@index([swipeId])
+  @@index([leadId])
+  @@index([converted])
+  @@index([createdAt])
+  @@map("swipe_usages")
+}
+
+// ===== FINANCEIRO DOMAIN MODELS (nova geração) =====
+
+model FinanceiroInvoice {
+  id              String                    @id @default(cuid())
+  number          String?
+  propertyId      String
+  guestId         String
+  reservationId   String                    @unique
+  status          FinanceiroInvoiceStatus   @default(DRAFT)
+  totalAmount     Float                     @default(0)
+  paidAmount      Float                     @default(0)
+  dueDate         DateTime?
+  issuedAt        DateTime?
+  cancelledAt     DateTime?
+  cancelReason    String?
+  overdueAt       DateTime?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  items           FinanceiroInvoiceItem[]
+  payments        FinanceiroPayment[]
+  property        Property                  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("financeiro_invoices")
+}
+
+model FinanceiroInvoiceItem {
+  id            String              @id @default(cuid())
+  invoiceId     String
+  description   String
+  type          FinanceiroItemType  @default(ROOM)
+  quantity      Int                 @default(1)
+  unitPrice     Float               @default(0)
+  totalPrice    Float               @default(0)
+
+  invoice       FinanceiroInvoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("financeiro_invoice_items")
+}
+
+model FinanceiroPayment {
+  id                    String                @id @default(cuid())
+  invoiceId             String
+  propertyId            String
+  amount                Float                 @default(0)
+  method                FinanceiroPaymentMethod @default(PIX)
+  status                FinanceiroPaymentStatus @default(PENDING)
+  gatewayTransactionId  String?
+  failureReason         String?
+  processedAt           DateTime?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  pixTransaction        FinanceiroPixTransaction?
+  invoice               FinanceiroInvoice     @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  property              Property              @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("financeiro_payments")
+}
+
+model FinanceiroPixTransaction {
+  id            String                  @id @default(cuid())
+  paymentId     String                  @unique
+  pixKeyType    String
+  pixKeyValue   String
+  amount        Float                   @default(0)
+  description   String
+  qrCode        String                  @default("")
+  expiresAt     DateTime
+  endToEndId    String?                 @unique
+  status        FinanceiroPixStatus     @default(AWAITING_PAYMENT)
+  confirmedAt   DateTime?
+  createdAt     DateTime                @default(now())
+
+  payment       FinanceiroPayment       @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@map("financeiro_pix_transactions")
+}
+
+model FinanceiroAuditLog {
+  id          String    @id @default(cuid())
+  propertyId  String
+  action      String
+  amount      Float     @default(0)
+  currency    String    @default("BRL")
+  source      String
+  externalId  String?
+  metadata    String?
+  hash        String
+  createdAt   DateTime  @default(now())
+
+  @@index([propertyId, createdAt])
+  @@map("financeiro_audit_logs")
+}
+
+enum FinanceiroInvoiceStatus {
+  DRAFT
+  ISSUED
+  PARTIALLY_PAID
+  PAID
+  CANCELLED
+  OVERDUE
+}
+
+enum FinanceiroItemType {
+  ROOM
+  SERVICE
+  TAX
+  DISCOUNT
+  OTHER
+}
+
+enum FinanceiroPaymentStatus {
+  PENDING
+  PROCESSING
+  CONFIRMED
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum FinanceiroPaymentMethod {
+  PIX
+  CREDIT_CARD
+  DEBIT_CARD
+  CASH
+  BANK_TRANSFER
+}
+
+enum FinanceiroPixStatus {
+  AWAITING_PAYMENT
+  RECEIVED
+  CONFIRMED
+  EXPIRED
+  REFUNDED
+}
+
+// ===== TESTING INFRASTRUCTURE (ZehlaTestAgent) =====
+
+model TestRun {
+  id          String   @id @default(cuid())
+  type        String
+  status      String   @default("pending")
+  totalTests  Int      @default(0)
+  passed      Int      @default(0)
+  failed      Int      @default(0)
+  skipped     Int      @default(0)
+  passRate    Float    @default(0)
+  duration    Int      @default(0)
+  metadata    Json?
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+
+  results TestResult[]
+
+  @@map("test_runs")
+}
+
+model TestResult {
+  id          String   @id @default(cuid())
+  runId       String
+  testCaseId  String?
+  title       String
+  status      String
+  duration    Int      @default(0)
+  error       String?
+  retryCount  Int      @default(0)
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  run TestRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@index([status])
+  @@map("test_results")
+}
+
+model ComercialLead {
+  id               String              @id
+  canal            String
+  propriedadeId    String
+  dataCaptura      DateTime
+  nome             String?
+  email            String?
+  telefone         String?
+  documento        String?
+  documentoTipo    String?
+  score            Int?
+  status           String
+  origemUrl        String?
+  tags             String?
+  ultimaInteracao  DateTime?
+
+  propostas        ComercialProposta[]
+  conversoes       ComercialConversao[]
+
+  @@unique([email, propriedadeId])
+  @@unique([documento, propriedadeId])
+  @@index([propriedadeId])
+  @@map("comercial_leads")
+}
+
+model ComercialPacote {
+  id                         String              @id
+  propriedadeId              String
+  nome                       String
+  descricao                  String?
+  tipoQuarto                 String?
+  capacidadeMaxima           Int?
+  servicosInclusos           String?
+  status                     String
+  versao                     Int                 @default(1)
+  categorias                 String?
+  midias                     String?
+  regraTipo                  String
+  regraValorBase             Int
+  regraValorPorNoite         Int?
+  regraValorPorPessoa        Int?
+  regraAcrescimoPessoa       Float?
+  regraDescontoEstanciaLonga Float?
+  regraNoitesParaDesconto    Int?
+  regraSazonalidade          String?
+  validadeInicio             DateTime?
+  validadeFim                DateTime?
+
+  propostas                  ComercialProposta[]
+
+  @@index([propriedadeId])
+  @@map("comercial_pacotes")
+}
+
+model ComercialProposta {
+  id                 String              @id
+  leadId             String
+  propriedadeId      String
+  pacoteId           String
+  dataCriacao        DateTime
+  dataCheckIn        DateTime?
+  dataCheckOut       DateTime?
+  quantidadeHospedes Int?
+  valorTotal         Int?
+  valorSinal         Int?
+  descontoAplicado   Int?
+  status             String
+  validade           DateTime?
+  observacoes        String?
+  historicoVersoes   String?
+
+  lead               ComercialLead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  pacote             ComercialPacote     @relation(fields: [pacoteId], references: [id])
+  pagamentos         ComercialPagamento[]
+  conversoes         ComercialConversao[]
+
+  @@index([propriedadeId])
+  @@index([leadId])
+  @@index([pacoteId])
+  @@map("comercial_propostas")
+}
+
+model ComercialPagamento {
+  id                 String              @id
+  propostaId         String
+  propriedadeId      String
+  valor              Int
+  metodoPagamento    String?
+  transactionId      String?
+  dataCriacao        DateTime?
+  dataProcessamento  DateTime?
+  status             String
+  codigoAutorizacao  String?
+  mensagemRecusa     String?
+  observacoes        String?
+
+  proposta           ComercialProposta   @relation(fields: [propostaId], references: [id], onDelete: Cascade)
+  conversoes         ComercialConversao[]
+
+  @@index([propriedadeId])
+  @@index([propostaId])
+  @@map("comercial_pagamentos")
+}
+
+// ===== REVENUE DOMAIN MODELS (ZEHLA PRIME SB15) =====
+
+model RevenueRegraTarifaria {
+  id                String   @id
+  propriedadeId     String
+  tipoQuarto        String
+  tipo              String
+  valorDiaria       Int
+  breakEvenPoint    Json
+  canal             String
+  dataInicio        DateTime
+  dataFim           DateTime
+  valorAnterior     Int?
+  regraReajuste     String
+  parametrosReajuste Json
+  dataCriacao       DateTime @default(now())
+
+  @@index([propriedadeId, tipoQuarto])
+  @@index([propriedadeId, dataInicio, dataFim])
+  @@index([propriedadeId, canal])
+  @@map("revenue_regras_tarifarias")
+}
+
+model RevenueOcupacao {
+  id                       String   @id
+  propriedadeId            String
+  data                     DateTime
+  tipo                     String
+  totalQuartosDisponiveis  Int
+  totalQuartosOcupados     Int
+  totalReservasConfirmadas Int
+  totalReservasPendentes   Int
+  receitaEstimada          Int
+  dataCriacao              DateTime @default(now())
+
+  @@unique([propriedadeId, data])
+  @@index([propriedadeId, data])
+  @@map("revenue_ocupacoes")
+}
+
+model RevenueSazonalidade {
+  id                 String   @id
+  propriedadeId      String
+  nome               String
+  tipo               String
+  multiplicadorPreco Float
+  dataInicio         DateTime
+  dataFim            DateTime
+  recorrente         Boolean  @default(false)
+  diasMinimosEstadia Int?
+  regrasEspeciais    String[] @default([])
+
+  @@index([propriedadeId, dataInicio, dataFim])
+  @@index([propriedadeId, tipo])
+  @@map("revenue_sazonalidades")
+}
+
+model RevenueForecast {
+  id                  String   @id
+  propriedadeId       String
+  horizonte           Int
+  previsaoOcupacao    Json
+  previsaoReceita     Json
+  previsaoADR         Json
+  previsaoRevPAR      Json
+  confiancaMedia      Float
+  variancia           Float
+  dadosHistoricoInicio DateTime
+  dadosHistoricoFim   DateTime
+  assinaturaModelo    String
+  dataGeracao         DateTime @default(now())
+
+  @@index([propriedadeId, horizonte, dataGeracao])
+  @@index([propriedadeId, dataGeracao])
+  @@map("revenue_forecasts")
+}
+
+model ComercialConversao {
+  id                 String              @id
+  leadId             String
+  propostaId         String
+  propriedadeId      String
+  pagamentoId        String
+  dataConversao      DateTime?
+  dataConfirmacao    DateTime?
+  status             String
+  motivoCancelamento String?
+  observacoes        String?
+
+  lead               ComercialLead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  proposta           ComercialProposta   @relation(fields: [propostaId], references: [id], onDelete: Cascade)
+  pagamento          ComercialPagamento  @relation(fields: [pagamentoId], references: [id], onDelete: Cascade)
+
+  @@index([propriedadeId])
+  @@index([leadId])
+  @@index([propostaId])
+  @@index([pagamentoId])
+  @@map("comercial_conversoes")
+}
+

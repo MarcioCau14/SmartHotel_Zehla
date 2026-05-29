@@ -86,7 +86,7 @@ class GuardianAgent {
     this.isRunning = true;
 
     while (this.isRunning) {
-  // Lê do stream Redis (bloqueante por 5s)
+      try {
         const messages = await this.redis.xread(
           'BLOCK', 5000,
           'STREAMS', 'guardian:alerts', '$'
@@ -110,7 +110,7 @@ class GuardianAgent {
     }
   }
 
-  private async processAlert(alert: unknown) {
+  private async processAlert(alert: any) {
     const { alertType, tenantId, metadata } = alert;
     const rule = RULES.find(r => r.alertType === alertType);
       
@@ -158,7 +158,7 @@ class GuardianAgent {
     endTimer();
   }
 
-  private async executeActions(rule: GuardianRule, alert: unknown) {
+  private async executeActions(rule: GuardianRule, alert: any) {
     const { tenantId, metadata } = alert;
       
     for (const action of rule.actions) {
@@ -201,7 +201,8 @@ class GuardianAgent {
     await this.redis.setex(`isolate:tenant:${tenantId}`, 3600, '1');
     await this.updateIsolatedGauge();
       
-  await prisma.securityIncident.create({
+    try {
+      await prisma.securityIncident.create({
         data: {
           tenantId,
           type: 'TENANT_ISOLATED',
@@ -211,8 +212,6 @@ class GuardianAgent {
     } catch (e) {
       console.error('[Guardian] Failed to persist incident:', e);
     }
-
-    
   }
 
   private async updateIsolatedGauge() {
@@ -225,11 +224,12 @@ class GuardianAgent {
       required: 'MFA',
       expiresAt: Date.now() + 900000,
     }));
-     imposto ao IP ${ip}`);
+     console.log(`Desafio MFA imposto ao IP ${ip}`);
   }
 
-  private async persistAlert(alert: unknown, rule: GuardianRule) {
-  await prisma.securityAlert.create({
+  private async persistAlert(alert: any, rule: GuardianRule) {
+    try {
+      await prisma.securityAlert.create({
         data: {
           tenantId: alert.tenantId || 'global',
           alertType: alert.alertType,

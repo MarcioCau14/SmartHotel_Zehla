@@ -1,22 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { RoomControllerFactory } from '../../../infrastructure/http/room/RoomControllerFactory'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const propertyId = searchParams.get('propertyId')
+    const type = searchParams.get('type')
+    const status = searchParams.get('status')
+    const minCapacity = searchParams.get('minCapacity')
+    const search = searchParams.get('search')
 
     if (!propertyId) {
-      return NextResponse.json({ success: false, error: 'propertyId obrigatório' }, { status: 400 })
+      return NextResponse.json({ success: false, error: 'propertyId é obrigatório' }, { status: 400 })
     }
 
-    const rooms = await prisma.room.findMany({
-      where: { propertyId },
-      orderBy: { number: 'asc' }
+    const useCase = RoomControllerFactory.makeListRoomsUseCase()
+    const result = await useCase.execute({
+      propertyId,
+      type: type ?? undefined,
+      status: status ?? undefined,
+      minCapacity: minCapacity ? parseInt(minCapacity) : undefined,
+      search: search ?? undefined,
+      includeStats: true,
     })
 
-    return NextResponse.json({ success: true, data: rooms })
+    if (result.isFail) {
+      return NextResponse.json({ success: false, error: result.error }, { status: 400 })
+    }
+
+    return NextResponse.json({ success: true, data: result.value.rooms, stats: result.value.stats })
   } catch (error) {
+    console.error('Room list error:', error)
     return NextResponse.json({ success: false, error: 'Erro interno' }, { status: 500 })
   }
 }
@@ -24,9 +38,35 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const room = await prisma.room.create({ data: body })
-    return NextResponse.json({ success: true, data: room }, { status: 201 })
+    const { number, name, type, maxAdults, maxChildren, basePrice, pricingType, amenities, description, images, propertyId } = body
+
+    if (!number || !propertyId) {
+      return NextResponse.json({ success: false, error: 'number e propertyId são obrigatórios' }, { status: 400 })
+    }
+
+    const useCase = RoomControllerFactory.makeCreateRoomUseCase()
+    const result = await useCase.execute({
+      number,
+      name,
+      type,
+      maxAdults: maxAdults ?? 2,
+      maxChildren,
+      basePrice: basePrice ?? 0,
+      pricingType,
+      amenities,
+      description,
+      images,
+      propertyId,
+    })
+
+    if (result.isFail) {
+      const status = result.error.includes('existe') ? 409 : 400
+      return NextResponse.json({ success: false, error: result.error }, { status })
+    }
+
+    return NextResponse.json({ success: true, data: result.value }, { status: 201 })
   } catch (error) {
-    return NextResponse.json({ success: false, error: 'Erro ao criar quarto' }, { status: 500 })
+    console.error('Room create error:', error)
+    return NextResponse.json({ success: false, error: 'Erro interno' }, { status: 500 })
   }
 }
