@@ -124,8 +124,8 @@ export class ZeMarketerCognitiveService {
     tipo: string
     textoConteudo: string
     tom: string
-    dataInicio: Date
-    dataFim: Date
+    dataInicio: Date | string
+    dataFim: Date | string
     possuiPromiseFinanceira?: boolean
     promiseFinanceiraValidada?: boolean
   }): Promise<Result<{ dados: CampanhaCriada; handoff?: ZcpHandoffPackage }, Error>> {
@@ -148,6 +148,9 @@ export class ZeMarketerCognitiveService {
       })
     }
 
+    const dataInicioObj = typeof params.dataInicio === 'string' ? new Date(params.dataInicio) : params.dataInicio
+    const dataFimObj = typeof params.dataFim === 'string' ? new Date(params.dataFim) : params.dataFim
+
     const result = await this.criarCampanhaUC.execute({
       propriedadeId: params.propriedadeId,
       nome: params.nome,
@@ -155,8 +158,8 @@ export class ZeMarketerCognitiveService {
       tipo: params.tipo,
       textoConteudo: params.textoConteudo,
       tom: params.tom,
-      dataInicio: params.dataInicio,
-      dataFim: params.dataFim,
+      dataInicio: dataInicioObj,
+      dataFim: dataFimObj,
       possuiPromiseFinanceira: params.possuiPromiseFinanceira,
       promiseFinanceiraValidada: params.promiseFinanceiraValidada,
     })
@@ -179,8 +182,12 @@ export class ZeMarketerCognitiveService {
     texto: string
     tom: string
     midias?: string[]
-    dataAgendamento?: Date
+    dataAgendamento?: Date | string
   }): Promise<Result<{ dados: PostAgendado }, Error>> {
+    const dataAgendamentoObj = params.dataAgendamento
+      ? (typeof params.dataAgendamento === 'string' ? new Date(params.dataAgendamento) : params.dataAgendamento)
+      : undefined
+
     const result = await this.agendarPostUC.execute({
       propriedadeId: params.propriedadeId,
       canal: params.canal,
@@ -188,7 +195,7 @@ export class ZeMarketerCognitiveService {
       texto: params.texto,
       tom: params.tom,
       midias: params.midias,
-      dataAgendamento: params.dataAgendamento,
+      dataAgendamento: dataAgendamentoObj,
     })
     if (result.isFail) return Result.fail(new Error(translateError(result.error)))
 
@@ -203,13 +210,16 @@ export class ZeMarketerCognitiveService {
 
   private async handleCalcularMetricas(params: {
     propriedadeId: string
-    dataInicio: Date
-    dataFim: Date
+    dataInicio: Date | string
+    dataFim: Date | string
   }): Promise<Result<{ dados: MetricasCalculadas }, Error>> {
+    const dataInicioObj = typeof params.dataInicio === 'string' ? new Date(params.dataInicio) : params.dataInicio
+    const dataFimObj = typeof params.dataFim === 'string' ? new Date(params.dataFim) : params.dataFim
+
     const result = await this.calcularMetricasUC.execute({
       propriedadeId: params.propriedadeId,
-      dataInicio: params.dataInicio,
-      dataFim: params.dataFim,
+      dataInicio: dataInicioObj,
+      dataFim: dataFimObj,
     })
     if (result.isFail) return Result.fail(new Error(translateError(result.error)))
 
@@ -228,11 +238,13 @@ export class ZeMarketerCognitiveService {
     hospedeNome: string
     nota: number
     texto: string
-    dataEstadia: Date
+    dataEstadia: Date | string
     quartoId?: string
   }): Promise<Result<{ dados: WebhookProcessado; handoff?: ZcpHandoffPackage }, Error>> {
     const sentimentoCheck = Sentimento.criar(params.nota)
     if (sentimentoCheck.isFail) return Result.fail(new Error(translateError(sentimentoCheck.error)))
+
+    const dataEstadiaObj = typeof params.dataEstadia === 'string' ? new Date(params.dataEstadia) : params.dataEstadia
 
     const result = await this.processarWebhookUC.execute({
       propriedadeId: params.propriedadeId,
@@ -240,7 +252,7 @@ export class ZeMarketerCognitiveService {
       hospedeNome: params.hospedeNome,
       nota: params.nota,
       texto: params.texto,
-      dataEstadia: params.dataEstadia,
+      dataEstadia: dataEstadiaObj,
       quartoId: params.quartoId,
     })
     if (result.isFail) return Result.fail(new Error(translateError(result.error)))
