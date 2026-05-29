@@ -101,6 +101,7 @@ model Property {
   website             String?
   pixKey              String?
   pixKeyType          PixKeyType?
+  voiceTokensUsed     Int                 @default(0)
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
   isCanary            Boolean             @default(false)
@@ -383,6 +384,8 @@ enum Plan {
   LITE
   PRO
   MAX
+  BETA_TESTER
+  EARLY_ADOPTER
 }
 
 enum WhatsappChannelType {
@@ -1645,6 +1648,9 @@ model BlastInstance {
   sentToday    Int      @default(0)
   lastResetAt  DateTime @default(now())
   propertyId   String?
+  bannedAt     DateTime?
+  warmupStage  Int      @default(0)
+  sentThisHour Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -1697,19 +1703,23 @@ model BlastMessage {
 }
 
 model BlastContact {
-  id          String   @id @default(cuid())
-  phone       String
-  name        String?
-  email       String?
-  pousadaName String?
-  city        String?
-  state       String?
-  group       String?
-  optedOut    Boolean  @default(false)
-  optedOutAt  DateTime?
-  propertyId  String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String    @id @default(cuid())
+  phone          String    @unique
+  name           String?
+  email          String?
+  pousadaName    String?
+  city           String?
+  state          String?
+  group          String?
+  optedOut       Boolean   @default(false)
+  optedOutAt     DateTime?
+  optedOutReason String?
+  optIn          Boolean   @default(true)
+  optInSource    String?   @default("csv_import")
+  optInDate      DateTime? @default(now())
+  propertyId     String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@unique([phone, propertyId])
   @@index([phone])
@@ -1722,12 +1732,18 @@ model BlastContact {
 // ============================================================
 
 model TrendSignal {
-  id          String   @id @default(cuid())
-  type        String   // climate, demand, competitor
-  region      String?
-  data        Json
-  validUntil  DateTime
-  createdAt   DateTime @default(now())
+  id            String   @id @default(cuid())
+  type          String   // climate, demand, competitor
+  region        String?
+  data          Json
+  geo           String?
+  keyword       String   @default("")
+  interestScore Int      @default(0)
+  category      String   @default("")
+  deltaPercent  Float    @default(0.0)
+  dateDetected  DateTime @default(now())
+  validUntil    DateTime
+  createdAt     DateTime @default(now())
 
   @@index([type, region])
   @@map("trend_signals")
@@ -1740,6 +1756,8 @@ model WeatherSignal {
   condition   String   // sunny, rainy, cloudy
   tempMax     Float?
   tempMin     Float?
+  impactScore Int      @default(0)
+  dateRange   String?  @default("")
   validUntil  DateTime
   createdAt   DateTime @default(now())
 
@@ -1754,6 +1772,7 @@ model HolidaySignal {
   type        String   @default("national") // national, regional, local
   state       String?
   city        String?
+  daysUntil   Int      @default(0)
   createdAt   DateTime @default(now())
 
   @@index([date])
@@ -1788,6 +1807,7 @@ model VoicePrint {
   propertyId  String   @unique
   property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   modelId     String?  // ElevenLabs voice ID
+  modelType   String?  @default("F5_TTS")
   voiceData   Json?    // Embeddings e parâmetros
   trainingLogs Json?
   status      String   @default("pending") // pending, training, ready, failed
@@ -1795,4 +1815,90 @@ model VoicePrint {
   updatedAt   DateTime @updatedAt
 
   @@map("voice_prints")
+}
+
+model StripeConfig {
+  id               String   @id @default(cuid())
+  propertyId       String   @unique
+  stripeAccountId  String?  @unique
+  chargesEnabled   Boolean  @default(false)
+  detailsSubmitted Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("stripe_configs")
+}
+
+// ============================================================
+// ZEHLA ZMG — Zehla Messaging Gateway
+// ============================================================
+
+model ContactProfile {
+  id                 String   @id @default(cuid())
+  propertyId         String
+  phone              String   @unique
+  name               String?
+  whatsappAvailable  Boolean  @default(false)
+  smsAvailable       Boolean  @default(false)
+  instagramAvailable Boolean  @default(false)
+  lineType           String?
+  carrierName        String?
+  email              String?
+  emailAvailable     Boolean  @default(false)
+  normalizedPhone    String?
+  city               String?
+  state              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  zmgMessages        ZMGMessage[]
+
+  @@map("contact_profiles")
+}
+
+model ZMGMessage {
+  id                String   @id @default(cuid())
+  propertyId        String
+  agentSource       String
+  messageType       String
+  objective         String?
+  recipientPhone    String?
+  recipientEmail    String?
+  recipientName     String?
+  status            String   @default("QUEUED")
+  primaryChannel    String   @default("whatsapp")
+  content           String   @db.Text
+  variables         Json?
+  trendSignalId     String?
+  swipeTemplateId   String?
+  reservationId     String?
+  sentChannel       String?
+  channelCost       Float?
+  fallbackUsed      Boolean  @default(false)
+  fallbackChannel   String?
+  renderedContent   String?  @db.Text
+  sentAt            DateTime?
+  externalMessageId String?
+  failureReason     String?  @db.Text
+  
+  contactProfileId  String?
+  contact           ContactProfile? @relation(fields: [contactProfileId], references: [id], onDelete: SetNull)
+
+  activities        ZMGActivity[]
+
+  @@map("zmg_messages")
+}
+
+model ZMGActivity {
+  id        String   @id @default(cuid())
+  messageId String
+  message   ZMGMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  event     String
+  channel   String?
+  response  String?  @db.Text
+  provider  String?
+  status    String?
+  createdAt DateTime @default(now())
+
+  @@map("zmg_activities")
 }

@@ -25,7 +25,7 @@ export class VoiceSynthesisRouter {
       orderBy: { createdAt: 'desc' }
     });
 
-    const modelToUse = voicePrint ? voicePrint.modelType : 'F5_TTS'; // Fallback para F5-TTS
+    const modelToUse = voicePrint?.modelType || 'F5_TTS'; // Fallback para F5-TTS
     
     console.log(`[VoiceRouter] Modelo Selecionado: ${modelToUse}. (Voz Proprietária: ${voicePrint ? 'SIM' : 'NÃO'})`);
 

@@ -91,7 +91,7 @@ export async function launchCampaign(campaignId: string) {
       console.log(`⏳ [BLAST] Lote concluído. Aplicando pausa de ${batchPause / 60000} min.`);
     }
 
-    await blastProcessQueue.add(
+    await blastProcessQueue!.add(
       'send-message',
       {
         messageId: msg.id,

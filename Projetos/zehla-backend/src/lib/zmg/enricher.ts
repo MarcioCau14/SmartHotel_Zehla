@@ -104,7 +104,7 @@ export class ZMGEnricher {
   static async enrichContext(contact: ContactProfile, variables: Record<string, string>): Promise<Record<string, string>> {
     const trends = await this.getRelevantTrends(contact);
     
-    let enriched = {
+    let enriched: Record<string, string> = {
       ...variables,
       NOME: contact.name || 'Proprietário(a)'
     };

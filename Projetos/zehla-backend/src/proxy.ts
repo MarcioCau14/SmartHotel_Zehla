@@ -92,7 +92,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const ip = request.ip ?? request.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown';
+  const ip = (request as any).ip ?? request.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown';
   const tenantId = request.headers.get('x-tenant-id') || 'global';
 
   // 0. Circuit Breaker Automático (Guardian Agent) - Resiliente a falha de conexão
