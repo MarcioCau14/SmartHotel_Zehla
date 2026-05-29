@@ -2499,6 +2499,83 @@ model ComercialPagamento {
   @@map("comercial_pagamentos")
 }
 
+// ===== REVENUE DOMAIN MODELS (ZEHLA PRIME SB15) =====
+
+model RevenueRegraTarifaria {
+  id                String   @id
+  propriedadeId     String
+  tipoQuarto        String
+  tipo              String
+  valorDiaria       Int
+  breakEvenPoint    Json
+  canal             String
+  dataInicio        DateTime
+  dataFim           DateTime
+  valorAnterior     Int?
+  regraReajuste     String
+  parametrosReajuste Json
+  dataCriacao       DateTime @default(now())
+
+  @@index([propriedadeId, tipoQuarto])
+  @@index([propriedadeId, dataInicio, dataFim])
+  @@index([propriedadeId, canal])
+  @@map("revenue_regras_tarifarias")
+}
+
+model RevenueOcupacao {
+  id                       String   @id
+  propriedadeId            String
+  data                     DateTime
+  tipo                     String
+  totalQuartosDisponiveis  Int
+  totalQuartosOcupados     Int
+  totalReservasConfirmadas Int
+  totalReservasPendentes   Int
+  receitaEstimada          Int
+  dataCriacao              DateTime @default(now())
+
+  @@unique([propriedadeId, data])
+  @@index([propriedadeId, data])
+  @@map("revenue_ocupacoes")
+}
+
+model RevenueSazonalidade {
+  id                 String   @id
+  propriedadeId      String
+  nome               String
+  tipo               String
+  multiplicadorPreco Float
+  dataInicio         DateTime
+  dataFim            DateTime
+  recorrente         Boolean  @default(false)
+  diasMinimosEstadia Int?
+  regrasEspeciais    String[] @default([])
+
+  @@index([propriedadeId, dataInicio, dataFim])
+  @@index([propriedadeId, tipo])
+  @@map("revenue_sazonalidades")
+}
+
+model RevenueForecast {
+  id                  String   @id
+  propriedadeId       String
+  horizonte           Int
+  previsaoOcupacao    Json
+  previsaoReceita     Json
+  previsaoADR         Json
+  previsaoRevPAR      Json
+  confiancaMedia      Float
+  variancia           Float
+  dadosHistoricoInicio DateTime
+  dadosHistoricoFim   DateTime
+  assinaturaModelo    String
+  dataGeracao         DateTime @default(now())
+
+  @@index([propriedadeId, horizonte, dataGeracao])
+  @@index([propriedadeId, dataGeracao])
+  @@map("revenue_forecasts")
+}
+
 model ComercialConversao {
   id                 String              @id
   leadId             String
