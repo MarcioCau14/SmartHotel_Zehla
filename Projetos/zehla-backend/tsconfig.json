@@ -30,5 +30,19 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "temp_api", "scratch"]
+  "exclude": [
+    "node_modules",
+    "temp_api",
+    "scratch",
+    "BLUEPRINTS",
+    "INFRA",
+    "INTELLIGENCE/ARCHIVE",
+    "automation/recipes",
+    "packages/chrome-extension",
+    "prisma/seed.ts",
+    "prisma/seed-trends.ts",
+    "prisma/seed",
+    "scripts",
+    "tests/xtress"
+  ]
 }

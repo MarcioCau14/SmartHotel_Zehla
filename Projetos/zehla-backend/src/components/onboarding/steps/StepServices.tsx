@@ -28,9 +28,9 @@ const services = [
 
 export function StepServices({ data, onChange }: StepServicesProps) {
   const toggleService = (id: string) => {
-    const newSelected = data.selected.includes(id) ? useMemo(() =>
-    data.selected.filter((s) => s !== id), []) :
-    [...data.selected, id];
+    const newSelected = data.selected.includes(id)
+      ? data.selected.filter((s) => s !== id)
+      : [...data.selected, id];
     onChange({ selected: newSelected });
   };
 

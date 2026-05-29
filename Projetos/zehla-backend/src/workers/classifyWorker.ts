@@ -20,7 +20,7 @@ export const classifyWorker = new Worker(
       where: { id: leadId },
       select: {
         id: true, score: true, conversionScore: true, cluster: true,
-        funnelStage: true, email: true, name: true,
+        funnelStage: true, email: true, name: true, previousCluster: true,
       },
     });
 
@@ -36,7 +36,7 @@ export const classifyWorker = new Worker(
     });
 
     // 3. Recalcular score total (soma de todos os scoreImpact)
-    const newConversionScore = allEvents.reduce((sum, evt) => sum + evt.scoreImpact, 0);
+    const newConversionScore = allEvents.reduce((sum: number, evt: { scoreImpact: number; type: string }) => sum + evt.scoreImpact, 0);
 
     // 4. Determinar novo cluster
     const previousCluster = (lead.cluster || 'COLD') as Cluster;
@@ -81,6 +81,7 @@ export const classifyWorker = new Worker(
       profile,
     };
 
+    console.log(
       `[Classify] Lead ${lead.email}: ${lead.conversionScore} (${previousCluster}) ` +
       `→ ${newConversionScore} (${newCluster})${clusterChanged ? ' *** TRANSIÇÃO ***' : ''}`
     );
@@ -107,7 +108,7 @@ export const classifyWorker = new Worker(
 
 // Detecção de perfil comportamental (reaproveitando lógica do LeadIntelligenceEngine)
 function detectBehaviorProfile(events: { type: string }[]): string {
-const types = events.map(e => e.type);
+  const types = events.map(e => e.type);
   const hasFastResponse = types.includes('WHATSAPP_REPLY');
   const clickCount = types.filter(t => t === 'LINK_CLICK').length;
   const hasTrial = types.includes('TRIAL_STARTED');
@@ -121,7 +122,7 @@ const types = events.map(e => e.type);
 
 // Detecção de estágio do funil
 function detectFunnelStage(events: { type: string }[]): string {
-const types = events.map(e => e.type);
+  const types = events.map(e => e.type);
   if (types.includes('CONVERSION') || types.includes('PAYMENT_MADE')) return 'CONVERTED';
   if (types.includes('TRIAL_STARTED')) return 'TRIAL';
   if (types.includes('WHATSAPP_REPLY')) return 'ENGAGED';

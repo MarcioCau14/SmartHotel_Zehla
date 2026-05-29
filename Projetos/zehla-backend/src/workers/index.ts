@@ -43,10 +43,12 @@ async function shutdown(signal: string) {
   
 
   const closePromises = workers.map(async ({ name, worker }) => {
-  await worker.close();
-      
+    try {
+      await worker.close();
+      console.log(`  ✅ [${name}] encerrado com sucesso`);
     } catch (err: unknown) {
-      console.error(`  ❌ [${name}] Erro ao encerrar:`, err.message);
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`  ❌ [${name}] Erro ao encerrar:`, msg);
     }
   });
 

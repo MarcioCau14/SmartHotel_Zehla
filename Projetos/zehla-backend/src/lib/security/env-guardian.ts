@@ -186,7 +186,7 @@ export class RuntimeGuardian {
 let instance: RuntimeGuardian | null = null;
 
 export function getEnvGuardian(): RuntimeGuardian {
-if (!instance) {
+  if (!instance) {
     instance = new RuntimeGuardian();
   }
   return instance;
@@ -200,10 +200,11 @@ export function secureLog(...args: unknown[]): void {
   const masked = args.map(arg => {
     if (typeof arg === 'string') return guardian.mask(arg);
     if (arg instanceof Error) return guardian.mask(arg.message);
-  return guardian.mask(JSON.stringify(arg));
+    try {
+      return guardian.mask(JSON.stringify(arg));
     } catch {
       return String(arg);
     }
   });
-  
+  console.log(...masked);
 }

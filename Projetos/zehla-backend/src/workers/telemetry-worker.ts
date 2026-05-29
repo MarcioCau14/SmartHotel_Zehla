@@ -53,7 +53,7 @@ export const telemetryWorker = new Worker(
 );
 
 // Schedule the job (Run every hour)
-export async function scheduleTelemetry() : void {
+export async function scheduleTelemetry(): Promise<void> {
   const jobs = await telemetryQueue.getRepeatableJobs();
   
   // Clean existing repeatable jobs to avoid duplicates during dev

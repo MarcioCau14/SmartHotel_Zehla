@@ -13,9 +13,8 @@ export const scraperWorker = new Worker(
   async (job: Job) => {
     const { leadId, url } = job.data;
 
-    
-
-  const scrapedData = await scraperService.deepScrape(url);
+    try {
+      const scrapedData = await scraperService.deepScrape(url);
 
       if (Object.keys(scrapedData).length === 0) {
         console.warn(`⚠️ [Scraper 2.0] Nenhum dado extraído para ${url}`);
@@ -37,11 +36,11 @@ export const scraperWorker = new Worker(
           buyingBehavior: scrapedData.buyingBehavior || undefined,
           intentSignals: scrapedData.intentSignals || undefined,
           validationStatus: 'ENRICHED_2.0',
-          validationScore: 100, // Upgrade para Score Máximo após Deep Scrape
+          validationScore: 100,
         },
       });
 
-      
+      console.log(`✅ [Scraper 2.0] Lead ${leadId} enriquecido:`, updatedLead.id);
 
       return { 
         status: 'success', 
@@ -49,7 +48,8 @@ export const scraperWorker = new Worker(
         fieldsUpdated: Object.keys(scrapedData).filter(k => scrapedData[k as keyof typeof scrapedData]).length 
       };
     } catch (error: unknown) {
-      console.error(`❌ [Scraper 2.0] Falha crítica no worker:`, error.message);
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error(`❌ [Scraper 2.0] Falha crítica no worker:`, msg);
       throw error;
     }
   },

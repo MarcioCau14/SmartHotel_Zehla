@@ -66,7 +66,8 @@ export async function proxy(request: NextRequest) : void {
       return NextResponse.redirect(new URL('/zcc-login', request.url));
     }
 
-  const { payload } = await jwtVerify(token, SECRET_KEY, { clockTolerance: 60 });
+    try {
+      const { payload } = await jwtVerify(token, SECRET_KEY, { clockTolerance: 60 });
       
       if (payload.role !== 'SUPER_ADMIN') {
         const url = request.nextUrl.clone();

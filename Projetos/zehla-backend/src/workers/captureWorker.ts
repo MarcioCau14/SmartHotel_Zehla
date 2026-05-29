@@ -19,7 +19,8 @@ export const captureWorker = new Worker(
 
     // 1. Rate Limiting via Redis
     const rateLimitKey = `brain:rate:${email}`;
-  const current = await redis.incr(rateLimitKey);
+    try {
+      const current = await redis.incr(rateLimitKey);
       if (current === 1) {
         await redis.expire(rateLimitKey, RATE_LIMIT_WINDOW);
       }

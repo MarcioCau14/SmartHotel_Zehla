@@ -157,6 +157,8 @@ model Property {
   cadasturRecord    CadasturRecord?   @relation("PropertyCadasturRecord")
   pushSubscriptions PushSubscription[]
   billingLogs       BillingLog[]
+  voicePrint        VoicePrint?
+  businessTelemetry BusinessTelemetry[]
 
   @@map("properties")
 }
@@ -377,6 +379,7 @@ enum PropertyStatus {
 }
 
 enum Plan {
+  FREE
   LITE
   PRO
   MAX
@@ -520,6 +523,7 @@ model Lead {
   objectKeywords        String? @db.Text
   recommendedPitch      String? @db.Text
   leadTier              String  @default("COLD")
+  events                LeadEvent[]
 
   @@map("leads")
 }
@@ -1589,4 +1593,206 @@ model AutoConfigLog {
   @@index([propertyId, status])
   @@index([propertyId, createdAt])
   @@map("auto_config_logs")
+}
+
+// ============================================================
+// ZEHLA BRAIN v4 — Lead Event Pipeline
+// ============================================================
+
+enum LeadEventType {
+  EMAIL_OPEN
+  LINK_CLICK
+  LANDING_VISIT
+  WHATSAPP_OPEN
+  WHATSAPP_REPLY
+  AD_VIEW
+  TRIAL_STARTED
+  PAYMENT_MADE
+  CONVERSION
+}
+
+model LeadEvent {
+  id          String         @id @default(cuid())
+  leadId      String
+  lead        Lead           @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  type        LeadEventType
+  scoreImpact Int            @default(0)
+  dedupHash   String?        @unique
+  sessionId   String?
+  fingerprint String?
+  eventSource String         @default("api")
+  status      String         @default("pending") // pending, validated, enriched, classified, acted
+  metadata    Json?
+  timestamp   DateTime       @default(now())
+
+  @@index([leadId, status])
+  @@index([dedupHash])
+  @@index([timestamp])
+  @@map("lead_events")
+}
+
+// ============================================================
+// ZEHLA BLAST — WhatsApp Bulk Messenger Engine
+// ============================================================
+
+model BlastInstance {
+  id           String   @id @default(cuid())
+  name         String
+  phone        String
+  status       String   @default("disconnected") // connected, disconnected, warming
+  warmupLevel  Int      @default(0) // 0-100
+  dailyLimit   Int      @default(100)
+  sentToday    Int      @default(0)
+  lastResetAt  DateTime @default(now())
+  propertyId   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  campaigns    BlastCampaign[]
+  messages     BlastMessage[]
+
+  @@index([status])
+  @@map("blast_instances")
+}
+
+model BlastCampaign {
+  id          String    @id @default(cuid())
+  name        String
+  status      String    @default("draft") // draft, active, paused, completed, failed
+  mediaType   String?   // image, video, document, null=text
+  config      Json?     // { delayMsg, batchSize, batchPause, jitter }
+  startedAt   DateTime?
+  completedAt DateTime?
+  propertyId  String?
+  instanceId  String?
+  instance    BlastInstance? @relation(fields: [instanceId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  messages    BlastMessage[]
+
+  @@index([status])
+  @@index([propertyId])
+  @@map("blast_campaigns")
+}
+
+model BlastMessage {
+  id              String   @id @default(cuid())
+  campaignId      String
+  campaign        BlastCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  instanceId      String?
+  instance        BlastInstance? @relation(fields: [instanceId], references: [id])
+  contactPhone    String
+  renderedMessage String   @db.Text
+  mediaUrl        String?
+  status          String   @default("pending") // pending, sent, delivered, failed, opted_out
+  failedReason    String?
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([campaignId, status])
+  @@index([contactPhone])
+  @@map("blast_messages")
+}
+
+model BlastContact {
+  id          String   @id @default(cuid())
+  phone       String
+  name        String?
+  email       String?
+  pousadaName String?
+  city        String?
+  state       String?
+  group       String?
+  optedOut    Boolean  @default(false)
+  optedOutAt  DateTime?
+  propertyId  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([phone, propertyId])
+  @@index([phone])
+  @@index([propertyId, optedOut])
+  @@map("blast_contacts")
+}
+
+// ============================================================
+// ZEHLA INTELLIGENCE — Signal Models
+// ============================================================
+
+model TrendSignal {
+  id          String   @id @default(cuid())
+  type        String   // climate, demand, competitor
+  region      String?
+  data        Json
+  validUntil  DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([type, region])
+  @@map("trend_signals")
+}
+
+model WeatherSignal {
+  id          String   @id @default(cuid())
+  city        String
+  state       String?
+  condition   String   // sunny, rainy, cloudy
+  tempMax     Float?
+  tempMin     Float?
+  validUntil  DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([city])
+  @@map("weather_signals")
+}
+
+model HolidaySignal {
+  id          String   @id @default(cuid())
+  name        String
+  date        DateTime
+  type        String   @default("national") // national, regional, local
+  state       String?
+  city        String?
+  createdAt   DateTime @default(now())
+
+  @@index([date])
+  @@map("holiday_signals")
+}
+
+model BusinessTelemetry {
+  id               String   @id @default(cuid())
+  propertyId       String
+  property         Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  periodStart      DateTime
+  periodEnd        DateTime
+  occupancyRate    Float    @default(0)
+  adr              Float    @default(0)  // Average Daily Rate
+  revpar           Float    @default(0)  // Revenue Per Available Room
+  totalRevenue     Float    @default(0)
+  directBookings   Int      @default(0)
+  otaBookings      Int      @default(0)
+  cancellations    Int      @default(0)
+  createdAt        DateTime @default(now())
+
+  @@index([propertyId, periodStart])
+  @@map("business_telemetry")
+}
+
+// ============================================================
+// ZEHLA VOICE — Voice Cloning & Synthesis
+// ============================================================
+
+model VoicePrint {
+  id          String   @id @default(cuid())
+  propertyId  String   @unique
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  modelId     String?  // ElevenLabs voice ID
+  voiceData   Json?    // Embeddings e parâmetros
+  trainingLogs Json?
+  status      String   @default("pending") // pending, training, ready, failed
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("voice_prints")
 }
