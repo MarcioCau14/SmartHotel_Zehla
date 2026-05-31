@@ -1,22 +1,33 @@
 'use client';
 
-import { Check, ArrowRight, Sparkles, Crown, Zap, Star, X } from 'lucide-react';
+import { Check, ArrowRight, Sparkles, X } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { getMonthlyPrice } from '@/domain/plan/pricing';
+import { getPlanConfig } from '@/domain/plan/entitlements';
+import type { PlanType, PlanConfig } from '@/domain/plan/types';
 
-interface PlanFeature {
+type PlanDisplay = {
+  id: PlanType;
+  displayName: string;
+  period: string;
+  badge: string;
+  badgeColor: string;
+  cta: string;
+  href: string;
+  gradient: string;
+  shadow: string;
+  highlight: boolean;
+};
+
+interface FeatureDef {
   name: string;
-  free: boolean | string;
-  lite: boolean | string;
-  pro: boolean | string;
-  max: boolean | string;
+  getValue: (config: PlanConfig) => boolean | string;
 }
 
-const PLANS = [
-  {
-    id: 'free',
-    name: 'Grátis',
-    price: '0',
+const PLAN_UI: Record<PlanType, Omit<PlanDisplay, 'id'>> = {
+  FREE: {
+    displayName: 'Grátis',
     period: '/mês',
     badge: 'Comece Agora',
     badgeColor: 'text-neutral-400 border-neutral-600',
@@ -26,10 +37,8 @@ const PLANS = [
     shadow: 'shadow-neutral-500/10',
     highlight: false,
   },
-  {
-    id: 'lite',
-    name: 'Lite',
-    price: '248',
+  LITE: {
+    displayName: 'Lite',
     period: '/mês',
     badge: 'Taxa Zero',
     badgeColor: 'text-emerald-400 border-emerald-400/20 bg-emerald-400/10',
@@ -39,10 +48,8 @@ const PLANS = [
     shadow: 'shadow-orange-500/20',
     highlight: false,
   },
-  {
-    id: 'pro',
-    name: 'PRO',
-    price: '448',
+  PRO: {
+    displayName: 'PRO',
     period: '/mês',
     badge: 'Mais Escolhido',
     badgeColor: 'text-orange-500 border-orange-500/20 bg-orange-500/10',
@@ -52,10 +59,8 @@ const PLANS = [
     shadow: 'shadow-orange-500/30',
     highlight: true,
   },
-  {
-    id: 'max',
-    name: 'MAX',
-    price: '798',
+  MAX: {
+    displayName: 'MAX',
     period: '/mês',
     badge: 'Melhor Custo-Benefício',
     badgeColor: 'text-emerald-400 border-emerald-400/20 bg-emerald-400/10',
@@ -65,24 +70,61 @@ const PLANS = [
     shadow: 'shadow-emerald-400/20',
     highlight: false,
   },
-];
+};
 
-const FEATURES: PlanFeature[] = [
-  { name: 'Perfil da Pousada', free: true, lite: true, pro: true, max: true },
-  { name: 'Linktree ZEHLA (Link da Bio)', free: true, lite: true, pro: true, max: true },
-  { name: 'Link Direto para Instagram', free: true, lite: true, pro: true, max: true },
-  { name: 'Link Direto para WhatsApp', free: true, lite: true, pro: true, max: true },
-  { name: 'Atendente Inteligente 24h', free: '50 msg/mês', lite: 'Ilimitado', pro: 'Ilimitado', max: 'Ilimitado' },
-  { name: 'Taxa por Reserva', free: '5%', lite: 'TAXA ZERO', pro: 'TAXA ZERO', max: 'TAXA ZERO' },
-  { name: 'Agenda de Reservas', free: false, lite: 'Celular', pro: 'Completa', max: 'Completa' },
-  { name: 'Recebimento via PIX', free: false, lite: 'Direto', pro: 'Direto', max: 'Direto' },
-  { name: 'Preços Inteligentes (IA)', free: false, lite: false, pro: true, max: true },
-  { name: 'Recuperação de Vendas', free: false, lite: false, pro: true, max: true },
-  { name: 'Promoções Automáticas IA', free: false, lite: false, pro: true, max: true },
-  { name: 'Suporte', free: 'Comunidade', lite: 'Email', pro: 'WhatsApp VIP', max: 'Engenharia 24/7' },
-  { name: 'Multi-Hotel (Redes)', free: false, lite: false, pro: false, max: true },
-  { name: 'Relatórios e Analytics', free: 'Básico', lite: 'Básico', pro: 'Avançado', max: 'Profissional' },
-  { name: 'Consultoria de Resultados', free: false, lite: false, pro: false, max: 'Mensal' },
+const PLANS: PlanDisplay[] = (['FREE', 'LITE', 'PRO', 'MAX'] as PlanType[]).map(id => ({
+  id,
+  ...PLAN_UI[id],
+}));
+
+const FEATURE_DEFS: FeatureDef[] = [
+  { name: 'Perfil da Pousada', getValue: () => true },
+  { name: 'Linktree ZEHLA (Link da Bio)', getValue: () => true },
+  { name: 'Link Direto para Instagram', getValue: () => true },
+  { name: 'Link Direto para WhatsApp', getValue: () => true },
+  {
+    name: 'Atendente Inteligente 24h',
+    getValue: (c) => (c.aiMessagesLimit === 'ilimitado' ? 'Ilimitado' : `${c.aiMessagesLimit} msg/mês`),
+  },
+  {
+    name: 'Taxa por Reserva',
+    getValue: (c) => (c.commissionRate === 0 ? 'TAXA ZERO' : `${c.commissionRate * 100}%`),
+  },
+  {
+    name: 'Agenda de Reservas',
+    getValue: (c) => (c.name === 'FREE' ? false : c.name === 'LITE' ? 'Celular' : 'Completa'),
+  },
+  {
+    name: 'Recebimento via PIX',
+    getValue: (c) => (c.name === 'FREE' ? false : 'Direto'),
+  },
+  { name: 'Preços Inteligentes (IA)', getValue: (c) => c.supportsSmartPricing },
+  { name: 'Recuperação de Vendas', getValue: (c) => c.supportsSalesRecovery },
+  {
+    name: 'Promoções Automáticas IA',
+    getValue: (c) => !(c.name === 'FREE' || c.name === 'LITE'),
+  },
+  {
+    name: 'Suporte',
+    getValue: (c) =>
+      c.supportLevel === 'comunidade'
+        ? 'Comunidade'
+        : c.supportLevel === 'email'
+          ? 'Email'
+          : c.supportLevel === 'whatsapp_vip'
+            ? 'WhatsApp VIP'
+            : 'Engenharia 24/7',
+  },
+  { name: 'Multi-Hotel (Redes)', getValue: (c) => c.supportsMultiHotel },
+  {
+    name: 'Relatórios e Analytics',
+    getValue: (c) =>
+      c.reportLevel === 'basico' ? 'Básico' : c.reportLevel === 'avancado' ? 'Avançado' : 'Profissional',
+  },
+  {
+    name: 'Consultoria de Resultados',
+    getValue: (c) => (c.name === 'MAX' ? 'Mensal' : false),
+  },
 ];
 
 function CheckIcon({ value }: { value: boolean | string }) {
@@ -96,7 +138,7 @@ export function PricingTable() {
     <section className="max-w-7xl mx-auto px-4 py-24">
       <div className="text-center mb-16">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/5 text-[10px] font-black tracking-[0.2em] text-neutral-400 uppercase mb-5">
-          <Star className="w-3.5 h-3.5" />
+          <Sparkles className="w-3.5 h-3.5" />
           COMPARE OS PLANOS
         </div>
         <h2 className="text-3xl md:text-4xl font-bold">
@@ -107,49 +149,50 @@ export function PricingTable() {
         </p>
       </div>
 
-      {/* Cards */}
       <div className="grid md:grid-cols-4 gap-4 mb-12">
-        {PLANS.map((plan, idx) => (
-          <motion.div
-            key={plan.id}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: idx * 0.1 }}
-            className={`relative rounded-[2rem] p-6 md:p-8 border ${plan.highlight ? 'border-orange-500/30 bg-neutral-900' : 'border-white/5 bg-neutral-900/50'} ${plan.highlight ? 'ring-1 ring-orange-500/20' : ''}`}
-          >
-            {plan.highlight && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 text-white text-[8px] font-black uppercase tracking-[0.2em] shadow-xl shadow-orange-500/30">
-                + VENDIDO
-              </div>
-            )}
+        {PLANS.map((plan, idx) => {
+          const price = getMonthlyPrice(plan.id);
+          return (
+            <motion.div
+              key={plan.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.1 }}
+              className={`relative rounded-[2rem] p-6 md:p-8 border ${plan.highlight ? 'border-orange-500/30 bg-neutral-900' : 'border-white/5 bg-neutral-900/50'} ${plan.highlight ? 'ring-1 ring-orange-500/20' : ''}`}
+            >
+              {plan.highlight && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 text-white text-[8px] font-black uppercase tracking-[0.2em] shadow-xl shadow-orange-500/30">
+                  + VENDIDO
+                </div>
+              )}
 
-            <div className="text-center mb-6 mt-2">
-              <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[8px] font-bold uppercase tracking-wider ${plan.badgeColor}`}>
-                <Sparkles className="w-2.5 h-2.5" />
-                {plan.badge}
-              </div>
-              <div className="mt-4">
-                <span className="text-xs text-neutral-500 font-bold uppercase tracking-widest">{plan.name}</span>
-                <div className="flex items-baseline justify-center gap-1 mt-1">
-                  <span className="text-2xl text-neutral-500">R$</span>
-                  <span className="text-4xl md:text-5xl font-black text-white">{plan.price}</span>
-                  <span className="text-sm text-neutral-500">{plan.period}</span>
+              <div className="text-center mb-6 mt-2">
+                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[8px] font-bold uppercase tracking-wider ${plan.badgeColor}`}>
+                  <Sparkles className="w-2.5 h-2.5" />
+                  {plan.badge}
+                </div>
+                <div className="mt-4">
+                  <span className="text-xs text-neutral-500 font-bold uppercase tracking-widest">{plan.displayName}</span>
+                  <div className="flex items-baseline justify-center gap-1 mt-1">
+                    <span className="text-2xl text-neutral-500">R$</span>
+                    <span className="text-4xl md:text-5xl font-black text-white">{price}</span>
+                    <span className="text-sm text-neutral-500">{plan.period}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <Link href={plan.href} className="block">
-              <button className={`w-full py-3.5 rounded-2xl bg-gradient-to-r ${plan.gradient} text-white font-bold text-xs shadow-xl ${plan.shadow} transition-all active:scale-95 hover:opacity-90 flex items-center justify-center gap-2`}>
-                {plan.cta}
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </Link>
-          </motion.div>
-        ))}
+              <Link href={plan.href} className="block">
+                <button className={`w-full py-3.5 rounded-2xl bg-gradient-to-r ${plan.gradient} text-white font-bold text-xs shadow-xl ${plan.shadow} transition-all active:scale-95 hover:opacity-90 flex items-center justify-center gap-2`}>
+                  {plan.cta}
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </Link>
+            </motion.div>
+          );
+        })}
       </div>
 
-      {/* Features Table */}
       <div className="glass-strong border border-white/5 rounded-[2rem] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -163,15 +206,20 @@ export function PricingTable() {
               </tr>
             </thead>
             <tbody>
-              {FEATURES.map((feat, i) => (
-                <tr key={feat.name} className={`border-b border-white/5 ${i % 2 === 0 ? 'bg-white/[0.02]' : ''}`}>
-                  <td className="p-4 md:p-6 text-sm font-medium text-neutral-300">{feat.name}</td>
-                  <td className="p-4 md:p-6 text-center"><CheckIcon value={feat.free} /></td>
-                  <td className="p-4 md:p-6 text-center"><CheckIcon value={feat.lite} /></td>
-                  <td className="p-4 md:p-6 text-center"><CheckIcon value={feat.pro} /></td>
-                  <td className="p-4 md:p-6 text-center"><CheckIcon value={feat.max} /></td>
-                </tr>
-              ))}
+              {FEATURE_DEFS.map((feat, i) => {
+                const configs = (['FREE', 'LITE', 'PRO', 'MAX'] as PlanType[]).map(id => ({
+                  id,
+                  value: feat.getValue(getPlanConfig(id)),
+                }));
+                return (
+                  <tr key={feat.name} className={`border-b border-white/5 ${i % 2 === 0 ? 'bg-white/[0.02]' : ''}`}>
+                    <td className="p-4 md:p-6 text-sm font-medium text-neutral-300">{feat.name}</td>
+                    {configs.map(c => (
+                      <td key={c.id} className="p-4 md:p-6 text-center"><CheckIcon value={c.value} /></td>
+                    ))}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
