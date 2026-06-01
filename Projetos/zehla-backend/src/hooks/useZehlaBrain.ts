@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { Result } from '../shared/Result'
-import { HospitalityServiceAdapter } from '../services/adapters/HospitalityServiceAdapter'
+import { apiPost, apiGet } from './apiClient'
 
 export interface CognitiveEvent {
   eventId: string
@@ -10,58 +10,110 @@ export interface CognitiveEvent {
   needsEscalation: boolean
   handoffRequired: boolean
   responseText: string
+  confidenceScore: number
+}
+
+interface ChatResponse {
+  success: boolean
+  data: {
+    eventId: string
+    intent: string
+    origem: string
+    needsEscalation: boolean
+    handoffRequired: boolean
+    responseText: string
+    confidenceScore: number
+  }
+}
+
+interface HealthResponse {
+  success: boolean
+  data: {
+    status: string
+    uptime: number
+  }
 }
 
 export function useZehlaBrain() {
   const [events, setEvents] = useState<CognitiveEvent[]>([])
   const [isThinking, setIsThinking] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const triggerManualIntent = useCallback(
-    async (intent: string, payload?: any): Promise<Result<void, Error>> => {
-      setIsThinking(true)
-      const adapter = new HospitalityServiceAdapter()
-      const result = await adapter.processarIntencao(intent, payload)
-      setIsThinking(false)
+  const sendMessage = useCallback(async (text: string): Promise<Result<CognitiveEvent, Error>> => {
+    setIsThinking(true)
+    setError(null)
 
-      if (result.isFail) {
-        return Result.fail(result.error)
-      }
+    const result = await apiPost<ChatResponse>('/api/brain/chat', { message: text })
+    setIsThinking(false)
 
-      const response = result.value
-      const newEvent: CognitiveEvent = {
-        eventId: response.responseId || `event-${Date.now()}`,
-        timestamp: new Date(),
-        intent,
-        origem: 'ze-concierge',
-        needsEscalation: response.needsEscalation || false,
-        handoffRequired: response.handoffRequired || false,
-        responseText: response.responseText,
-      }
+    if (result.isFail) {
+      setError(result.error.message)
+      return Result.fail(result.error)
+    }
 
-      setEvents((prev) => [newEvent, ...prev])
-      return Result.ok(undefined)
-    },
-    []
-  )
+    const { data } = result.value
+    const event: CognitiveEvent = {
+      eventId: data.eventId,
+      timestamp: new Date(),
+      intent: data.intent,
+      origem: data.origem,
+      needsEscalation: data.needsEscalation,
+      handoffRequired: data.handoffRequired,
+      responseText: data.responseText,
+      confidenceScore: data.confidenceScore,
+    }
+
+    setEvents((prev) => [event, ...prev])
+    return Result.ok(event)
+  }, [])
+
+  const triggerManualIntent = useCallback(async (
+    intent: string,
+    payload?: Record<string, unknown>,
+  ): Promise<Result<void, Error>> => {
+    setIsThinking(true)
+    setError(null)
+
+    const result = await apiPost<ChatResponse>('/api/brain/chat', { intent, payload })
+    setIsThinking(false)
+
+    if (result.isFail) {
+      setError(result.error.message)
+      return Result.fail(result.error)
+    }
+
+    const { data } = result.value
+    const event: CognitiveEvent = {
+      eventId: data.eventId,
+      timestamp: new Date(),
+      intent: data.intent,
+      origem: data.origem,
+      needsEscalation: data.needsEscalation,
+      handoffRequired: data.handoffRequired,
+      responseText: data.responseText,
+      confidenceScore: data.confidenceScore,
+    }
+
+    setEvents((prev) => [event, ...prev])
+    return Result.ok(undefined)
+  }, [])
 
   const escalateToHuman = useCallback(async (eventId: string): Promise<Result<void, Error>> => {
-    try {
-      setEvents((prev) =>
-        prev.map((evt) =>
-          evt.eventId === eventId
-            ? { ...evt, needsEscalation: false, responseText: '[Human Hijacked] Operador Humano assumiu o atendimento.' }
-            : evt
-        )
-      )
-      return Result.ok(undefined)
-    } catch (error) {
-      return Result.fail(error instanceof Error ? error : new Error('Escalation failed'))
-    }
+    setEvents((prev) =>
+      prev.map((evt) =>
+        evt.eventId === eventId
+          ? { ...evt, needsEscalation: false, responseText: '[Human Hijacked] Operador Humano assumiu o atendimento.' }
+          : evt,
+      ),
+    )
+    return Result.ok(undefined)
   }, [])
 
   return {
     events,
     isThinking,
+    error,
+    sendMessage,
     triggerManualIntent,
     escalateToHuman,
   }

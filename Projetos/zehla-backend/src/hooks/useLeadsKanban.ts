@@ -1,131 +1,213 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { Result } from '../shared/Result'
-import { SalesServiceAdapter } from '../services/adapters/SalesServiceAdapter'
+import { apiPost, apiGet } from './apiClient'
+
+export type EstadoLead =
+  | 'entrada' | 'primeira_interacao' | 'follow_up_1' | 'follow_up_2' | 'follow_up_3'
+  | 'agendado' | 'reagendado' | 'no_show' | 'transferido_sdr'
+  | 'em_negociacao' | 'venda_sinal' | 'venda_concluida'
+  | 'perdido' | 'em_onboarding' | 'acompanhamento' | 'renovacao' | 'sales_farming'
+
+export type GrupoFunil =
+  | 'topo' | 'qualificacao' | 'agendamento' | 'negociacao' | 'fechado' | 'perdido' | 'farming'
+
+const ESTADO_PARA_GRUPO: Record<EstadoLead, GrupoFunil> = {
+  entrada: 'topo',
+  primeira_interacao: 'topo',
+  follow_up_1: 'qualificacao',
+  follow_up_2: 'qualificacao',
+  follow_up_3: 'qualificacao',
+  agendado: 'agendamento',
+  reagendado: 'agendamento',
+  no_show: 'perdido',
+  transferido_sdr: 'negociacao',
+  em_negociacao: 'negociacao',
+  venda_sinal: 'fechado',
+  venda_concluida: 'fechado',
+  perdido: 'perdido',
+  em_onboarding: 'fechado',
+  acompanhamento: 'fechado',
+  renovacao: 'fechado',
+  sales_farming: 'farming',
+}
+
+const GRUPOS: GrupoFunil[] = ['topo', 'qualificacao', 'agendamento', 'negociacao', 'fechado', 'perdido', 'farming']
 
 export interface LeadCard {
   id: string
   nome: string
-  status: 'novo' | 'qualificado' | 'propostado' | 'convertido' | 'perdido'
+  estado: EstadoLead
+  grupo: GrupoFunil
   score: number
-  canal: string
-  email?: string
-  telefone?: string
+  icpFit: 'ideal' | 'minimo' | 'fora_icp'
+  origem: string
+  ultimaInteracao: Date | null
+  diasSemInteracao: number
+  tierAtual: string
+}
+
+export interface SummaryPackage {
+  score: number
+  icpFit: string
+  objecoes: string[]
+  respostas: string[]
+  gatilho: string
+}
+
+export interface RecomendacaoEscada {
+  tipoRecomendacao: 'upsell' | 'cross_sell' | 'downsell' | 'manter' | 'isca'
+  tierRecomendado: string
+  justificativa: string
+  confidenceScore: number
+}
+
+interface QualificarResponse {
+  success: boolean
+  data: { id: string; estado: EstadoLead }
+}
+
+interface HandoffResponse {
+  success: boolean
+  data: { id: string; estado: EstadoLead; closerResponsavel: string }
+}
+
+interface EscadaResponse {
+  success: boolean
+  data: RecomendacaoEscada
+}
+
+function estadoParaGrupo(estado: EstadoLead): GrupoFunil {
+  return ESTADO_PARA_GRUPO[estado] ?? 'topo'
+}
+
+function colunasVazias(): Record<GrupoFunil, LeadCard[]> {
+  return {
+    topo: [],
+    qualificacao: [],
+    agendamento: [],
+    negociacao: [],
+    fechado: [],
+    perdido: [],
+    farming: [],
+  }
 }
 
 export function useLeadsKanban() {
-  const [leads, setLeads] = useState<Record<string, LeadCard[]>>({
-    novo: [],
-    qualificado: [],
-    propostado: [],
-    convertido: [],
-    perdido: [],
-  })
-  const [loading, setLoading] = useState(false)
+  const [leads, setLeads] = useState<Record<GrupoFunil, LeadCard[]>>(colunasVazias)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchLeads = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    const adapter = new SalesServiceAdapter()
-    const result = await adapter.listarLeads()
-    setLoading(false)
-
-    if (result.isFail) {
-      setError(result.error.message)
-      // Fallback a dados padrão de UI estruturados se o banco estiver vazio
-      const fallback: LeadCard[] = [
-        { id: 'lead-1', nome: 'Renato Porto', status: 'novo', score: 30, canal: 'WhatsApp' },
-        { id: 'lead-2', nome: 'Alice Medeiros', status: 'qualificado', score: 85, canal: 'site' },
-        { id: 'lead-3', nome: 'Gabriela Lima', status: 'propostado', score: 55, canal: 'Booking' },
-      ]
-      organizeLeads(fallback)
-      return
+  const organizarLeads = useCallback((lista: LeadCard[]) => {
+    const cols = colunasVazias()
+    for (const card of lista) {
+      const grupo = estadoParaGrupo(card.estado)
+      cols[grupo].push(card)
     }
-
-    const fetchedLeads = (result.value.data?.leads || []) as LeadCard[]
-    organizeLeads(fetchedLeads)
+    setLeads(cols)
   }, [])
 
-  const organizeLeads = (list: LeadCard[]) => {
-    const columns: Record<string, LeadCard[]> = {
-      novo: [],
-      qualificado: [],
-      propostado: [],
-      convertido: [],
-      perdido: [],
-    }
-    list.forEach((item) => {
-      const statusKey = item.status || 'novo'
-      if (columns[statusKey]) {
-        columns[statusKey].push(item)
-      }
-    })
-    setLeads(columns)
-  }
-
-  useEffect(() => {
-    fetchLeads()
-  }, [fetchLeads])
-
-  const moverLead = useCallback(
-    async (leadId: string, novoStatus: any): Promise<Result<void, Error>> => {
-      // Otimisticamente move na UI primeiro
-      setLeads((prev) => {
-        let foundCard: LeadCard | undefined
-        const nextState = { ...prev }
-
-        // Remove do status anterior
-        Object.keys(nextState).forEach((key) => {
-          const idx = nextState[key].findIndex((card) => card.id === leadId)
-          if (idx !== -1) {
-            foundCard = nextState[key][idx]
-            nextState[key].splice(idx, 1)
-          }
-        })
-
-        // Adiciona no novo status
-        if (foundCard) {
-          foundCard.status = novoStatus
-          nextState[novoStatus] = [...nextState[novoStatus], foundCard]
-        }
-
-        return nextState
-      })
-
-      return Result.ok(undefined)
-    },
-    []
-  )
-
-  const qualificarLead = useCallback(
-    async (leadId: string): Promise<Result<number, Error>> => {
-      const adapter = new SalesServiceAdapter()
-      const result = await adapter.qualificarLead(leadId)
+  const refresh = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const result = await apiGet<{ leads: LeadCard[] }>('/api/comercial/leads')
       if (result.isFail) {
-        return Result.fail(result.error)
+        setError(result.error.message)
+      } else {
+        organizarLeads(result.value.leads)
       }
-      
-      const newScore = result.value.data?.score || 80
-      setLeads((prev) => {
-        const nextState = { ...prev }
-        Object.keys(nextState).forEach((key) => {
-          nextState[key] = nextState[key].map((card) =>
-            card.id === leadId ? { ...card, score: newScore, status: 'qualificado' } : card
-          )
-        })
-        return nextState
-      })
-      return Result.ok(newScore)
-    },
-    []
-  )
+    } catch {
+      setError('Erro ao carregar leads')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [organizarLeads])
+
+  const qualificarLead = useCallback(async (leadId: string): Promise<Result<LeadCard, Error>> => {
+    const result = await apiPost<QualificarResponse>(`/api/comercial/leads/${leadId}/qualificar`)
+    if (result.isFail) return Result.fail(result.error)
+
+    const { data } = result.value
+    const card: LeadCard = {
+      id: data.id,
+      nome: '',
+      estado: data.estado,
+      grupo: estadoParaGrupo(data.estado),
+      score: 0,
+      icpFit: 'fora_icp',
+      origem: '',
+      ultimaInteracao: null,
+      diasSemInteracao: 0,
+      tierAtual: 'front_end',
+    }
+
+    setLeads((prev) => {
+      const cols = { ...prev }
+      for (const g of GRUPOS) {
+        cols[g] = cols[g].filter((l) => l.id !== leadId)
+      }
+      cols[card.grupo] = [...cols[card.grupo], card]
+      return cols
+    })
+
+    return Result.ok(card)
+  }, [])
+
+  const realizarHandoff = useCallback(async (
+    leadId: string,
+    closerId: string,
+    summaryPackage: SummaryPackage,
+  ): Promise<Result<LeadCard, Error>> => {
+    const result = await apiPost<HandoffResponse>(`/api/comercial/leads/${leadId}/handoff`, {
+      closerId,
+      summaryPackage,
+    })
+    if (result.isFail) return Result.fail(result.error)
+
+    const { data } = result.value
+    const card: LeadCard = {
+      id: data.id,
+      nome: '',
+      estado: data.estado,
+      grupo: estadoParaGrupo(data.estado),
+      score: 0,
+      icpFit: 'fora_icp',
+      origem: '',
+      ultimaInteracao: null,
+      diasSemInteracao: 0,
+      tierAtual: 'front_end',
+    }
+
+    setLeads((prev) => {
+      const cols = { ...prev }
+      for (const g of GRUPOS) {
+        cols[g] = cols[g].filter((l) => l.id !== leadId)
+      }
+      cols[card.grupo] = [...cols[card.grupo], card]
+      return cols
+    })
+
+    return Result.ok(card)
+  }, [])
+
+  const calcularEscada = useCallback(async (
+    leadId: string,
+    tierAtual: string,
+  ): Promise<Result<RecomendacaoEscada, Error>> => {
+    const result = await apiGet<EscadaResponse>(
+      `/api/comercial/leads/${leadId}/escada-valor?tierAtual=${encodeURIComponent(tierAtual)}`,
+    )
+    if (result.isFail) return Result.fail(result.error)
+    return Result.ok(result.value.data)
+  }, [])
 
   return {
     leads,
-    loading,
+    isLoading,
     error,
-    moverLead,
     qualificarLead,
-    refresh: fetchLeads,
+    realizarHandoff,
+    calcularEscada,
+    refresh,
   }
 }

@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Result } from '../shared/Result'
+import { apiPost } from './apiClient'
 
 export interface TenantSession {
   token: string
@@ -8,73 +9,83 @@ export interface TenantSession {
   role: 'admin' | 'hoteleiro' | 'operador'
 }
 
-export interface LoginInput {
-  email: string
+interface LoginResponse {
+  token: string
+  user: {
+    id: string
+    email: string
+    role: 'admin' | 'hoteleiro' | 'operador'
+  }
   pousadaId: string
 }
 
 export function useAuth() {
   const [session, setSession] = useState<TenantSession | null>(null)
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
-  const [loading, setLoading] = useState<boolean>(true)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedToken = localStorage.getItem('zehla_session_token')
-      const storedPousadaId = localStorage.getItem('zehla_pousada_id')
-      if (storedToken && storedPousadaId) {
-        setSession({
-          token: storedToken,
-          userId: 'user-http-test',
-          pousadaId: storedPousadaId,
-          role: 'hoteleiro',
-        })
-        setIsAuthenticated(true)
-      }
-      setLoading(false)
+    if (typeof window === 'undefined') {
+      setIsLoading(false)
+      return
     }
+    const token = localStorage.getItem('zehla_session_token')
+    const pousadaId = localStorage.getItem('zehla_pousada_id')
+    const userId = localStorage.getItem('zehla_user_id')
+    const role = localStorage.getItem('zehla_user_role') as TenantSession['role'] | null
+
+    if (token && pousadaId) {
+      setSession({ token, userId: userId ?? '', pousadaId, role: role ?? 'hoteleiro' })
+      setIsAuthenticated(true)
+    }
+    setIsLoading(false)
   }, [])
 
-  const login = async (input: LoginInput): Promise<Result<TenantSession, Error>> => {
-    try {
-      // Gera um token simulado que o JwtGuard no backend aceitará se o segredo coincidir,
-      // ou apenas simula com o pousadaId correspondente para os testes/UI.
-      const mockToken = `fake-jwt-token-for-${input.pousadaId}`
-      
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('zehla_session_token', mockToken)
-        localStorage.setItem('zehla_pousada_id', input.pousadaId)
-      }
+  const login = useCallback(async (email: string, password: string): Promise<Result<TenantSession, Error>> => {
+    const result = await apiPost<LoginResponse>('/api/auth/login', { email, password })
+    if (result.isFail) return Result.fail(result.error)
 
-      const newSession: TenantSession = {
-        token: mockToken,
-        userId: 'user-http-test',
-        pousadaId: input.pousadaId,
-        role: 'hoteleiro',
-      }
-
-      setSession(newSession)
-      setIsAuthenticated(true)
-      return Result.ok(newSession)
-    } catch (error) {
-      return Result.fail(error instanceof Error ? error : new Error('Login failed'))
+    const data = result.value
+    const newSession: TenantSession = {
+      token: data.token,
+      userId: data.user.id,
+      pousadaId: data.pousadaId,
+      role: data.user.role,
     }
-  }
 
-  const logout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('zehla_session_token', newSession.token)
+      localStorage.setItem('zehla_pousada_id', newSession.pousadaId)
+      localStorage.setItem('zehla_user_id', newSession.userId)
+      localStorage.setItem('zehla_user_role', newSession.role)
+    }
+
+    setSession(newSession)
+    setIsAuthenticated(true)
+    return Result.ok(newSession)
+  }, [])
+
+  const logout = useCallback(() => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('zehla_session_token')
       localStorage.removeItem('zehla_pousada_id')
+      localStorage.removeItem('zehla_user_id')
+      localStorage.removeItem('zehla_user_role')
     }
     setSession(null)
     setIsAuthenticated(false)
-  }
+  }, [])
+
+  const getToken = useCallback((): string | null => {
+    return session?.token ?? null
+  }, [session])
 
   return {
     session,
     isAuthenticated,
-    loading,
+    isLoading,
     login,
     logout,
+    getToken,
   }
 }
