@@ -3,7 +3,7 @@ import { IComercialLeadPort } from '../ports/IComercialLeadPort'
 import { ComercialLead } from '../../../domain/comercial/entities/ComercialLead'
 import { DomainEventPublisher } from '../../../domain/shared/events/DomainEventPublisher'
 
-export class QualificarLeadUseCase {
+export class ConcluirVendaUseCase {
   constructor(
     private readonly leadPort: IComercialLeadPort,
     private readonly publisher: DomainEventPublisher,
@@ -11,28 +11,15 @@ export class QualificarLeadUseCase {
 
   async execute(leadId: string): Promise<Result<ComercialLead, Error>> {
     const busca = await this.leadPort.buscarPorId(leadId)
-    if (busca.isFail) {
-      return Result.fail(busca.error)
-    }
+    if (busca.isFail) return Result.fail(busca.error)
     const lead = busca.value
-    if (!lead) {
-      return Result.fail(new Error('LEAD_NAO_ENCONTRADO'))
-    }
+    if (!lead) return Result.fail(new Error('LEAD_NAO_ENCONTRADO'))
 
-    const contato = lead.primeiroContato()
-    if (contato.isFail) {
-      return Result.fail(contato.error)
-    }
+    const conclusao = lead.concluirVenda()
+    if (conclusao.isFail) return Result.fail(conclusao.error)
 
-    const qualificacao = contato.value.qualificar()
-    if (qualificacao.isFail) {
-      return Result.fail(qualificacao.error)
-    }
-
-    const salvo = await this.leadPort.salvar(qualificacao.value)
-    if (salvo.isFail) {
-      return Result.fail(salvo.error)
-    }
+    const salvo = await this.leadPort.salvar(conclusao.value)
+    if (salvo.isFail) return Result.fail(salvo.error)
 
     const events = salvo.value.getDomainEvents()
     this.publisher.publishAll(events)

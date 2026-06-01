@@ -94,13 +94,13 @@ export class ZeSalesCognitiveService {
     if (!leadId) {
       return this.output(false, 'Preciso do ID do lead para qualificar.', input.messageId, 0.4)
     }
-    const result = await this.qualificarLeadUseCase.execute(leadId as string, input.propriedadeId)
+    const result = await this.qualificarLeadUseCase.execute(leadId as string)
     if (result.isFail) {
       return this.output(false, translateError(result.error), input.messageId, 0.3, true)
     }
     return this.output(
       true,
-      `Lead ${result.value.nome} qualificado com sucesso! Score: ${result.value.score?.value || 'N/A'}.`,
+      `Lead ${result.value.nome} qualificado com sucesso! Score: ${result.value.score?.valor || 'N/A'}.`,
       input.messageId,
       0.9,
     )

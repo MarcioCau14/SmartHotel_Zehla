@@ -1,16 +1,23 @@
 import { Result } from '../../../shared/Result'
 import { IComercialLeadPort } from '../ports/IComercialLeadPort'
 import { ComercialLead } from '../../../domain/comercial/entities/ComercialLead'
+import { SummaryPackage } from '../../../domain/comercial/events/ComercialDomainEvents'
 import { DomainEventPublisher } from '../../../domain/shared/events/DomainEventPublisher'
 
-export class QualificarLeadUseCase {
+export interface RealizarHandoffInput {
+  leadId: string
+  closerId: string
+  summaryPackage: SummaryPackage
+}
+
+export class RealizarHandoffUseCase {
   constructor(
     private readonly leadPort: IComercialLeadPort,
     private readonly publisher: DomainEventPublisher,
   ) {}
 
-  async execute(leadId: string): Promise<Result<ComercialLead, Error>> {
-    const busca = await this.leadPort.buscarPorId(leadId)
+  async execute(input: RealizarHandoffInput): Promise<Result<ComercialLead, Error>> {
+    const busca = await this.leadPort.buscarPorId(input.leadId)
     if (busca.isFail) {
       return Result.fail(busca.error)
     }
@@ -19,17 +26,12 @@ export class QualificarLeadUseCase {
       return Result.fail(new Error('LEAD_NAO_ENCONTRADO'))
     }
 
-    const contato = lead.primeiroContato()
-    if (contato.isFail) {
-      return Result.fail(contato.error)
+    const handoff = lead.realizarHandoff(input.closerId, input.summaryPackage)
+    if (handoff.isFail) {
+      return Result.fail(handoff.error)
     }
 
-    const qualificacao = contato.value.qualificar()
-    if (qualificacao.isFail) {
-      return Result.fail(qualificacao.error)
-    }
-
-    const salvo = await this.leadPort.salvar(qualificacao.value)
+    const salvo = await this.leadPort.salvar(handoff.value)
     if (salvo.isFail) {
       return Result.fail(salvo.error)
     }

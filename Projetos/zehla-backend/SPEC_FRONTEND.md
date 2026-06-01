@@ -1,211 +1,450 @@
-# 🧠 ZEHLA PRIME — SPEC_FRONTEND.md (A Pele do Sistema)
+# ZEHLA PRIME — SPEC_FRONTEND.md (A Pele do Sistema)
 
-Este documento estabelece o manifesto arquitetural e as regras de sincronização mestra para o desenvolvimento da Camada de Apresentação (Frontend UI) do ecossistema ZEHLA SmartHotel. O frontend opera sob a rígida separação de **Estado vs Renderização (State vs View)** e o paradigma **Spec-Driven Development (SDD)**.
+Especificação Mestra da Camada de Apresentação do ZEHLA SmartHotel.
+Todo desenvolvimento frontend DEVE seguir as leis aqui estabelecidas.
+Violações são rejeitadas em code review automaticamente.
 
 ---
 
-## 🏛️ 1. O Padrão de Componentização (Arquitetura Decoupled)
+## 1. Princípios Arquiteturais (Desacoplamento Inegociável)
 
-Para impedir o acoplamento tóxico de lógica de rede e persistência com código visual, a interface do ZEHLA divide-se estritamente em duas categorias:
+### 1.1 Separação Estado vs Visualização
 
-```mermaid
-graph TD
-    subgraph "Smart Layer (State & Logic)"
-        Hook[Custom Hook: useDashboardMetrics] --> |Abstracts Fetch & Mutation| Query[React Query / HTTP Adapter]
-        Hook --> |Manages Session & Tenant| Auth[useAuth]
-    end
-    subgraph "Dumb Layer (Visual Render)"
-        Hook --> |Injects Immutable State| DumbComponent[Dumb UI Component: KPIOverview]
-        DumbComponent --> |Emits Event Callback| Hook
-    end
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Smart Layer (Hooks)                       │
+│  useState, useEffect, fetch, axios, React Query,            │
+│  localStorage, cookies, WebSocket                           │
+│  Toda regra de interface, chamada HTTP, cache, estado       │
+└─────────────────────┬───────────────────────────────────────┘
+                      │ Props imutáveis + Callbacks
+                      ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Dumb Layer (Components)                   │
+│  Apenas JSX, Tailwind, animações CSS                        │
+│  Sem fetch, sem axios, sem hooks de efeito                  │
+│  useState permitido APENAS para UI efêmera (dropdown, tab)  │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### 1.1 Dumb Components (Apresentação Pura)
-* **Regra de Ouro**: São componentes anêmicos de lógica de negócios. Eles apenas recebem dados tipados via `Props` e emitem interações do usuário através de callbacks de eventos (`onClick`, `onChange`, `onSubmit`).
-* **Estilo e Identidade**: Utilizam Tailwind CSS v4 e seguem as variáveis estabelecidas em `DESIGN.md`.
-* **Sem Efeitos Colaterais**: É terminantemente proibida a importação de bibliotecas de rede (`axios`, `fetch`), gerenciadores globais de estado ou cookies dentro destes arquivos.
-* **Estado Local**: Só é permitido o uso de `useState` para comportamentos estritamente visuais e efêmeros (como abrir/fechar um dropdown, aba visível ou estado de foco).
+### 1.2 Proibições Absolutas
 
-### 1.2 Smart Hooks (Cérebro da Interface)
-* **Regra de Ouro**: Toda e qualquer regra de interface, chamadas a endpoints HTTP, cacheamento de consultas e gerenciamento de estado global reside em **Hooks Personalizados (`custom hooks`)**.
-* **Tratamento de Dados**: Os hooks consomem os adaptadores de cliente HTTP puros, traduzem as respostas do backend para o formato reativo e cuidam do ciclo de vida das transições.
+- ❌ `fetch()` ou `axios` dentro de qualquer arquivo `.tsx`
+- ❌ `useEffect` para carregar dados da API dentro de componente visual
+- ❌ Importar `cookies`, `localStorage` em Dumb Components
+- ❌ Acoplamento de hook a framework específico (o hook DEVE funcionar sem React)
+- ❌ Componente visual fazendo `JSON.parse` ou validação de response HTTP
+
+### 1.3 Regras de Ouro
+
+- **Smart Hooks**: Contêm 100% do estado, 100% das chamadas de rede, 100% dos efeitos colaterais
+- **Dumb Components**: Recebem `Props` tipadas, emitem `callbacks`, renderizam visual
+- **Estado local (`useState`)**: Permitido APENAS em Dumb Components para UI ephemeral (abrir/fechar painel, hover, aba ativa)
+- **Compartilhamento de estado**: Hooks consomem React Query ou contexto global — componentes burros NUNCA acessam contexto diretamente
 
 ---
 
-## 🎣 2. Mapeamento de Hooks Personalizados (Smart Hooks)
-
-Toda a reatividade e orquestração do sistema está catalogada sob as assinaturas destes 6 ganchos customizados principais:
+## 2. Mapeamento de Custom Hooks (State Managers)
 
 ### 2.1 `useAuth()`
-Gerencia a sessão local, tokens de autenticação (JWT) e o isolamento de tenant de forma imperceptível na interface.
+
+Gerencia sessão, JWT e isolamento de tenant. Consome `POST /api/auth/login`.
+
 ```typescript
 interface TenantSession {
-  token: string;
-  userId: string;
-  pousadaId: string;
-  role: 'admin' | 'hoteleiro' | 'operador';
+  pousadaId: string
+  userId: string
+  email: string
+  role: 'admin' | 'hoteleiro' | 'operador'
+  token: string
 }
 
 export function useAuth(): {
-  session: TenantSession | null;
-  isAuthenticated: boolean;
-  login: (credentials: LoginInput) => Promise<Result<TenantSession, Error>>;
-  logout: () => void;
+  session: TenantSession | null
+  isAuthenticated: boolean
+  isLoading: boolean
+  login: (email: string, password: string) => Promise<Result<TenantSession, Error>>
+  logout: () => void
+  getToken: () => string | null
 }
 ```
 
 ### 2.2 `useZehlaBrain()`
-Orquestra o radar neural e a tomada de decisões da IA em tempo real no dashboard central (ZCC).
+
+Comunicação com o CognitiveTerminal — orquestra o radar neural e tomada de decisões da IA.
+
+Consome: `POST /api/brain/chat`, `GET /api/brain/health`.
+
 ```typescript
 interface CognitiveEvent {
-  eventId: string;
-  timestamp: Date;
-  intent: string;
-  origem: string;
-  needsEscalation: boolean;
-  handoffRequired: boolean;
-  responseText: string;
+  eventId: string
+  timestamp: Date
+  intent: string
+  origem: string
+  needsEscalation: boolean
+  handoffRequired: boolean
+  responseText: string
+  confidenceScore: number
 }
 
 export function useZehlaBrain(): {
-  events: CognitiveEvent[];
-  isThinking: boolean;
-  triggerManualIntent: (intent: string, payload: any) => Promise<Result<void, Error>>;
-  escalateToHuman: (eventId: string) => Promise<Result<void, Error>>;
+  events: CognitiveEvent[]
+  isThinking: boolean
+  triggerManualIntent: (intent: string, payload: Record<string, unknown>) => Promise<Result<void, Error>>
+  escalateToHuman: (eventId: string) => Promise<Result<void, Error>>
+  sendMessage: (text: string) => Promise<Result<CognitiveEvent, Error>>
 }
 ```
 
-### 2.3 `useDashboardMetrics()`
-Consome e encapsula a inteligência analítica do *Zé-Analyst*, monitorando a precificação dinâmica e o faturamento.
+### 2.3 `useLeadsKanban()`
+
+Consumo dos endpoints comerciais SB28 + SB27. Gerencia o funil FSM de 17 estados.
+
+**Endpoints consumidos:**
+- `GET /api/comercial/leads/[id]/escada-valor?tierAtual=xxx`
+- `POST /api/comercial/leads/[id]/qualificar`
+- `POST /api/comercial/leads/[id]/handoff`
+
 ```typescript
-interface YieldMetrics {
-  faturamentoTotal: number;
-  taxaOcupacao: number;
-  revPar: number;
-  breakEvenStatus: 'safe' | 'warning' | 'danger';
-}
+type EstadoLead =
+  | 'entrada' | 'primeira_interacao' | 'follow_up_1' | 'follow_up_2' | 'follow_up_3'
+  | 'agendado' | 'reagendado' | 'no_show' | 'transferido_sdr'
+  | 'em_negociacao' | 'venda_sinal' | 'venda_concluida'
+  | 'perdido' | 'em_onboarding' | 'acompanhamento' | 'renovacao' | 'sales_farming'
 
-export function useDashboardMetrics(periodo: { inicio: Date; fim: Date }): {
-  metrics: YieldMetrics | null;
-  loading: boolean;
-  recalcularBreakEven: (valorPretendido: number) => Promise<Result<boolean, Error>>;
-}
-```
+type GrupoFunil =
+  | 'topo' | 'qualificacao' | 'agendamento' | 'negociacao' | 'fechado' | 'perdido' | 'farming'
 
-### 2.4 `useReservations()`
-Interface do motor de hospitalidade (*Zé-Host*), incluindo controle sanitário do check-in mobile e Gov.br.
-```typescript
-interface Reservation {
-  id: string;
-  hospedeNome: string;
-  status: 'reservado' | 'checkin_mobile' | 'in_house' | 'checkout';
-  govBrVerified: boolean;
-  roomNumber?: string;
-}
-
-export function useReservations(): {
-  reservations: Reservation[];
-  realizarCheckInMobile: (id: string, qrCodeData: string) => Promise<Result<void, Error>>;
-  alocarQuarto: (id: string, quartoId: string) => Promise<Result<void, Error>>;
-}
-```
-
-### 2.5 `useLeadsKanban()`
-Encapsula o fluxo do CRM comercial (*Zé-Sales*) em colunas de funil dinâmicas baseadas em pontuação.
-```typescript
 interface LeadCard {
-  id: string;
-  nome: string;
-  status: 'novo' | 'qualificado' | 'propostado' | 'convertido' | 'perdido';
-  score: number;
-  canal: string;
+  id: string
+  nome: string
+  estado: EstadoLead
+  grupo: GrupoFunil
+  score: number
+  icpFit: 'ideal' | 'minimo' | 'fora_icp'
+  origem: string
+  ultimaInteracao: Date | null
+  diasSemInteracao: number
+  tierAtual: string
+}
+
+interface RecomendacaoEscada {
+  tipoRecomendacao: 'upsell' | 'cross_sell' | 'downsell' | 'manter' | 'isca'
+  tierRecomendado: string
+  justificativa: string
+  confidenceScore: number
 }
 
 export function useLeadsKanban(): {
-  leads: Record<string, LeadCard[]>;
-  moverLead: (leadId: string, novoStatus: string) => Promise<Result<void, Error>>;
-  qualificarLead: (leadId: string) => Promise<Result<number, Error>>;
+  leads: Record<GrupoFunil, LeadCard[]>
+  isLoading: boolean
+  qualificarLead: (leadId: string) => Promise<Result<LeadCard, Error>>
+  realizarHandoff: (leadId: string, closerId: string, summaryPackage: SummaryPackage) => Promise<Result<LeadCard, Error>>
+  calcularEscada: (leadId: string, tierAtual: string) => Promise<Result<RecomendacaoEscada, Error>>
+  refetch: () => Promise<void>
 }
 ```
 
-### 2.6 `useOperationsTasks()`
-Gerencia os tickets de limpeza e manutenção predial em tempo real (*Zé-Ops*).
+### 2.4 `useRoomsGrid()`
+
+Consumo do status operacional de quartos. Atualização em tempo real via polling ou WebSocket.
+
+**Endpoints:** `GET /api/rooms?propertyId=xxx`, `GET /api/rooms/availability?propertyId=xxx`.
+
+```typescript
+type RoomStatus = 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'RESERVED' | 'CLEANING'
+
+interface RoomCard {
+  id: string
+  number: string
+  status: RoomStatus
+  type: string
+  basePrice: number
+  guestName?: string
+  checkIn?: Date
+  checkOut?: Date
+  cleaningTimer?: number  // minutos restantes da higienização de 3h
+  govBrVerified?: boolean
+}
+
+export function useRoomsGrid(propertyId: string): {
+  rooms: RoomCard[]
+  isLoading: boolean
+  ocupacao: number  // percentual
+  changeStatus: (roomId: string, novoStatus: RoomStatus) => Promise<Result<void, Error>>
+  refetch: () => Promise<void>
+}
+```
+
+### 2.5 `useOperationsTasks()`
+
+Gerencia tickets de limpeza e manutenção predial.
+
+**Endpoints:** `GET /api/operacional/tarefas`, `POST /api/operacional/tarefas`, `PATCH /api/operacional/tarefas/[id]`.
+
 ```typescript
 interface TaskItem {
-  id: string;
-  quartoId: string;
-  tipo: 'limpeza' | 'manutencao';
-  status: 'pendente' | 'em_progresso' | 'concluido';
-  responsavel?: string;
+  id: string
+  quartoId: string
+  tipo: 'limpeza' | 'manutencao'
+  status: 'pendente' | 'em_progresso' | 'concluido'
+  responsavel?: string
+  criadoEm: Date
+  prioridade: 'baixa' | 'media' | 'alta'
 }
 
 export function useOperationsTasks(): {
-  tasks: TaskItem[];
-  criarTarefa: (payload: { quartoId: string; tipo: 'limpeza' | 'manutencao' }) => Promise<Result<void, Error>>;
-  atualizarStatusTarefa: (id: string, status: 'pendente' | 'em_progresso' | 'concluido') => Promise<Result<void, Error>>;
+  tasks: TaskItem[]
+  pendentes: TaskItem[]
+  isLoading: boolean
+  criarTarefa: (payload: { quartoId: string; tipo: 'limpeza' | 'manutencao'; prioridade?: string }) => Promise<Result<void, Error>>
+  atualizarStatus: (id: string, status: 'pendente' | 'em_progresso' | 'concluido') => Promise<Result<void, Error>>
+  refetch: () => Promise<void>
+}
+```
+
+### 2.6 `useDashboardMetrics()`
+
+Consome a inteligência analítica — precificação dinâmica, faturamento, Break-Even.
+
+**Endpoints:** `GET /api/revenue/kpis`, `GET /api/revenue/tarifas`.
+
+```typescript
+interface YieldMetrics {
+  faturamentoTotal: number
+  taxaOcupacao: number
+  revPar: number
+  diariaMedia: number
+  breakEvenStatus: 'safe' | 'warning' | 'danger'
+}
+
+export function useDashboardMetrics(periodo: { inicio: Date; fim: Date }): {
+  metrics: YieldMetrics | null
+  isLoading: boolean
+  recalcularBreakEven: (valorPretendido: number) => Promise<Result<boolean, Error>>
+}
+```
+
+### 2.7 `useReservations()`
+
+Interface do motor de hospitalidade — check-in mobile, Gov.br, FNRH.
+
+**Endpoints:** `GET /api/v2/reservations`, `GET /api/v2/reservations/[id]`, `POST /api/v2/reservations/[id]/payment`.
+
+```typescript
+interface Reservation {
+  id: string
+  hospedeNome: string
+  status: 'reservado' | 'checkin_mobile' | 'in_house' | 'checkout'
+  govBrVerified: boolean
+  roomNumber?: string
+  checkIn: Date
+  checkOut: Date
+}
+
+export function useReservations(): {
+  reservations: Reservation[]
+  isLoading: boolean
+  realizarCheckInMobile: (id: string, qrCodeData: string) => Promise<Result<void, Error>>
+  alocarQuarto: (id: string, quartoId: string) => Promise<Result<void, Error>>
+  refetch: () => Promise<void>
 }
 ```
 
 ---
 
-## 🏛️ 3. Mapeamento de Componentes Críticos (ZCC Core)
+## 3. Hierarquia do Zehla Control Center (ZCC)
 
-Estes são os três módulos de exibição fundamentais do **Zehla Control Center (ZCC)**. Eles devem ser criados como componentes puramente visuais, decorados pelo Tailwind e alimentados exclusivamente pelos hooks acima:
+### 3.1 Árvore de Componentes
 
-### 3.1 `CognitiveTerminal`
-* **Estética**: Pitch-Black total (`#0F172A`), com bordas sutis laranjas (`#F97316`), tipografia Outfit, e um efeito de vidro glassmorphic (`backdrop-filter`).
-* **Visualização**: Um feed em cascata (Radar Neural) apresentando em tempo real o processamento cognitivo das IAs de borda. Nós com `needsEscalation: true` piscam em vermelho pulsante e habilitam botões de intervenção manual imediatos.
+```
+<ZCCDashboard>
+  ├── <CognitiveTerminal>          ← useZehlaBrain()
+  │     ├── <RadarNeuralFeed>
+  │     │     └── <CognitiveNode>  (cada evento com status, cor, ação)
+  │     ├── <ChatInput>            (dispara triggerManualIntent)
+  │     └── <EscalationPanel>      (needsEscalation === true)
+  │
+  ├── <LeadKanban>                 ← useLeadsKanban()
+  │     ├── <KanbanColumn>         (grupo: topo | qualificacao | agendamento | ...)
+  │     │     └── <LeadCard>       (score colorido, ações de transição)
+  │     ├── <HandoffModal>         (formulário de SummaryPackage + closerId)
+  │     └── <EscadaPanel>          (exibe recomendação de upsell/downsell)
+  │
+  ├── <RoomsGrid>                  ← useRoomsGrid()
+  │     ├── <RoomCard>             (status, hóspede, timer de limpeza)
+  │     └── <CleaningTimer>        (cronômetro regressivo 3h)
+  │
+  ├── <OperationsPanel>            ← useOperationsTasks()
+  │     └── <TaskList>
+  │           └── <TaskItem>       (tipo, status, responsável)
+  │
+  └── <MetricsBar>                 ← useDashboardMetrics()
+        ├── <KPIOverview>          (RevPAR, ocupação, faturamento)
+        └── <BreakEvenGauge>       (indicador visual safe/warning/danger)
+```
 
-### 3.2 `LeadKanban`
-* **Estética**: Colunas flutuantes Slate 800 (`#1E293B`) com divisores finos Slate 700 (`#334155`).
-* **Comportamento**: Cards de Lead com bordas brilhantes coloridas dependendo de sua temperatura de conversão baseada em Score:
-  - **Quente (Score >= 70)**: Borda verde vibrante (`#10B981`)
-  - **Morno (40 <= Score < 70)**: Borda laranja suave (`#F97316`)
-  - **Frio (Score < 40)**: Sem destaque de borda.
-* **Ações**: Controles de drag-and-drop rápidos e gatilhos na UI para disparar propostas instantâneas direto do Kanban.
+### 3.2 `CognitiveTerminal`
 
-### 3.3 `RoomsGrid`
-* **Estética**: Visualizações modulares em formato Grid representando todos os quartos da pousada.
-* **Inovações Regulatórias 2026**:
-  - Exibição em tempo real do cronômetro de higienização de 3 horas (Ciclo de diárias 24h).
-  - Indicador visual da validação do Cadastur/Gov.br na diária corrente.
-  - Alerta de check-in pendente com botão flutuante para geração de QR Code FNRH.
+- **Estética**: Fundo pitch-black (`#0F172A`), bordas laranja sutis (`#F97316`), tipografia Outfit
+- **Comportamento**: Feed em cascata (Radar Neural) com eventos em tempo real
+- **Nós críticos**: `needsEscalation: true` piscam vermelho e exibem botão `Escalar para Humano`
+- **Entrada de texto**: Campo de texto que dispara `sendMessage()` ou `triggerManualIntent()`
+
+### 3.3 `LeadKanban`
+
+- **Estética**: Colunas Slate 800 (`#1E293B`) com divisores Slate 700 (`#334155`)
+- **Colunas**: 7 grupos mapeados dos 17 estados FSM
+  | Grupo | Estados | Cor |
+  |---|---|---|
+  | `topo` | entrada, primeira_interacao | Slate 500 |
+  | `qualificacao` | follow_up_1..3 | Blue 500 |
+  | `agendamento` | agendado, reagendado | Violet 500 |
+  | `negociacao` | em_negociacao, transferido_sdr | Orange 500 |
+  | `fechado` | venda_sinal, venda_concluida | Emerald 500 |
+  | `perdido` | perdido, no_show | Red 500 |
+  | `farming` | sales_farming | Amber 500 |
+- **Cards**: Borda colorida por score
+  - Score >= 70: borda verde (`#10B981`)
+  - Score 30-69: borda laranja (`#F97316`)
+  - Score < 30: sem destaque
+- **Ações por estado**:
+  - `entrada` → botão **Qualificar** (POST /api/comercial/leads/[id]/qualificar)
+  - `agendado`/`reagendado` → botão **Handoff** (abre modal com SummaryPackage)
+  - `em_negociacao` → botão **Ver Escada** (GET /api/comercial/leads/[id]/escada-valor)
+- **Drag-and-drop**: Movimentação visual apenas — a transição real de estado sempre passa pelo backend
+
+### 3.4 `RoomsGrid`
+
+- **Estética**: Grid modular de cards de quarto
+- **Inovações Regulatórias 2026**:
+  - Timer de higienização de 3 horas (pós-checkout)
+  - Selo visual de validação Gov.br / Cadastur
+  - Alerta de check-in pendente com botão de QR Code FNRH
 
 ---
 
-## 🔌 4. Clientes HTTP (Adapters Camada Azul)
+## 4. Gestão de Retornos e Erros de Domínio no Frontend
 
-As conexões com o backend SB21 são totalmente delegadas a classes de serviço escritas em TypeScript puro. Nenhuma linha de rede vaza para a interface do React.
+### 4.1 Contrato de Resposta das APIs
 
-### 4.1 Encapsulamento de Retorno `Result<T, E>`
-Todos os métodos de api retornam uma promessa do padrão `Result` unificado do sistema, garantindo um tratamento de falhas em tempo de compilação:
+Todas as APIs do ZEHLA seguem o padrão:
+
+**Sucesso (200):**
+```json
+{
+  "success": true,
+  "data": { ... }
+}
+```
+
+**Erro de negócio (400/422):**
+```json
+{
+  "error": "TRANSICAO_INVALIDA: não é possível transitar de 'entrada' via 'iniciar_negociacao'"
+}
+```
+
+**Erro de autenticação (401):**
+```json
+{
+  "error": "Missing authorization header"
+}
+```
+
+### 4.2 Mapeamento HTTP → Ação no Frontend
+
+| HTTP Status | Significado | Ação no Frontend |
+|---|---|---|
+| 200 | Sucesso | Atualizar estado local, exibir toast verde de confirmação |
+| 400 | Erro de validação/negócio | Exibir `error` como toast vermelho. NÃO redirecionar |
+| 401 | Token ausente/inválido | Disparar `logout()`, redirecionar para `/login` |
+| 422 | Violação de FSM | Exibir `error` como toast laranja. Sugerir ação corretiva |
+| 500 | Erro interno | Exibir toast genérico "Erro interno. Tente novamente." |
+
+### 4.3 Padrão de Tratamento em Hooks
 
 ```typescript
-export class SalesServiceAdapter {
-  constructor(private readonly httpClient: AxiosInstance) {}
+// Todo hook DEVE seguir este padrão de tratamento de erro:
+async function qualificarLead(leadId: string): Promise<Result<LeadCard, Error>> {
+  try {
+    const token = getToken()
+    const response = await fetch(`/api/comercial/leads/${leadId}/qualificar`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    })
+    const body = await response.json()
 
-  async capturarLead(payload: { canal: string; nome?: string; email?: string }): Promise<Result<LeadData, Error>> {
-    try {
-      const response = await this.httpClient.post('/api/comercial/leads', {
-        intent: 'CAPTURAR_LEAD',
-        payload
-      });
-      return Result.ok(response.data);
-    } catch (error: any) {
-      const errorMsg = error.response?.data?.error || 'Erro na conexão de rede';
-      return Result.fail(new Error(errorMsg));
+    if (!response.ok) {
+      // 401 → login expirado
+      if (response.status === 401) {
+        logout()
+        return Result.fail(new Error('Sessão expirada'))
+      }
+      // 400/422 → erro de negócio
+      return Result.fail(new Error(body.error || 'Erro desconhecido'))
     }
+
+    return Result.ok(body.data)
+  } catch (err) {
+    // Erro de rede (fetch exception)
+    return Result.fail(new Error('Erro de conexão. Verifique sua internet.'))
   }
 }
 ```
 
+### 4.4 Toast de Notificação (Feedback Visual)
+
+Dumb Component `<Toast>` recebe:
+```typescript
+interface ToastProps {
+  mensagem: string
+  tipo: 'success' | 'error' | 'warning' | 'info'
+  duration?: number  // ms, default 4000
+  onClose: () => void
+}
+```
+
+Regras de exibição:
+- `success`: Toast verde, auto-dismiss 3s
+- `error`/`warning`: Toast vermelho/laranja, auto-dismiss 6s ou até clique
+- `info`: Toast azul, auto-dismiss 4s
+- NUNCA usar `alert()` ou `confirm()` nativos do browser
+
+### 4.5 Estados de Carregamento
+
+- `isLoading: boolean` — presente em todo hook que faz chamada de rede
+- Dumb Component DEVE renderizar skeleton/spinner enquanto `isLoading === true`
+- NUNCA bloquear a UI inteira com loading — usar loading localizado (skeleton do card, não tela branca)
+
 ---
 
-## 🛡️ 5. Invariantes de Interface (Interface Guardrails)
+## 5. Invariantes de Interface (Guardrails)
 
-Estes são os dogmas que o compilador e as revisões de código devem fazer cumprir de forma intransigente:
+1. **Proibição de Rede Direta**: Nenhum `.tsx` pode importar `fetch`, `axios`, `axiosInstance`. Toda comunicação externa passa por Smart Hooks.
+2. **Coesão Cromática**: Cores seguem ESTRITAMENTE `DESIGN.md`. Proibido `bg-red-300`, `text-blue-500` avulsos.
+3. **Formulários com Validação**: Usar `react-hook-form` + `zod` para validação no cliente antes de disparar requests.
+4. **Imutabilidade**: Dumb Components tratam props como `Readonly<>`. Nenhuma mutação direta — sempre via callback do hook.
+5. **Fallback de Erro**: Todo Dumb Component que recebe dados DEVE ter estado de `erro` na props e renderizar fallback visual (não quebrar a página inteira por um card com falha).
+6. **Responsividade**: ZCC é desktop-first (1920×1080 mínimo), mas componentes individuais devem funcionar em 1366×768 sem quebrar layout.
 
-1. **Proibição de Rede Direta**: É terminantemente proibido importar `axios`, `fetch` ou usar chamadas AJAX cruas em qualquer arquivo de componente `.tsx`. Qualquer comunicação externa deve ser solicitada a um hook especializado.
-2. **Coesão Cromática**: Nenhuma cor "fora de grid" (como `bg-red-300`, `text-blue-500`) pode ser usada de forma ad-hoc. As cores devem seguir estritamente as especificadas no arquivo `DESIGN.md` (Slate 900, Slate 800, Orange 500, Emerald 500).
-3. **Formulários e Validação**: Todos os formulários interativos expostos ao usuário devem utilizar obrigatoriamente a combinação de `react-hook-form` e esquemas do `zod` para validação rápida na borda do cliente antes de disparar o request.
-4. **Isolamento de State Mutators**: Os componentes devem tratar os dados recebidos dos hooks como coleções de leitura imutáveis (`Readonly`). Toda mutação ou fluxo de transição deve ser executado através de chamadas a callbacks retornados pelos Hooks.
+---
+
+## 6. Mapa de Endpoints Consumidos pelo Frontend
+
+| Método | Rota | Hook | Propósito |
+|---|---|---|---|
+| POST | `/api/auth/login` | useAuth | Autenticação JWT |
+| GET | `/api/brain/health` | useZehlaBrain | Status do motor cognitivo |
+| POST | `/api/brain/chat` | useZehlaBrain | Envio de mensagem ao cérebro |
+| POST | `/api/comercial/leads` | useLeadsKanban (indireto) | Capturar novo lead |
+| POST | `/api/comercial/leads/[id]/qualificar` | useLeadsKanban | Qualificar lead via FSM |
+| POST | `/api/comercial/leads/[id]/handoff` | useLeadsKanban | Handoff para closer |
+| GET | `/api/comercial/leads/[id]/escada-valor` | useLeadsKanban | Calcular upsell/downsell |
+| GET | `/api/rooms?propertyId=` | useRoomsGrid | Listar quartos |
+| GET | `/api/rooms/availability?propertyId=` | useRoomsGrid | Disponibilidade |
+| GET | `/api/v2/reservations` | useReservations | Listar reservas |
+| GET | `/api/operacional/tarefas` | useOperationsTasks | Listar tarefas |
+| POST | `/api/operacional/tarefas` | useOperationsTasks | Criar tarefa |
+| GET | `/api/revenue/kpis` | useDashboardMetrics | Métricas de receita |
+| GET | `/api/revenue/tarifas` | useDashboardMetrics | Tarifas dinâmicas |

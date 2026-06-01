@@ -15,6 +15,11 @@ import { ConfirmarPagamentoUseCase } from '../../../application/comercial/use-ca
 import { Money } from '../../../domain/comercial/value-objects/Money'
 import { RegraPrecificacao } from '../../../domain/comercial/value-objects/RegraPrecificacao'
 import { Score } from '../../../domain/comercial/value-objects/Score'
+import { ComercialLead } from '../../../domain/comercial/entities/ComercialLead'
+import { LeadScore } from '../../../domain/comercial/value-objects/LeadScore'
+import { OrigemLead } from '../../../domain/comercial/value-objects/OrigemLead'
+import { DomainEventPublisher } from '../../../domain/shared/events/DomainEventPublisher'
+import { InMemoryComercialLeadAdapter } from '../../../infrastructure/persistence/comercial/InMemoryComercialLeadAdapter'
 
 const ZCP_SECRET = 'zcp-test-secret-zehla'
 
@@ -76,8 +81,11 @@ describe('ZeSalesCognitiveService', () => {
     })
     if (pacoteResult.isFail) throw new Error(`Failed to create package: ${pacoteResult.error.message}`)
 
+    const comercialAdapter = new InMemoryComercialLeadAdapter()
+    const publisher = new DomainEventPublisher()
+
     const capturarLeadUC = new CapturarLeadUseCase(leadRepo)
-    const qualificarLeadUC = new QualificarLeadUseCase(leadRepo)
+    const qualificarLeadUC = new QualificarLeadUseCase(comercialAdapter, publisher)
     const criarPropostaUC = new CriarPropostaUseCase(propostaRepo, leadRepo, pacoteRepo)
     const aceitarPropostaUC = new AceitarPropostaUseCase(propostaRepo, pagamentoRepo)
     const sugerirDescontoUC = new SugerirDescontoUseCase(propostaRepo, pacoteRepo, leadRepo)
@@ -89,6 +97,32 @@ describe('ZeSalesCognitiveService', () => {
       aceitarPropostaUC, sugerirDescontoUC, confirmarPagamentoUC,
       ZCP_SECRET,
     )
+
+    // Seed a ComercialLead in the new adapter for qualification tests
+    const origem = OrigemLead.criar('site').value as OrigemLead
+    const score = LeadScore.criar(50, 'ideal', {
+      budget: true, authority: false, need: true, timeline: true,
+    }).value as LeadScore
+    const seedLead = ComercialLead.create({
+      id: 'lead_qualify_test',
+      origem,
+      propriedadeId: 'prop_seed',
+      nome: 'Lead Qualify',
+      score,
+      sdrResponsavel: 'ze_sales',
+    }).value as ComercialLead
+    comercialAdapter.salvarMock(seedLead)
+
+    // Seed a ComercialLead without score for rejection test
+    const origem2 = OrigemLead.criar('site').value as OrigemLead
+    const seedLeadNoScore = ComercialLead.create({
+      id: 'lead_no_score_test',
+      origem: origem2,
+      propriedadeId: 'prop_seed',
+      nome: 'Lead Sem Score',
+      sdrResponsavel: 'ze_sales',
+    }).value as ComercialLead
+    comercialAdapter.salvarMock(seedLeadNoScore)
   })
 
   it('should capture a new lead', async () => {
@@ -114,39 +148,16 @@ describe('ZeSalesCognitiveService', () => {
     expect(output.success).toBe(false)
   })
 
-  it('should qualify an existing lead', async () => {
-    const capturaOutput = await service.processIntent(makeInput('CAPTURAR_LEAD', {
-      payload: {
-        canal: 'site',
-        nome: 'João Score',
-        email: 'joaoscore@teste.com',
-        telefone: '11977777777',
-      },
-    }))
-    expect(capturaOutput.success).toBe(true)
-    const leadId = (capturaOutput.data as any).leadId as string
-
-    await leadRepo.atualizarScoreLead(leadId, 'prop_seed', 50)
-
+  it('should qualify an existing lead via new use case', async () => {
     const output = await service.processIntent(makeInput('QUALIFICAR_LEAD', {
-      payload: { leadId },
+      payload: { leadId: 'lead_qualify_test' },
     }))
     expect(output.success).toBe(true)
   })
 
   it('should reject qualification for lead without score', async () => {
-    const capturaOutput = await service.processIntent(makeInput('CAPTURAR_LEAD', {
-      payload: {
-        canal: 'site',
-        nome: 'João Sem Score',
-        email: 'joaosemscore@teste.com',
-      },
-    }))
-    expect(capturaOutput.success).toBe(true)
-    const leadId = (capturaOutput.data as any).leadId as string
-
     const output = await service.processIntent(makeInput('QUALIFICAR_LEAD', {
-      payload: { leadId },
+      payload: { leadId: 'lead_no_score_test' },
     }))
     expect(output.success).toBe(false)
   })
