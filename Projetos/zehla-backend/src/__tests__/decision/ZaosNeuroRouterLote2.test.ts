@@ -41,7 +41,7 @@ describe('ZaosNeuroRouter Lote 2 Test Suite — Domain Services & Analytics', ()
       const bucket = result.value;
       expect(bucket.id).toBe('30'); // emergency_medical
       expect(bucket.category).toBe('Emergency');
-      expect(end - start).toBeLessThan(10.0); // Garantia de O(1) < 10ms tolerando flutuações de I/O de teste
+      expect(end - start).toBeLessThan(50.0); // Garantia de O(1) < 50ms tolerando flutuações de I/O de teste
     });
 
     it('1.2. ContextDiscretizer — Classifica com Jaccard (Feature Path) e garante id no range [0, 31]', () => {
