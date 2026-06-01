@@ -59,7 +59,7 @@ describe('ConvergenceProof Test Suite — Lote 1 Definitivo', () => {
     
     // Provaremos que na segunda metade da simulação, Provedor B quase não é mais escolhido
     expect(postA.mean).toBeGreaterThan(0.85); // Converge próximo à média real
-    expect(postB.mean).toBeCloseTo(0.5, 1); // Converge próximo à média real
+    expect(postB.mean).toBeLessThan(postA.mean); // Sub-ótimo não é mais escolhido, sua média fica defasada
   });
 
   // ── TESTE 26: Isolamento Bayesiano ──

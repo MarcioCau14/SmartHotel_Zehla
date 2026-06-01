@@ -113,7 +113,7 @@ describe('DomainModels Test Suite — Lote 1 Definitivo', () => {
       const p = BetaBinomialPosterior.fromBenchmarkPriors(0.85, 10);
       expect(p.alpha).toBe(9.5);
       expect(p.beta).toBe(2.5);
-      expect(p.mean).toBe(9.5 / 12);
+      expect(p.mean).toBeCloseTo(9.5 / 12);
     });
 
     it('5. BetaBinomialPosterior.update(true) — Sucesso: α += 1, retorna nova instância (imutabilidade)', () => {
