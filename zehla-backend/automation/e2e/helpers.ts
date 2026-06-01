@@ -73,3 +73,65 @@ export async function mockSessionApi(page: Page) {
 export async function clearAllMocks(page: Page) {
   await page.unrouteAll({ behavior: 'wait' });
 }
+
+/**
+ * Mock ZCC APIs (concierge, revenue/tarifas) to prevent database dependencies
+ */
+export async function mockZccApis(page: Page) {
+  // Mock Concierge API
+  await page.route('**/api/hospitalidade/concierge', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        responseId: `mock-concierge-resp-${Date.now()}`,
+        success: true,
+        responseText: 'Aqui estão os serviços disponíveis no SmartHotel Zehla.',
+        confidenceScore: 0.98,
+        needsEscalation: false,
+        handoffRequired: false,
+      }),
+    });
+  });
+
+  // Mock Revenue API
+  await page.route('**/api/revenue/tarifas', async (route) => {
+    const reqBody = route.request().postDataJSON();
+    const { intent } = reqBody || {};
+
+    if (intent === 'VALIDAR_BREAK_EVEN') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          responseId: `mock-rev-resp-${Date.now()}`,
+          success: true,
+          responseText: 'Break-even validado com sucesso.',
+          confidenceScore: 0.99,
+          needsEscalation: false,
+          handoffRequired: false,
+        }),
+      });
+    } else {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          responseId: `mock-rev-resp-${Date.now()}`,
+          success: true,
+          responseText: 'Métricas de receita consultadas com sucesso.',
+          confidenceScore: 0.99,
+          needsEscalation: false,
+          handoffRequired: false,
+          data: {
+            faturamentoTotal: 125000,
+            taxaOcupacao: 72,
+            revPar: 180,
+            breakEvenStatus: 'safe',
+          },
+        }),
+      });
+    }
+  });
+}
+

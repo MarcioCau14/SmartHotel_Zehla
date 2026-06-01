@@ -1,4 +1,5 @@
-import { ZeCognitiveInput, ZeCognitiveOutput, ZcpHandoffPackage, createZcpHandoff, verifyZcpHandoff } from '../../comercial/cognitive/ZeCognitiveTypes'
+import { createZcpHandoff, verifyZcpHandoff } from '../../comercial/cognitive/ZeCognitiveTypes'
+import type { ZeCognitiveInput, ZeCognitiveOutput, ZcpHandoffPackage } from '../../comercial/cognitive/ZeCognitiveTypes'
 
 export type ZeOpsIntent =
   | 'CRIAR_TAREFA'
@@ -14,7 +15,8 @@ export interface ZeOpsInput extends ZeCognitiveInput {
   intent: ZeOpsIntent
 }
 
-export { ZeCognitiveInput, ZeCognitiveOutput, ZcpHandoffPackage, createZcpHandoff, verifyZcpHandoff }
+export { createZcpHandoff, verifyZcpHandoff }
+export type { ZeCognitiveInput, ZeCognitiveOutput, ZcpHandoffPackage }
 
 const OPS_ERROR_MESSAGES: Record<string, string> = {
   TIPO_INVALIDO: 'Tipo de tarefa inválido. Os tipos válidos são: limpeza, manutencao, vistoria, entrega, inspecao.',

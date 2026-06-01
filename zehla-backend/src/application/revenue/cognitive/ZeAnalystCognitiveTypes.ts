@@ -1,4 +1,5 @@
-import { ZeCognitiveInput, ZeCognitiveOutput, ZcpHandoffPackage, createZcpHandoff, verifyZcpHandoff } from '../../comercial/cognitive/ZeCognitiveTypes'
+import { createZcpHandoff, verifyZcpHandoff } from '../../comercial/cognitive/ZeCognitiveTypes'
+import type { ZeCognitiveInput, ZeCognitiveOutput, ZcpHandoffPackage } from '../../comercial/cognitive/ZeCognitiveTypes'
 
 export type ZeAnalystIntent =
   | 'CALCULAR_TARIFA_DINAMICA'
@@ -12,7 +13,8 @@ export interface ZeAnalystInput extends ZeCognitiveInput {
   intent: ZeAnalystIntent
 }
 
-export { ZeCognitiveInput, ZeCognitiveOutput, ZcpHandoffPackage, createZcpHandoff, verifyZcpHandoff }
+export { createZcpHandoff, verifyZcpHandoff }
+export type { ZeCognitiveInput, ZeCognitiveOutput, ZcpHandoffPackage }
 
 const ANALYST_ERROR_MESSAGES: Record<string, string> = {
   TARIFA_NOT_FOUND: 'Regra tarifária não encontrada. Verifique o identificador.',

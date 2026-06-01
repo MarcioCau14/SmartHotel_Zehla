@@ -7,7 +7,7 @@ test.describe('Autenticação - Login', () => {
   });
 
   test('deve exibir o formulário de login com campos e botão', async ({ page }) => {
-    await page.goto('/login', { waitUntil: 'domcontentloaded' });
+    await page.goto('/login', { waitUntil: 'networkidle' });
 
     // Título
     await expect(
@@ -28,7 +28,7 @@ test.describe('Autenticação - Login', () => {
     await mockLoginApi(page);
     await mockSessionApi(page);
 
-    await page.goto('/login', { waitUntil: 'domcontentloaded' });
+    await page.goto('/login', { waitUntil: 'networkidle' });
 
     // Preencher credenciais mockadas
     const emailInput = page.getByPlaceholder('seu@email.com');
