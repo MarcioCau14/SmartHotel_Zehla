@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { RouterMetricsCollector } from '../../domain/decision/observability/RouterMetricsCollector';
-import { RoutingEventWriter } from '../../domain/decision/observability/RoutingEventWriter';
+import { FileSystemRoutingEventWriter } from '../../infrastructure/observability/FileSystemRoutingEventWriter';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 
@@ -35,10 +35,10 @@ describe('ZaosNeuroRouter Lote 6 Test Suite — Observabilidade e Auditoria', ()
   });
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 1. Testes de Coleta de Métricas em Memória
+  // 1. Testes de Coleta de Métricas em Memória (Domínio)
   // ──────────────────────────────────────────────────────────────────────────
 
-  describe('1. RouterMetricsCollector', () => {
+  describe('1. RouterMetricsCollector (Domínio)', () => {
     it('1.1. Agrega contagens de requisições, provedores e buckets de forma consistente', () => {
       const collector = RouterMetricsCollector.getInstance();
 
@@ -50,7 +50,7 @@ describe('ZaosNeuroRouter Lote 6 Test Suite — Observabilidade e Auditoria', ()
       const snapshot = collector.getSnapshot();
 
       expect(snapshot.totalDecisions).toBe(4);
-      expect(snapshot.successRate).toBe(0.75); // 3 suceesos em 4 requests
+      expect(snapshot.successRate).toBe(0.75); // 3 sucessos em 4 requests
       expect(snapshot.totalCostUsd).toBe(0.0054); // 0.0001 + 0.0001 + 0.0002 + 0.0050
 
       // Assertiva dos buckets
@@ -64,15 +64,21 @@ describe('ZaosNeuroRouter Lote 6 Test Suite — Observabilidade e Auditoria', ()
       expect(decisionsByProvider.get('gpt-4o')).toBe(1);
     });
 
-    it('1.2. Calcula média e percentil P95 com precisão estatística exata para 100 latências', () => {
+    it('1.2. Calcula média e percentil P95 com precisão estatística exata para 100 latências não-ordenadas', () => {
       const collector = new RouterMetricsCollector(100);
 
-      // Injetar exatamente 100 latências de 1ms até 100ms
-      for (let i = 1; i <= 100; i++) {
-        collector.recordDecision('00', 'gemini-flash', i, 0, true);
+      // Criar 100 latências sequenciais de 1ms até 100ms
+      const latencies = Array.from({ length: 100 }, (_, i) => i + 1);
+
+      // Embaralhar latências para injetar uma série desordenada
+      const shuffled = [...latencies].sort(() => Math.random() - 0.5);
+
+      // Injetar série desordenada
+      for (const lat of shuffled) {
+        collector.recordDecision('00', 'gemini-flash', lat, 0, true);
       }
 
-      // Latência média esperada: (1 + 100) / 2 = 50.5 ms
+      // Latência média esperada: (1 + 100) / 2 = 50.5 ms (deve ser exata independente da ordem)
       expect(collector.getAverageLatency()).toBe(50.5);
 
       // Percentil P95 estatístico exato para [1..100] ordenado deve ser exatamente 95.0
@@ -97,12 +103,12 @@ describe('ZaosNeuroRouter Lote 6 Test Suite — Observabilidade e Auditoria', ()
   });
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 2. Testes do Escritor de Eventos e Auditoria
+  // 2. Testes do Adaptador de Infraestrutura de Gravação (Infraestrutura)
   // ──────────────────────────────────────────────────────────────────────────
 
-  describe('2. RoutingEventWriter', () => {
-    it('2.1. Grava a string estrita em JSON Lines válido (.jsonl) sem travar a thread', async () => {
-      const writer = new RoutingEventWriter(testLogPath);
+  describe('2. FileSystemRoutingEventWriter (Infraestrutura)', () => {
+    it('2.1. Formata a string estruturada em JSON Lines válido (.jsonl) e grava sem travar a thread de execução', async () => {
+      const writer = new FileSystemRoutingEventWriter(testLogPath);
 
       const timestamp = Date.now();
       const mockEvent = {
@@ -117,21 +123,18 @@ describe('ZaosNeuroRouter Lote 6 Test Suite — Observabilidade e Auditoria', ()
         timestamp,
       };
 
-      // Início do timing para garantir não-bloqueio (medição assíncrona)
+      // Início da medição de latência síncrona para provar não-bloqueio de I/O
       const start = performance.now();
       const promise = writer.writeEvent(mockEvent);
       const end = performance.now();
 
-      // O início da promessa deve ser extremamente rápido e não síncrono
-      expect(end - start).toBeLessThan(10.0); // Não bloqueante
+      // A gravação em background de I/O não deve atrasar a CPU principal
+      expect(end - start).toBeLessThan(10.0); // O(1) não bloqueante < 10ms
 
-      // Aguarda a gravação no fs
+      // Aguardar dreno físico no disco
       await promise;
 
-      // Ler e auditar conteúdo do arquivo
-      const fileExists = await fs.stat(testLogPath).then(() => true).catch(() => false);
-      expect(fileExists).toBe(true);
-
+      // Ler e auditar conteúdo do arquivo físico temporário
       const content = await fs.readFile(testLogPath, 'utf8');
       const lines = content.trim().split('\n');
       expect(lines.length).toBe(1);
@@ -150,8 +153,8 @@ describe('ZaosNeuroRouter Lote 6 Test Suite — Observabilidade e Auditoria', ()
       });
     });
 
-    it('2.2. Garante a estrutura correta de múltiplos registros sequenciais', async () => {
-      const writer = new RoutingEventWriter(testLogPath);
+    it('2.2. Mantém a integridade estrutural e formato de linha única em múltiplos logs sequenciais', async () => {
+      const writer = new FileSystemRoutingEventWriter(testLogPath);
 
       const event1 = {
         traceId: 'trace-001',
@@ -162,6 +165,7 @@ describe('ZaosNeuroRouter Lote 6 Test Suite — Observabilidade e Auditoria', ()
         latencyMs: 80,
         costAdjusted: 0.0001,
         isFallback: false,
+        timestamp: Date.now(),
       };
 
       const event2 = {
@@ -173,6 +177,7 @@ describe('ZaosNeuroRouter Lote 6 Test Suite — Observabilidade e Auditoria', ()
         latencyMs: 310,
         costAdjusted: 0.0080,
         isFallback: true,
+        timestamp: Date.now() + 10,
       };
 
       await writer.writeEvent(event1);
