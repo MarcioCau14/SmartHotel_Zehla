@@ -4,6 +4,7 @@ import { renderHook, act, waitFor } from '@testing-library/react'
 import { useAuth } from '../../hooks/useAuth'
 import { useLeadsKanban } from '../../hooks/useLeadsKanban'
 import { useZehlaBrain } from '../../hooks/useZehlaBrain'
+import { useRoomsGrid } from '../../hooks/useRoomsGrid'
 import { configureApiClient } from '../../hooks/apiClient'
 
 function mockFetchOnce(status: number, body: unknown) {
@@ -264,5 +265,136 @@ describe('useZehlaBrain', () => {
       expect(res.isOk).toBe(false)
     }
     expect(result.current.events).toHaveLength(0)
+  })
+})
+
+describe('useRoomsGrid', () => {
+  beforeEach(() => {
+    vi.mocked(fetch).mockReset()
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(JSON.stringify({ success: true, data: [] }), { status: 200 }),
+    )
+  })
+
+  it('deve iniciar com isLoading=false e rooms vazio', () => {
+    const { result } = renderHook(() => useRoomsGrid('prop-1'))
+    expect(result.current.isLoading).toBe(false)
+    expect(result.current.error).toBeNull()
+    expect(result.current.rooms).toEqual([])
+  })
+
+  it('deve carregar quartos com sucesso', async () => {
+    mockFetchOnce(200, {
+      success: true,
+      data: [
+        { id: 'room-1', number: '101', type: 'STANDARD', status: 'AVAILABLE', basePrice: 200 },
+        { id: 'room-2', number: '102', type: 'DELUXE', status: 'OCCUPIED', basePrice: 350 },
+        { id: 'room-3', number: '103', type: 'SUITE', status: 'CLEANING', basePrice: 500 },
+      ],
+    })
+
+    const { result } = renderHook(() => useRoomsGrid('prop-1'))
+
+    await act(async () => {
+      await result.current.refresh()
+    })
+
+    expect(result.current.isLoading).toBe(false)
+    expect(result.current.rooms).toHaveLength(3)
+
+    const livre = result.current.rooms.find((r) => r.number === '101')
+    expect(livre?.status).toBe('LIVRE')
+
+    const ocupado = result.current.rooms.find((r) => r.number === '102')
+    expect(ocupado?.status).toBe('OCUPADO')
+
+    const limpeza = result.current.rooms.find((r) => r.number === '103')
+    expect(limpeza?.status).toBe('AGUARDANDO_LIMPEZA')
+  })
+
+  it('deve alterar status do quarto com sucesso', async () => {
+    mockFetchOnce(200, {
+      success: true,
+      data: [
+        { id: 'room-1', number: '101', type: 'STANDARD', status: 'AVAILABLE', basePrice: 200 },
+      ],
+    })
+    mockFetchOnce(200, { success: true, data: { id: 'room-1', status: 'CLEANING' } })
+
+    const { result } = renderHook(() => useRoomsGrid('prop-1'))
+
+    await act(async () => {
+      await result.current.refresh()
+    })
+
+    expect(result.current.rooms).toHaveLength(1)
+    expect(result.current.rooms[0].status).toBe('LIVRE')
+
+    mockFetchOnce(200, { success: true, data: { id: 'room-1', status: 'CLEANING' } })
+
+    let alterResult: unknown
+    await act(async () => {
+      alterResult = await result.current.alterarStatusQuarto('room-1', 'AGUARDANDO_LIMPEZA')
+    })
+
+    expect(alterResult).toBeDefined()
+    if (alterResult && typeof alterResult === 'object' && 'isOk' in alterResult) {
+      const res = alterResult as { isOk: boolean }
+      expect(res.isOk).toBe(true)
+    }
+    expect(result.current.rooms[0].status).toBe('AGUARDANDO_LIMPEZA')
+  })
+
+  it('deve registrar limpeza e mudar status para LIVRE', async () => {
+    mockFetchOnce(200, {
+      success: true,
+      data: [
+        { id: 'room-1', number: '101', type: 'STANDARD', status: 'CLEANING', basePrice: 200 },
+      ],
+    })
+    mockFetchOnce(200, { success: true, data: { id: 'room-1', status: 'AVAILABLE' } })
+
+    const { result } = renderHook(() => useRoomsGrid('prop-1'))
+
+    await act(async () => {
+      await result.current.refresh()
+    })
+
+    expect(result.current.rooms[0].status).toBe('AGUARDANDO_LIMPEZA')
+
+    mockFetchOnce(200, { success: true, data: { id: 'room-1', status: 'AVAILABLE' } })
+
+    await act(async () => {
+      await result.current.registrarLimpeza('room-1')
+    })
+
+    expect(result.current.rooms[0].status).toBe('LIVRE')
+  })
+
+  it('deve tratar erro de alteracao de status sem estourar excecao', async () => {
+    mockFetchOnce(200, {
+      success: true,
+      data: [
+        { id: 'room-1', number: '101', type: 'STANDARD', status: 'AVAILABLE', basePrice: 200 },
+      ],
+    })
+    mockFetchOnce(400, { error: 'Transição inválida' })
+
+    const { result } = renderHook(() => useRoomsGrid('prop-1'))
+
+    await act(async () => {
+      await result.current.refresh()
+    })
+
+    let alterResult: unknown
+    await act(async () => {
+      alterResult = await result.current.alterarStatusQuarto('room-1', 'EM_MANUTENCAO')
+    })
+
+    expect(alterResult).toBeDefined()
+    if (alterResult && typeof alterResult === 'object' && 'isOk' in alterResult) {
+      const res = alterResult as { isOk: boolean }
+      expect(res.isOk).toBe(false)
+    }
   })
 })

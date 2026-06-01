@@ -65,3 +65,7 @@ export function apiGet<T>(path: string): Promise<Result<T, Error>> {
 export function apiPost<T>(path: string, body?: unknown): Promise<Result<T, Error>> {
   return apiRequest<T>('POST', path, body)
 }
+
+export function apiPatch<T>(path: string, body?: unknown): Promise<Result<T, Error>> {
+  return apiRequest<T>('PATCH', path, body)
+}

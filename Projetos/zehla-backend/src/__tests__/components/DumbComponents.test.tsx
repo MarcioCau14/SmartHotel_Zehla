@@ -6,6 +6,8 @@ import { KanbanColumn } from '../../components/ui/KanbanColumn'
 import { ChatBubble } from '../../components/ui/ChatBubble'
 import { CognitiveTerminalUI } from '../../components/zcc/CognitiveTerminalUI'
 import { LeadKanbanUI, montarColunas } from '../../components/zcc/LeadKanbanUI'
+import { RoomCard } from '../../components/zcc/RoomCard'
+import { RoomsGridUI } from '../../components/zcc/RoomsGridUI'
 
 describe('KanbanCard', () => {
   const baseProps = {
@@ -293,5 +295,132 @@ describe('LeadKanbanUI', () => {
     )
 
     expect(screen.getByText('Erro ao conectar com servidor')).toBeDefined()
+  })
+})
+
+describe('RoomCard', () => {
+  const baseCard = {
+    roomId: 'room-1',
+    numero: '101',
+    tipo: 'STANDARD',
+    preco: 250,
+  }
+
+  it('deve renderizar numero e tipo do quarto', () => {
+    render(<RoomCard {...baseCard} status="LIVRE" />)
+    expect(screen.getByText('101')).toBeDefined()
+    expect(screen.getByText('STANDARD')).toBeDefined()
+  })
+
+  it('deve renderizar preco base', () => {
+    render(<RoomCard {...baseCard} status="LIVRE" />)
+    expect(screen.getByText('R$ 250.00')).toBeDefined()
+  })
+
+  it('deve renderizar label LIVRE com cor verde', () => {
+    render(<RoomCard {...baseCard} status="LIVRE" />)
+    expect(screen.getByText('Livre')).toBeDefined()
+  })
+
+  it('deve renderizar label OCUPADO com cor vermelha', () => {
+    render(<RoomCard {...baseCard} status="OCUPADO" />)
+    expect(screen.getByText('Ocupado')).toBeDefined()
+  })
+
+  it('deve mostrar nome do hospede quando fornecido', () => {
+    render(<RoomCard {...baseCard} status="OCUPADO" hospede="João" />)
+    expect(screen.getByText('João')).toBeDefined()
+  })
+
+  it('deve exibir botao "Limpar Quarto" quando AGUARDANDO_LIMPEZA', () => {
+    render(<RoomCard {...baseCard} status="AGUARDANDO_LIMPEZA" onStatusChange={vi.fn()} />)
+    expect(screen.getByText('Limpar Quarto')).toBeDefined()
+  })
+
+  it('deve disparar callback ao clicar em "Limpar Quarto" com payload LIVRE', () => {
+    const onStatusChange = vi.fn()
+    render(<RoomCard {...baseCard} status="AGUARDANDO_LIMPEZA" onStatusChange={onStatusChange} />)
+    fireEvent.click(screen.getByText('Limpar Quarto'))
+    expect(onStatusChange).toHaveBeenCalledWith('room-1', 'LIVRE')
+    expect(onStatusChange).toHaveBeenCalledTimes(1)
+  })
+
+  it('deve exibir botao "Solicitar Limpeza" quando OCUPADO', () => {
+    render(<RoomCard {...baseCard} status="OCUPADO" onStatusChange={vi.fn()} />)
+    expect(screen.getByText('Solicitar Limpeza')).toBeDefined()
+  })
+
+  it('deve disparar callback ao clicar "Solicitar Limpeza" com payload AGUARDANDO_LIMPEZA', () => {
+    const onStatusChange = vi.fn()
+    render(<RoomCard {...baseCard} status="OCUPADO" onStatusChange={onStatusChange} />)
+    fireEvent.click(screen.getByText('Solicitar Limpeza'))
+    expect(onStatusChange).toHaveBeenCalledWith('room-1', 'AGUARDANDO_LIMPEZA')
+    expect(onStatusChange).toHaveBeenCalledTimes(1)
+  })
+
+  it('nao deve exibir botao de acao quando LIVRE', () => {
+    render(<RoomCard {...baseCard} status="LIVRE" onStatusChange={vi.fn()} />)
+    expect(screen.queryByText('Limpar Quarto')).toBeNull()
+    expect(screen.queryByText('Solicitar Limpeza')).toBeNull()
+  })
+
+  it('deve exibir botao "Finalizar Manutencao" quando EM_MANUTENCAO', () => {
+    render(<RoomCard {...baseCard} status="EM_MANUTENCAO" onStatusChange={vi.fn()} />)
+    expect(screen.getByText('Finalizar Manutenção')).toBeDefined()
+  })
+})
+
+describe('RoomsGridUI', () => {
+  it('deve renderizar grid de quartos', () => {
+    render(
+      <RoomsGridUI
+        rooms={[
+          { id: 'r1', number: '101', type: 'STANDARD', status: 'LIVRE', basePrice: 200 },
+          { id: 'r2', number: '102', type: 'DELUXE', status: 'OCUPADO', basePrice: 350, guestName: 'Ana' },
+        ]}
+        isLoading={false}
+        error={null}
+        onStatusChange={vi.fn()}
+      />,
+    )
+    expect(screen.getByText('101')).toBeDefined()
+    expect(screen.getByText('102')).toBeDefined()
+    expect(screen.getByText('Ana')).toBeDefined()
+  })
+
+  it('deve renderizar loading state', () => {
+    render(
+      <RoomsGridUI
+        rooms={[]}
+        isLoading={true}
+        error={null}
+        onStatusChange={vi.fn()}
+      />,
+    )
+    expect(screen.getByText('Carregando mapa de quartos...')).toBeDefined()
+  })
+
+  it('deve renderizar mensagem de erro', () => {
+    render(
+      <RoomsGridUI
+        rooms={[]}
+        isLoading={false}
+        error="Falha na conexão"
+        onStatusChange={vi.fn()}
+      />,
+    )
+    expect(screen.getByText('Falha na conexão')).toBeDefined()
+  })
+
+  it('deve renderizar mensagem vazia quando sem quartos', () => {
+    render(
+      <RoomsGridUI
+        rooms={[]}
+        isLoading={false}
+        error={null}
+        onStatusChange={vi.fn()}
+      />,
+    )
+    expect(screen.getByText('Nenhum quarto encontrado para esta propriedade.')).toBeDefined()
   })
 })
