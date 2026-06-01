@@ -1,6 +1,6 @@
 /**
- * ZEHLA SMARTHOTEL — DomainModels Test Suite (Lote 1 Definitivo)
- * Módulo: src/__tests__/decision/DomainModels.test.ts
+ * ZEHLA SMARTHOTEL — ZaosNeuroRouter Lote 1 Test Suite
+ * Módulo: src/__tests__/decision/ZaosNeuroRouterLote1.test.ts
  */
 
 import { describe, it, expect, vi } from 'vitest';
@@ -12,9 +12,9 @@ import { CircuitBreakerState, CircuitState, DEFAULT_CB_CONFIG } from '../../doma
 import { BudgetGuard, BudgetLevel, BudgetSnapshot } from '../../domain/decision/models/BudgetGuard';
 import { InMemoryRouterStateAdapter } from '../../domain/decision/adapters/InMemoryRouterStateAdapter';
 
-describe('DomainModels Test Suite — Lote 1 Definitivo', () => {
+describe('ZaosNeuroRouter Lote 1 Test Suite — Domínio Puro e Resiliência', () => {
 
-  // ── TESTE 1-2: ProviderCapabilityProfile ──
+  // ── ProviderCapabilityProfile ──
   describe('ProviderCapabilityProfile', () => {
     const caps: ICapabilityVector = {
       reasoning: 0.9,
@@ -97,7 +97,7 @@ describe('DomainModels Test Suite — Lote 1 Definitivo', () => {
     });
   });
 
-  // ── TESTE 3-10: BetaBinomialPosterior ──
+  // ── BetaBinomialPosterior ──
   describe('BetaBinomialPosterior', () => {
     it('3. BetaBinomialPosterior.UNIFORM — Posterior inicial Beta(1,1), mean=0.5', () => {
       const p = BetaBinomialPosterior.UNIFORM;
@@ -178,7 +178,7 @@ describe('DomainModels Test Suite — Lote 1 Definitivo', () => {
     });
   });
 
-  // ── TESTE 11-12: RoutingContext & RoutingDecision ──
+  // ── RoutingContext & RoutingDecision ──
   describe('RoutingContext & RoutingDecision', () => {
     it('11. RoutingContext.create() — Criação imutável, cálculo de elapsedMs', () => {
       const start = Date.now() - 5000;
@@ -232,7 +232,7 @@ describe('DomainModels Test Suite — Lote 1 Definitivo', () => {
     });
   });
 
-  // ── TESTE 13-18: CircuitBreakerState ──
+  // ── CircuitBreakerState ──
   describe('Value Object: CircuitBreakerState', () => {
     it('13. CircuitBreakerState.INITIAL — Estado inicial CLOSED com todos os campos zerados', () => {
       const cb = CircuitBreakerState.INITIAL;
@@ -317,7 +317,7 @@ describe('DomainModels Test Suite — Lote 1 Definitivo', () => {
     });
   });
 
-  // ── TESTE 19-21: BudgetGuard ──
+  // ── BudgetGuard ──
   describe('Value Object: BudgetGuard', () => {
     const snapshotNormal: BudgetSnapshot = {
       dailySpendUsd: 1.0,
@@ -400,7 +400,7 @@ describe('DomainModels Test Suite — Lote 1 Definitivo', () => {
     });
   });
 
-  // ── TESTE 22-24: InMemoryRouterStateAdapter ──
+  // ── InMemoryRouterStateAdapter ──
   describe('InMemoryRouterStateAdapter', () => {
     it('22. InMemoryRouterStateAdapter — load/save de posteriors e CB states em memória pura', async () => {
       const adapter = new InMemoryRouterStateAdapter();
@@ -443,6 +443,166 @@ describe('DomainModels Test Suite — Lote 1 Definitivo', () => {
       
       adapter.reset();
       expect(adapter.loadAllPosteriors().size).toBe(0);
+    });
+  });
+
+  // ── Mathematical Proofs (Thompson Sampling, Bayesian Isolation, Decays) ──
+  describe('Mathematical Proofs & Thompson Sampling', () => {
+    it('25. Convergência Sublinear O(log T) — Thompson Sampling puro migra do ruim (50%) para o bom (95%) em <150 turnos', () => {
+      // Provedor A (Bom): sucesso_real = 95%
+      // Provedor B (Ruim): sucesso_real = 50%
+      let postA = BetaBinomialPosterior.UNIFORM;
+      let postB = BetaBinomialPosterior.UNIFORM;
+
+      const rateRealA = 0.95;
+      const rateRealB = 0.50;
+
+      // Gerador de números pseudo-aleatórios linear congruencial simples (LCG) para consistência determinística
+      let seed = 123456789;
+      const lcgPrng = () => {
+        seed = (1103515245 * seed + 12345) % 2147483648;
+        return seed / 2147483648;
+      };
+
+      let choicesA = 0;
+      let choicesB = 0;
+
+      // Simularemos 150 turnos
+      for (let turn = 1; turn <= 150; turn++) {
+        const thetaA = postA.sample(lcgPrng);
+        const thetaB = postB.sample(lcgPrng);
+
+        const selected = thetaA >= thetaB ? 'A' : 'B';
+        const roll = lcgPrng();
+
+        if (selected === 'A') {
+          choicesA++;
+          const success = roll < rateRealA;
+          postA = postA.update(success);
+        } else {
+          choicesB++;
+          const success = roll < rateRealB;
+          postB = postB.update(success);
+        }
+      }
+
+      // Thompson Sampling deve convergir para o melhor provedor (A)
+      expect(choicesA).toBeGreaterThan(choicesB);
+      expect(postA.mean).toBeGreaterThan(0.85); // Converge próximo à média real
+      expect(postB.mean).toBeLessThan(postA.mean); // Sub-ótimo fica defasado
+    });
+
+    it('26. Isolamento Bayesiano — 500 falhas no bucket 05 (pricing) não contaminam nem alteram a posterior do bucket 00 (faq)', () => {
+      const adapter = new InMemoryRouterStateAdapter();
+
+      adapter.setPosterior('00__gpt-4o-mini', { alpha: 1.0, beta: 1.0, nObservations: 0, lastUpdateAt: 0 });
+      adapter.setPosterior('05__gpt-4o-mini', { alpha: 1.0, beta: 1.0, nObservations: 0, lastUpdateAt: 0 });
+
+      // Simular 500 falhas no bucket 05
+      let pricingPosterior = BetaBinomialPosterior.UNIFORM;
+      for (let i = 0; i < 500; i++) {
+        pricingPosterior = pricingPosterior.update(false);
+      }
+
+      adapter.setPosterior('05__gpt-4o-mini', {
+        alpha: pricingPosterior.alpha,
+        beta: pricingPosterior.beta,
+        nObservations: pricingPosterior.nObservations,
+        lastUpdateAt: Date.now()
+      });
+
+      const posteriors = adapter.loadAllPosteriors();
+
+      const post05 = posteriors.get('05__gpt-4o-mini')!;
+      expect(post05.alpha).toBe(1.0);
+      expect(post05.beta).toBe(501.0);
+      expect(post05.nObservations).toBe(500);
+
+      const post00 = posteriors.get('00__gpt-4o-mini')!;
+      expect(post00.alpha).toBe(1.0);
+      expect(post00.beta).toBe(1.0);
+      expect(post00.nObservations).toBe(0);
+    });
+
+    it('27. Cold Start MMLU Priors — Provedores com prior informado (capability=0.85) iniciam com média esperada de 0.85', () => {
+      const p = BetaBinomialPosterior.fromBenchmarkPriors(0.85, 10);
+      
+      expect(p.alpha).toBe(9.5);
+      expect(p.beta).toBe(2.5);
+      expect(p.mean).toBeCloseTo(9.5 / 12);
+      expect(p.nObservations).toBe(0);
+    });
+
+    it('28. Decaimento Não-Estacionário — Posteriors decaem com γ=0.999 sem perder prior mass de Beta(1,1)', () => {
+      const initial = BetaBinomialPosterior.create(101.0, 101.0, 200, 1000);
+      const decayed = initial.decay(0.999);
+      
+      expect(decayed.alpha).toBe(100.9);
+      expect(decayed.beta).toBe(100.9);
+      expect(decayed.mean).toBe(0.5);
+    });
+
+    it('29. Matriz 32×5 Completa — Inicialização de 160 posteriors (32 buckets × 5 provedores) sem colisão de chaves', () => {
+      const adapter = new InMemoryRouterStateAdapter();
+      const providers = ['rules_engine', 'gpt-4o-mini', 'claude-3.5-sonnet', 'gpt-4o', 'claude-3-opus'];
+
+      const updates: Array<{
+        bucketId: string;
+        providerName: string;
+        alpha: number;
+        beta: number;
+        nObservations: number;
+        lastUpdateAt: number;
+      }> = [];
+
+      for (let b = 0; b < 32; b++) {
+        const bucketId = b.toString().padStart(2, '0');
+        for (const p of providers) {
+          updates.push({
+            bucketId,
+            providerName: p,
+            alpha: 1.0,
+            beta: 1.0,
+            nObservations: 0,
+            lastUpdateAt: Date.now(),
+          });
+        }
+      }
+
+      expect(updates.length).toBe(160);
+      adapter.savePosteriorBatch(updates);
+
+      const posteriors = adapter.loadAllPosteriors();
+      expect(posteriors.size).toBe(160);
+
+      const sampleKey = '13__claude-3.5-sonnet';
+      expect(posteriors.has(sampleKey)).toBe(true);
+    });
+
+    it('30. Reprodutibilidade com PRNG — Duas simulações de amostragem com a mesma semente LCG geram sequências idênticas', () => {
+      const p = BetaBinomialPosterior.create(10.0, 5.0, 15, 1000);
+
+      let seed1 = 987654321;
+      const prng1 = () => {
+        seed1 = (1103515245 * seed1 + 12345) % 2147483648;
+        return seed1 / 2147483648;
+      };
+
+      let seed2 = 987654321;
+      const prng2 = () => {
+        seed2 = (1103515245 * seed2 + 12345) % 2147483648;
+        return seed2 / 2147483648;
+      };
+
+      const samples1: number[] = [];
+      const samples2: number[] = [];
+
+      for (let i = 0; i < 50; i++) {
+        samples1.push(p.sample(prng1));
+        samples2.push(p.sample(prng2));
+      }
+
+      expect(samples1).toEqual(samples2);
     });
   });
 });
