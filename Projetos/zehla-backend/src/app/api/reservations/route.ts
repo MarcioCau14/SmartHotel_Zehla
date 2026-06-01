@@ -1,43 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { ReservationControllerFactory } from '@/infrastructure/http/reservation/ReservationControllerFactory';
 
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status');
+    const useCase = ReservationControllerFactory.makeListUseCase();
 
-    const reservations = await prisma.reservation.findMany({
-      where: status && status !== 'all' ? { status: status as any } : {},
-      include: {
-        room: true
-      },
-      orderBy: { createdAt: 'desc' }
+    const result = await useCase.execute({
+      propertyId: searchParams.get('propertyId') ?? undefined,
+      status: searchParams.get('status') ?? undefined,
     });
 
-    // Adapt to the format expected by the frontend
-    const formatted = reservations.map(res => ({
-      id: res.id,
-      guestName: res.guestName,
-      guestEmail: res.guestEmail,
-      guestPhone: res.guestPhone,
-      roomNumber: res.room?.number || 'N/A',
-      roomType: res.room?.type || 'Standard',
-      checkIn: res.checkIn.toLocaleDateString('pt-BR'),
-      checkOut: res.checkOut.toLocaleDateString('pt-BR'),
-      status: res.status,
-      totalAmount: res.totalAmount,
-      propertyId: res.propertyId,
-      createdAt: res.createdAt.toISOString()
-    }));
+    if (result.isFail) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
+    }
 
-    return NextResponse.json(formatted);
+    return NextResponse.json(result.value.reservations);
   } catch (error: any) {
     console.error('❌ [RESERVATIONS API] Error:', error);
     return NextResponse.json({ error: 'Erro interno', details: error.message }, { status: 500 });
@@ -47,18 +32,49 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const { id, status } = await request.json();
+    const { id, action, status } = await request.json();
+    const resolvedAction = action ?? (
+      status === 'CANCELLED' ? 'CANCEL' :
+      status === 'CHECKED_IN' ? 'CHECK_IN' :
+      status === 'CHECKED_OUT' ? 'CHECK_OUT' :
+      null
+    );
 
-    const updated = await prisma.reservation.update({
-      where: { id },
-      data: { status }
-    });
+    switch (resolvedAction) {
+      case 'CANCEL': {
+        const useCase = ReservationControllerFactory.makeCancelUseCase();
+        const result = await useCase.execute({ reservationId: id });
+        if (result.isFail) {
+          return NextResponse.json({ error: result.error }, { status: 400 });
+        }
+        return NextResponse.json({ success: true });
+      }
 
-    return NextResponse.json({ success: true, data: updated });
+      case 'CHECK_IN': {
+        const useCase = ReservationControllerFactory.makeCheckInUseCase();
+        const result = await useCase.execute({ reservationId: id });
+        if (result.isFail) {
+          return NextResponse.json({ error: result.error }, { status: 400 });
+        }
+        return NextResponse.json({ success: true, data: result.value });
+      }
+
+      case 'CHECK_OUT': {
+        const useCase = ReservationControllerFactory.makeCheckOutUseCase();
+        const result = await useCase.execute({ reservationId: id });
+        if (result.isFail) {
+          return NextResponse.json({ error: result.error }, { status: 400 });
+        }
+        return NextResponse.json({ success: true, data: result.value });
+      }
+
+      default:
+        return NextResponse.json({ error: 'Ação inválida' }, { status: 400 });
+    }
   } catch (error: any) {
     return NextResponse.json({ success: false, error: 'Erro ao atualizar reserva', details: error.message }, { status: 500 });
   }

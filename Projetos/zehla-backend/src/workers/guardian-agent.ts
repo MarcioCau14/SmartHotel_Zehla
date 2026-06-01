@@ -87,7 +87,6 @@ class GuardianAgent {
 
     while (this.isRunning) {
       try {
-        // Lê do stream Redis (bloqueante por 5s)
         const messages = await this.redis.xread(
           'BLOCK', 5000,
           'STREAMS', 'guardian:alerts', '$'
@@ -111,8 +110,8 @@ class GuardianAgent {
     }
   }
 
-  private async processAlert(alert: unknown) {
-    const { alertType, tenantId, metadata } = alert as { alertType: string; tenantId?: string; metadata?: { ip?: string } };
+  private async processAlert(alert: any) {
+    const { alertType, tenantId, metadata } = alert;
     const rule = RULES.find(r => r.alertType === alertType);
       
     if (!rule) {
@@ -159,8 +158,8 @@ class GuardianAgent {
     endTimer();
   }
 
-  private async executeActions(rule: GuardianRule, alert: unknown) {
-    const { tenantId, metadata } = alert as { tenantId?: string; metadata?: { ip?: string } };
+  private async executeActions(rule: GuardianRule, alert: any) {
+    const { tenantId, metadata } = alert;
       
     for (const action of rule.actions) {
       switch (action) {
@@ -195,12 +194,13 @@ class GuardianAgent {
 
   private async blockIP(ip: string, durationSeconds: number) {
     await this.redis.setex(`block:ip:${ip}`, durationSeconds, '1');
-    console.log(`[Guardian] 🔴 IP ${ip} BLOQUEADO por ${durationSeconds}s`);
+    
   }
 
   private async isolateTenant(tenantId: string) {
     await this.redis.setex(`isolate:tenant:${tenantId}`, 3600, '1');
     await this.updateIsolatedGauge();
+      
     try {
       await prisma.securityIncident.create({
         data: {
@@ -212,8 +212,6 @@ class GuardianAgent {
     } catch (e) {
       console.error('[Guardian] Failed to persist incident:', e);
     }
-
-    console.log(`[Guardian] ⚠️ Tenant ${tenantId} ISOLADO`);
   }
 
   private async updateIsolatedGauge() {
@@ -226,18 +224,17 @@ class GuardianAgent {
       required: 'MFA',
       expiresAt: Date.now() + 900000,
     }));
-    console.log(`[Guardian] 🔴 MFA imposto ao IP ${ip}`);
+     console.log(`Desafio MFA imposto ao IP ${ip}`);
   }
 
-  private async persistAlert(alert: unknown, rule: GuardianRule) {
-    const alertData = alert as { tenantId?: string; alertType?: string; metadata?: unknown };
+  private async persistAlert(alert: any, rule: GuardianRule) {
     try {
       await prisma.securityAlert.create({
         data: {
-          tenantId: alertData.tenantId || 'global',
-          alertType: alertData.alertType || 'UNKNOWN',
+          tenantId: alert.tenantId || 'global',
+          alertType: alert.alertType,
           severity: rule.severity,
-          metadata: JSON.stringify(alertData.metadata || {}),
+          metadata: JSON.stringify(alert.metadata || {}),
         },
       });
     } catch (e) {

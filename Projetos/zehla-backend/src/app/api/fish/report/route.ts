@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { execFile } from 'child_process';
+import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs';
-import { withApiSecurity } from '@/lib/server/with-api-security';
-import type { RouteHandler } from '@/lib/server/with-api-security';
 
-const execFileAsync = promisify(execFile);
+const execAsync = promisify(exec);
 
-const handler: RouteHandler = async (req) => {
+export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const leadId = searchParams.get('leadId');
   
@@ -23,6 +21,7 @@ const handler: RouteHandler = async (req) => {
       return NextResponse.json({ error: 'Lead não encontrado.' }, { status: 404 });
     }
 
+    // Compila os dados para o script ReportLab Python
     const payload = {
       name: lead.name,
       property: lead.property || lead.name,
@@ -42,6 +41,7 @@ const handler: RouteHandler = async (req) => {
       objectKeywords: lead.objectKeywords || '{}'
     };
 
+    // Criar scratch dir para arquivos temporários se não existir
     const tempDir = path.join(process.cwd(), 'scratch');
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
@@ -50,17 +50,23 @@ const handler: RouteHandler = async (req) => {
     const payloadPath = path.join(tempDir, `payload_${leadId}.json`);
     const pdfPath = path.join(tempDir, `dossier_${leadId}.pdf`);
 
+    // Escrever JSON temporário
     fs.writeFileSync(payloadPath, JSON.stringify(payload, null, 2));
 
+    // Executar o compilador Python ReportLab
     const scriptPath = path.join(process.cwd(), 'scripts', 'generate_body.py');
-    await execFileAsync('python3', [scriptPath, payloadPath, pdfPath]);
+    const command = `python3 "${scriptPath}" "${payloadPath}" "${pdfPath}"`;
+    
+    await execAsync(command);
 
     if (!fs.existsSync(pdfPath)) {
       throw new Error('O script Python de compilação ReportLab falhou ao gravar o PDF.');
     }
 
+    // Carrega o PDF em memória
     const pdfBuffer = fs.readFileSync(pdfPath);
 
+    // Limpar arquivos temporários imediatamente (Segurança e FinOps local)
     try {
       fs.unlinkSync(payloadPath);
       fs.unlinkSync(pdfPath);
@@ -68,6 +74,7 @@ const handler: RouteHandler = async (req) => {
       console.warn('⚠️ [FISH-REPORT] Falha ao excluir arquivos temporários:', cleanErr);
     }
 
+    // Stream do PDF binário para o browser com headers apropriados
     return new NextResponse(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
@@ -79,6 +86,4 @@ const handler: RouteHandler = async (req) => {
     console.error('❌ [FISH-REPORT] Falha na compilação do Dossier:', error);
     return NextResponse.json({ error: 'Erro interno ao compilar o dossier PDF.', details: error.message }, { status: 500 });
   }
-};
-
-export const GET = withApiSecurity(handler);
+}

@@ -1,9 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { withApiSecurity } from '@/lib/server/with-api-security';
-import type { RouteHandler } from '@/lib/server/with-api-security';
 
-const handler: RouteHandler = async () => {
+export async function GET() {
   try {
     const [totalLeads, hotLeads, byState, recentActivity] = await Promise.all([
       prisma.lead.count(),
@@ -29,6 +27,4 @@ const handler: RouteHandler = async () => {
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 });
   }
-};
-
-export const GET = withApiSecurity(handler);
+}

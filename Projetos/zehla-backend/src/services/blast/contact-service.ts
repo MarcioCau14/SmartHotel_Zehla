@@ -12,7 +12,7 @@ export interface ImportContactRequest {
 
 export async function importContacts(contacts: ImportContactRequest[], groupName: string) {
   let createdCount = 0;
-  let updatedCount = 0;const blastContactBatch = await prisma.blastContact.findMany({ where: { phone: { in: contacts.map((contact) => contact.phone) } } });const blastContactMap = new Map(blastContactBatch.map((r) => [r.phone, r]));
+  let updatedCount = 0;const blastContactBatch = await prisma.blastContact.findMany({ where: { phone: { in: contacts.map((contact) => contact.phone) } } });const blastContactMap = new Map<string, any>(blastContactBatch.map((r) => [r.phone, r]));
 
   for (const contact of contacts) {
     // Normalização do telefone (Remover caracteres não numéricos e garantir DDI)

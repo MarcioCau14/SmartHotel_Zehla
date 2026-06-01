@@ -1,25 +1,12 @@
 import IORedis from 'ioredis';
 
-const BASE_REDIS_URL = process.env.REDIS_URL;
+const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
+const REDIS_PORT = parseInt(process.env.REDIS_PORT || '6379');
 const isDev = process.env.NODE_ENV === 'development';
 
-export let redisConfig: Record<string, unknown>;
-
-if (BASE_REDIS_URL) {
-  const parsed = new URL(BASE_REDIS_URL);
-  redisConfig = {
-    host: parsed.hostname,
-    port: parseInt(parsed.port || '6379'),
-    username: parsed.username || undefined,
-    password: parsed.password || undefined,
-    tls: parsed.protocol === 'rediss:' ? {} as Record<string, unknown> : undefined,
-  };
-} else {
-  redisConfig = { host: 'localhost', port: 6379 };
-}
-
-const connectionConfig = {
-  ...redisConfig,
+export const redisConfig = {
+  host: REDIS_HOST,
+  port: REDIS_PORT,
   maxRetriesPerRequest: isDev ? 0 : null,
   retryStrategy(times: number) {
     if (isDev) return null;
@@ -30,7 +17,7 @@ const connectionConfig = {
 let redis: any;
 
 try {
-  const realRedis = new IORedis(connectionConfig);
+  const realRedis = new IORedis(redisConfig);
 
   if (isDev) {
     const silentHandler = {
@@ -55,8 +42,8 @@ try {
   }
 
   redis.on('error', (err: any) => {
-    if (isDev) {
-      // Silencioso em dev — módulo delivery não é crítico para desenvolvimento
+    if (isDev && (err.code === 'ECONNREFUSED' || err.message.includes('max retries'))) {
+      // Silencioso em dev
     } else {
       console.error('❌ [REDIS-DELIVERY] Erro:', err.message);
     }

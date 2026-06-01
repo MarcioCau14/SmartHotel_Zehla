@@ -95,7 +95,7 @@ export function TaskList() {
       if (priorityFilter !== 'all') params.set('priority', priorityFilter);
       const res = await fetch(`/api/crm/tasks?${params}`);
       if (res.ok) setTasks(await res.json());
-    } catch (_e) {
+    } catch {
       // silent
     } finally {
       setLoading(false);
@@ -115,7 +115,7 @@ export function TaskList() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
-    } catch (_e) {
+    } catch {
       await loadTasks();
     }
   };
@@ -144,7 +144,7 @@ export function TaskList() {
         setShowCreate(false);
         await loadTasks();
       }
-    } catch (_e) {
+    } catch {
       // silent
     } finally {
       setCreating(false);
@@ -155,7 +155,7 @@ export function TaskList() {
     setTasks((prev) => prev.filter((t) => t.id !== id));
     try {
       await fetch(`/api/crm/tasks/${id}`, { method: 'DELETE' });
-    } catch (_e) {
+    } catch {
       await loadTasks();
     }
   };

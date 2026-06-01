@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { QrCode, CreditCard, CheckCircle, ArrowDownUp, TrendingUp, Shield, Building, ArrowUpRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
 
 interface PaymentOption {
   name: string;
@@ -173,38 +174,115 @@ export function FintechHub() {
       {/* Split Rules */}
       <div className="glass-card p-5">
         <h3 className="text-sm font-semibold text-[#b4b4b4] mb-4">Regras de Split</h3>
-        <div className="space-y-2">
-          {[
-          { recipient: 'Pousada', percent: 85, amount: 'R$ 12.070,00', color: 'bg-purple-500' },
-          { recipient: 'ZEHLA SaaS', percent: 5, amount: 'R$ 710,00', color: 'bg-orange-500' },
-          { recipient: 'Pagar.me Gateway', percent: 2.99, amount: 'R$ 424,60', color: 'bg-cyan-500' },
-          { recipient: 'IA Processing Fee', percent: 3.01, amount: 'R$ 427,04', color: 'bg-amber-500' },
-          { recipient: 'Tributos ISS/PIS/COFINS', percent: 4.0, amount: 'R$ 568,00', color: 'bg-red-500' }].
-          map((rule, i) =>
-          <div key={i} className="flex items-center gap-3">
-              <div className={`w-2 h-8 rounded-full ${rule.color}`} />
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[#b4b4b4]">{rule.recipient}</span>
-                  <span className="text-sm font-mono text-[#efefef]">{rule.amount}</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            {[
+              { recipient: 'Pousada', percent: 85, amount: 'R$ 12.070,00', color: '#8B5CF6' },
+              { recipient: 'ZEHLA SaaS', percent: 5, amount: 'R$ 710,00', color: '#FF5500' },
+              { recipient: 'Pagar.me Gateway', percent: 2.99, amount: 'R$ 424,60', color: '#06B6D4' },
+              { recipient: 'IA Processing Fee', percent: 3.01, amount: 'R$ 427,04', color: '#F59E0B' },
+              { recipient: 'Tributos ISS/PIS/COFINS', percent: 4.0, amount: 'R$ 568,00', color: '#EF4444' }
+            ].map((rule, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-2 h-8 rounded-full" style={{ backgroundColor: rule.color }} />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-[#b4b4b4] font-medium">{rule.recipient}</span>
+                    <span className="text-xs font-mono text-[#efefef] font-semibold">{rule.amount}</span>
+                  </div>
+                  <div className="w-full bg-[#111111] rounded-full h-1 mt-1 border border-white/5">
+                    <div className="h-1 rounded-full" style={{ width: `${rule.percent}%`, backgroundColor: rule.color }} />
+                  </div>
                 </div>
-                <div className="w-full bg-[#242424] rounded-full h-1 mt-1">
-                  <div className="h-1 rounded-full" style={{ width: `${rule.percent}%`, backgroundColor: rule.color.replace('bg-', '') }} />
-                </div>
+                <span className="text-xs font-mono text-[#4d4d4d] w-12 text-right">{rule.percent}%</span>
               </div>
-              <span className="text-xs font-mono text-[#4d4d4d] w-12 text-right">{rule.percent}%</span>
-            </div>
-          )}
+            ))}
+          </div>
+          
+          <div className="flex items-center justify-center h-[200px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Pousada', value: 85, color: '#8B5CF6' },
+                    { name: 'ZEHLA SaaS', value: 5, color: '#FF5500' },
+                    { name: 'Pagar.me Gateway', value: 2.99, color: '#06B6D4' },
+                    { name: 'IA Processing Fee', value: 3.01, color: '#F59E0B' },
+                    { name: 'Tributos', value: 4.0, color: '#EF4444' }
+                  ]}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={75}
+                  paddingAngle={4}
+                  dataKey="value"
+                >
+                  {[
+                    { color: '#8B5CF6' },
+                    { color: '#FF5500' },
+                    { color: '#06B6D4' },
+                    { color: '#F59E0B' },
+                    { color: '#EF4444' }
+                  ].map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} stroke="rgba(0,0,0,0.5)" strokeWidth={1} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{ 
+                    background: '#050505', 
+                    border: '1px solid rgba(255,255,255,0.05)', 
+                    borderRadius: '12px', 
+                    fontSize: '11px',
+                    color: '#efefef'
+                  }} 
+                  formatter={(value: number) => [`${value}%`, 'Percentual']}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
-      {/* Weekly volume table */}
+      {/* Weekly volume */}
       <div className="glass-card p-5">
         <h3 className="text-sm font-semibold text-[#b4b4b4] mb-4">Volume Semanal</h3>
-        <div className="overflow-x-auto zehla-scroll-x">
+        
+        {/* Neon Area Chart */}
+        <div className="h-[220px] mb-6">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={dailyVolume} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorPix" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#FF5500" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#FF5500" stopOpacity={0.0}/>
+                </linearGradient>
+                <linearGradient id="colorCard" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.0}/>
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="day" stroke="#4d4d4d" fontSize={10} axisLine={false} tickLine={false} />
+              <YAxis stroke="#4d4d4d" fontSize={10} axisLine={false} tickLine={false} />
+              <Tooltip 
+                contentStyle={{ 
+                  background: '#050505', 
+                  border: '1px solid rgba(255,255,255,0.05)', 
+                  borderRadius: '12px', 
+                  fontSize: '11px',
+                  color: '#efefef'
+                }} 
+              />
+              <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: 10 }} />
+              <Area type="monotone" dataKey="pix" name="Volume PIX" stroke="#FF5500" strokeWidth={2} fillOpacity={1} fill="url(#colorPix)" />
+              <Area type="monotone" dataKey="card" name="Volume Cartão" stroke="#8B5CF6" strokeWidth={2} fillOpacity={1} fill="url(#colorCard)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="overflow-x-auto zehla-scroll-x border-t border-white/5 pt-4">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#2e2e2e]">
+              <tr className="border-b border-white/5">
                 <th className="text-left text-xs text-[#4d4d4d] px-3 py-2">Dia</th>
                 <th className="text-right text-xs text-[#4d4d4d] px-3 py-2">PIX</th>
                 <th className="text-right text-xs text-[#4d4d4d] px-3 py-2">Cartão</th>
@@ -212,14 +290,14 @@ export function FintechHub() {
               </tr>
             </thead>
             <tbody>
-              {dailyVolume.map((d) =>
-              <tr key={d.day} className="border-b border-white/[0.03]">
+              {dailyVolume.map((d) => (
+                <tr key={d.day} className="border-b border-white/[0.03] hover:bg-white/[0.01]">
                   <td className="px-3 py-2 text-[#b4b4b4]">{d.day}</td>
                   <td className="px-3 py-2 text-right text-[#FF5500] font-mono">R$ {d.pix.toLocaleString('pt-BR')}</td>
-                  <td className="px-3 py-2 text-right text-[#FF5500] font-mono">R$ {d.card.toLocaleString('pt-BR')}</td>
+                  <td className="px-3 py-2 text-right text-[#8B5CF6] font-mono">R$ {d.card.toLocaleString('pt-BR')}</td>
                   <td className="px-3 py-2 text-right text-[#efefef] font-mono font-semibold">R$ {(d.pix + d.card).toLocaleString('pt-BR')}</td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>

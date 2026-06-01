@@ -25,7 +25,6 @@ export const captureWorker = new Worker(
         await redis.expire(rateLimitKey, RATE_LIMIT_WINDOW);
       }
       if (current > RATE_LIMIT_MAX) {
-        
         return { status: 'rate_limited', email, count: current };
       }
     } catch (e) {

@@ -1,6 +1,7 @@
 // src/lib/swipe/matcher.ts
 import { prisma } from '@/lib/prisma';
 import {
+  type DorType,
   type LeadProfile,
   type SwipeMatch,
   type SwipeMatchResult,
@@ -33,12 +34,15 @@ export async function matchSwipes(
   const category = options?.category;
 
   // Buscar sinais ativos de tendência (ZCC-TRENDS)
-  const activeSignals = await prisma.trendSignal.findMany({
-    where: { 
-      createdAt: { gte: new Date(Date.now() - 48 * 60 * 60 * 1000) }, // Sinais das últimas 48h
-      severity: { in: ["alta", "critica"] }
-    }
-  });
+  // Fallback: tabela não existe no schema atual, retorna array vazio
+  let activeSignals: Array<{ keyword: string; type: string; severity: string }> = [];
+  try {
+    activeSignals = await prisma.$queryRaw<
+      Array<{ keyword: string; type: string; severity: string }>
+    >`SELECT keyword, type, severity FROM trend_signals WHERE created_at >= ${new Date(Date.now() - 48 * 60 * 60 * 1000)} AND severity IN ('alta', 'critica')`;
+  } catch {
+    activeSignals = [];
+  }
 
   let candidatos = await buscarCandidatos(profile, channel, category);
 
@@ -190,9 +194,17 @@ export class SwipeMatcher {
     const mockProfile: LeadProfile = {
       id: 'warmup-temp',
       email: 'warmup@zehla.com',
-      dor: painType as any,
+      pousada: 'Warmup',
       score: 80,
-      tier: 'pro'
+      tier: 'pro',
+      cluster: 'pousada',
+      dor: painType as DorType,
+      funnelStage: 'NEUTRAL',
+      qtdQuartos: null,
+      regiao: null,
+      uf: null,
+      totalEventos: 0,
+      canaisUsados: [],
     };
 
     const result = await matchSwipes(mockProfile, { limit: 1, category: 'prospecção' });

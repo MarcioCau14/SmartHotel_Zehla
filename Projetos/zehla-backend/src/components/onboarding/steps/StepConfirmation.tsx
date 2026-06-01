@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   Brain,
@@ -141,7 +142,9 @@ export function StepConfirmation({
             <div className="sm:col-span-2">
               <span className="text-[#363636]">Endereço:</span>{' '}
               <span className="text-[#b4b4b4]">
-                {[property.rua, property.numero, property.bairro, property.cidade, property.estado, property.cep].filter(Boolean).join(', ') || '—'}
+                {useMemo(() => [property.rua, property.numero, property.bairro, property.cidade, property.estado, property.cep].
+                filter(Boolean).
+                join(', '), [Boolean]) || '—'}
               </span>
             </div>
           </div>

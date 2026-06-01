@@ -64,7 +64,7 @@ export function ContactList({ onSelectContact }: ContactListProps) {
       if (sourceFilter !== 'all') params.set('source', sourceFilter);
       const res = await fetch(`/api/crm/contacts?${params}`);
       if (res.ok) setContacts(await res.json());
-    } catch (_e) {
+    } catch {
       // silent
     } finally {
       setLoading(false);

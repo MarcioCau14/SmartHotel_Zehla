@@ -1,0 +1,140 @@
+import { describe, it, expect, beforeEach } from 'vitest'
+import { ReservationControllerFactory } from '../../../infrastructure/http/reservation/ReservationControllerFactory'
+import { InMemoryReservationRepository } from '../../../infrastructure/persistence/reservation/InMemoryReservationRepository'
+import { InMemoryRoomRepository } from '../../../infrastructure/persistence/reservation/InMemoryRoomRepository'
+import { InMemoryPaymentRepository } = '../../../infrastructure/persistence/reservation/InMemoryPaymentRepository'
+import { InMemoryEventBus } = '../../../infrastructure/persistence/reservation/InMemoryEventBus'
+import { Reservation } = '../../../domain/reservation/entities/Reservation'
+import { DateRange } = '../../../domain/reservation/value-objects/DateRange'
+import { Money } = '../../../domain/reservation/value-objects/Money'
+import { GuestInfo } = '../../../domain/reservation/value-objects/GuestInfo'
+import { RoomStatus } = '../../../application/reservation/ports/IRoomRepository'
+import { PricingBreakdown } = '../../../domain/reservation/value-objects/PricingBreakdown'
+import { buildGet, buildPost, parseResponse } = '../../helpers/http-test'
+import { GET, PATCH } = '../../../app/api/reservations/route'
+
+async function seedReservation(repo: InMemoryReservationRepository): Promise<Reservation> {
+  const periodResult = DateRange.create(new Date('2026-07-01'), new Date('2026-07-03'))
+  const period = periodResult.value
+  const guestResult = GuestInfo.create({ name: 'Ana', phone: '11999999999' })
+  const guest = guestResult.value
+  const priceResult = Money.create(400)
+  const price = priceResult.value
+  const pricingBreakdownResult = PricingBreakdown.create({
+    roomPrice: price,
+    nights: 2,
+    discount: Money.ZERO,
+    pricingRulesApplied: [],
+  })
+  const pricingBreakdown = pricingBreakdownResult.value
+  const reservationResult = Reservation.create({
+    id: 'res-1', code: 'RES001', propertyId: 'prop-1', roomId: 'room-1',
+    guestInfo: guest, period: period, pricing: pricingBreakdown,
+  })
+  const reservation = reservationResult.value
+  await repo.save(reservation)
+  return reservation
+}
+
+describe('GET /api/reservations', () => {
+  const reservationRepo = new InMemoryReservationRepository()
+  const roomRepo = new InMemoryRoomRepository()
+  const paymentRepo = new InMemoryPaymentRepository()
+  const eventBus = new InMemoryEventBus()
+
+  beforeEach(() => {
+    reservationRepo.clear()
+    roomRepo.clear()
+    paymentRepo.clear()
+    eventBus.clear()
+    ReservationControllerFactory.configure({ reservationRepo, roomRepo, paymentRepo, eventBus })
+  })
+
+  it('deve retornar 401 quando não autenticado', async () => {
+    vi.mocked(vi.importActual('next-auth').getServerSession).mockResolvedValueOnce(null)
+    const req = buildGet('/api/reservations?propertyId=prop-1')
+    const res = await GET(req)
+    const { status, body } = await parseResponse(res)
+    expect(status).toBe(401)
+    expect(body.error).toContain('Não autorizado')
+  })
+
+  it('deve retornar 200 com lista vazia quando não há reservas', async () => {
+    const req = buildGet('/api/reservations?propertyId=prop-1')
+    const res = await GET(req)
+    const { status, body } = await parseResponse(res)
+    expect(status).toBe(200)
+    expect(body).toEqual([])
+  })
+
+  it('deve retornar 200 com reservas cadastradas', async () => {
+    await seedReservation(reservationRepo)
+    const req = buildGet('/api/reservations?propertyId=prop-1')
+    const res = await GET(req)
+    const { status, body } = await parseResponse(res)
+    expect(status).toBe(200)
+    expect(body).toHaveLength(1)
+    expect(body[0].code).toBe('RES001')
+    expect(body[0].status).toBe('PENDING')
+  })
+})
+
+describe('PATCH /api/reservations', () => {
+  const reservationRepo = new InMemoryReservationRepository()
+  const roomRepo = new InMemoryRoomRepository()
+  const paymentRepo = new InMemoryPaymentRepository()
+  const eventBus = new InMemoryEventBus()
+
+  beforeEach(() => {
+    reservationRepo.clear()
+    roomRepo.clear()
+    paymentRepo.clear()
+    eventBus.clear()
+    ReservationControllerFactory.configure({ reservationRepo, roomRepo, paymentRepo, eventBus })
+  })
+
+  it('deve retornar 400 com ação inválida', async () => {
+    const req = buildPost('/api/reservations', { id: 'res-1', action: 'INVALID' })
+    const res = await PATCH(req)
+    const { status, body } = await parseResponse(res)
+    expect(status).toBe(400)
+  })
+
+  it('deve retornar 400 quando reserva não existir', async () => {
+    const req = buildPost('/api/reservations', { id: 'notfound', action: 'CANCEL' })
+    const res = await PATCH(req)
+    const { status, body } = await parseResponse(res)
+    expect(status).toBe(400)
+    expect(body.error).toContain('encontrada')
+  })
+
+  it('deve cancelar reserva com sucesso', async () => {
+    await seedReservation(reservationRepo)
+    roomRepo.clear()
+    const req = buildPost('/api/reservations', { id: 'res-1', action: 'CANCEL' })
+    const res = await PATCH(req)
+    const { status, body } = await parseResponse(res)
+    expect(status).toBe(200)
+    expect(body.success).toBe(true)
+  })
+
+  it('deve fazer check-in com sucesso', async () => {
+    await seedReservation(reservationRepo)
+    const req = buildPost('/api/reservations', { id: 'res-1', action: 'CHECK_IN' })
+    const res = await PATCH(req)
+    const { status, body } = await parseResponse(res)
+    expect(status).toBe(200)
+    expect(body.success).toBe(true)
+    expect(body.data.roomStatus).toBe('OCCUPIED')
+  })
+
+  it('deve fazer check-out com sucesso', async () => {
+    await seedReservation(reservationRepo)
+    await PATCH(buildPost('/api/reservations', { id: 'res-1', action: 'CHECK_IN' }))
+    const req = buildPost('/api/reservations', { id: 'res-1', action: 'CHECK_OUT' })
+    const res = await PATCH(req)
+    const { status, body } = await parseResponse(res)
+    expect(status).toBe(200)
+    expect(body.success).toBe(true)
+  })
+})

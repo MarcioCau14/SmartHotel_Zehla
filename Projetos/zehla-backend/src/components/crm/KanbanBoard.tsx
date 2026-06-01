@@ -9,8 +9,9 @@ import {
   useSensors,
   useDraggable,
   useDroppable,
+  type DragEndEvent,
+  type DragStartEvent,
 } from '@dnd-kit/core';
-import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { Plus, Loader2, GripVertical, Phone, Mail } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -137,7 +138,7 @@ export function KanbanBoard() {
     try {
       const res = await fetch('/api/crm/deals');
       if (res.ok) setDeals(await res.json());
-    } catch (_e) {
+    } catch {
       // silent
     } finally {
       setLoading(false);
@@ -172,7 +173,7 @@ export function KanbanBoard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ stage: newStage }),
       });
-    } catch (_e) {
+    } catch {
       await loadDeals();
     }
   };

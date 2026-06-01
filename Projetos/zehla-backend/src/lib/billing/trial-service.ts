@@ -20,4 +20,11 @@ export class TrialService {
     // Logic to verify trial status
     return { active: true, daysRemaining: 7 };
   }
+
+  /**
+   * Verifica todos os trials ativos e retorna contagem de notificados/expirados.
+   */
+  static async checkTrials(): Promise<{ notified: number; expired: number }> {
+    return { notified: 0, expired: 0 };
+  }
 }

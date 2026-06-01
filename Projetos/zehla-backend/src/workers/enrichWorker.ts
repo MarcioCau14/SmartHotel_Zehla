@@ -97,7 +97,8 @@ export const enrichWorker = new Worker(
       scoreImpact: job.data.scoreImpact,
       enrichedMetadata: enrichedData,
     });
-    console.log(`[Enrich] Lead ${leadId} enriquecido (${Object.keys(enrichedData).length} campos adicionados)`);
+
+    console.log(`[Enrich] Evento ${eventId} enriquecido com ${Object.keys(enrichedData).length} campos adicionados`);
 
     return { status: 'enriched', eventId, enrichmentsApplied: Object.keys(enrichedData).length };
   },
@@ -110,7 +111,7 @@ export const enrichWorker = new Worker(
 
 // Helpers de parsing
 function parseBrowser(ua: string): string {
-  if (ua.includes('Chrome') && !ua.includes('Edg')) return 'Chrome';
+if (ua.includes('Chrome') && !ua.includes('Edg')) return 'Chrome';
   if (ua.includes('Firefox')) return 'Firefox';
   if (ua.includes('Safari') && !ua.includes('Chrome')) return 'Safari';
   if (ua.includes('Edg')) return 'Edge';
@@ -118,7 +119,7 @@ function parseBrowser(ua: string): string {
 }
 
 function parseOS(ua: string): string {
-  if (ua.includes('Windows')) return 'Windows';
+if (ua.includes('Windows')) return 'Windows';
   if (ua.includes('Mac OS')) return 'macOS';
   if (ua.includes('Android')) return 'Android';
   if (ua.includes('iPhone') || ua.includes('iPad')) return 'iOS';

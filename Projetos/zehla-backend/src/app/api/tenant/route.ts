@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
   try {
     // ----- GUARDIAN VALIDATION -----
     const bodyText = await request.text();
-    const validation = await validateRequest(request, bodyText);
+    const validation = await validateRequest(request);
     if (!validation.allowed) {
       return NextResponse.json({ error: validation.reason, code: 'GUARDIAN_BLOCKED' }, { status: 429 });
     }
@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Sanitizar todos os inputs de texto
-    const cleanNome = sanitizeInput(nome).sanitized;
-    const cleanEmail = sanitizeInput(email).sanitized;
+    const cleanNome = sanitizeInput(nome);
+    const cleanEmail = sanitizeInput(email);
 
     // ----- ZDR — Maskar dados sensíveis nos logs -----
     const emailScan = scanPII(email);

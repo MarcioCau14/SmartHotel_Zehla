@@ -3,10 +3,8 @@ import { WhatsappExtractorService } from '@/lib/whatsapp/extractor-service'
 import { prisma } from '@/lib/prisma'
 import { WhatsappPersonaLearner } from '@/lib/brain/whatsapp-persona-learner'
 import { LeadScorer } from '@/lib/brain/lead-scorer'
-import { withApiSecurity } from '@/lib/server/with-api-security'
-import type { RouteHandler } from '@/lib/server/with-api-security'
 
-const postHandler: RouteHandler = async (req) => {
+export async function POST(req: NextRequest) {
   try {
     const { instanceName, type, groupJid, propertyId } = await req.json()
 
@@ -16,7 +14,7 @@ const postHandler: RouteHandler = async (req) => {
 
     console.log(`🧠 [Secretaria-IA] Iniciando extração ${type} para property ${propertyId}...`)
 
-    let rawContacts: any[] = []
+    let rawContacts = []
 
     if (type === 'GROUP' && groupJid) {
       rawContacts = await WhatsappExtractorService.fetchGroupParticipants(instanceName, groupJid)
@@ -24,11 +22,14 @@ const postHandler: RouteHandler = async (req) => {
       rawContacts = await WhatsappExtractorService.fetchContacts(instanceName)
     }
 
+    // Integrando Inteligência de Tom de Voz (conforme documento técnico)
     const persona = await WhatsappPersonaLearner.getPersona(propertyId)
 
+    // Salvar como Leads no banco de dados com Inteligência de Scoring
     const savedLeads = []
     for (const contact of rawContacts) {
       try {
+        // Verifica se já existe
         const existing = await prisma.lead.findFirst({
           where: { 
             whatsapp: contact.number
@@ -36,8 +37,10 @@ const postHandler: RouteHandler = async (req) => {
         })
 
         if (!existing) {
+          // Busca o "About" para o Lead Scoring (IA Comportamental: jitter gaussiano simulado)
           const about = await WhatsappExtractorService.fetchContactAbout(instanceName, contact.number)
           
+          // Qualificação Inteligente via IA
           const analysis = await LeadScorer.scoreLead(contact.name || '', about)
 
           const lead = await prisma.lead.create({
@@ -56,6 +59,7 @@ const postHandler: RouteHandler = async (req) => {
           })
           savedLeads.push(lead)
           
+          // Jitter para evitar ban (Documento Técnico)
           await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000))
         }
       } catch (err) {
@@ -76,7 +80,7 @@ const postHandler: RouteHandler = async (req) => {
   }
 }
 
-const getHandler: RouteHandler = async (req) => {
+export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const action = searchParams.get('action')
   const instanceName = searchParams.get('instanceName')
@@ -97,6 +101,3 @@ const getHandler: RouteHandler = async (req) => {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
-
-export const POST = withApiSecurity(postHandler);
-export const GET = withApiSecurity(getHandler);

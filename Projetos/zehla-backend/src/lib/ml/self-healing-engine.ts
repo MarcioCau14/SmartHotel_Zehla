@@ -18,19 +18,19 @@ export class SelfHealingEngine {
     try {
       // 1. Buscar erros críticos recorrentes nos últimos 10 minutos
       const errorPatterns = await prisma.cognitiveTerminalLog.groupBy({
-        by: ['component', 'message'],
+        by: ['source', 'message'],
         where: {
           level: 'error',
-          timestamp: { gte: tenMinutesAgo }
+          createdAt: { gte: tenMinutesAgo }
         },
         _count: true,
         having: {
-          component: { _count: { gte: 3 } } // Pelo menos 3 erros do mesmo componente
+          source: { _count: { gte: 3 } } // Pelo menos 3 erros do mesmo componente
         }
       });
 
       for (const pattern of errorPatterns) {
-        await this.applyHeal(pattern.component, pattern.message);
+        await this.applyHeal(pattern.source, pattern.message);
       }
 
       return errorPatterns.length;

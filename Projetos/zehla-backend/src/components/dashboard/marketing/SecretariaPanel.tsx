@@ -78,7 +78,7 @@ export function SecretariaPanel() {
 
       const data = await res.json();
       if (data.success) {
-        alert(`Extração concluída! ${data.savedCount} novos leads salvos. Acesse "Mapa de Leads" para visualizar no mapa.`);
+        alert(`Extração concluída! ${data.savedCount} novos leads salvos.`);
         refreshData();
       }
     } catch (err) {
@@ -142,7 +142,7 @@ export function SecretariaPanel() {
       setLeads(data.leads || []);
       setStatsData(data.stats);
       setIsSyncing(false);
-      alert(`Sincronização concluída! ${data.stats?.total || 0} leads processados. Visualize no "Mapa de Leads".`);
+      alert(`Sincronização concluída! ${data.stats?.total || 0} leads processados.`);
     } catch {
       setIsSyncing(false);
     }

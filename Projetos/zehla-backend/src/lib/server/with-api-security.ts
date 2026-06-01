@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export type RouteHandler = (
+type RouteHandler = (
   req: NextRequest,
   context?: { params: Promise<Record<string, string>> }
 ) => Promise<NextResponse> | NextResponse;
@@ -9,7 +9,6 @@ interface SecurityOptions {
   rateLimit?: { limit: number; windowSeconds: number } | false;
   cors?: boolean;
   csrf?: boolean;
-  audit?: { resource: string; piiFields?: string[] } | false;
 }
 
 const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || 'http://localhost:3000,https://smarthotelzehla.vercel.app,https://zehla.com.br').split(',').map(s => s.trim());
@@ -67,7 +66,7 @@ async function enforceCsrf(req: NextRequest): Promise<boolean> {
   }
 }
 
-const WEBHOOK_PATHS = ['/api/webhooks/', '/api/blast/webhook', '/api/zcc/'];
+const WEBHOOK_PATHS = ['/api/webhooks/', '/api/blast/webhook'];
 
 function isWebhookPath(pathname: string): boolean {
   return WEBHOOK_PATHS.some(p => pathname.startsWith(p));
@@ -76,7 +75,7 @@ function isWebhookPath(pathname: string): boolean {
 const MUTATION_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
 export function withApiSecurity(handler: RouteHandler, options: SecurityOptions = {}): RouteHandler {
-  const { rateLimit: rlConfig = { limit: 100, windowSeconds: 60 }, cors = true, csrf = false, audit = false } = options;
+  const { rateLimit: rlConfig = { limit: 100, windowSeconds: 60 }, cors = true, csrf = false } = options;
 
   return async (req: NextRequest, context?: { params: Promise<Record<string, string>> }): Promise<NextResponse> => {
     const origin = getOrigin(req);
@@ -120,26 +119,6 @@ export function withApiSecurity(handler: RouteHandler, options: SecurityOptions 
 
     if (cors && response instanceof NextResponse) {
       addCorsHeaders(response, origin);
-    }
-
-    if (audit && response instanceof NextResponse && response.ok && MUTATION_METHODS.includes(req.method)) {
-      try {
-        const { logPiiAudit } = await import('@/lib/security/lgpd-audit');
-        const { getServerSession } = await import('next-auth');
-        const { authOptions } = await import('@/app/api/auth/[...nextauth]/route');
-        const session = await getServerSession(authOptions);
-
-        await logPiiAudit({
-          userId: session?.user?.id,
-          tenantId: req.headers.get('x-tenant-id') || 'unknown',
-          action: 'PII_UPDATE',
-          resource: audit.resource,
-          piiFields: audit.piiFields,
-          ipAddress: getClientIp(req),
-          userAgent: req.headers.get('user-agent') || undefined,
-        });
-      } catch {
-      }
     }
 
     return response;

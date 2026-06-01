@@ -31,18 +31,19 @@ export const telemetryWorker = new Worker(
         select: { id: true }
       });
 
-      const propertyIds = properties.map(p => p.id);
-      if (propertyIds.length === 0) return;
+      
 
       const startDate = new Date();
       startDate.setHours(startDate.getHours() - 1);
       const endDate = new Date();
 
-      try {
-        const metricsMap = await TelemetryEngine.calculateAllMetrics(propertyIds, startDate, endDate);
-        await TelemetryEngine.saveAllTelemetry(metricsMap);
-      } catch (error) {
-        console.error('❌ [TELEMETRY-WORKER] Erro no batch aggregate:', error);
+      for (const prop of properties) {
+        try {
+          const metrics = await TelemetryEngine.calculateMetrics(prop.id, startDate, endDate);
+          await TelemetryEngine.saveTelemetry(prop.id, metrics);
+        } catch (error) {
+          console.error(`❌ [TELEMETRY-WORKER] Erro na propriedade ${prop.id}:`, error);
+        }
       }
     }
   },
@@ -70,6 +71,8 @@ export async function scheduleTelemetry(): Promise<void> {
       },
     }
   );
+
+  console.log('Telemetry worker scheduled');
 }
 
 // Start scheduling if this file is run directly or imported

@@ -59,7 +59,7 @@ export const subconsciousWorker = new Worker(
           console.warn(`[SubconsciousWorker] Tipo de job desconhecido: ${type}`);
       }
     } catch (error) {
-      await CognitiveTerminal.error('ML-BRAIN', `Erro no ciclo subconsciente: ${job.id}`, tenantId, error);
+      await CognitiveTerminal.error('ML-BRAIN', `Erro no ciclo subconsciente: ${job.id}`, { error, tenantId }, tenantId);
       throw error;
     }
   },

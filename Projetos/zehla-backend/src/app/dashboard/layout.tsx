@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation';
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  redirect('/cliente/painel');
+export default function DashboardLayoutRoute({ children }: { children: React.ReactNode }) {
+  return <DashboardLayout>{children}</DashboardLayout>;
 }

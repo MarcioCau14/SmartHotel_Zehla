@@ -1,9 +1,7 @@
 import { ValidatedLead } from '../types/warmup-types';
-import axios from 'axios';
+import { getWhatsAppPort } from '@/infrastructure/external/evolution';
 
 export class LISBatchValidator {
-  private evolutionUrl = process.env.EVOLUTION_API_URL;
-  private evolutionKey = process.env.EVOLUTION_API_KEY;
 
   /**
    * Processa um lote de até 300 leads brutos.
@@ -65,28 +63,15 @@ export class LISBatchValidator {
 
     if (!whatsapp) return false;
 
-    // 2. WA Check (Chamada HTTP leve)
-    try {
-      const response = await axios.post(
-        `${this.evolutionUrl}/chat/checkNumberStatus/${process.env.EVOLUTION_INSTANCE || 'zehla'}`,
-        { numbers: [whatsapp] },
-        { headers: { apikey: this.evolutionKey } }
-      );
+    // 2. WA Check via IWhatsAppPort
+    const port = getWhatsAppPort();
+    const result = await port.checkNumberStatus({ number: whatsapp });
 
-      // Verificação de existência conforme retorno padrão da Evolution
-      const status = response.data?.[0];
-      const exists = status?.exists || status?.numberExists || false;
-      
-      if (!exists) {
-        console.log(`[LIS] Número sem WhatsApp ativo: ${whatsapp}`);
-      }
-      
-      return exists;
-    } catch (error) {
-      // Em caso de erro na API, logamos mas não travamos a esteira (fail-soft)
-      console.warn(`[LIS] Falha no WA Check para ${whatsapp}. Pulando.`);
-      return false;
+    if (!result.exists) {
+      console.log(`[LIS] Número sem WhatsApp ativo: ${whatsapp}`);
     }
+    
+    return result.exists;
   }
 
   /**

@@ -16,8 +16,8 @@ const ZCC_PATHS = ['/zcc', '/api/zcc'];
 const PROTECTED_ROUTES = ['/dashboard'];
 const ADMIN_ONLY_ROUTES = ['/api/admin'];
 
-export async function proxy(request: NextRequest) : void {
-  const ip = request.ip ?? request.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown';
+export async function proxy(request: NextRequest): Promise<NextResponse | void> {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown';
   const tenantId = request.headers.get('x-tenant-id') || 'global';
 
   // 0. Circuit Breaker Automático (Guardian Agent)
@@ -66,26 +66,26 @@ export async function proxy(request: NextRequest) : void {
       return NextResponse.redirect(new URL('/zcc-login', request.url));
     }
 
-    try {
-      const { payload } = await jwtVerify(token, SECRET_KEY, { clockTolerance: 60 });
-      
-      if (payload.role !== 'SUPER_ADMIN') {
-        const url = request.nextUrl.clone();
-        url.pathname = '/403';
-        url.searchParams.set('reason', 'superadmin_required');
-        return NextResponse.rewrite(url);
-      }
+  try {
+    const { payload } = await jwtVerify(token, SECRET_KEY, { clockTolerance: 60 });
 
-      // Injeta headers para downstream
-      const requestHeaders = new Headers(request.headers);
-      requestHeaders.set('x-zcc-user-id', payload.sub as string);
-      requestHeaders.set('x-zcc-role', payload.role as string);
-      requestHeaders.set('x-zcc-tenant-id', payload.tenantId as string);
+    if (payload.role !== 'SUPER_ADMIN') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/403';
+      url.searchParams.set('reason', 'superadmin_required');
+      return NextResponse.rewrite(url);
+    }
 
-      return NextResponse.next({
-        request: { headers: requestHeaders },
-      });
-    } catch (e) {
+    // Injeta headers para downstream
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-zcc-user-id', payload.sub as string);
+    requestHeaders.set('x-zcc-role', payload.role as string);
+    requestHeaders.set('x-zcc-tenant-id', payload.tenantId as string);
+
+    return NextResponse.next({
+      request: { headers: requestHeaders },
+    });
+  } catch (e) {
       if (pathname.startsWith('/api')) {
         return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
       }

@@ -101,7 +101,7 @@ export function ContactDetail({ contact, onClose, onUpdate }: ContactDetailProps
     try {
       const res = await fetch(`/api/crm/contacts/${contact.id}/interactions`);
       if (res.ok) setInteractions(await res.json());
-    } catch (_e) {
+    } catch {
       // silent
     }
   }, [contact.id]);
@@ -110,7 +110,7 @@ export function ContactDetail({ contact, onClose, onUpdate }: ContactDetailProps
     try {
       const res = await fetch(`/api/crm/contacts/${contact.id}/deals`);
       if (res.ok) setDeals(await res.json());
-    } catch (_e) {
+    } catch {
       // silent
     }
   }, [contact.id]);
@@ -131,7 +131,7 @@ export function ContactDetail({ contact, onClose, onUpdate }: ContactDetailProps
       });
       setEditingTags(false);
       onUpdate();
-    } catch (_e) {
+    } catch {
       // silent
     } finally {
       setSavingTags(false);
@@ -152,7 +152,7 @@ export function ContactDetail({ contact, onClose, onUpdate }: ContactDetailProps
       });
       setNewInteractionContent('');
       await loadInteractions();
-    } catch (_e) {
+    } catch {
       // silent
     } finally {
       setSendingInteraction(false);

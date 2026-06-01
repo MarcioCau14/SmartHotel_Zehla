@@ -5,12 +5,10 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 
 import { withApiSecurity } from '@/lib/server/with-api-security';
-import { logPiiAudit, extractPiiFields } from '@/lib/security/lgpd-audit';
-import { clearTenantCache } from '@/lib/brain/mirofish-cache';
 
 async function _POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
@@ -27,7 +25,6 @@ async function _POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const piiFields = extractPiiFields(body);
 
     const profile = await prisma.connectProfile.upsert({
       where: { propertyId: property.id },
@@ -54,22 +51,6 @@ async function _POST(req: NextRequest) {
         publishedAt: body.status === 'published' ? new Date() : undefined,
       },
     });
-
-    if (piiFields.length > 0) {
-      await logPiiAudit({
-        userId: session.user.id,
-        tenantId: property.id,
-        action: 'PII_UPDATE',
-        resource: 'connect_profile',
-        resourceId: profile.id,
-        piiFields,
-        ipAddress: req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || undefined,
-        userAgent: req.headers.get('user-agent') || undefined,
-      });
-    }
-
-    // Invalidate MiroFish cache when settings change
-    await clearTenantCache(property.id);
 
     return NextResponse.json(profile);
   } catch (error) {

@@ -7,47 +7,8 @@ import type { NextRequest } from 'next/server';
 
 const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || 'http://localhost:3000,https://smarthotelzehla.vercel.app,https://zehla.com.br').split(',').map(s => s.trim());
 
-const PUBLIC_PATHS = [
-  '/connect/',
-  '/login',
-  '/api/auth/',
-  '/api/connect/profile/',
-  '/api/connect/analytics/track',
-  '/_next/',
-  '/favicon.ico',
-  '/termos',
-  '/privacidade',
-  '/teste-gratis',
-  '/vendas',
-  '/zcc',
-  '/zcc-login',
-  '/dashboard/upgrade',
-];
-
-const MUTATION_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
-
-const TENANT_RATE_LIMIT = 100;
-const TENANT_WINDOW_SECONDS = 60;
-
 function isOriginAllowed(origin: string): boolean {
   return ALLOWED_ORIGINS.includes(origin) || ALLOWED_ORIGINS.includes('*');
-}
-
-function isPublicPath(pathname: string): boolean {
-  return PUBLIC_PATHS.some(p => pathname.startsWith(p));
-}
-
-async function checkTenantRateLimit(tenantId: string, ip: string): Promise<boolean> {
-  try {
-    const key = `rate_limit_tenant_${tenantId}:${ip}`;
-    const current = await redis.incr(key);
-    if (current === 1) {
-      await redis.expire(key, TENANT_WINDOW_SECONDS);
-    }
-    return current <= TENANT_RATE_LIMIT;
-  } catch {
-    return true;
-  }
 }
 
 function addCorsHeaders(response: NextResponse, origin: string | null): void {
@@ -76,23 +37,12 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-  // CORS enforcement for mutation methods on non-public API routes
-  if (origin && pathname.startsWith('/api/') && !isPublicPath(pathname) && MUTATION_METHODS.includes(request.method)) {
-    if (!isOriginAllowed(origin)) {
-      return NextResponse.json(
-        { error: 'Origin not allowed', code: 'CORS_BLOCKED' },
-        { status: 403 }
-      );
-    }
-  }
-
-  // BYPASS ZCC AUTH FOR LOCAL DEV — check Host header (nextUrl.hostname reflects bind addr, not request host)
-  const host = request.headers.get('host') || '';
-  if (host.startsWith('localhost') || host.startsWith('127.0.0.1') || host.startsWith('0.0.0.0')) {
+  // BYPASS TOTAL EM DESENVOLVIMENTO
+  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
     return NextResponse.next();
   }
 
-  const ip = (request as any).ip ?? request.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown';
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ?? request.headers.get('x-real-ip') ?? 'unknown';
   const tenantId = request.headers.get('x-tenant-id') || 'global';
 
   // 0. Circuit Breaker Automático (Guardian Agent) - Resiliente a falha de conexão
@@ -113,26 +63,27 @@ export async function proxy(request: NextRequest) {
           { status: 503 }
         );
       }
-
-      // Multi-tenant rate limiting: isolates rate limits per tenant
-      // Prevents one tenant's DDoS from affecting others
-      if (!isPublicPath(pathname) && pathname.startsWith('/api/')) {
-        const allowed = await checkTenantRateLimit(tenantId, ip);
-        if (!allowed) {
-          return NextResponse.json(
-            { error: 'Tenant rate limit exceeded. Contact support.', code: 'TENANT_RATE_LIMITED' },
-            { status: 429 }
-          );
-        }
-      }
     }
   } catch (e) {
+    // Silently continue if Redis is offline during local dev
     console.warn('⚠️ [Proxy] Redis offline - bypassing security checks for dev stability');
   }
 
 
   // 0.1 Proteção Estrita ZCC (SUPER_ADMIN)
   if (ZCC_PATHS.some(p => pathname.startsWith(p)) && pathname !== '/zcc-login') {
+    // DEVELOPER BYPASS: Allow ZCC access in development mode
+    if (process.env.NODE_ENV === 'development') {
+      const requestHeaders = new Headers(request.headers);
+      requestHeaders.set('x-zcc-user-id', 'dev-marcio-id');
+      requestHeaders.set('x-zcc-role', 'SUPER_ADMIN');
+      requestHeaders.set('x-zcc-tenant-id', 'global');
+
+      return NextResponse.next({
+        request: { headers: requestHeaders },
+      });
+    }
+
     const token = request.cookies.get('__session')?.value 
       ?? request.cookies.get('zehla-token')?.value
       ?? request.headers.get('Authorization')?.replace('Bearer ', '');
@@ -154,6 +105,7 @@ export async function proxy(request: NextRequest) {
         return NextResponse.rewrite(url);
       }
 
+      // Injeta headers para downstream
       const requestHeaders = new Headers(request.headers);
       requestHeaders.set('x-zcc-user-id', payload.sub as string);
       requestHeaders.set('x-zcc-role', payload.role as string);
@@ -173,16 +125,16 @@ export async function proxy(request: NextRequest) {
   // 1. Headers de Segurança (ZEHLA Fortress)
   const response = NextResponse.next();
   addCorsHeaders(response, origin);
-  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self), payment=(self)');
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   
   // 2. Verificação de Autenticação para Rotas Protegidas
   const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
   
   if (isProtectedRoute) {
-    const token = request.cookies.get('zehla-token')?.value || request.headers.get('Authorization')?.replace('Bearer ', '');
+    const token = request.cookies.get('zehla-token')?.value || request.headers.get('Authorization');
     
     if (!token) {
       // Se for API, retorna 401
@@ -198,50 +150,6 @@ export async function proxy(request: NextRequest) {
     if (isAdminRoute) {
       // Em produção, decodificaríamos o JWT aqui para checar a role.
       // Por enquanto, permitimos se houver token, mas o backend validará a role.
-    }
-
-    // 4. Trial Expiration Guard — redireciona para /dashboard/upgrade se trial expirado
-    if (pathname.startsWith('/dashboard') && !pathname.startsWith('/dashboard/upgrade') && !pathname.startsWith('/dashboard/configuracoes')) {
-      try {
-        const { payload } = await jwtVerify(token, SECRET_KEY, { clockTolerance: 60 });
-        const propertyId = (payload as any).propertyId || (payload as any).tenantId;
-        
-        if (propertyId) {
-          const statusKey = `trial:status:${propertyId}`;
-          const cached = await redis.get(statusKey);
-          
-          let isExpired = false;
-          
-          if (cached) {
-            isExpired = cached === 'expired';
-          } else {
-            const { prisma } = await import('@/lib/prisma');
-            const property = await prisma.property.findUnique({
-              where: { id: propertyId },
-              select: { isTrial: true, trialEndsAt: true, stripeSubscriptionId: true },
-            });
-            
-            if (property?.isTrial && property.trialEndsAt) {
-              isExpired = property.trialEndsAt < new Date() && !property.stripeSubscriptionId;
-            }
-            
-            await redis.setex(statusKey, 300, isExpired ? 'expired' : 'active');
-          }
-          
-          if (isExpired) {
-            if (pathname.startsWith('/api')) {
-              return NextResponse.json({
-                error: 'Trial expirado. Faça upgrade para continuar.',
-                code: 'TRIAL_EXPIRED',
-                redirectTo: '/dashboard/upgrade',
-              }, { status: 402 });
-            }
-            return NextResponse.redirect(new URL('/dashboard/upgrade', request.url));
-          }
-        }
-      } catch {
-        // Token inválido — deixa o fluxo normal tratar
-      }
     }
   }
 

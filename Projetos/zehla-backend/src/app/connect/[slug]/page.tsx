@@ -2,12 +2,10 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
 import { ConnectTracker } from '@/components/connect/ConnectTracker';
-import { sanitizeText } from '@/lib/security/html-sanitizer';
 
 import type { Metadata } from 'next';
 
 const API = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://zehla.com.br';
 
 interface ConnectLink {
   id: string;
@@ -109,9 +107,7 @@ function LinkIcon({ icon }: { icon: string }) {
 
 async function getProfile(slug: string): Promise<ConnectProfile | null> {
   try {
-  const res = await fetch(`${API}/api/connect/profile/${slug}`, {
-      next: { revalidate: 300 },
-    });
+  const res = await fetch(`${API}/api/connect/profile/${slug}`, { cache: 'force-cache' });
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -128,69 +124,15 @@ export async function generateMetadata({
   const profile = await getProfile(slug);
   if (!profile) return { title: 'Perfil não encontrado — ZEHLA Connect' };
 
-  const title = profile.seoTitle || `${profile.property?.name || 'Perfil'} — ZEHLA Connect`;
-  const description = profile.seoDescription || profile.bio?.slice(0, 160) || 'Conecte-se com esta propriedade';
-
   return {
-    title,
-    description,
+    title: profile.seoTitle || `${profile.property?.name || 'Perfil'} — ZEHLA Connect`,
+    description: profile.seoDescription || profile.bio?.slice(0, 160) || 'Conecte-se com esta propriedade',
     openGraph: {
-      title,
-      description,
+      title: profile.seoTitle || `${profile.property?.name || 'Perfil'} — ZEHLA Connect`,
+      description: profile.seoDescription || profile.bio?.slice(0, 160),
       images: profile.coverUrl ? [{ url: profile.coverUrl }] : [],
-      type: 'website',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: profile.coverUrl ? [profile.coverUrl] : [],
     },
   };
-}
-
-function SchemaOrgJsonLd({ profile }: { profile: ConnectProfile }) {
-  const schema = {
-    '@context': 'https://schema.org',
-    '@type': 'LodgingBusiness',
-    name: sanitizeText(profile.property?.name || profile.slug),
-    description: sanitizeText(profile.bio || profile.seoDescription || ''),
-    image: profile.coverUrl || profile.avatarUrl || undefined,
-    url: `${APP_URL}/connect/${profile.slug}`,
-    telephone: profile.whatsappNumber || profile.property?.whatsapp || undefined,
-    address: {
-      '@type': 'PostalAddress',
-      addressLocality: profile.property?.city ? sanitizeText(profile.property.city) : undefined,
-      addressRegion: profile.property?.state ? sanitizeText(profile.property.state) : undefined,
-    },
-    geo: profile.property?.latitude && profile.property?.longitude
-      ? {
-          '@type': 'GeoCoordinates',
-          latitude: profile.property.latitude,
-          longitude: profile.property.longitude,
-        }
-      : undefined,
-    aggregateRating: profile.reviews.length > 0
-      ? {
-          '@type': 'AggregateRating',
-          ratingValue: (profile.reviews.reduce((sum, r) => sum + r.rating, 0) / profile.reviews.length).toFixed(1),
-          reviewCount: profile.reviews.length,
-        }
-      : undefined,
-    review: profile.reviews.slice(0, 5).map(r => ({
-      '@type': 'Review',
-      author: { '@type': 'Person', name: sanitizeText(r.authorName) },
-      reviewRating: { '@type': 'Rating', ratingValue: r.rating },
-      reviewBody: r.text ? sanitizeText(r.text) : undefined,
-    })),
-  };
-
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-    />
-  );
 }
 
 function Stars({ rating }: { rating: number }) {
@@ -222,24 +164,11 @@ export default async function ConnectProfilePage({
   const whatsapp = profile.whatsappNumber || profile.property?.whatsapp;
   const waUrl = whatsapp ? `https://wa.me/${whatsapp.replace(/\D/g, '')}` : null;
 
-  const theme = profile.theme;
-  const colors = theme?.colors || { primary: '#25D366', secondary: '#075E54', accent: '#128C7E', background: '#F0F2F5', text: '#111B21' };
-  const bg = colors.background || '#F0F2F5';
-  const textPrimary = colors.text || '#111B21';
-  const textSecondary = '#667781';
-  const primary = colors.primary || '#25D366';
-  const cardBg = '#FFFFFF';
-  const cardBorder = '#E9EDEF';
-
-  const buttonRadius = theme?.buttonStyle === 'pill' ? 'rounded-full' : theme?.buttonStyle === 'square' ? 'rounded-md' : 'rounded-xl';
-
   return (
     <ConnectTracker slug={slug}>
-      <div className="min-h-screen" style={{ backgroundColor: bg }}>
-        <SchemaOrgJsonLd profile={profile} />
-
+      <div className="min-h-screen bg-slate-900 text-slate-200">
         {/* Cover */}
-        <div className="relative h-48 sm:h-64 md:h-80 w-full overflow-hidden" style={{ backgroundColor: colors.secondary || '#075E54' }}>
+        <div className="relative h-48 sm:h-64 md:h-80 w-full bg-slate-800 overflow-hidden">
           {profile.coverUrl ? (
             <Image
               src={profile.coverUrl}
@@ -249,15 +178,15 @@ export default async function ConnectProfilePage({
               priority
             />
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-[#075E54] via-[#128C7E] to-[#25D366]" />
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
         </div>
 
         {/* Avatar */}
         <div className="relative px-4 max-w-2xl mx-auto">
           <div className="flex flex-col items-center -mt-16 sm:-mt-20">
-            <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 overflow-hidden shadow-xl" style={{ borderColor: bg, backgroundColor: '#E9EDEF' }}>
+            <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-slate-900 overflow-hidden bg-slate-700 shadow-xl">
               {profile.avatarUrl ? (
                 <Image
                   src={profile.avatarUrl}
@@ -266,13 +195,13 @@ export default async function ConnectProfilePage({
                   className="object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-4xl font-bold" style={{ color: textSecondary }}>
+                <div className="w-full h-full flex items-center justify-center text-4xl text-slate-500">
                   {(profile.property?.name || '?')[0]}
                 </div>
               )}
             </div>
             {profile.isVerified && (
-              <span className="mt-1 text-xs font-medium flex items-center gap-1" style={{ color: primary }}>
+              <span className="mt-1 text-xs text-emerald-400 font-medium flex items-center gap-1">
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
                 </svg>
@@ -284,8 +213,8 @@ export default async function ConnectProfilePage({
           {/* Property name & location */}
           {profile.property && (
             <div className="text-center mt-4">
-              <h1 className="text-2xl font-bold" style={{ color: textPrimary }}>{profile.property.name}</h1>
-              <p className="text-sm mt-1" style={{ color: textSecondary }}>
+              <h1 className="text-2xl font-bold text-white">{profile.property.name}</h1>
+              <p className="text-sm text-slate-400 mt-1">
                 {profile.property.city}, {profile.property.state}
               </p>
             </div>
@@ -293,7 +222,7 @@ export default async function ConnectProfilePage({
 
           {/* Bio */}
           {profile.bio && (
-            <p className="text-center mt-4 max-w-lg mx-auto leading-relaxed" style={{ color: textSecondary }}>
+            <p className="text-center text-slate-300 mt-4 max-w-lg mx-auto leading-relaxed">
               {profile.bio}
             </p>
           )}
@@ -307,28 +236,14 @@ export default async function ConnectProfilePage({
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`flex items-center justify-between w-full px-5 py-3.5 transition-all group ${buttonRadius}`}
-                  style={{
-                    backgroundColor: cardBg,
-                    border: `1px solid ${cardBorder}`,
-                    color: textPrimary,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = primary;
-                    e.currentTarget.style.boxShadow = `0 4px 12px ${primary}20`;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = cardBorder;
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
+                  className="flex items-center justify-between w-full px-5 py-3.5 rounded-xl bg-slate-800 border border-slate-700 hover:border-slate-600 hover:bg-slate-750 transition-all text-slate-200 font-medium group"
                 >
-                  <span className="flex items-center gap-3 font-medium">
+                  <span className="flex items-center gap-3">
                     <LinkIcon icon={link.icon} />
                     {link.label}
                   </span>
                   <svg
-                    className="w-4 h-4 transition-colors"
-                    style={{ color: textSecondary }}
+                    className="w-4 h-4 text-slate-500 group-hover:text-slate-300 transition-colors"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -346,20 +261,19 @@ export default async function ConnectProfilePage({
           {/* Reviews */}
           {profile.reviews.length > 0 && (
             <div className="mt-10">
-              <h2 className="text-lg font-semibold mb-4" style={{ color: textPrimary }}>Avaliações</h2>
+              <h2 className="text-lg font-semibold text-white mb-4">Avaliações</h2>
               <div className="space-y-4">
                 {profile.reviews.map((review) => (
                   <div
                     key={review.id}
-                    className="p-4 rounded-xl"
-                    style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}
+                    className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-sm" style={{ color: textPrimary }}>{review.authorName}</span>
+                      <span className="font-medium text-sm text-white">{review.authorName}</span>
                       <Stars rating={review.rating} />
                     </div>
                     {review.text && (
-                      <p className="text-sm leading-relaxed" style={{ color: textSecondary }}>{review.text}</p>
+                      <p className="text-sm text-slate-400 leading-relaxed">{review.text}</p>
                     )}
                   </div>
                 ))}
@@ -370,7 +284,7 @@ export default async function ConnectProfilePage({
           {/* Gallery */}
           {profile.media.length > 0 && (
             <div className="mt-10">
-              <h2 className="text-lg font-semibold mb-4" style={{ color: textPrimary }}>Galeria</h2>
+              <h2 className="text-lg font-semibold text-white mb-4">Galeria</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {profile.media.map((m) => (
                   <a
@@ -378,8 +292,7 @@ export default async function ConnectProfilePage({
                     href={m.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="relative aspect-square rounded-xl overflow-hidden group"
-                    style={{ backgroundColor: '#E9EDEF' }}
+                    className="relative aspect-square rounded-xl overflow-hidden bg-slate-800 group"
                   >
                     <Image
                       src={m.url}
@@ -396,8 +309,8 @@ export default async function ConnectProfilePage({
           {/* Location map placeholder */}
           {profile.property?.latitude && profile.property?.longitude && (
             <div className="mt-10">
-              <h2 className="text-lg font-semibold mb-4" style={{ color: textPrimary }}>Localização</h2>
-              <div className="relative w-full h-48 rounded-xl overflow-hidden border" style={{ backgroundColor: '#E9EDEF', borderColor: cardBorder }}>
+              <h2 className="text-lg font-semibold text-white mb-4">Localização</h2>
+              <div className="relative w-full h-48 rounded-xl overflow-hidden bg-slate-800 border border-slate-700/50">
                 <iframe
                   title="Mapa da propriedade"
                   width="100%"
@@ -421,8 +334,7 @@ export default async function ConnectProfilePage({
             href={waUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-5 py-3.5 font-semibold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full text-white"
-            style={{ backgroundColor: primary, boxShadow: `0 8px 24px ${primary}40` }}
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-5 py-3.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white font-semibold shadow-lg shadow-emerald-500/25 transition-all hover:scale-105 active:scale-95"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />

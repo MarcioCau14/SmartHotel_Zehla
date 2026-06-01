@@ -46,7 +46,7 @@ export class FinOpsBreaker {
     todayStart.setHours(0,0,0,0);
 
     const [leadsCount, paidReservations] = await Promise.all([
-      prisma.lead.count({ where: { tenantId, createdAt: { gte: todayStart } } }),
+      prisma.lead.count({ where: { propertyId: tenantId, createdAt: { gte: todayStart } } }),
       prisma.payment.count({ 
         where: { 
           propertyId: tenantId, 

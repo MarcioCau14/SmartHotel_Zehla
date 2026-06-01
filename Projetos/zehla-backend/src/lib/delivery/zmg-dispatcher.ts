@@ -2,13 +2,11 @@ import { Queue, Worker, Job } from 'bullmq';
 import { redisWorker } from '../redis';
 import { SwipeMatcher } from '../swipe/matcher';
 import { ValidatedLead, ZMGPayload } from '../types/warmup-types';
-import axios from 'axios';
+import { getWhatsAppPort } from '@/infrastructure/external/evolution';
 
 export class ZMGDispatcher {
   private queueName = 'zmg-warmup-disparo';
   private queue: Queue;
-  private evolutionUrl = process.env.EVOLUTION_API_URL;
-  private evolutionKey = process.env.EVOLUTION_API_KEY;
 
   constructor() {
     // Configuração da Fila vinculada ao Redis DB 1 (via redisWorker)
@@ -69,16 +67,13 @@ export class ZMGDispatcher {
         console.log(`[ZMG] [WORKER] Despachando para ${whatsapp}...`);
 
         try {
-          // Zero Browser: Disparo direto via Evolution API (HTTP)
-          await axios.post(
-            `${this.evolutionUrl}/message/sendText/${process.env.EVOLUTION_INSTANCE || 'zehla'}`,
-            {
-              number: whatsapp,
-              text: finalMessage,
-              linkPreview: true
-            },
-            { headers: { apikey: this.evolutionKey } }
-          );
+          const port = getWhatsAppPort();
+          const result = await port.sendText({ to: whatsapp, content: finalMessage });
+
+          if (!result.success) {
+            console.error(`❌ [ZMG] [ERROR] Falha crítica para ${whatsapp}:`, result.error);
+            throw new Error(result.error || 'Send failed');
+          }
           
           console.log(`✅ [ZMG] [SUCCESS] Mensagem entregue para ${whatsapp}`);
         } catch (error: any) {

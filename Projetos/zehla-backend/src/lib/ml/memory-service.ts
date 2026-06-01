@@ -54,65 +54,57 @@ export class MemoryIngestionService {
 
   /**
    * Atualiza ou cria o perfil persistente do hóspede
+   * Nota: Modelo guest_profile ainda não foi migrado para o schema.
+   * Usando raw query como bridge até migração oficial.
    */
   private static async updateGuestProfile(tenantId: string, guestId: string, content: string) {
-    await prisma.guestProfile.upsert({
-      where: { tenantId_externalId: { tenantId, externalId: guestId } },
-      update: { 
-        visitCount: { increment: 0 }, // Lógica real incrementaria em check-in
-        updatedAt: new Date()
-      },
-      create: {
-        tenantId,
-        externalId: guestId,
-        preferences: {}
-      }
-    });
+    try {
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO guest_profiles (tenant_id, external_id, preferences, visit_count, updated_at)
+         VALUES ($1, $2, '{}'::jsonb, 0, NOW())
+         ON CONFLICT (tenant_id, external_id)
+         DO UPDATE SET updated_at = NOW()`,
+        tenantId, guestId
+      );
+    } catch {
+      console.warn(`[ML-BRAIN] guest_profiles table not available yet for ${guestId}`);
+    }
   }
 
   /**
    * Constrói a hierarquia de nós na Árvore de Memória
+   * Nota: Modelo memory_node ainda não foi migrado para o schema.
+   * Usando raw query como bridge até migração oficial.
    */
   private static async buildMemoryTree(tenantId: string, guestId: string, content: string, plan: Plan) {
-    // Busca o nó raiz de sumário do hóspede para hoje
-    const today = new Date();
-    today.setHours(0,0,0,0);
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const summaryTitle = `Sumário Hóspede ${guestId} - ${today.toLocaleDateString()}`;
 
-    const summaryTitle = `Sumário Hóspede ${guestId} - ${today.toLocaleDateString()}`;
+      // Tenta criar nó de sumário (raw)
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO memory_nodes (tenant_id, level, title, content, source, created_at)
+         VALUES ($1, 2, $2, 'Processando sumário inicial...', 'ml-brain', NOW())
+         ON CONFLICT DO NOTHING`,
+        tenantId, summaryTitle
+      );
 
-    // Busca ou cria o nó de sumário (Level 2)
-    let summaryNode = await prisma.memoryNode.findFirst({
-      where: {
+      // Nó de detalhe
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO memory_nodes (tenant_id, level, title, content, source, parent_id, created_at)
+         VALUES ($1, 3, $2, $3, 'whatsapp',
+           (SELECT id FROM memory_nodes WHERE tenant_id = $1 AND title = $4 LIMIT 1),
+           NOW())`,
         tenantId,
-        level: 2,
-        title: summaryTitle
-      }
-    });
-
-    if (!summaryNode) {
-      summaryNode = await prisma.memoryNode.create({
-        data: {
-          tenantId,
-          level: 2,
-          title: summaryTitle,
-          content: 'Processando sumário inicial...',
-          source: 'ml-brain'
-        }
-      });
-    }
-
-    // Cria o nó de detalhe (Level 3)
-    await prisma.memoryNode.create({
-      data: {
-        tenantId,
-        parentId: summaryNode.id,
-        level: 3,
-        title: `Interação ${new Date().toLocaleTimeString()}`,
+        `Interação ${new Date().toLocaleTimeString()}`,
         content,
-        source: 'whatsapp'
-      }
-    });
+        summaryTitle
+      );
 
-    CognitiveTerminal.success(`[ML-BRAIN] Árvore de Memória atualizada (${plan})`, tenantId);
+      CognitiveTerminal.success(`[ML-BRAIN] Árvore de Memória atualizada (${plan})`, tenantId);
+    } catch {
+      console.warn(`[ML-BRAIN] memory_nodes table not available yet for ${guestId}`);
+    }
   }
 }

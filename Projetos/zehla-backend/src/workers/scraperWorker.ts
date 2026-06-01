@@ -13,6 +13,8 @@ export const scraperWorker = new Worker(
   async (job: Job) => {
     const { leadId, url } = job.data;
 
+    
+
     try {
       const scrapedData = await scraperService.deepScrape(url);
 
@@ -36,20 +38,19 @@ export const scraperWorker = new Worker(
           buyingBehavior: scrapedData.buyingBehavior || undefined,
           intentSignals: scrapedData.intentSignals || undefined,
           validationStatus: 'ENRICHED_2.0',
-          validationScore: 100,
+          validationScore: 100, // Upgrade para Score Máximo após Deep Scrape
         },
       });
 
-      console.log(`✅ [Scraper 2.0] Lead ${leadId} enriquecido:`, updatedLead.id);
+      
 
-      return { 
-        status: 'success', 
-        leadId, 
-        fieldsUpdated: Object.keys(scrapedData).filter(k => scrapedData[k as keyof typeof scrapedData]).length 
+      return {
+        status: 'success',
+        leadId,
+        fieldsUpdated: Object.keys(scrapedData).filter(k => scrapedData[k as keyof typeof scrapedData]).length
       };
-    } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : String(error);
-      console.error(`❌ [Scraper 2.0] Falha crítica no worker:`, msg);
+    } catch (error: any) {
+      console.error(`❌ [Scraper 2.0] Falha crítica no worker:`, error.message);
       throw error;
     }
   },

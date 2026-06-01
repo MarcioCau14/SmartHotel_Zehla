@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Wifi, Car, Coffee, Waves, AirVent, Tv, UtensilsCrossed, Sparkles, Shirt, Bus, Check } from 'lucide-react';
 
@@ -28,9 +29,9 @@ const services = [
 
 export function StepServices({ data, onChange }: StepServicesProps) {
   const toggleService = (id: string) => {
-    const newSelected = data.selected.includes(id)
-      ? data.selected.filter((s) => s !== id)
-      : [...data.selected, id];
+    const newSelected = data.selected.includes(id) ? useMemo(() =>
+    data.selected.filter((s) => s !== id), []) :
+    [...data.selected, id];
     onChange({ selected: newSelected });
   };
 

@@ -87,7 +87,7 @@ export function Inbox() {
       if (search) params.set('q', search);
       const res = await fetch(`/api/crm/conversations?${params}`);
       if (res.ok) setConversations(await res.json());
-    } catch (_e) {
+    } catch {
       // silent
     } finally {
       setLoadingConversations(false);
@@ -99,7 +99,7 @@ export function Inbox() {
     try {
       const res = await fetch(`/api/crm/conversations/${conversationId}/messages`);
       if (res.ok) setMessages(await res.json());
-    } catch (_e) {
+    } catch {
       // silent
     } finally {
       setLoadingMessages(false);
@@ -140,7 +140,7 @@ export function Inbox() {
         const saved = await res.json();
         setMessages((prev) => prev.map((m) => (m.id === optimistic.id ? saved : m)));
       }
-    } catch (_e) {
+    } catch {
       // silent
     } finally {
       setSending(false);
