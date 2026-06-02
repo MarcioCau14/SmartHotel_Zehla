@@ -5,6 +5,7 @@ import { KanbanCard } from '../../components/ui/KanbanCard'
 import { KanbanColumn } from '../../components/ui/KanbanColumn'
 import { ChatBubble } from '../../components/ui/ChatBubble'
 import { CognitiveTerminalUI } from '../../components/zcc/CognitiveTerminalUI'
+import { LoginFormUI } from '../../components/auth/LoginFormUI'
 import { LeadKanbanUI, montarColunas } from '../../components/zcc/LeadKanbanUI'
 import { RoomCard } from '../../components/zcc/RoomCard'
 import { RoomsGridUI } from '../../components/zcc/RoomsGridUI'
@@ -422,5 +423,61 @@ describe('RoomsGridUI', () => {
       />,
     )
     expect(screen.getByText('Nenhum quarto encontrado para esta propriedade.')).toBeDefined()
+  })
+})
+
+describe('LoginFormUI', () => {
+  it('deve renderizar campos de email e senha', () => {
+    render(<LoginFormUI onSubmit={vi.fn()} isLoading={false} />)
+
+    expect(screen.getByPlaceholderText('seu@email.com')).toBeDefined()
+    expect(screen.getByPlaceholderText('Sua senha')).toBeDefined()
+    expect(screen.getByText('Entrar no ZEHLA')).toBeDefined()
+  })
+
+  it('deve chamar onSubmit com email e senha', () => {
+    const onSubmit = vi.fn()
+    render(<LoginFormUI onSubmit={onSubmit} isLoading={false} />)
+
+    fireEvent.change(screen.getByPlaceholderText('seu@email.com'), {
+      target: { value: 'admin@ze.com' },
+    })
+    fireEvent.change(screen.getByPlaceholderText('Sua senha'), {
+      target: { value: '123456' },
+    })
+    fireEvent.click(screen.getByText('Entrar no ZEHLA'))
+
+    expect(onSubmit).toHaveBeenCalledTimes(1)
+    expect(onSubmit).toHaveBeenCalledWith('admin@ze.com', '123456')
+  })
+
+  it('deve exibir mensagem de erro quando errorMessage for fornecido', () => {
+    render(
+      <LoginFormUI
+        onSubmit={vi.fn()}
+        isLoading={false}
+        errorMessage="Credenciais inválidas"
+      />,
+    )
+
+    expect(screen.getByText('Credenciais inválidas')).toBeDefined()
+  })
+
+  it('deve desabilitar inputs e botao quando isLoading=true', () => {
+    render(<LoginFormUI onSubmit={vi.fn()} isLoading={true} />)
+
+    expect(screen.getByPlaceholderText('seu@email.com')).toBeDisabled()
+    expect(screen.getByPlaceholderText('Sua senha')).toBeDisabled()
+    expect(screen.getByText('Entrando...')).toBeDefined()
+    expect(screen.getByText('Entrando...')).toBeDisabled()
+  })
+
+  it('nao deve chamar onSubmit se campos estiverem vazios', () => {
+    const onSubmit = vi.fn()
+    render(<LoginFormUI onSubmit={onSubmit} isLoading={false} />)
+
+    fireEvent.click(screen.getByText('Entrar no ZEHLA'))
+
+    expect(onSubmit).not.toHaveBeenCalled()
   })
 })
