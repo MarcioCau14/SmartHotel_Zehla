@@ -1,8 +1,10 @@
 name: ZEHLA CD
 
 on:
-  push:
+  workflow_run:
+    workflows: ['ZEHLA PRIME SB29 — Zero-Trust CI Barrier']
     branches: [main]
+    types: [completed]
 
 concurrency:
   group: cd-${{ github.ref }}
@@ -11,6 +13,7 @@ concurrency:
 jobs:
   deploy:
     name: Build & Deploy to Vercel
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
