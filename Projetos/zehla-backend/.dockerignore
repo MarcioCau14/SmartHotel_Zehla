@@ -1,0 +1,51 @@
+# Git
+.git
+.gitignore
+
+# Dependências locais (serão reinstaladas no container)
+node_modules
+
+# Ambientes e segredos
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Testes e qualidade
+automation
+tests
+__tests__
+coverage
+playwright-report
+test-results
+
+# Build local (será refeito no container)
+.next
+out
+
+# Diretórios de rascunho e arquivos mortos
+BLUEPRINTS
+INTELLIGENCE
+SCRATCH
+temp_api
+ARCHIVE
+
+# Documentação e specs
+*.md
+SPEC*.md
+docs
+
+# IDE e sistema
+.idea
+.vscode
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Docker (evita aninhamento)
+docker-compose*.yml
+
+# Prisma (schema já copiado, node_modules regenerado)
+prisma/seed
+prisma/*.db
