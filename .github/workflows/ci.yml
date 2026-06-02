@@ -3,8 +3,12 @@ name: ZEHLA PRIME SB29 — Zero-Trust CI Barrier
 on:
   push:
     branches: [main]
+    paths:
+      - 'Projetos/zehla-backend/**'
   pull_request:
     branches: [main]
+    paths:
+      - 'Projetos/zehla-backend/**'
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -16,7 +20,7 @@ env:
 
 defaults:
   run:
-    shell: bash
+    working-directory: ./Projetos/zehla-backend
 
 jobs:
   lint-and-typecheck:
@@ -46,7 +50,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('Projetos/zehla-backend/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
@@ -87,7 +91,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('Projetos/zehla-backend/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
@@ -127,7 +131,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('Projetos/zehla-backend/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
