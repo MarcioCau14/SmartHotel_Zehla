@@ -38,9 +38,9 @@ export class PrismaComercialLeadRepository implements IComercialLeadPort {
     try {
       const data = this.toData(lead)
       await this.prisma.comercialLead.upsert({
-        where: { id: data.id },
-        create: data,
-        update: data,
+        where: { id: data.id as string },
+        create: data as any,
+        update: data as any,
       })
       return Result.ok(lead)
     } catch (error) {

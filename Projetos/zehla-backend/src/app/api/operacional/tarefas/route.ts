@@ -36,12 +36,12 @@ export async function POST(request: NextRequest) {
 
     // Instanciação manual de dependências com isolamento de tenant usando basePrisma
     const basePrisma = getBasePrisma()
-    const tarefaRepo = new PrismaTarefaRepository(basePrisma, propertyId)
-    const staffRepo = new PrismaStaffRepository(basePrisma, propertyId)
-    const manutencaoRepo = new PrismaManutencaoRepository(basePrisma, propertyId)
-    const fornecedorRepo = new PrismaFornecedorRepository(basePrisma, propertyId)
-    const slaRepo = new PrismaSlaRepository(basePrisma, propertyId)
-    const checklistRepo = new PrismaChecklistRepository(basePrisma, propertyId)
+    const tarefaRepo = new PrismaTarefaRepository(basePrisma)
+    const staffRepo = new PrismaStaffRepository(basePrisma)
+    const manutencaoRepo = new PrismaManutencaoRepository(basePrisma)
+    const fornecedorRepo = new PrismaFornecedorRepository(basePrisma)
+    const slaRepo = new PrismaSlaRepository(basePrisma)
+    const checklistRepo = new PrismaChecklistRepository(basePrisma)
 
     const criarTarefaUC = new CriarTarefaUseCase(tarefaRepo, staffRepo, slaRepo)
     const iniciarTarefaUC = new IniciarTarefaUseCase(tarefaRepo, staffRepo, manutencaoRepo)

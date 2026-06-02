@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useLeadsKanban, LeadCard } from '../../hooks/useLeadsKanban'
+import { useLeadsKanban, LeadCard, GrupoFunil } from '../../hooks/useLeadsKanban'
 
 const COLUMNS = [
   { id: 'novo', title: 'Novos Leads', color: 'bg-blue-500' },
@@ -12,7 +12,7 @@ const COLUMNS = [
 ]
 
 export function LeadKanban() {
-  const { leads, loading, error, moverLead, qualificarLead } = useLeadsKanban()
+  const { leads, isLoading, error, qualificarLead } = useLeadsKanban()
 
   const getBorderColor = (score: number) => {
     if (score >= 70) return 'border-l-4 border-l-emerald-500 border-slate-700'
@@ -20,7 +20,7 @@ export function LeadKanban() {
     return 'border-l-4 border-l-slate-600 border-slate-700'
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96 w-full text-slate-400 font-mono">
         <span className="animate-spin mr-2">⚙️</span> Carregando Leads do Zé-Sales...
@@ -39,7 +39,7 @@ export function LeadKanban() {
       {/* Grid of Columns */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 overflow-x-auto pb-4">
         {COLUMNS.map((col) => {
-          const cards = leads[col.id] || []
+          const cards = leads[col.id as GrupoFunil] || []
           return (
             <div key={col.id} className="flex flex-col min-w-[220px] bg-slate-900/50 border border-slate-800 rounded-lg p-3">
               {/* Column Title */}
@@ -55,7 +55,7 @@ export function LeadKanban() {
 
               {/* Cards List */}
               <div className="flex-1 space-y-3 min-h-[300px]">
-                {cards.map((card) => (
+                {cards.map((card: LeadCard) => (
                   <div
                     key={card.id}
                     className={`p-3 bg-slate-800 rounded border shadow-md flex flex-col gap-2 transition-all hover:-translate-y-0.5 hover:shadow-lg ${getBorderColor(
@@ -86,7 +86,7 @@ export function LeadKanban() {
                       
                       {card.status !== 'convertido' && card.status !== 'perdido' && (
                         <select
-                          onChange={(e) => moverLead(card.id, e.target.value)}
+                          onChange={() => qualificarLead(card.id)}
                           defaultValue={card.status}
                           className="w-full bg-slate-900 border border-slate-700 rounded text-slate-300 px-1 py-0.5 outline-none cursor-pointer"
                         >

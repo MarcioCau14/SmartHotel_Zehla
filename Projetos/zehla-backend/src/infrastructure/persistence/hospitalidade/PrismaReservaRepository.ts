@@ -142,7 +142,7 @@ export class PrismaReservaRepository implements IReservaPort {
     if (row.checkInRealizado) (reserva as any)['_checkInRealizado'] = new Date(row.checkInRealizado)
     if (row.checkOutRealizado) (reserva as any)['_checkOutRealizado'] = new Date(row.checkOutRealizado)
     if (row.dataCancelamento) {
-      (reserva as any)['_dataCancelamento'] = new Date(row.dataCancelamento)
+      (reserva as any)['_dataCancelamento'] = row.dataCancelamento
       (reserva as any)['_motivoCancelamento'] = row.motivoCancelamento
     }
     if (row.descontoAplicado) {

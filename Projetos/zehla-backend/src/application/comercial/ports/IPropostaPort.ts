@@ -1,4 +1,4 @@
-import { Result } from '../../../../shared/Result'
+import { Result } from '../../../shared/Result'
 import { Proposta } from '../../../domain/comercial/entities/Proposta'
 import { Money } from '../../../domain/comercial/value-objects/Money'
 import { DateRange } from '../../../domain/hospitalidade/value-objects/DateRange'

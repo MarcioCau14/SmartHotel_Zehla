@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getBasePrisma } from '../../../../lib/prisma'
 import { authenticateRequest } from '../../../../infrastructure/http/auth/jwtAuth'
 import { PrismaLeadRepository } from '../../../../infrastructure/persistence/comercial/PrismaLeadRepository'
+import { PrismaComercialLeadRepository } from '../../../../infrastructure/persistence/comercial/PrismaComercialLeadRepository'
 import { PrismaPropostaRepository } from '../../../../infrastructure/persistence/comercial/PrismaPropostaRepository'
 import { PrismaPacoteRepository } from '../../../../infrastructure/persistence/comercial/PrismaPacoteRepository'
 import { PrismaPagamentoRepository } from '../../../../infrastructure/persistence/comercial/PrismaPagamentoRepository'
 import { PrismaConversaoRepository } from '../../../../infrastructure/persistence/comercial/PrismaConversaoRepository'
+import { DomainEventPublisher } from '../../../../domain/shared/events/DomainEventPublisher'
 import { CapturarLeadUseCase } from '../../../../application/comercial/use-cases/CapturarLeadUseCase'
 import { QualificarLeadUseCase } from '../../../../application/comercial/use-cases/QualificarLeadUseCase'
 import { CriarPropostaUseCase } from '../../../../application/comercial/use-cases/CriarPropostaUseCase'
@@ -33,14 +35,16 @@ export async function POST(request: NextRequest) {
 
     // Instanciação manual de dependências com isolamento de tenant usando basePrisma
     const basePrisma = getBasePrisma()
-    const leadRepo = new PrismaLeadRepository(basePrisma, propertyId)
-    const propostaRepo = new PrismaPropostaRepository(basePrisma, propertyId)
-    const pacoteRepo = new PrismaPacoteRepository(basePrisma, propertyId)
-    const pagamentoRepo = new PrismaPagamentoRepository(basePrisma, propertyId)
-    const conversaoRepo = new PrismaConversaoRepository(basePrisma, propertyId)
+    const publisher = new DomainEventPublisher()
+    const leadRepo = new PrismaLeadRepository(basePrisma)
+    const comercialLeadRepo = new PrismaComercialLeadRepository(basePrisma)
+    const propostaRepo = new PrismaPropostaRepository(basePrisma)
+    const pacoteRepo = new PrismaPacoteRepository(basePrisma)
+    const pagamentoRepo = new PrismaPagamentoRepository(basePrisma)
+    const conversaoRepo = new PrismaConversaoRepository(basePrisma)
 
     const capturarLeadUC = new CapturarLeadUseCase(leadRepo)
-    const qualificarLeadUC = new QualificarLeadUseCase(leadRepo)
+    const qualificarLeadUC = new QualificarLeadUseCase(comercialLeadRepo, publisher)
     const criarPropostaUC = new CriarPropostaUseCase(propostaRepo, leadRepo, pacoteRepo)
     const aceitarPropostaUC = new AceitarPropostaUseCase(propostaRepo, pagamentoRepo)
     const sugerirDescontoUC = new SugerirDescontoUseCase(propostaRepo, pacoteRepo, leadRepo)

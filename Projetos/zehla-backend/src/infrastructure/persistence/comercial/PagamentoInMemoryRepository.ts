@@ -1,5 +1,5 @@
 import { IPagamentoPort } from '../../../application/comercial/ports/IPagamentoPort'
-import { Pagamento } from '../../../domain/comercial/entities/Pagamento'
+import { Pagamento, PagamentoProps, PagamentoStatus } from '../../../domain/comercial/entities/Pagamento'
 import { Result } from '../../../shared/Result'
 import { Money } from '../../../domain/comercial/value-objects/Money'
 import { Proposta } from '../../../domain/comercial/entities/Proposta'
@@ -26,7 +26,7 @@ export class PagamentoInMemoryRepository implements IPagamentoPort {
         transactionId: undefined,
         dataCriacao: new Date(),
         dataProcessamento: undefined,
-        status: 'rascunho',
+        status: 'rascunho' as PagamentoStatus,
         codigoAutorizacao: undefined,
         mensagemRecusa: undefined,
         observacoes: undefined
@@ -81,7 +81,7 @@ export class PagamentoInMemoryRepository implements IPagamentoPort {
         .filter(p => p.propriedadeId === propriedadeId && status.includes(p.status))
       
       // Ordenar por data de criação (mais recente primeiro)
-      pagamentos.sort((a, b) => b.dataCriacao.getTime() - a.dataCriacao.getTime())
+      pagamentos.sort((a, b) => (b.dataCriacao?.getTime() ?? 0) - (a.dataCriacao?.getTime() ?? 0))
       
       // Aplicar limite se especificado
       if (limite !== undefined && limite > 0) {
@@ -106,20 +106,24 @@ export class PagamentoInMemoryRepository implements IPagamentoPort {
         return Result.fail(new Error('Payment not found or access denied'))
       }
       
-      const pagamentoAtualizado = new Pagamento(
-        pagamento.id,
-        pagamento.propostaId,
-        pagamento.propriedadeId,
-        pagamento.valor,
-        metodo,
-        pagamento.transactionId,
-        pagamento.dataCriacao,
-        pagamento.dataProcessamento,
-        pagamento.status,
-        pagamento.codigoAutorizacao,
-        pagamento.mensagemRecusa,
-        pagamento.observacoes
-      )
+      const pagamentoAtualizadoResult = Pagamento.create({
+        id: pagamento.id,
+        propostaId: pagamento.propostaId,
+        propriedadeId: pagamento.propriedadeId,
+        valor: pagamento.valor,
+        metodoPagamento: metodo,
+        transactionId: pagamento.transactionId,
+        dataCriacao: pagamento.dataCriacao,
+        dataProcessamento: pagamento.dataProcessamento,
+        status: pagamento.status,
+        codigoAutorizacao: pagamento.codigoAutorizacao,
+        mensagemRecusa: pagamento.mensagemRecusa,
+        observacoes: pagamento.observacoes
+      })
+      if (pagamentoAtualizadoResult.isFail) {
+        return Result.fail(pagamentoAtualizadoResult.error)
+      }
+      const pagamentoAtualizado = pagamentoAtualizadoResult.value
       
       this.pagamentos.set(id, pagamentoAtualizado)
       

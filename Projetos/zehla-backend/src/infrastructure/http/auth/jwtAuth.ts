@@ -23,7 +23,10 @@ export async function authenticateRequest(
 
     const guard = new JwtGuard()
     const result = await guard.validate(token)
-    return result
+    if (result.isFail) {
+      return Result.fail(result.error)
+    }
+    return Result.ok(result.value)
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Unknown authentication error'
     return Result.fail(new Error(msg))

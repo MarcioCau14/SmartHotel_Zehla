@@ -1,5 +1,5 @@
 import { IPropostaPort } from '../../../application/comercial/ports/IPropostaPort'
-import { Proposta } from '../../../domain/comercial/entities/Proposta'
+import { Proposta, PropostaProps, PropostaStatus } from '../../../domain/comercial/entities/Proposta'
 import { Result } from '../../../shared/Result'
 import { Money } from '../../../domain/comercial/value-objects/Money'
 import { Lead } from '../../../domain/comercial/entities/Lead'
@@ -123,23 +123,27 @@ export class PropostaInMemoryRepository implements IPropostaPort {
         return Result.fail(new Error('Proposal not found or access denied'))
       }
       
-      const propostaAtualizada = new Proposta(
-        proposta.id,
-        proposta.leadId,
-        proposta.propriedadeId,
-        proposta.pacoteId,
-        proposta.dataCriacao,
-        dados.dataCheckIn !== undefined ? dados.dataCheckIn : proposta.dataCheckIn,
-        dados.dataCheckOut !== undefined ? dados.dataCheckOut : proposta.dataCheckOut,
-        dados.quantidadeHospedes !== undefined ? dados.quantidadeHospedes : proposta.quantidadeHospedes,
-        proposta.valorTotal,
-        proposta.valorSinal,
-        proposta.descontoAplicado,
-        proposta.status,
-        proposta.validade,
-        dados.observacoes !== undefined ? dados.observacoes : proposta.observacoes,
-        proposta.historicoVersoes
-      )
+      const propostaAtualizadaResult = Proposta.create({
+        id: proposta.id,
+        leadId: proposta.leadId,
+        propriedadeId: proposta.propriedadeId,
+        pacoteId: proposta.pacoteId,
+        dataCriacao: proposta.dataCriacao,
+        dataCheckIn: dados.dataCheckIn !== undefined ? dados.dataCheckIn : proposta.dataCheckIn,
+        dataCheckOut: dados.dataCheckOut !== undefined ? dados.dataCheckOut : proposta.dataCheckOut,
+        quantidadeHospedes: dados.quantidadeHospedes !== undefined ? dados.quantidadeHospedes : proposta.quantidadeHospedes,
+        valorTotal: proposta.valorTotal,
+        valorSinal: proposta.valorSinal,
+        descontoAplicado: proposta.descontoAplicado,
+        status: proposta.status,
+        validade: proposta.validade,
+        observacoes: dados.observacoes !== undefined ? dados.observacoes : proposta.observacoes,
+        historicoVersoes: proposta.historicoVersoes
+      })
+      if (propostaAtualizadaResult.isFail) {
+        return Result.fail(propostaAtualizadaResult.error)
+      }
+      const propostaAtualizada = propostaAtualizadaResult.value
       
       this.propostas.set(id, propostaAtualizada)
       
@@ -170,23 +174,27 @@ export class PropostaInMemoryRepository implements IPropostaPort {
         return Result.fail(new Error('Total value must be greater than zero'))
       }
       
-      const propostaAtualizada = new Proposta(
-        proposta.id,
-        proposta.leadId,
-        proposta.propriedadeId,
-        proposta.pacoteId,
-        proposta.dataCriacao,
-        proposta.dataCheckIn,
-        proposta.dataCheckOut,
-        proposta.quantidadeHospedes,
-        valorTotal,
-        proposta.valorSinal,
-        proposta.descontoAplicado,
-        proposta.status,
-        proposta.validade,
-        proposta.observacoes,
-        proposta.historicoVersoes
-      )
+      const propostaAtualizadaResult = Proposta.create({
+        id: proposta.id,
+        leadId: proposta.leadId,
+        propriedadeId: proposta.propriedadeId,
+        pacoteId: proposta.pacoteId,
+        dataCriacao: proposta.dataCriacao,
+        dataCheckIn: proposta.dataCheckIn,
+        dataCheckOut: proposta.dataCheckOut,
+        quantidadeHospedes: proposta.quantidadeHospedes,
+        valorTotal: valorTotal,
+        valorSinal: proposta.valorSinal,
+        descontoAplicado: proposta.descontoAplicado,
+        status: proposta.status,
+        validade: proposta.validade,
+        observacoes: proposta.observacoes,
+        historicoVersoes: proposta.historicoVersoes
+      })
+      if (propostaAtualizadaResult.isFail) {
+        return Result.fail(propostaAtualizadaResult.error)
+      }
+      const propostaAtualizada = propostaAtualizadaResult.value
       
       this.propostas.set(id, propostaAtualizada)
       
@@ -222,28 +230,32 @@ export class PropostaInMemoryRepository implements IPropostaPort {
         return Result.fail(new Error('Deposit cannot exceed total value'))
       }
       
-      const metadeTotal = Math.floor(proposta.valorTotal.centavos / 2);
+      const metadeTotal = Math.floor((proposta.valorTotal?.centavos ?? 0) / 2);
       if (valorSinal.centavos > metadeTotal) {
         return Result.fail(new Error('Deposit cannot exceed 50% of total value'))
       }
       
-      const propostaAtualizada = new Proposta(
-        proposta.id,
-        proposta.leadId,
-        proposta.propriedadeId,
-        proposta.pacoteId,
-        proposta.dataCriacao,
-        proposta.dataCheckIn,
-        proposta.dataCheckOut,
-        proposta.quantidadeHospedes,
-        proposta.valorTotal,
-        valorSinal,
-        proposta.descontoAplicado,
-        proposta.status,
-        proposta.validade,
-        proposta.observacoes,
-        proposta.historicoVersoes
-      )
+      const propostaAtualizadaResult = Proposta.create({
+        id: proposta.id,
+        leadId: proposta.leadId,
+        propriedadeId: proposta.propriedadeId,
+        pacoteId: proposta.pacoteId,
+        dataCriacao: proposta.dataCriacao,
+        dataCheckIn: proposta.dataCheckIn,
+        dataCheckOut: proposta.dataCheckOut,
+        quantidadeHospedes: proposta.quantidadeHospedes,
+        valorTotal: proposta.valorTotal,
+        valorSinal: valorSinal,
+        descontoAplicado: proposta.descontoAplicado,
+        status: proposta.status,
+        validade: proposta.validade,
+        observacoes: proposta.observacoes,
+        historicoVersoes: proposta.historicoVersoes
+      })
+      if (propostaAtualizadaResult.isFail) {
+        return Result.fail(propostaAtualizadaResult.error)
+      }
+      const propostaAtualizada = propostaAtualizadaResult.value
       
       this.propostas.set(id, propostaAtualizada)
       
@@ -276,23 +288,27 @@ export class PropostaInMemoryRepository implements IPropostaPort {
         return Result.fail(new Error('Discount cannot exceed total value'))
       }
       
-      const propostaAtualizada = new Proposta(
-        proposta.id,
-        proposta.leadId,
-        proposta.propriedadeId,
-        proposta.pacoteId,
-        proposta.dataCriacao,
-        proposta.dataCheckIn,
-        proposta.dataCheckOut,
-        proposta.quantidadeHospedes,
-        proposta.valorTotal,
-        proposta.valorSinal,
-        desconto,
-        proposta.status,
-        proposta.validade,
-        proposta.observacoes,
-        proposta.historicoVersoes
-      )
+      const propostaAtualizadaResult = Proposta.create({
+        id: proposta.id,
+        leadId: proposta.leadId,
+        propriedadeId: proposta.propriedadeId,
+        pacoteId: proposta.pacoteId,
+        dataCriacao: proposta.dataCriacao,
+        dataCheckIn: proposta.dataCheckIn,
+        dataCheckOut: proposta.dataCheckOut,
+        quantidadeHospedes: proposta.quantidadeHospedes,
+        valorTotal: proposta.valorTotal,
+        valorSinal: proposta.valorSinal,
+        descontoAplicado: desconto,
+        status: proposta.status,
+        validade: proposta.validade,
+        observacoes: proposta.observacoes,
+        historicoVersoes: proposta.historicoVersoes
+      })
+      if (propostaAtualizadaResult.isFail) {
+        return Result.fail(propostaAtualizadaResult.error)
+      }
+      const propostaAtualizada = propostaAtualizadaResult.value
       
       this.propostas.set(id, propostaAtualizada)
       

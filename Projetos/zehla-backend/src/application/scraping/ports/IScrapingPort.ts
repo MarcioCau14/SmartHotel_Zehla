@@ -1,3 +1,5 @@
+import { Result } from '../../../domain/shared/Result'
+
 export interface ScrapingRequest {
   url: string
   method: 'GET' | 'POST'

@@ -1,5 +1,5 @@
 import { IPacotePort } from '../../../application/comercial/ports/IPacotePort'
-import { Pacote } from '../../../domain/comercial/entities/Pacote'
+import { Pacote, PacoteProps, PacoteStatus } from '../../../domain/comercial/entities/Pacote'
 import { Result } from '../../../shared/Result'
 import { RegraPrecificacao } from '../../../domain/comercial/value-objects/RegraPrecificacao'
 import { Money } from '../../../domain/comercial/value-objects/Money'
@@ -35,7 +35,7 @@ export class PacoteInMemoryRepository implements IPacotePort {
         regraPrecificacao: dados.regraPrecificacao,
         validadeInicio: dados.validadeInicio,
         validadeFim: dados.validadeFim,
-        status: 'ativo',
+        status: 'ativo' as PacoteStatus,
         versao: 1,
         categorias: dados.categorias,
         midias: dados.midias
@@ -134,22 +134,26 @@ export class PacoteInMemoryRepository implements IPacotePort {
         return Result.fail(new Error('Package not found or access denied'))
       }
       
-      const pacoteAtualizado = new Pacote(
-        pacote.id,
-        pacote.propriedadeId,
-        dados.nome !== undefined ? dados.nome : pacote.nome,
-        dados.descricao !== undefined ? dados.descricao : pacote.descricao,
-        dados.tipoQuarto !== undefined ? dados.tipoQuarto : pacote.tipoQuarto,
-        dados.capacidadeMaxima !== undefined ? dados.capacidadeMaxima : pacote.capacidadeMaxima,
-        dados.servicosInclusos !== undefined ? dados.servicosInclusos : pacote.servicosInclusos,
-        pacote.regraPrecificacao,
-        dados.validadeInicio !== undefined ? dados.validadeInicio : pacote.validadeInicio,
-        dados.validadeFim !== undefined ? dados.validadeFim : pacote.validadeFim,
-        pacote.status,
-        pacote.versao,
-        dados.categorias !== undefined ? dados.categorias : pacote.categorias,
-        dados.midias !== undefined ? dados.midias : pacote.midias
-      )
+      const pacoteAtualizadoResult = Pacote.create({
+        id: pacote.id,
+        propriedadeId: pacote.propriedadeId,
+        nome: dados.nome !== undefined ? dados.nome : pacote.nome,
+        descricao: dados.descricao !== undefined ? dados.descricao : pacote.descricao,
+        tipoQuarto: dados.tipoQuarto !== undefined ? dados.tipoQuarto : pacote.tipoQuarto,
+        capacidadeMaxima: dados.capacidadeMaxima !== undefined ? dados.capacidadeMaxima : pacote.capacidadeMaxima,
+        servicosInclusos: dados.servicosInclusos !== undefined ? dados.servicosInclusos : pacote.servicosInclusos,
+        regraPrecificacao: pacote.regraPrecificacao,
+        validadeInicio: dados.validadeInicio !== undefined ? dados.validadeInicio : pacote.validadeInicio,
+        validadeFim: dados.validadeFim !== undefined ? dados.validadeFim : pacote.validadeFim,
+        status: pacote.status,
+        versao: pacote.versao,
+        categorias: dados.categorias !== undefined ? dados.categorias : pacote.categorias,
+        midias: dados.midias !== undefined ? dados.midias : pacote.midias
+      })
+      if (pacoteAtualizadoResult.isFail) {
+        return Result.fail(pacoteAtualizadoResult.error)
+      }
+      const pacoteAtualizado = pacoteAtualizadoResult.value
       
       this.pacotes.set(id, pacoteAtualizado)
       
@@ -176,22 +180,26 @@ export class PacoteInMemoryRepository implements IPacotePort {
         return Result.fail(new Error('Invalid pricing rule'))
       }
       
-      const pacoteAtualizado = new Pacote(
-        pacote.id,
-        pacote.propriedadeId,
-        pacote.nome,
-        pacote.descricao,
-        pacote.tipoQuarto,
-        pacote.capacidadeMaxima,
-        pacote.servicosInclusos,
-        regra,
-        pacote.validadeInicio,
-        pacote.validadeFim,
-        pacote.status,
-        pacote.versao + 1, // incrementa versão ao atualizar regra
-        pacote.categorias,
-        pacote.midias
-      )
+      const pacoteAtualizadoResult = Pacote.create({
+        id: pacote.id,
+        propriedadeId: pacote.propriedadeId,
+        nome: pacote.nome,
+        descricao: pacote.descricao,
+        tipoQuarto: pacote.tipoQuarto,
+        capacidadeMaxima: pacote.capacidadeMaxima,
+        servicosInclusos: pacote.servicosInclusos,
+        regraPrecificacao: regra,
+        validadeInicio: pacote.validadeInicio,
+        validadeFim: pacote.validadeFim,
+        status: pacote.status,
+        versao: pacote.versao + 1,
+        categorias: pacote.categorias,
+        midias: pacote.midias
+      })
+      if (pacoteAtualizadoResult.isFail) {
+        return Result.fail(pacoteAtualizadoResult.error)
+      }
+      const pacoteAtualizado = pacoteAtualizadoResult.value
       
       this.pacotes.set(id, pacoteAtualizado)
       

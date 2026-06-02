@@ -1,4 +1,4 @@
-import { Result } from '../../../../shared/Result'
+import { Result } from '../../../shared/Result'
 import { Pagamento } from '../../../domain/comercial/entities/Pagamento'
 import { Money } from '../../../domain/comercial/value-objects/Money'
 

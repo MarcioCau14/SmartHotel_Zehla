@@ -1,40 +1,40 @@
 import { test, expect } from '@playwright/test';
-import { clearAllMocks } from './helpers';
+import { seedAuthenticatedSession, clearAllMocks } from './helpers';
 
 test.describe('ZCC - ZEHLA Control Center', () => {
   test.beforeEach(async ({ page }) => {
     await clearAllMocks(page);
   });
 
-  test('deve carregar a página de login do ZCC com campos e botão', async ({ page }) => {
-    await page.goto('/zcc-login', { waitUntil: 'domcontentloaded' });
+  test('deve redirecionar para /login quando nao autenticado', async ({ page }) => {
+    await page.goto('/zcc', { waitUntil: 'domcontentloaded' });
 
+    await page.waitForURL('**/login', { timeout: 15000 });
     await expect(
-      page.getByRole('heading', { name: /Acesso Administrativo/i })
-    ).toBeVisible();
-
-    await expect(page.getByPlaceholder('admin@smarthotel.com')).toBeVisible();
-    await expect(page.getByPlaceholder('Senha administrativa')).toBeVisible();
-
-    await expect(
-      page.getByRole('button', { name: /Acessar ZEHLA Control Center/i })
-    ).toBeVisible();
+      page.getByRole('heading', { name: /Bem-vindo de volta/i }),
+    ).toBeVisible({ timeout: 10000 });
   });
 
-  test('deve fazer login no ZCC e acessar o painel', async ({ page }) => {
-    await page.goto('/zcc-login', { waitUntil: 'domcontentloaded' });
+  test('deve exibir sidebar e dashboard quando autenticado', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await seedAuthenticatedSession(page);
 
-    // Preencher credenciais padrão do admin
-    await page.getByPlaceholder('admin@smarthotel.com').fill('admin@smarthotel.com');
-    await page.getByPlaceholder('Senha administrativa').fill('zehla2026');
+    await page.goto('/zcc', { waitUntil: 'domcontentloaded' });
 
-    // Clicar no botão de acesso (o login usa window.location.href)
-    await page.getByRole('button', { name: /Acessar ZEHLA Control Center/i }).click();
+    await expect(
+      page.getByText('ZCC'),
+    ).toBeVisible({ timeout: 15000 });
 
-    // Aguardar navegação para /zcc (hard navigation via location.href)
-    await page.waitForFunction(() => window.location.pathname === '/zcc', { timeout: 30000 });
+    await expect(
+      page.getByRole('link', { name: /Dashboard/i }),
+    ).toBeVisible();
 
-    // Verificar que o ZCC carregou (esperar pela renderização)
-    await page.waitForLoadState('domcontentloaded');
+    await expect(
+      page.getByRole('link', { name: /Leads/i }),
+    ).toBeVisible();
+
+    await expect(
+      page.getByRole('link', { name: /Operacional/i }),
+    ).toBeVisible();
   });
 });

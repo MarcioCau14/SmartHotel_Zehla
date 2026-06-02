@@ -27,7 +27,8 @@ function getScoreColor(score: number): string {
   return 'text-slate-400'
 }
 
-const ACOES_POR_GRUPO: Record<string, { label: string; action: keyof KanbanCardProps }[]> = {
+type KanbanCardAction = 'onQualificar' | 'onHandoff' | 'onVerEscada'
+const ACOES_POR_GRUPO: Record<string, { label: string; action: KanbanCardAction }[]> = {
   topo: [{ label: 'Qualificar', action: 'onQualificar' }],
   agendamento: [{ label: 'Handoff', action: 'onHandoff' }],
   negociacao: [{ label: 'Ver Escada', action: 'onVerEscada' }],

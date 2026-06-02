@@ -24,26 +24,28 @@
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.mts"
   ],
   "exclude": [
     "node_modules",
     "temp_api",
     "scratch",
+    "SCRATCH",
     "BLUEPRINTS",
     "INTELLIGENCE",
     "packages",
     "automation",
+    "automation/recipes",
+    "__tests__",
     "tests/xtress",
     "prisma/seed",
     "scripts",
     "prisma.config.ts",
     "prisma/seed-trends.ts",
     "next.config.ts",
+    "src/__tests__",
     "src/proxy.ts",
     "src/lib",
     "src/services/**",
@@ -77,6 +79,7 @@
     "src/app/api/zmg/**",
     "src/app/dashboard/**",
     "src/app/zcc/**",
-    "INFRA"
+    "INFRA",
+    "INFRA/prisma/seed"
   ]
 }

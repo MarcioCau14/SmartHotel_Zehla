@@ -14,7 +14,8 @@ export interface ZeOpsInput extends ZeCognitiveInput {
   intent: ZeOpsIntent
 }
 
-export { ZeCognitiveInput, ZeCognitiveOutput, ZcpHandoffPackage, createZcpHandoff, verifyZcpHandoff }
+export type { ZeCognitiveInput, ZeCognitiveOutput, ZcpHandoffPackage }
+export { createZcpHandoff, verifyZcpHandoff }
 
 const OPS_ERROR_MESSAGES: Record<string, string> = {
   TIPO_INVALIDO: 'Tipo de tarefa inválido. Os tipos válidos são: limpeza, manutencao, vistoria, entrega, inspecao.',

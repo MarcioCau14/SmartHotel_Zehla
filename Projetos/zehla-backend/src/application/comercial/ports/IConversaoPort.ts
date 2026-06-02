@@ -1,4 +1,4 @@
-import { Result } from '../../../../shared/Result'
+import { Result } from '../../../shared/Result'
 import { Conversao } from '../../../domain/comercial/entities/Conversao'
 import { Lead } from '../../../domain/comercial/entities/Lead'
 import { Proposta } from '../../../domain/comercial/entities/Proposta'

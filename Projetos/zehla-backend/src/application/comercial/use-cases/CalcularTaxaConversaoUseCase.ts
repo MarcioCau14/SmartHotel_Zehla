@@ -38,18 +38,20 @@ export class CalcularTaxaConversaoUseCase {
       if (propostasResult.isFail) {
         return Result.fail(propostasResult.error)
       }
-      const propostas = propostasResult.value.filter(p => 
-        p.dataCriacao >= inicio && p.dataCriacao <= fim
-      )
+      const propostas = propostasResult.value.filter(p => {
+        const dc = p.dataCriacao
+        return dc != null && dc >= inicio && dc <= fim
+      })
 
       // Buscar pagamentos no período
       const pagamentosResult = await this.pagamentoPort.listarPagamentosPorStatus(propriedadeId, ['processando', 'aprovado'], 1000)
       if (pagamentosResult.isFail) {
         return Result.fail(pagamentosResult.error)
       }
-      const pagamentos = pagamentosResult.value.filter(p => 
-        p.dataCriacao >= inicio && p.dataCriacao <= fim
-      )
+      const pagamentos = pagamentosResult.value.filter(p => {
+        const dc = p.dataCriacao
+        return dc != null && dc >= inicio && dc <= fim
+      })
 
       // Buscar conversões no período
       const conversoesResult = await this.conversaoPort.listarConversoesPorStatus(propriedadeId, ['confirmada'], 1000)

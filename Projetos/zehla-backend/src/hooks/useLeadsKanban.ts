@@ -44,6 +44,8 @@ export interface LeadCard {
   ultimaInteracao: Date | null
   diasSemInteracao: number
   tierAtual: string
+  canal: string
+  status: string
 }
 
 export interface SummaryPackage {
@@ -139,6 +141,8 @@ export function useLeadsKanban() {
       ultimaInteracao: null,
       diasSemInteracao: 0,
       tierAtual: 'front_end',
+      canal: 'website',
+      status: 'novo',
     }
 
     setLeads((prev) => {
@@ -176,6 +180,8 @@ export function useLeadsKanban() {
       ultimaInteracao: null,
       diasSemInteracao: 0,
       tierAtual: 'front_end',
+      canal: 'website',
+      status: 'novo',
     }
 
     setLeads((prev) => {

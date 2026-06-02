@@ -24,7 +24,7 @@ export class CalcularMetricasMarketingUseCase {
 
     const notaMedia = totalReviews > 0
       ? Math.round((reviews.reduce((acc, r) => acc + r.nota, 0) / totalReviews) * 10) / 10
-      : null
+      : undefined
 
     const sentimentoMedio = totalReviews > 0
       ? Math.round((reviews.reduce((acc, r) => acc + (r.nota * 10), 0) / totalReviews))

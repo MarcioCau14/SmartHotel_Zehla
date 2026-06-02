@@ -12,7 +12,8 @@ export interface ZeAnalystInput extends ZeCognitiveInput {
   intent: ZeAnalystIntent
 }
 
-export { ZeCognitiveInput, ZeCognitiveOutput, ZcpHandoffPackage, createZcpHandoff, verifyZcpHandoff }
+export type { ZeCognitiveInput, ZeCognitiveOutput, ZcpHandoffPackage }
+export { createZcpHandoff, verifyZcpHandoff }
 
 const ANALYST_ERROR_MESSAGES: Record<string, string> = {
   TARIFA_NOT_FOUND: 'Regra tarifária não encontrada. Verifique o identificador.',

@@ -1,5 +1,5 @@
 import { ILeadPort } from '../../../application/comercial/ports/ILeadPort'
-import { Lead } from '../../../domain/comercial/entities/Lead'
+import { Lead, LeadProps, LeadStatus } from '../../../domain/comercial/entities/Lead'
 import { Result } from '../../../shared/Result'
 import { Email } from '../../../domain/comercial/value-objects/Email'
 import { Documento } from '../../../domain/comercial/value-objects/Documento'
@@ -45,19 +45,15 @@ export class LeadInMemoryRepository implements ILeadPort {
       let scoreObj: Score | undefined
       // Score não é fornecido na criação inicial, será atualizado posteriormente
       
-      let canalObj: Canal
-      try {
-        canalObj = Canal.criar(dados.canal)
-        if (canalObj.isFail) {
-          return Result.fail(canalObj.error)
-        }
-      } catch (error) {
-        return Result.fail(new Error('Invalid channel'))
+      const canalResult = Canal.criar(dados.canal)
+      if (canalResult.isFail) {
+        return Result.fail(canalResult.error)
       }
+      const canalObj = canalResult.value
       
       const leadProps = {
         id,
-        canal: canalObj.value,
+        canal: canalObj,
         propriedadeId: dados.propriedadeId,
         dataCaptura: new Date(),
         nome: dados.nome,
@@ -65,7 +61,7 @@ export class LeadInMemoryRepository implements ILeadPort {
         telefone: dados.telefone,
         documento: documentoObj,
         score: scoreObj,
-        status: 'novo',
+        status: 'novo' as LeadStatus,
         origemUrl: dados.origemUrl,
         tags: dados.tags,
         ultimaInteracao: undefined
@@ -193,21 +189,25 @@ export class LeadInMemoryRepository implements ILeadPort {
         scoreObj = scoreResult.value
       }
       
-      const leadAtualizado = new Lead(
-        lead.id,
-        lead.canal,
-        lead.propriedadeId,
-        lead.dataCaptura,
-        dados.nome !== undefined ? dados.nome : lead.nome,
-        emailObj !== undefined ? emailObj : lead.email,
-        dados.telefone !== undefined ? dados.telefone : lead.telefone,
-        documentoObj !== undefined ? documentoObj : lead.documento,
-        scoreObj !== undefined ? scoreObj : lead.score,
-        dados.status !== undefined ? (dados.status as any) : lead.status,
-        lead.origemUrl,
-        lead.tags,
-        new Date() // atualiza ultimaInteracao
-      )
+      const leadAtualizadoResult = Lead.create({
+        id: lead.id,
+        canal: lead.canal,
+        propriedadeId: lead.propriedadeId,
+        dataCaptura: lead.dataCaptura,
+        nome: dados.nome !== undefined ? dados.nome : lead.nome,
+        email: emailObj !== undefined ? emailObj : lead.email,
+        telefone: dados.telefone !== undefined ? dados.telefone : lead.telefone,
+        documento: documentoObj !== undefined ? documentoObj : lead.documento,
+        score: scoreObj !== undefined ? scoreObj : lead.score,
+        status: dados.status !== undefined ? dados.status as LeadStatus : lead.status,
+        origemUrl: lead.origemUrl,
+        tags: lead.tags,
+        ultimaInteracao: new Date()
+      })
+      if (leadAtualizadoResult.isFail) {
+        return Result.fail(leadAtualizadoResult.error)
+      }
+      const leadAtualizado = leadAtualizadoResult.value
       
       this.leads.set(id, leadAtualizado)
       
@@ -236,21 +236,25 @@ export class LeadInMemoryRepository implements ILeadPort {
       }
       const scoreObj = scoreResult.value
       
-      const leadAtualizado = new Lead(
-        lead.id,
-        lead.canal,
-        lead.propriedadeId,
-        lead.dataCaptura,
-        lead.nome,
-        lead.email,
-        lead.telefone,
-        lead.documento,
-        scoreObj,
-        lead.status,
-        lead.origemUrl,
-        lead.tags,
-        new Date() // atualiza ultimaInteracao
-      )
+      const leadAtualizadoResult = Lead.create({
+        id: lead.id,
+        canal: lead.canal,
+        propriedadeId: lead.propriedadeId,
+        dataCaptura: lead.dataCaptura,
+        nome: lead.nome,
+        email: lead.email,
+        telefone: lead.telefone,
+        documento: lead.documento,
+        score: scoreObj,
+        status: lead.status,
+        origemUrl: lead.origemUrl,
+        tags: lead.tags,
+        ultimaInteracao: new Date()
+      })
+      if (leadAtualizadoResult.isFail) {
+        return Result.fail(leadAtualizadoResult.error)
+      }
+      const leadAtualizado = leadAtualizadoResult.value
       
       this.leads.set(id, leadAtualizado)
       
@@ -270,7 +274,7 @@ export class LeadInMemoryRepository implements ILeadPort {
       for (const lead of this.leads.values()) {
         if (lead.propriedadeId === propriedadeId && 
             lead.email && 
-            lead.email.valor === emailObj.value) {
+            lead.email.valor === emailObj.value.valor) {
           return Result.ok(lead)
         }
       }
@@ -291,7 +295,7 @@ export class LeadInMemoryRepository implements ILeadPort {
       for (const lead of this.leads.values()) {
         if (lead.propriedadeId === propriedadeId && 
             lead.documento && 
-            lead.documento.valor === documentoObj.value) {
+            lead.documento.valor === documentoObj.value.valor) {
           return Result.ok(lead)
         }
       }

@@ -39,7 +39,7 @@ export interface ZeCognitiveOutput {
   confidenceScore: number
   needsEscalation: boolean
   handoffRequired: boolean
-  handoffTo?: 'ze-sales' | 'ze-marketer' | 'ze-host'
+  handoffTo?: 'ze-sales' | 'ze-marketer' | 'ze-host' | 'ze-ops' | 'ze-analyst'
   handoffPackage?: ZcpHandoffPackage
   data?: unknown
 }
@@ -47,7 +47,7 @@ export interface ZeCognitiveOutput {
 export interface ZcpHandoffPackage {
   packageId: string
   timestamp: string
-  origem: 'ze-sales' | 'ze-marketer'
+  origem: 'ze-sales' | 'ze-marketer' | 'ze-ops' | 'ze-analyst'
   destino: 'ze-sales' | 'ze-marketer' | 'ze-host'
   leadId?: string
   propostaId?: string

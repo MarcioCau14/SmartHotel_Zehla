@@ -205,7 +205,9 @@ export class RegraPrecificacao {
         total = 0
       }
       
-      return Result.ok(new Money(total))
+      const moneyResult = Money.criar(total)
+      if (moneyResult.isFail) return Result.fail(moneyResult.error)
+      return Result.ok(moneyResult.value)
     } catch (error) {
       return Result.fail(error instanceof Error ? error : new Error('Unexpected error calculating total value'))
     }

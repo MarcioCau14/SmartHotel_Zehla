@@ -1,4 +1,4 @@
-import { Result } from '../../../../shared/Result'
+import { Result } from '../../../shared/Result'
 import { Pacote } from '../../../domain/comercial/entities/Pacote'
 import { RegraPrecificacao } from '../../../domain/comercial/value-objects/RegraPrecificacao'
 import { Money } from '../../../domain/comercial/value-objects/Money'

@@ -1,5 +1,5 @@
-import { DomainEvent } from '../../../../domain/shared/DomainEvent'
-import { IEventBus } from '../../../../application/reservation/ports/IEventBus'
+import { DomainEvent } from '../../../domain/shared/DomainEvent'
+import { IEventBus } from '../../../application/reservation/ports/IEventBus'
 
 export class InMemoryEventBus implements IEventBus {
   public events: DomainEvent[] = []

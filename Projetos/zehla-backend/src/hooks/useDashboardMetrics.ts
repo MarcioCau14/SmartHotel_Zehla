@@ -1,77 +1,46 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { Result } from '../shared/Result'
-import { RevenueServiceAdapter } from '../services/adapters/RevenueServiceAdapter'
+import { apiGet } from './apiClient'
 
-export interface YieldMetrics {
-  faturamentoTotal: number
+export interface DashboardMetrics {
+  receitaTotal: number
   taxaOcupacao: number
-  revPar: number
-  breakEvenStatus: 'safe' | 'warning' | 'danger'
+  leadsAtivos: number
+  alertasOperacionais: number
+  variacaoReceita: string
+  variacaoOcupacao: string
 }
 
-export function useDashboardMetrics(periodo: { inicio: string; fim: string }) {
-  const [metrics, setMetrics] = useState<YieldMetrics | null>(null)
-  const [loading, setLoading] = useState(false)
+interface ApiMetricsResponse {
+  success: boolean
+  data: DashboardMetrics
+}
+
+export function useDashboardMetrics() {
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchMetrics = useCallback(async () => {
-    setLoading(true)
+  const refresh = useCallback(async () => {
+    setIsLoading(true)
     setError(null)
-    const adapter = new RevenueServiceAdapter()
-    const result = await adapter.consultarMetricas(periodo.inicio, periodo.fim)
-    setLoading(false)
+
+    const result = await apiGet<ApiMetricsResponse>('/api/revenue/kpis')
 
     if (result.isFail) {
       setError(result.error.message)
-      // Fallback a dados padrão de UI se a API ainda não tiver métricas no período
-      setMetrics({
-        faturamentoTotal: 125000,
-        taxaOcupacao: 72,
-        revPar: 180,
-        breakEvenStatus: 'safe',
-      })
+      setIsLoading(false)
       return
     }
 
-    const data = result.value.data || {}
-    setMetrics({
-      faturamentoTotal: data.faturamentoTotal ?? 0,
-      taxaOcupacao: data.taxaOcupacao ?? 0,
-      revPar: data.revPar ?? 0,
-      breakEvenStatus: data.breakEvenStatus ?? 'safe',
-    })
-  }, [periodo.inicio, periodo.fim])
-
-  useEffect(() => {
-    fetchMetrics()
-  }, [fetchMetrics])
-
-  const recalcularBreakEven = useCallback(
-    async (valorPretendido: number): Promise<Result<boolean, Error>> => {
-      const adapter = new RevenueServiceAdapter()
-      const result = await adapter.validarBreakEven('regra-principal-2026', valorPretendido)
-      if (result.isFail) {
-        return Result.fail(result.error)
-      }
-      const isSafe = result.value.success
-      setMetrics((prev) =>
-        prev
-          ? {
-              ...prev,
-              breakEvenStatus: isSafe ? 'safe' : 'danger',
-            }
-          : null
-      )
-      return Result.ok(isSafe)
-    },
-    []
-  )
+    setMetrics(result.value.data)
+    setIsLoading(false)
+  }, [])
 
   return {
     metrics,
-    loading,
+    isLoading,
     error,
-    recalcularBreakEven,
-    refresh: fetchMetrics,
+    refresh,
   }
 }
