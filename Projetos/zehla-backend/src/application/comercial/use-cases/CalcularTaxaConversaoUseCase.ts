@@ -4,6 +4,8 @@ import { IPagamentoPort } from '../../../application/comercial/ports/IPagamentoP
 import { IConversaoPort } from '../../../application/comercial/ports/IConversaoPort'
 import { Result } from '../../../shared/Result'
 import { Canal } from '../../../domain/comercial/value-objects/Canal'
+import { createLogger } from '../../../infrastructure/observability/Logger'
+import { getTraceId, getTenantId } from '../../../infrastructure/observability/RequestLogger'
 
 export class CalcularTaxaConversaoUseCase {
   constructor(
@@ -12,6 +14,8 @@ export class CalcularTaxaConversaoUseCase {
     private readonly pagamentoPort: IPagamentoPort,
     private readonly conversaoPort: IConversaoPort
   ) {}
+
+  private readonly log = createLogger()
 
   async execute(propriedadeId: string, dataInicio?: Date, dataFim?: Date): Promise<Result<{ 
     taxaConversao: number; 
@@ -29,6 +33,7 @@ export class CalcularTaxaConversaoUseCase {
         dataFim: fim
       })
       if (leadsResult.isFail) {
+        this.log.warn({ error: leadsResult.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao listar leads no período')
         return Result.fail(leadsResult.error)
       }
       const leads = leadsResult.value
@@ -36,6 +41,7 @@ export class CalcularTaxaConversaoUseCase {
       // Buscar propostas no período
       const propostasResult = await this.propostaPort.listarPropostasPorStatus(propriedadeId, ['enviada', 'vista', 'negociacao', 'aceita', 'convertida'], 1000)
       if (propostasResult.isFail) {
+        this.log.warn({ error: propostasResult.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao listar propostas no período')
         return Result.fail(propostasResult.error)
       }
       const propostas = propostasResult.value.filter(p => {
@@ -46,6 +52,7 @@ export class CalcularTaxaConversaoUseCase {
       // Buscar pagamentos no período
       const pagamentosResult = await this.pagamentoPort.listarPagamentosPorStatus(propriedadeId, ['processando', 'aprovado'], 1000)
       if (pagamentosResult.isFail) {
+        this.log.warn({ error: pagamentosResult.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao listar pagamentos no período')
         return Result.fail(pagamentosResult.error)
       }
       const pagamentos = pagamentosResult.value.filter(p => {
@@ -56,6 +63,7 @@ export class CalcularTaxaConversaoUseCase {
       // Buscar conversões no período
       const conversoesResult = await this.conversaoPort.listarConversoesPorStatus(propriedadeId, ['confirmada'], 1000)
       if (conversoesResult.isFail) {
+        this.log.warn({ error: conversoesResult.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao listar conversões no período')
         return Result.fail(conversoesResult.error)
       }
       const conversoes = conversoesResult.value.filter(c => 
@@ -123,6 +131,7 @@ export class CalcularTaxaConversaoUseCase {
         breakdown: breakdownPorCanal
       })
     } catch (error) {
+      this.log.error({ err: error, traceId: getTraceId(), tenantId: getTenantId() }, 'Erro de infraestrutura: falha ao calcular taxa de conversão')
       return Result.fail(error instanceof Error ? error : new Error('Unexpected error calculating conversion rate'))
     }
   }

@@ -5,6 +5,8 @@ import { Money } from '../../../domain/comercial/value-objects/Money'
 import { Result } from '../../../shared/Result'
 import { Proposta } from '../../../domain/comercial/entities/Proposta'
 import { Pacote } from '../../../domain/comercial/entities/Pacote'
+import { createLogger } from '../../../infrastructure/observability/Logger'
+import { getTraceId, getTenantId } from '../../../infrastructure/observability/RequestLogger'
 
 export class SugerirDescontoUseCase {
   constructor(
@@ -13,43 +15,52 @@ export class SugerirDescontoUseCase {
     private readonly leadPort: ILeadPort
   ) {}
 
+  private readonly log = createLogger()
+
   async execute(propostaId: string, propriedadeId: string): Promise<Result<{ proposta: Proposta; descontoSugerido: Money; motivo: string }, Error>> {
     try {
       // 1. Buscar a proposta
       const propostaResult = await this.propostaPort.buscarPropostaPorId(propostaId, propriedadeId)
       if (propostaResult.isFail) {
+        this.log.warn({ error: propostaResult.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: proposta não encontrada')
         return Result.fail(propostaResult.error)
       }
       
       const proposta = propostaResult.value
       if (!proposta) {
+        this.log.warn({ error: 'Proposal not found', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: proposta não encontrada')
         return Result.fail(new Error('Proposal not found'))
       }
       
       // Regra de negócio: Só é possível sugerir desconto para propostas enviadas, vistas ou em negociação
       if (!(proposta.ehEnviada || proposta.ehVista || proposta.ehNegociacao)) {
+        this.log.warn({ error: 'Discount can only be suggested for sent, viewed, or negotiated proposals', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: proposta em status inválido para desconto')
         return Result.fail(new Error('Discount can only be suggested for sent, viewed, or negotiated proposals'))
       }
       
       // 2. Buscar o pacote associado
       const pacoteResult = await this.pacotePort.buscarPacotePorId(proposta.pacoteId, proposta.propriedadeId)
       if (pacoteResult.isFail) {
+        this.log.warn({ error: pacoteResult.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: pacote associado não encontrado')
         return Result.fail(pacoteResult.error)
       }
       
       const pacote = pacoteResult.value
       if (!pacote) {
+        this.log.warn({ error: 'Associated package not found', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: pacote associado não encontrado')
         return Result.fail(new Error('Associated package not found'))
       }
 
       // 3. Buscar o lead associado para verificar tempo de resposta
       const leadResult = await this.leadPort.buscarLeadPorId(proposta.leadId, proposta.propriedadeId)
       if (leadResult.isFail) {
+        this.log.warn({ error: leadResult.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: lead associado não encontrado')
         return Result.fail(leadResult.error)
       }
       
       const lead = leadResult.value
       if (!lead) {
+        this.log.warn({ error: 'Associated lead not found', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: lead associado não encontrado')
         return Result.fail(new Error('Associated lead not found'))
       }
       
@@ -115,6 +126,7 @@ export class SugerirDescontoUseCase {
         motivo
       })
     } catch (error) {
+      this.log.error({ err: error, traceId: getTraceId(), tenantId: getTenantId() }, 'Erro de infraestrutura: falha ao sugerir desconto')
       return Result.fail(error instanceof Error ? error : new Error('Unexpected error suggesting discount'))
     }
   }

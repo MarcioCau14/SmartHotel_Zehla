@@ -14,6 +14,8 @@ import { CalcularMetricasSlaUseCase } from '../use-cases/CalcularMetricasSlaUseC
 import { ProcessarTarefasAtrasadasUseCase } from '../use-cases/ProcessarTarefasAtrasadasUseCase'
 import { ExecutarChecklistUseCase } from '../use-cases/ExecutarChecklistUseCase'
 import { ZeOpsInput, ZeCognitiveOutput, ZcpHandoffPackage, createZcpHandoff, translateError } from './ZeOpsCognitiveTypes'
+import { createLogger } from '../../../infrastructure/observability/Logger'
+import { getTraceId, getTenantId } from '../../../infrastructure/observability/RequestLogger'
 
 function generateId(): string {
   return `zo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
@@ -38,6 +40,8 @@ export class ZeOpsCognitiveService {
     private readonly zcpSecret: string,
   ) {}
 
+  private readonly log = createLogger()
+
   async processIntent(input: ZeOpsInput): Promise<ZeCognitiveOutput> {
     try {
       switch (input.intent) {
@@ -60,7 +64,8 @@ export class ZeOpsCognitiveService {
         default:
           return this.output(false, 'Intenção não reconhecida pelo Zé-Ops.', input.messageId, 0.3)
       }
-    } catch {
+    } catch (error) {
+      this.log.error({ err: error, traceId: getTraceId(), tenantId: getTenantId() }, 'Erro de infraestrutura: falha ao processar intenção no Zé-Ops')
       return this.output(false, 'Erro interno no Zé-Ops. Operação cancelada.', input.messageId, 0.0, true)
     }
   }
@@ -68,6 +73,7 @@ export class ZeOpsCognitiveService {
   private async handleCriarTarefa(input: ZeOpsInput): Promise<ZeCognitiveOutput> {
     const { tipo, titulo, descricao, prioridade, responsavelId, tipoResponsavel, ativoId, tipoAtivo } = input.payload as Record<string, unknown>
     if (!tipo || !titulo) {
+      this.log.warn({ error: 'Campos obrigatórios: tipo e título', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: campos obrigatórios ausentes para criar tarefa')
       return this.output(false, 'Preciso do tipo e título da tarefa para criá-la.', input.messageId, 0.4)
     }
     const result = await this.criarTarefaUseCase.execute({
@@ -82,6 +88,7 @@ export class ZeOpsCognitiveService {
       tipoAtivo: tipoAtivo as string | undefined,
     })
     if (result.isFail) {
+      this.log.warn({ error: result.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao criar tarefa')
       return this.output(false, translateError(result.error), input.messageId, 0.3, true)
     }
     return this.output(
@@ -99,6 +106,7 @@ export class ZeOpsCognitiveService {
   private async handleIniciarTarefa(input: ZeOpsInput): Promise<ZeCognitiveOutput> {
     const { tarefaId, responsavelId, tipoResponsavel } = input.payload as Record<string, unknown>
     if (!tarefaId || !responsavelId || !tipoResponsavel) {
+      this.log.warn({ error: 'Campos obrigatórios: tarefaId, responsavelId, tipoResponsavel', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: campos obrigatórios ausentes para iniciar tarefa')
       return this.output(false, 'Preciso do ID da tarefa, responsável e tipo de responsável para iniciá-la.', input.messageId, 0.4)
     }
     const result = await this.iniciarTarefaUseCase.execute({
@@ -108,6 +116,7 @@ export class ZeOpsCognitiveService {
       tipoResponsavel: tipoResponsavel as 'staff' | 'fornecedor',
     })
     if (result.isFail) {
+      this.log.warn({ error: result.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao iniciar tarefa')
       return this.output(false, translateError(result.error), input.messageId, 0.3, true)
     }
     return this.output(
@@ -121,6 +130,7 @@ export class ZeOpsCognitiveService {
   private async handleConcluirTarefa(input: ZeOpsInput): Promise<ZeCognitiveOutput> {
     const { tarefaId, observacoes } = input.payload as Record<string, unknown>
     if (!tarefaId) {
+      this.log.warn({ error: 'Campo obrigatório: tarefaId', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: ID da tarefa ausente para concluir')
       return this.output(false, 'Preciso do ID da tarefa para concluí-la.', input.messageId, 0.4)
     }
     const result = await this.concluirTarefaUseCase.execute({
@@ -129,6 +139,7 @@ export class ZeOpsCognitiveService {
       observacoes: observacoes as string | undefined,
     })
     if (result.isFail) {
+      this.log.warn({ error: result.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao concluir tarefa')
       return this.output(false, translateError(result.error), input.messageId, 0.3, true)
     }
     return this.output(
@@ -142,6 +153,7 @@ export class ZeOpsCognitiveService {
   private async handleAbrirManutencao(input: ZeOpsInput): Promise<ZeCognitiveOutput> {
     const { tipo, gravidade, categoria, ativoId, tipoAtivo, descricaoProblema, fornecedorId, titulo } = input.payload as Record<string, unknown>
     if (!tipo || !gravidade || !categoria || !descricaoProblema) {
+      this.log.warn({ error: 'Campos obrigatórios: tipo, gravidade, categoria, descricaoProblema', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: campos obrigatórios ausentes para abrir manutenção')
       return this.output(false, 'Preciso do tipo, gravidade, categoria e descrição do problema para abrir manutenção.', input.messageId, 0.4)
     }
     const result = await this.abrirManutencaoUseCase.execute({
@@ -156,6 +168,7 @@ export class ZeOpsCognitiveService {
       titulo: titulo as string | undefined,
     })
     if (result.isFail) {
+      this.log.warn({ error: result.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao abrir manutenção')
       return this.output(false, translateError(result.error), input.messageId, 0.3, result.error.message === 'Manutenção preventiva não pode ter gravidade severa')
     }
     if (result.value.requerAprovacaoHumana) {
@@ -205,6 +218,7 @@ export class ZeOpsCognitiveService {
   private async handleProcessarWebhook(input: ZeOpsInput): Promise<ZeCognitiveOutput> {
     const { fornecedorId, manutencaoId, acao, payload, signature, observacoes } = input.payload as Record<string, unknown>
     if (!fornecedorId || !manutencaoId || !acao) {
+      this.log.warn({ error: 'Campos obrigatórios: fornecedorId, manutencaoId, acao', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: campos obrigatórios ausentes para processar webhook')
       return this.output(false, 'Preciso do ID do fornecedor, ID da manutenção e ação para processar o webhook.', input.messageId, 0.4)
     }
     const result = await this.processarWebhookUseCase.execute({
@@ -217,6 +231,7 @@ export class ZeOpsCognitiveService {
       observacoes: observacoes as string | undefined,
     })
     if (result.isFail) {
+      this.log.warn({ error: result.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao processar webhook de fornecedor')
       const errMsg = result.error.message
       if (errMsg.includes('HMAC') || errMsg.includes('Assinatura') || errMsg.includes('secret')) {
         return this.output(false, translateError(result.error), input.messageId, 0.2)
@@ -234,6 +249,7 @@ export class ZeOpsCognitiveService {
   private async handleCalcularMetricasSla(input: ZeOpsInput): Promise<ZeCognitiveOutput> {
     const { dataInicio, dataFim } = input.payload as Record<string, unknown>
     if (!dataInicio || !dataFim) {
+      this.log.warn({ error: 'Campos obrigatórios: dataInicio, dataFim', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: datas obrigatórias ausentes para calcular SLA')
       return this.output(false, 'Preciso das datas de início e fim para calcular métricas de SLA.', input.messageId, 0.4)
     }
     const result = await this.calcularMetricasSlaUseCase.execute({
@@ -242,6 +258,7 @@ export class ZeOpsCognitiveService {
       dataFim: new Date(dataFim as string),
     })
     if (result.isFail) {
+      this.log.warn({ error: result.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao calcular métricas de SLA')
       return this.output(false, translateError(result.error), input.messageId, 0.3, true)
     }
     const { total, dentroPrazo, violadas, taxaCumprimento, breakdown } = result.value
@@ -260,6 +277,7 @@ export class ZeOpsCognitiveService {
   private async handleProcessarTarefasAtrasadas(input: ZeOpsInput): Promise<ZeCognitiveOutput> {
     const result = await this.processarTarefasAtrasadasUseCase.execute(input.propriedadeId)
     if (result.isFail) {
+      this.log.warn({ error: result.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao processar tarefas atrasadas')
       return this.output(false, translateError(result.error), input.messageId, 0.3, true)
     }
     return this.output(
@@ -277,6 +295,7 @@ export class ZeOpsCognitiveService {
   private async handleExecutarChecklist(input: ZeOpsInput): Promise<ZeCognitiveOutput> {
     const { checklistId, acao, itemId } = input.payload as Record<string, unknown>
     if (!checklistId || !acao) {
+      this.log.warn({ error: 'Campos obrigatórios: checklistId, acao', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: campos obrigatórios ausentes para executar checklist')
       return this.output(false, 'Preciso do ID do checklist e da ação (iniciar, concluir_item, concluir).', input.messageId, 0.4)
     }
     const result = await this.executarChecklistUseCase.execute({
@@ -286,6 +305,7 @@ export class ZeOpsCognitiveService {
       itemId: itemId as string | undefined,
     })
     if (result.isFail) {
+      this.log.warn({ error: result.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao executar checklist')
       return this.output(false, translateError(result.error), input.messageId, 0.3, true)
     }
     const status = result.value.status

@@ -10,6 +10,8 @@ import { AceitarPropostaUseCase } from '../use-cases/AceitarPropostaUseCase'
 import { SugerirDescontoUseCase } from '../use-cases/SugerirDescontoUseCase'
 import { ConfirmarPagamentoUseCase } from '../use-cases/ConfirmarPagamentoUseCase'
 import { ZeSalesInput, ZeCognitiveOutput, ZcpHandoffPackage, createZcpHandoff, translateError } from './ZeCognitiveTypes'
+import { createLogger } from '../../../infrastructure/observability/Logger'
+import { getTraceId, getTenantId } from '../../../infrastructure/observability/RequestLogger'
 
 function generateId(): string {
   return `zs-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
@@ -29,6 +31,8 @@ export class ZeSalesCognitiveService {
     private readonly confirmarPagamentoUseCase: ConfirmarPagamentoUseCase,
     private readonly zcpSecret: string,
   ) {}
+
+  private readonly log = createLogger()
 
   async processIntent(input: ZeSalesInput): Promise<ZeCognitiveOutput> {
     try {
@@ -54,7 +58,8 @@ export class ZeSalesCognitiveService {
         default:
           return this.output(false, 'Intenção não reconhecida pelo Zé-Sales.', input.messageId, 0.3)
       }
-    } catch {
+    } catch (error) {
+      this.log.error({ err: error, traceId: getTraceId(), tenantId: getTenantId() }, 'Erro de infraestrutura: falha ao processar intenção no Zé-Sales')
       return this.output(false, 'Erro interno no Zé-Sales. Operação cancelada.', input.messageId, 0.0, true)
     }
   }
@@ -62,6 +67,7 @@ export class ZeSalesCognitiveService {
   private async handleCapturarLead(input: ZeSalesInput): Promise<ZeCognitiveOutput> {
     const { canal, nome, email, telefone, documento, origemUrl, tags } = input.payload as any
     if (!canal) {
+      this.log.warn({ error: 'Campo obrigatório: canal', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: canal de origem ausente para capturar lead')
       return this.output(false, 'Preciso do canal de origem para capturar o lead.', input.messageId, 0.4)
     }
     const result = await this.capturarLeadUseCase.execute({
@@ -75,6 +81,7 @@ export class ZeSalesCognitiveService {
       tags: (tags as string[]) || undefined,
     })
     if (result.isFail) {
+      this.log.warn({ error: result.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao capturar lead')
       return this.output(false, translateError(result.error), input.messageId, 0.3, true)
     }
     return this.output(
@@ -92,10 +99,12 @@ export class ZeSalesCognitiveService {
   private async handleQualificarLead(input: ZeSalesInput): Promise<ZeCognitiveOutput> {
     const { leadId } = input.payload as any
     if (!leadId) {
+      this.log.warn({ error: 'Campo obrigatório: leadId', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: ID do lead ausente para qualificar')
       return this.output(false, 'Preciso do ID do lead para qualificar.', input.messageId, 0.4)
     }
     const result = await this.qualificarLeadUseCase.execute(leadId as string)
     if (result.isFail) {
+      this.log.warn({ error: result.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao qualificar lead')
       return this.output(false, translateError(result.error), input.messageId, 0.3, true)
     }
     return this.output(
@@ -109,6 +118,7 @@ export class ZeSalesCognitiveService {
   private async handleCriarProposta(input: ZeSalesInput): Promise<ZeCognitiveOutput> {
     const { leadId, pacoteId, dataCheckIn, dataCheckOut, quantidadeHospedes, observacoes } = input.payload as any
     if (!leadId || !pacoteId || !dataCheckIn || !dataCheckOut) {
+      this.log.warn({ error: 'Campos obrigatórios: leadId, pacoteId, dataCheckIn, dataCheckOut', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: campos obrigatórios ausentes para criar proposta')
       return this.output(false, 'Preciso do lead, pacote, check-in e check-out para criar a proposta.', input.messageId, 0.4)
     }
     const result = await this.criarPropostaUseCase.execute({
@@ -121,6 +131,7 @@ export class ZeSalesCognitiveService {
       observacoes: observacoes as string | undefined,
     })
     if (result.isFail) {
+      this.log.warn({ error: result.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao criar proposta')
       return this.output(false, translateError(result.error), input.messageId, 0.3, true)
     }
     return this.output(
@@ -138,10 +149,12 @@ export class ZeSalesCognitiveService {
   private async handleAceitarProposta(input: ZeSalesInput): Promise<ZeCognitiveOutput> {
     const { propostaId } = input.payload as any
     if (!propostaId) {
+      this.log.warn({ error: 'Campo obrigatório: propostaId', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: ID da proposta ausente para aceitar')
       return this.output(false, 'Preciso do ID da proposta para aceitar.', input.messageId, 0.4)
     }
     const result = await this.aceitarPropostaUseCase.execute(propostaId as string, input.propriedadeId)
     if (result.isFail) {
+      this.log.warn({ error: result.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao aceitar proposta')
       return this.output(false, translateError(result.error), input.messageId, 0.3, true)
     }
     return this.output(
@@ -159,10 +172,12 @@ export class ZeSalesCognitiveService {
   private async handleSugerirDesconto(input: ZeSalesInput): Promise<ZeCognitiveOutput> {
     const { propostaId } = input.payload as any
     if (!propostaId) {
+      this.log.warn({ error: 'Campo obrigatório: propostaId', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: ID da proposta ausente para sugerir desconto')
       return this.output(false, 'Preciso do ID da proposta para sugerir desconto.', input.messageId, 0.4)
     }
     const result = await this.sugerirDescontoUseCase.execute(propostaId as string, input.propriedadeId)
     if (result.isFail) {
+      this.log.warn({ error: result.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao sugerir desconto')
       return this.output(false, translateError(result.error), input.messageId, 0.3, true)
     }
     const { descontoSugerido, motivo } = result.value
@@ -177,10 +192,12 @@ export class ZeSalesCognitiveService {
   private async handleConfirmarPagamento(input: ZeSalesInput): Promise<ZeCognitiveOutput> {
     const { pagamentoId } = input.payload as any
     if (!pagamentoId) {
+      this.log.warn({ error: 'Campo obrigatório: pagamentoId', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: ID do pagamento ausente para confirmar')
       return this.output(false, 'Preciso do ID do pagamento para confirmar.', input.messageId, 0.4)
     }
     const result = await this.confirmarPagamentoUseCase.execute(pagamentoId as string, input.propriedadeId)
     if (result.isFail) {
+      this.log.warn({ error: result.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao confirmar pagamento')
       return this.output(false, translateError(result.error), input.messageId, 0.3, true)
     }
     return this.output(
@@ -194,6 +211,7 @@ export class ZeSalesCognitiveService {
   private async handleConsultarConversao(input: ZeSalesInput): Promise<ZeCognitiveOutput> {
     const { leadId, propostaId } = input.payload as any
     if (!leadId && !propostaId) {
+      this.log.warn({ error: 'Campos obrigatórios: leadId ou propostaId', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: critério de consulta ausente')
       return this.output(false, 'Preciso do ID do lead ou da proposta para consultar.', input.messageId, 0.4)
     }
     const filtros: any = { propriedadeId: input.propriedadeId }
@@ -201,6 +219,7 @@ export class ZeSalesCognitiveService {
     if (propostaId) filtros.propostaId = propostaId as string
     const result = await this.conversaoPort.listarConversoesPorStatus(input.propriedadeId, ['pendente', 'confirmada', 'cancelada'], 10)
     if (result.isFail) {
+      this.log.warn({ error: result.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao consultar conversão')
       return this.output(false, translateError(result.error), input.messageId, 0.3)
     }
     return this.output(
@@ -218,10 +237,12 @@ export class ZeSalesCognitiveService {
   private async handleConsultarPagamento(input: ZeSalesInput): Promise<ZeCognitiveOutput> {
     const { pagamentoId } = input.payload as any
     if (!pagamentoId) {
+      this.log.warn({ error: 'Campo obrigatório: pagamentoId', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: ID do pagamento ausente para consultar')
       return this.output(false, 'Preciso do ID do pagamento para consultar.', input.messageId, 0.4)
     }
     const result = await this.pagamentoPort.buscarPagamentoPorId(pagamentoId as string, input.propriedadeId)
     if (result.isFail || !result.value) {
+      this.log.warn({ error: result.error?.message || 'PAGAMENTO_NOT_FOUND', traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: pagamento não encontrado')
       return this.output(false, translateError(result.error || new Error('PAGAMENTO_NOT_FOUND')), input.messageId, 0.3)
     }
     const p = result.value
@@ -244,6 +265,7 @@ export class ZeSalesCognitiveService {
       canal: canal as string | undefined,
     })
     if (result.isFail) {
+      this.log.warn({ error: result.error.message, traceId: getTraceId(), tenantId: getTenantId() }, 'Regra de negócio violada: falha ao listar leads')
       return this.output(false, translateError(result.error), input.messageId, 0.3)
     }
     return this.output(
