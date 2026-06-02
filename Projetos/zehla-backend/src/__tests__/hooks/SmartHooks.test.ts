@@ -5,6 +5,8 @@ import { useAuth } from '../../hooks/useAuth'
 import { useLeadsKanban } from '../../hooks/useLeadsKanban'
 import { useZehlaBrain } from '../../hooks/useZehlaBrain'
 import { useRoomsGrid } from '../../hooks/useRoomsGrid'
+import { useDashboardMetrics } from '../../hooks/useDashboardMetrics'
+import { useOnboardingWizard } from '../../hooks/useOnboardingWizard'
 import { configureApiClient } from '../../hooks/apiClient'
 
 function mockFetchOnce(status: number, body: unknown) {
@@ -370,6 +372,200 @@ describe('useRoomsGrid', () => {
 
     expect(result.current.rooms[0].status).toBe('LIVRE')
   })
+
+describe('useDashboardMetrics', () => {
+  beforeEach(() => {
+    vi.mocked(fetch).mockReset()
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(JSON.stringify({ success: true, data: null }), { status: 200 }),
+    )
+  })
+
+  it('deve iniciar com isLoading=false e metrics nulo', () => {
+    const { result } = renderHook(() => useDashboardMetrics())
+    expect(result.current.isLoading).toBe(false)
+    expect(result.current.error).toBeNull()
+    expect(result.current.metrics).toBeNull()
+  })
+
+  it('deve carregar metricas com sucesso', async () => {
+    mockFetchOnce(200, {
+      success: true,
+      data: {
+        receitaTotal: 125000,
+        taxaOcupacao: 72,
+        leadsAtivos: 18,
+        alertasOperacionais: 2,
+        variacaoReceita: '+12.5%',
+        variacaoOcupacao: '+5.3%',
+      },
+    })
+
+    const { result } = renderHook(() => useDashboardMetrics())
+
+    await act(async () => {
+      await result.current.refresh()
+    })
+
+    expect(result.current.isLoading).toBe(false)
+    expect(result.current.metrics).not.toBeNull()
+    expect(result.current.metrics?.receitaTotal).toBe(125000)
+    expect(result.current.metrics?.taxaOcupacao).toBe(72)
+    expect(result.current.metrics?.leadsAtivos).toBe(18)
+    expect(result.current.metrics?.alertasOperacionais).toBe(2)
+    expect(result.current.metrics?.variacaoReceita).toBe('+12.5%')
+    expect(result.current.metrics?.variacaoOcupacao).toBe('+5.3%')
+  })
+
+  it('deve definir error em caso de falha na API', async () => {
+    mockFetchOnce(500, { error: 'Erro interno do servidor' })
+
+    const { result } = renderHook(() => useDashboardMetrics())
+
+    await act(async () => {
+      await result.current.refresh()
+    })
+
+    expect(result.current.isLoading).toBe(false)
+    expect(result.current.error).toBe('Erro interno do servidor')
+    expect(result.current.metrics).toBeNull()
+  })
+})
+
+describe('useOnboardingWizard', () => {
+  beforeEach(() => {
+    vi.mocked(fetch).mockReset()
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(JSON.stringify({ success: true, data: null }), { status: 200 }),
+    )
+  })
+
+  it('deve iniciar no passo 0 com data vazio', () => {
+    const { result } = renderHook(() => useOnboardingWizard())
+
+    expect(result.current.currentStep).toBe(0)
+    expect(result.current.totalSteps).toBe(3)
+    expect(result.current.data).toEqual({})
+    expect(result.current.isLoading).toBe(false)
+    expect(result.current.error).toBeNull()
+  })
+
+  it('deve avancar para o passo 1 ao chamar next', () => {
+    const { result } = renderHook(() => useOnboardingWizard())
+
+    act(() => result.current.next())
+
+    expect(result.current.currentStep).toBe(1)
+  })
+
+  it('deve voltar para o passo 0 ao chamar back', () => {
+    const { result } = renderHook(() => useOnboardingWizard())
+
+    act(() => result.current.next())
+    expect(result.current.currentStep).toBe(1)
+
+    act(() => result.current.back())
+    expect(result.current.currentStep).toBe(0)
+  })
+
+  it('deve acumular dados parciais via updateData', () => {
+    const { result } = renderHook(() => useOnboardingWizard())
+
+    act(() => result.current.updateData({ nome: 'Maria', email: 'maria@ze.com' }))
+    expect(result.current.data.nome).toBe('Maria')
+    expect(result.current.data.email).toBe('maria@ze.com')
+
+    act(() => result.current.updateData({ whatsapp: '11999999999' }))
+    expect(result.current.data.whatsapp).toBe('11999999999')
+    expect(result.current.data.nome).toBe('Maria')
+  })
+
+  it('deve submeter lead com sucesso via POST /api/comercial/leads', async () => {
+    mockFetchOnce(200, {
+      success: true,
+      data: { leadId: 'lead-onboard-1' },
+    })
+
+    const { result } = renderHook(() => useOnboardingWizard())
+
+    act(() =>
+      result.current.updateData({
+        nome: 'Maria',
+        email: 'maria@ze.com',
+        whatsapp: '11999999999',
+        nomePousada: 'Pousada do Sol',
+        cidade: 'SP',
+        estado: 'SP',
+        tipoPropriedade: 'pousada',
+        quartos: 10,
+      }),
+    )
+
+    let submitResult: unknown
+    await act(async () => {
+      submitResult = await result.current.submit()
+    })
+
+    expect(submitResult).toBeDefined()
+    if (submitResult && typeof submitResult === 'object' && 'isOk' in submitResult) {
+      const res = submitResult as { isOk: boolean; value?: { leadId: string } }
+      expect(res.isOk).toBe(true)
+      if (res.isOk && res.value) {
+        expect(res.value.leadId).toBe('lead-onboard-1')
+      }
+    }
+    expect(result.current.isLoading).toBe(false)
+  })
+
+  it('deve tratar erro 400 no submit sem estourar excecao', async () => {
+    mockFetchOnce(400, { error: 'E-mail já cadastrado' })
+
+    const { result } = renderHook(() => useOnboardingWizard())
+
+    act(() =>
+      result.current.updateData({
+        nome: 'Maria',
+        email: 'exists@ze.com',
+        whatsapp: '11999999999',
+        nomePousada: 'Pousada',
+        cidade: 'SP',
+        estado: 'SP',
+        tipoPropriedade: 'pousada',
+        quartos: 10,
+      }),
+    )
+
+    let submitResult: unknown
+    await act(async () => {
+      submitResult = await result.current.submit()
+    })
+
+    expect(submitResult).toBeDefined()
+    if (submitResult && typeof submitResult === 'object' && 'isOk' in submitResult) {
+      const res = submitResult as { isOk: boolean }
+      expect(res.isOk).toBe(false)
+    }
+    expect(result.current.error).toBe('E-mail já cadastrado')
+  })
+
+  it('nao deve avancar alem do ultimo passo', () => {
+    const { result } = renderHook(() => useOnboardingWizard())
+
+    act(() => result.current.next())
+    act(() => result.current.next())
+    act(() => result.current.next())
+
+    expect(result.current.currentStep).toBe(2)
+  })
+
+  it('nao deve voltar antes do passo 0', () => {
+    const { result } = renderHook(() => useOnboardingWizard())
+
+    act(() => result.current.back())
+
+    expect(result.current.currentStep).toBe(0)
+  })
+})
 
   it('deve tratar erro de alteracao de status sem estourar excecao', async () => {
     mockFetchOnce(200, {

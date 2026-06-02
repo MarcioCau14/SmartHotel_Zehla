@@ -1,14 +1,44 @@
-'use client';
+'use client'
 
-import { useRouter } from 'next/navigation';
-import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
+import React from 'react'
+import { useRouter } from 'next/navigation'
+import { useOnboardingWizard } from '../../hooks/useOnboardingWizard'
+import { OnboardingWizardUI } from '../../components/public/OnboardingWizardUI'
 
 export default function TesteGratisPage() {
-  const router = useRouter();
+  const router = useRouter()
+  const {
+    currentStep,
+    totalSteps,
+    data,
+    updateData,
+    next,
+    back,
+    submit,
+    isLoading,
+    error,
+    clearError,
+  } = useOnboardingWizard()
 
-  const handleOnboardingComplete = () => {
-    router.push('/dashboard');
-  };
+  const handleSubmit = async () => {
+    const result = await submit()
+    if (result.isOk) {
+      router.push('/zcc')
+    }
+  }
 
-  return <OnboardingWizard onComplete={handleOnboardingComplete} />;
+  return (
+    <OnboardingWizardUI
+      currentStep={currentStep}
+      totalSteps={totalSteps}
+      data={data}
+      isLoading={isLoading}
+      error={error}
+      onUpdateData={updateData}
+      onNext={next}
+      onBack={back}
+      onSubmit={handleSubmit}
+      onClearError={clearError}
+    />
+  )
 }
