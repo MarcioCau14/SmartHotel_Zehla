@@ -32,9 +32,9 @@ export default defineConfig({
     /* Rodar sem janela (headless) por padrão */
     headless: true,
 
-    /* Otimização de Performance */
+    /* Otimização de Performance (apenas local; CI WebKit não suporta --disable-gpu) */
     launchOptions: {
-      args: [
+      args: process.env.CI ? [] : [
         '--disable-gpu',
         '--disable-dev-shm-usage',
       ],
