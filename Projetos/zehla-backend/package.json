@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "test:ci": "vitest run --exclude 'src/__tests__/hospitalidade/prisma-repositories*' --exclude 'src/__tests__/api/sb21_integration*'",
     "test:e2e": "playwright test",
     "postinstall": "prisma generate",
     "fsa": "node full-stack-agent/src/index.js",
