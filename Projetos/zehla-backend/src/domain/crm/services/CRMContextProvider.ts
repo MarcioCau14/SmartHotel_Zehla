@@ -13,7 +13,7 @@ export class CRMContextProvider {
   async enrichContext(phoneOrLeadId: string): Promise<CRMContextResult> {
     const start = Date.now()
 
-    let leadResult = await this.crmPort.buscarLeadPorId(phoneOrLeadId)
+    const leadResult = await this.crmPort.buscarLeadPorId(phoneOrLeadId)
     if (leadResult.isFail) {
       return { envelope: null, leadExists: false, loadedInMs: Date.now() - start }
     }
