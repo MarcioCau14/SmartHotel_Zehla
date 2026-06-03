@@ -18,7 +18,7 @@ export class ProviderCircuitBreaker {
     const cbStates = this.statePort.loadCircuitBreakerStates();
     const raw = cbStates.get(key);
 
-    let stateObj = raw
+    const stateObj = raw
       ? CircuitBreakerState.create(
           raw.state as CircuitState,
           raw.consecutiveFailures,
@@ -56,7 +56,7 @@ export class ProviderCircuitBreaker {
     const cbStates = this.statePort.loadCircuitBreakerStates();
     const raw = cbStates.get(key);
 
-    let stateObj = raw
+    const stateObj = raw
       ? CircuitBreakerState.create(
           raw.state as CircuitState,
           raw.consecutiveFailures,
@@ -85,7 +85,7 @@ export class ProviderCircuitBreaker {
     const cbStates = this.statePort.loadCircuitBreakerStates();
     const raw = cbStates.get(key);
 
-    let stateObj = raw
+    const stateObj = raw
       ? CircuitBreakerState.create(
           raw.state as CircuitState,
           raw.consecutiveFailures,

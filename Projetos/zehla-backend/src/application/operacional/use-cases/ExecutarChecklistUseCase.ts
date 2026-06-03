@@ -20,7 +20,7 @@ export class ExecutarChecklistUseCase {
         return Result.fail(new Error('Checklist não encontrado'))
       }
 
-      let checklist = checklistResult.value
+      const checklist = checklistResult.value
       let checklistAtualizada: Result<Checklist, Error>
 
       if (dados.acao === 'iniciar') {

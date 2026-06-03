@@ -76,7 +76,7 @@ export class Executor {
   }
 
   private parsePlaywrightOutput(stdout: string, runId: string, startedAt: string): TestExecutionResult {
-    let results: TestResult[] = [];
+    const results: TestResult[] = [];
     try {
       const lines = stdout.split('\n').filter(l => l.trim());
       for (const line of lines) {

@@ -88,7 +88,7 @@ export class ConfirmarPagamentoUseCase {
       // 5. Orquestrar conversões e transições de estado associadas
       
       // A. Converter a Proposta no domínio se ela estiver aceita
-      let propostaParaConverter = proposta
+      const propostaParaConverter = proposta
       if (propostaParaConverter.status === 'aceita') {
         const converterResult = propostaParaConverter.converter()
         if (converterResult.isOk) {

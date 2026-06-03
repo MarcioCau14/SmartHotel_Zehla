@@ -270,7 +270,7 @@ export class ZehlaTestAgent {
     const runId = `run-${Date.now()}`;
     const startedAt = new Date().toISOString();
     let command: string;
-    let cwd = this.projectPath;
+    const cwd = this.projectPath;
 
     switch (type) {
       case 'unit':

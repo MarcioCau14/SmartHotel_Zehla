@@ -22,7 +22,7 @@ export class QueryEngine {
     console.log(`🧠 [Query Engine] Iniciando raciocínio para Session: ${context.sessionId}`);
     
     let currentStep = 0;
-    let messages = [
+    const messages = [
       { role: 'system', content: await this.buildSystemPrompt(context) },
       { role: 'user', content: input }
     ];

@@ -111,20 +111,20 @@ describe('Lead Entity', () => {
     
     expect(leadResult.isOk).toBe(true)
     if (leadResult.isOk) {
-      let lead = leadResult.value
+      const lead = leadResult.value
       
       // novo -> qualificado
       let result = lead.qualificar()
       expect(result.isOk).toBe(true)
       if (result.isOk) {
-        let qualifiedLead = result.value
+        const qualifiedLead = result.value
         expect(qualifiedLead.status).toBe('qualificado')
         
         // qualificado -> proposto
         result = qualifiedLead.propostar()
         expect(result.isOk).toBe(true)
         if (result.isOk) {
-          let proposedLead = result.value
+          const proposedLead = result.value
           expect(proposedLead.status).toBe('propostado')
           
           // proposto -> convertido (com documento)
@@ -149,7 +149,7 @@ describe('Lead Entity', () => {
             result = leadWithDocResult.value.converter()
             expect(result.isOk).toBe(true)
             if (result.isOk) {
-              let convertedLead = result.value
+              const convertedLead = result.value
               expect(convertedLead.status).toBe('convertido')
             }
           }
@@ -219,41 +219,41 @@ describe('Proposta Entity', () => {
     
     expect(propostaResult.isOk).toBe(true)
     if (propostaResult.isOk) {
-      let proposta = propostaResult.value
+      const proposta = propostaResult.value
       
       // rascunho -> enviada
       let result = proposta.enviar()
       expect(result.isOk).toBe(true)
       if (result.isOk) {
-        let sentProposta = result.value
+        const sentProposta = result.value
         expect(sentProposta.status).toBe('enviada')
         
         // enviada -> vista
         result = sentProposta.visualizar()
         expect(result.isOk).toBe(true)
         if (result.isOk) {
-          let viewedProposta = result.value
+          const viewedProposta = result.value
           expect(viewedProposta.status).toBe('vista')
           
           // vista -> negociacao
           result = viewedProposta.negociar()
           expect(result.isOk).toBe(true)
           if (result.isOk) {
-            let negotiatedProposta = result.value
+            const negotiatedProposta = result.value
             expect(negotiatedProposta.status).toBe('negociacao')
             
             // negociacao -> aceita
             result = negotiatedProposta.aceitar()
             expect(result.isOk).toBe(true)
             if (result.isOk) {
-              let acceptedProposta = result.value
+              const acceptedProposta = result.value
               expect(acceptedProposta.status).toBe('aceita')
               
               // aceita -> convertida
               result = acceptedProposta.converter()
               expect(result.isOk).toBe(true)
               if (result.isOk) {
-                let convertedProposta = result.value
+                const convertedProposta = result.value
                 expect(convertedProposta.status).toBe('convertida')
               }
             }
@@ -393,20 +393,20 @@ describe('Pacote Entity', () => {
       
       expect(pacoteResult.isOk).toBe(true)
       if (pacoteResult.isOk) {
-        let pacote = pacoteResult.value
+        const pacote = pacoteResult.value
         
         // ativo -> pausado
         let result = pacote.pausar()
         expect(result.isOk).toBe(true)
         if (result.isOk) {
-          let pausedPacote = result.value
+          const pausedPacote = result.value
           expect(pausedPacote.status).toBe('pausado')
           
           // pausado -> arquivado
           result = pausedPacote.arquivar()
           expect(result.isOk).toBe(true)
           if (result.isOk) {
-            let archivedPacote = result.value
+            const archivedPacote = result.value
             expect(archivedPacote.status).toBe('arquivado')
           }
         }
@@ -459,13 +459,13 @@ describe('Pagamento Entity', () => {
     
     expect(pagamentoResult.isOk).toBe(true)
     if (pagamentoResult.isOk) {
-      let pagamento = pagamentoResult.value
+      const pagamento = pagamentoResult.value
       
       // rascunho -> processando
       let result = pagamento.processar('txn_123', 'auth_123')
       expect(result.isOk).toBe(true)
       if (result.isOk) {
-        let processingPagamento = result.value
+        const processingPagamento = result.value
         expect(processingPagamento.status).toBe('processando')
         expect(processingPagamento.transactionId).toBe('txn_123')
         
@@ -473,7 +473,7 @@ describe('Pagamento Entity', () => {
         result = processingPagamento.aprovar('txn_123', 'auth_123')
         expect(result.isOk).toBe(true)
         if (result.isOk) {
-          let approvedPagamento = result.value
+          const approvedPagamento = result.value
           expect(approvedPagamento.status).toBe('aprovado')
           expect(approvedPagamento.codigoAutorizacao).toBe('auth_123')
           
@@ -481,7 +481,7 @@ describe('Pagamento Entity', () => {
           result = approvedPagamento.estornar('Solicitação do cliente')
           expect(result.isOk).toBe(true)
           if (result.isOk) {
-            let refundedPagamento = result.value
+            const refundedPagamento = result.value
             expect(refundedPagamento.status).toBe('estornado')
           }
         }
@@ -522,13 +522,13 @@ describe('Conversao Entity', () => {
     
     expect(conversaoResult.isOk).toBe(true)
     if (conversaoResult.isOk) {
-      let conversao = conversaoResult.value
+      const conversao = conversaoResult.value
       
       // pendente -> confirmada
       let result = conversao.confirmar()
       expect(result.isOk).toBe(true)
       if (result.isOk) {
-        let confirmedConversao = result.value
+        const confirmedConversao = result.value
         expect(confirmedConversao.status).toBe('confirmada')
         expect(confirmedConversao.dataConfirmacao).toBeInstanceOf(Date)
         
@@ -545,11 +545,11 @@ describe('Conversao Entity', () => {
         
         expect(conversao2Result.isOk).toBe(true)
         if (conversao2Result.isOk) {
-          let conversao2 = conversao2Result.value
+          const conversao2 = conversao2Result.value
           result = conversao2.cancelar('Cliente desistiu')
           expect(result.isOk).toBe(true)
           if (result.isOk) {
-            let cancelledConversao = result.value
+            const cancelledConversao = result.value
             expect(cancelledConversao.status).toBe('cancelada')
             expect(cancelledConversao.motivoCancelamento).toBe('Cliente desistiu')
           }

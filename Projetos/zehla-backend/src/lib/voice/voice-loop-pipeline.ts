@@ -29,7 +29,7 @@ export class VoiceLoopPipeline {
     const cachedAudioUrl = await redis.get(audioCacheKey);
 
     let audioUrl = cachedAudioUrl;
-    let cacheHit = !!cachedAudioUrl;
+    const cacheHit = !!cachedAudioUrl;
 
     if (!audioUrl && brainResponse.voice?.enabled) {
       // 4. TTS (Simulado)

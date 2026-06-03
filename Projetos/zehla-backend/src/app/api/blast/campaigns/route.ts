@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     // 3. Criar mensagens individuais pendentes
     const messagesData = contacts.map(c => {
       // Renderizar template simples (substituição de variáveis)
-      let rendered = messageTemplate
+      const rendered = messageTemplate
         .replace(/{nome}/g, c.name || '')
         .replace(/{pousada}/g, c.pousadaName || '')
         .replace(/{cidade}/g, c.city || '');
