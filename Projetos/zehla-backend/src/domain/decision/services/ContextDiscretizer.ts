@@ -9,7 +9,7 @@ import { RoutingContext } from '../models/RoutingContext';
 export interface IBucketDefinition {
   readonly id: string; // "00" - "31"
   readonly name: string;
-  readonly category: 'FAQ' | 'Pricing' | 'Booking' | 'Complaint' | 'Semantic' | 'Content' | 'Review' | 'I18N' | 'Emergency';
+  readonly category: 'FAQ' | 'Pricing' | 'Booking' | 'Complaint' | 'Semantic' | 'Content' | 'Review' | 'I18N' | 'Emergency' | 'CRM';
   readonly minQuality: number;
   readonly slaMs: number;
   readonly fastPatterns: ReadonlyArray<RegExp>;
@@ -305,6 +305,33 @@ export const BUCKETS: ReadonlyArray<IBucketDefinition> = [
     fastPatterns: [/fogo/i, /incendio/i, /policia/i, /ladrao/i, /roubo/i, /assalto/i, /arma/i],
     keywords: ['fogo', 'incendio', 'policia', 'ladrao', 'roubo', 'assalto', 'arma', 'briga', 'seguranca', 'perigo'],
   },
+  {
+    id: '32',
+    name: 'revenue_pricing_dynamic',
+    category: 'Pricing',
+    minQuality: 0.75,
+    slaMs: 1500,
+    fastPatterns: [/cotacao/i, /pace/i, /desconto.*tarifa/i, /precificacao/i, /calcular.*preco/i],
+    keywords: ['cotacao', 'pace', 'desconto', 'tarifa', 'precificacao', 'calcular', 'reajuste', 'teto', 'piso', 'yield'],
+  },
+  {
+    id: '33',
+    name: 'social_selling',
+    category: 'CRM',
+    minQuality: 0.7,
+    slaMs: 3000,
+    fastPatterns: [/instagram.*venda|venda.*instagram/i, /facebook.*negocio/i, /direct.*venda/i, /oportunidade.*social/i],
+    keywords: ['instagram', 'facebook', 'direct', 'venda social', 'social selling', 'oportunidade', 'dm', 'engajamento', 'seguidor', 'influencer'],
+  },
+  {
+    id: '34',
+    name: 'followup_cadence',
+    category: 'CRM',
+    minQuality: 0.7,
+    slaMs: 2000,
+    fastPatterns: [/follow.?up/i, /cadencia/i, /disparo.*follow/i, /reengajar/i, /lead.*quente|quente.*lead/i],
+    keywords: ['followup', 'cadencia', 'disparo', 'reengajar', 'lead quente', 'lembrete', 'acao', 'timing', 'agendado', 'automatico'],
+  },
 ];
 
 export class ContextDiscretizer {
@@ -315,12 +342,13 @@ export class ContextDiscretizer {
     }
 
     // Fast Path (RegExp matching)
-    // Priorities order: Emergency (30-31) > Complaint (13-18) > Pricing (05-08) > Booking (09-12) > Review/I18N/Semantic/Content (19-29) > FAQ (00-04)
+    // Priorities order: Emergency (30-31) > Complaint (13-18) > Pricing (05-08,32) > Booking (09-12) > CRM (33-34) > Review/I18N/Semantic/Content (19-29) > FAQ (00-04)
     const priorityBuckets = [
       ...BUCKETS.filter(b => b.category === 'Emergency'),
       ...BUCKETS.filter(b => b.category === 'Complaint'),
       ...BUCKETS.filter(b => b.category === 'Pricing'),
       ...BUCKETS.filter(b => b.category === 'Booking'),
+      ...BUCKETS.filter(b => b.category === 'CRM'),
       ...BUCKETS.filter(b => b.category === 'Semantic' || b.category === 'Content' || b.category === 'Review' || b.category === 'I18N'),
       ...BUCKETS.filter(b => b.category === 'FAQ'),
     ];

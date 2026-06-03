@@ -10,7 +10,7 @@ export interface IBucketTags {
   readonly tags: ReadonlyArray<string>;
 }
 
-// Definição das tags semânticas ricas para cálculo de similaridade de Jaccard dos 32 buckets
+// Definição das tags semânticas ricas para cálculo de similaridade de Jaccard dos 35 buckets
 export const BUCKET_TAGS: ReadonlyArray<IBucketTags> = [
   { id: '00', tags: ['faq', 'guest_info', 'simple_reply', 'fast_sla', 'reception'] },
   { id: '01', tags: ['faq', 'guest_info', 'simple_reply', 'fast_sla', 'location', 'access'] },

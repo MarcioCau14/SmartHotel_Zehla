@@ -44,7 +44,7 @@ describe('ZaosNeuroRouter Lote 2 Test Suite — Domain Services & Analytics', ()
       expect(end - start).toBeLessThan(50.0); // Garantia de O(1) < 50ms tolerando flutuações de I/O de teste
     });
 
-    it('1.2. ContextDiscretizer — Classifica com Jaccard (Feature Path) e garante id no range [0, 31]', () => {
+    it('1.2. ContextDiscretizer — Classifica com Jaccard (Feature Path) e garante id no range [0, 34]', () => {
       const sampleInputs = [
         'Como funciona o estacionamento e qual a vaga da pousada?', // faq_location_access (01)
         'Quero fazer uma reserva para o fim de semana', // booking_new_request (09)
@@ -68,12 +68,77 @@ describe('ZaosNeuroRouter Lote 2 Test Suite — Domain Services & Analytics', ()
 
         const numericId = parseInt(bucket.id, 10);
         expect(numericId).toBeGreaterThanOrEqual(0);
-        expect(numericId).toBeLessThanOrEqual(31);
-        expect(bucket.id.length).toBe(2); // IDs padded "00" a "31"
+        expect(numericId).toBeLessThanOrEqual(34);
+        expect(bucket.id.length).toBe(2); // IDs padded "00" a "34"
       }
     });
 
-    it('1.3. ContextDiscretizer — Lida com strings vazias retornando falhas determinísticas (Result)', () => {
+    it('1.3. ContextDiscretizer — Classifica revenue_pricing_dynamic (bucket 32) via Fast Path RegExp', () => {
+      const ctx = RoutingContext.create({
+        inputText: 'Qual o pace de vendas? Preciso calcular a precificacao dinâmica',
+        sessionId: 'session_321',
+        tenantId: 'pousada_001',
+        turnsCount: 1,
+        sessionStartMs: Date.now(),
+      });
+      const result = discretizer.classify(ctx);
+      expect(result.isOk).toBe(true);
+      expect(result.value.id).toBe('32');
+      expect(result.value.name).toBe('revenue_pricing_dynamic');
+    });
+
+    it('1.4. ContextDiscretizer — Classifica social_selling (bucket 33) via Fast Path RegExp', () => {
+      const ctx = RoutingContext.create({
+        inputText: 'Nova oportunidade de venda no direct do instagram',
+        sessionId: 'session_322',
+        tenantId: 'pousada_001',
+        turnsCount: 1,
+        sessionStartMs: Date.now(),
+      });
+      const result = discretizer.classify(ctx);
+      expect(result.isOk).toBe(true);
+      expect(result.value.id).toBe('33');
+      expect(result.value.name).toBe('social_selling');
+    });
+
+    it('1.5. ContextDiscretizer — Classifica followup_cadence (bucket 34) via Fast Path RegExp', () => {
+      const ctx = RoutingContext.create({
+        inputText: 'Disparar follow-up automatico para lead quente sem resposta',
+        sessionId: 'session_323',
+        tenantId: 'pousada_001',
+        turnsCount: 1,
+        sessionStartMs: Date.now(),
+      });
+      const result = discretizer.classify(ctx);
+      expect(result.isOk).toBe(true);
+      expect(result.value.id).toBe('34');
+      expect(result.value.name).toBe('followup_cadence');
+    });
+
+    it('1.6. ContextDiscretizer — Classifica buckest 32-34 em <5ms (Fast Path latency)', () => {
+      const inputs = [
+        { text: 'qual o pace e a precificacao correta', expected: '32' },
+        { text: 'oportunidade de venda no instagram', expected: '33' },
+        { text: 'enviar followup automatico para lead', expected: '34' },
+      ];
+      for (const { text, expected } of inputs) {
+        const ctx = RoutingContext.create({
+          inputText: text,
+          sessionId: 'session_latency',
+          tenantId: 'pousada_001',
+          turnsCount: 1,
+          sessionStartMs: Date.now(),
+        });
+        const start = performance.now();
+        const result = discretizer.classify(ctx);
+        const end = performance.now();
+        expect(result.isOk).toBe(true);
+        expect(result.value.id).toBe(expected);
+        expect(end - start).toBeLessThan(50.0);
+      }
+    });
+
+    it('1.7. ContextDiscretizer — Lida com strings vazias retornando falhas determinísticas (Result)', () => {
       const ctxEmpty = RoutingContext.create({
         inputText: '   ',
         sessionId: 'session_abc',

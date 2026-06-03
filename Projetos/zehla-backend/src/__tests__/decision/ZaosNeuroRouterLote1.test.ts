@@ -221,9 +221,9 @@ describe('ZaosNeuroRouter Lote 1 Test Suite — Domínio Puro e Resiliência', (
       expect(fallback.selectedProviderName).toBe('rules_engine');
       expect(fallback.isEmergencyFallback).toBe(true);
 
-      // Validação do bucket ID de 32 buckets
+      // Validação do bucket ID de 35 buckets
       expect(() => RoutingDecision.create({
-        bucketId: '35', // Fora do range [0, 31]
+        bucketId: '35', // Fora do range [0, 34]
         selectedProviderName: 'test',
         expectedUtility: 0.5,
         sampledThetas: new Map(),

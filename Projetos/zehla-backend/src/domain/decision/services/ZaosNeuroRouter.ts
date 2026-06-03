@@ -30,7 +30,7 @@ export class ZaosNeuroRouter {
     budgetSnapshot: BudgetSnapshot,
     prng: () => number = Math.random
   ): Promise<Result<RoutingDecision, Error>> {
-    // 1. Extrair o bucketId (de 00 a 31) usando o ContextDiscretizer
+    // 1. Extrair o bucketId (de 00 a 34) usando o ContextDiscretizer
     const discretizeResult = this.discretizer.classify(context);
     if (discretizeResult.isFail) {
       return Result.fail(discretizeResult.error);

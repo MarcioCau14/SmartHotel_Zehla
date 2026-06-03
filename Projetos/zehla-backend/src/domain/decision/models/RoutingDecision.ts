@@ -14,10 +14,10 @@ export class RoutingDecision {
     public readonly adjustedCosts: ReadonlyMap<string, number>,
     public readonly decidedAt: number,
   ) {
-    // Validação de bucketId de 32 buckets (intervalo [0, 31])
+    // Validação de bucketId de 35 buckets (intervalo [0, 34])
     const bucketNum = parseInt(bucketId, 10);
-    if (isNaN(bucketNum) || bucketNum < 0 || bucketNum > 31) {
-      throw new Error(`Invalid bucketId: ${bucketId}. BucketId must be in range [0, 31].`);
+    if (isNaN(bucketNum) || bucketNum < 0 || bucketNum > 34) {
+      throw new Error(`Invalid bucketId: ${bucketId}. BucketId must be in range [0, 34].`);
     }
   }
 
