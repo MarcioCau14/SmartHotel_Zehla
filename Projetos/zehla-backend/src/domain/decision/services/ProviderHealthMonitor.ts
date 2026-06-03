@@ -66,20 +66,29 @@ export class ProviderHealthMonitor {
       // Sinalizar para o CircuitBreaker do modelo abrir preventivamente.
       // Definimos o estado para OPEN em todos os 35 buckets possíveis (00 a 34).
       // Cada bucket terá o mesmo timeout base, pois a falha foi total (todo o provedor caiu).
+      const states = new Map<string, {
+        state: string;
+        consecutiveFailures: number;
+        consecutiveSuccesses: number;
+        lastFailureAt: number;
+        openedAt: number;
+        halfOpenAttempts: number;
+      }>();
+      const timestamp = Date.now();
       for (let bucketInt = 0; bucketInt < 35; bucketInt++) {
         const bucketId = bucketInt.toString().padStart(2, '0');
         const key = `${bucketId}__${provider}`;
-        cbStates.set(key, {
+        states.set(key, {
           state: CircuitState.OPEN,
           consecutiveFailures: nextCount,
           consecutiveSuccesses: 0,
-          lastFailureAt: now,
-          openedAt: now,
+          lastFailureAt: timestamp,
+          openedAt: timestamp,
           halfOpenAttempts: 0,
         });
       }
 
-      await this.statePort.saveCircuitBreakerStates(cbStates);
+      await this.statePort.saveCircuitBreakerStates(states);
     }
   }
 
