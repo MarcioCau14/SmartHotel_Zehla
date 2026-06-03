@@ -1,5 +1,5 @@
 import { Result } from '../../../shared/Result'
-import { CRMPipelineStage } from './CRMPipelineStage'
+import { CRMPipelineStage, ICPersona } from './CRMPipelineStage'
 
 export interface LeadProfileProps {
   id: string
@@ -11,6 +11,14 @@ export interface LeadProfileProps {
   stage: CRMPipelineStage
   createdAt: Date
   propriedadeId: string
+  persona?: ICPersona
+  totalSpentUsd?: number
+  staysCount?: number
+  lastInteractionAt?: Date
+  bookingValueUsd?: number | null
+  assignedCloserId?: string | null
+  tags?: string[]
+  updatedAt?: Date
 }
 
 export class LeadProfile {
@@ -24,6 +32,14 @@ export class LeadProfile {
     public readonly stage: CRMPipelineStage,
     public readonly createdAt: Date,
     public readonly propriedadeId: string,
+    public readonly persona: ICPersona,
+    public readonly totalSpentUsd: number,
+    public readonly staysCount: number,
+    public readonly lastInteractionAt: Date,
+    public readonly bookingValueUsd: number | null,
+    public readonly assignedCloserId: string | null,
+    public readonly tags: ReadonlyArray<string>,
+    public readonly updatedAt: Date,
   ) {
     Object.freeze(this)
   }
@@ -48,6 +64,7 @@ export class LeadProfile {
       return Result.fail(new Error('ID da propriedade é obrigatório'))
     }
 
+    const now = new Date()
     return Result.ok(
       new LeadProfile(
         props.id.trim(),
@@ -57,8 +74,16 @@ export class LeadProfile {
         props.canalOrigem.trim(),
         props.ltvScore,
         props.stage ?? CRMPipelineStage.ENTRADA,
-        props.createdAt ?? new Date(),
+        props.createdAt ?? now,
         props.propriedadeId.trim(),
+        props.persona ?? ICPersona.DESCONHECIDO,
+        props.totalSpentUsd ?? 0,
+        props.staysCount ?? 0,
+        props.lastInteractionAt ?? now,
+        props.bookingValueUsd ?? null,
+        props.assignedCloserId ?? null,
+        Object.freeze([...(props.tags ?? [])]),
+        props.updatedAt ?? now,
       ),
     )
   }
@@ -75,7 +100,31 @@ export class LeadProfile {
         novoStage,
         this.createdAt,
         this.propriedadeId,
+        this.persona,
+        this.totalSpentUsd,
+        this.staysCount,
+        this.lastInteractionAt,
+        this.bookingValueUsd,
+        this.assignedCloserId,
+        this.tags,
+        new Date(),
       ),
     )
+  }
+
+  get isHighValue(): boolean {
+    return this.ltvScore >= 70 || this.totalSpentUsd >= 500
+  }
+
+  get isB2B(): boolean {
+    return this.persona === ICPersona.PRODUTOR_B2B
+  }
+
+  get requiresHumanCloser(): boolean {
+    return this.stage === CRMPipelineStage.NEGOCIACAO || this.isB2B
+  }
+
+  get daysSinceLastInteraction(): number {
+    return Math.floor((Date.now() - this.lastInteractionAt.getTime()) / 86_400_000)
   }
 }

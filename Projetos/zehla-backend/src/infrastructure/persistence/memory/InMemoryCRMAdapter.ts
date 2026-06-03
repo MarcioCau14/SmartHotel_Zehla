@@ -18,6 +18,13 @@ export class InMemoryCRMAdapter implements ICRMRepositoryPort {
     return Result.ok(lead)
   }
 
+  async buscarLeadPorTelefone(telefone: string): Promise<Result<LeadProfile | null, Error>> {
+    for (const lead of this.leads.values()) {
+      if (lead.telefone === telefone) return Result.ok(lead)
+    }
+    return Result.ok(null)
+  }
+
   async listarLeadsPorStage(stage: CRMPipelineStage): Promise<Result<LeadProfile[], Error>> {
     const filtrados = Array.from(this.leads.values()).filter((l) => l.stage === stage)
     return Result.ok(filtrados)
