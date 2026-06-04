@@ -1,6 +1,6 @@
 export const API = {
   CRM: {
-    LEADS: '/api/comercial/leads',
+    LEADS: '/api/crm/leads',
     LEAD_BY_ID: (id: string) => `/api/comercial/leads/${id}`,
     QUALIFICAR: (id: string) => `/api/comercial/leads/${id}/qualificar`,
     HANDOFF: (id: string) => `/api/comercial/leads/${id}/handoff`,
@@ -15,6 +15,8 @@ export const API = {
     FORECAST: '/api/dashboard/metrics/forecast',
   },
   BRAIN: {
+    LOGS: '/api/brain/logs',
+    COMMAND: '/api/brain',
     METRICS: '/api/brain/metrics',
     AUDIT: '/api/brain/audit/d1',
     QUALITY_PROXY: '/api/brain/quality-proxy',

@@ -19,7 +19,7 @@ export function useCognitiveTerminal() {
   const logsQuery = useQuery({
     queryKey: BRAIN_LOGS_KEY,
     queryFn: async () => {
-      const result = await apiGet<LogEntry[]>(API.BRAIN.METRICS)
+      const result = await apiGet<LogEntry[]>(API.BRAIN.LOGS)
       if (result.isFail) throw result.error
       return Object.freeze(result.getOrThrow().map(freezeLogEntry))
     },
@@ -29,7 +29,7 @@ export function useCognitiveTerminal() {
 
   const commandMutation = useMutation({
     mutationFn: async (command: string) => {
-      const result = await apiPost<{ reply: string }>(API.BRAIN.METRICS, { command })
+      const result = await apiPost<{ reply: string }>(API.BRAIN.COMMAND, { action: 'GENERATE_RESPONSE', data: { messages: [{ role: 'user', content: command }] } })
       if (result.isFail) throw result.error
       setCommandHistory((prev) => Object.freeze([...prev, command]))
       return result.getOrThrow()
