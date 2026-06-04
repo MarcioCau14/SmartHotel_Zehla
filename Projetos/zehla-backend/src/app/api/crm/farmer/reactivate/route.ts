@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withApiSecurity } from '@/lib/server/with-api-security'
 import { authenticateRequest } from '@/infrastructure/http/auth/jwtAuth'
-import { InMemoryCRMAdapter } from '@/infrastructure/persistence/memory/InMemoryCRMAdapter'
+import { PrismaCRMRepository } from '@/infrastructure/persistence/crm/PrismaCRMRepository'
 import { ReactivateColdLeadUseCase } from '@/application/crm/use-cases/ReactivateColdLeadUseCase'
 
 async function _POST(req: NextRequest) {
@@ -19,7 +19,7 @@ async function _POST(req: NextRequest) {
       return NextResponse.json({ error: 'leadId é obrigatório' }, { status: 400 })
     }
 
-    const repo = new InMemoryCRMAdapter()
+    const repo = new PrismaCRMRepository()
 
     const leadResult = await repo.buscarLeadPorId(leadId)
     if (leadResult.isFail) return NextResponse.json({ error: leadResult.error.message }, { status: 400 })

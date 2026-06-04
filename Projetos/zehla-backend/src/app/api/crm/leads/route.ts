@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withApiSecurity } from '@/lib/server/with-api-security'
 import { authenticateRequest } from '@/infrastructure/http/auth/jwtAuth'
-import { InMemoryCRMAdapter } from '@/infrastructure/persistence/memory/InMemoryCRMAdapter'
+import { PrismaCRMRepository } from '@/infrastructure/persistence/crm/PrismaCRMRepository'
 import { GetLeadsKanbanUseCase } from '@/application/crm/use-cases/GetLeadsKanbanUseCase'
 import { UpdateLeadStageUseCase } from '@/application/crm/use-cases/UpdateLeadStageUseCase'
 import { PIIScanner } from '@/domain/security/services/PIIScanner'
@@ -14,7 +14,7 @@ async function _GET(req: NextRequest) {
     }
 
     const propertyId = auth.value.pousadaId
-    const repo = new InMemoryCRMAdapter()
+    const repo = new PrismaCRMRepository()
     const useCase = new GetLeadsKanbanUseCase(repo)
 
     const result = await useCase.execute(propertyId)
@@ -53,7 +53,7 @@ async function _PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'leadId e stage são obrigatórios' }, { status: 400 })
     }
 
-    const repo = new InMemoryCRMAdapter()
+    const repo = new PrismaCRMRepository()
     const useCase = new UpdateLeadStageUseCase(repo)
 
     const result = await useCase.execute(leadId, stage, propertyId)

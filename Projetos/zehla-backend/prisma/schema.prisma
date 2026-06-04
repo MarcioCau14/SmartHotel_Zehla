@@ -2498,14 +2498,38 @@ model ComercialLead {
   origemUrl        String?
   tags             String?
   ultimaInteracao  DateTime?
+  pipelineStage    String?
+  ltvScore         Int?
+  persona          String?
+  totalSpentUsd    Float?
+  staysCount       Int?
+  bookingValueUsd  Float?
+  assignedCloserId String?
+  updatedAt        DateTime          @updatedAt
 
   propostas        ComercialProposta[]
   conversoes       ComercialConversao[]
+  interactions     CrmLeadInteraction[]
 
   @@unique([email, propriedadeId])
   @@unique([documento, propriedadeId])
   @@index([propriedadeId])
   @@map("comercial_leads")
+}
+
+model CrmLeadInteraction {
+  id             String        @id @default(cuid())
+  leadId         String
+  canal          String
+  timestamp      DateTime      @default(now())
+  sentimentScore Float
+  tokenCost      Int           @default(0)
+  outcome        String
+  resumo         String?
+  lead           ComercialLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, timestamp])
+  @@map("crm_lead_interactions")
 }
 
 model ComercialPacote {

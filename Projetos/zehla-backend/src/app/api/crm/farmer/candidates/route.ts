@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withApiSecurity } from '@/lib/server/with-api-security'
 import { authenticateRequest } from '@/infrastructure/http/auth/jwtAuth'
-import { InMemoryCRMAdapter } from '@/infrastructure/persistence/memory/InMemoryCRMAdapter'
+import { PrismaCRMRepository } from '@/infrastructure/persistence/crm/PrismaCRMRepository'
 import { FarmerReactivationService } from '@/domain/crm/services/FarmerReactivationService'
 import { PIIScanner } from '@/domain/security/services/PIIScanner'
 import { CRMPipelineStage } from '@/domain/crm/models/CRMPipelineStage'
@@ -14,7 +14,7 @@ async function _GET(req: NextRequest) {
     }
 
     const propertyId = auth.value.pousadaId
-    const repo = new InMemoryCRMAdapter()
+    const repo = new PrismaCRMRepository()
     const farmerService = new FarmerReactivationService()
 
     const allStages = Object.values(CRMPipelineStage)
