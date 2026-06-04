@@ -11,10 +11,8 @@ export interface SocialInteractionProps {
   readonly isDirectMessage: boolean
 }
 
-export interface SocialInteractionData extends SocialInteractionProps {}
-
 export class SocialInteraction {
-  private constructor(public readonly data: Readonly<SocialInteractionData>) {
+  private constructor(public readonly data: Readonly<SocialInteractionProps>) {
     Object.freeze(this)
   }
 

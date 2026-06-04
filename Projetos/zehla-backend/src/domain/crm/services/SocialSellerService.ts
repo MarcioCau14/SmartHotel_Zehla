@@ -21,12 +21,12 @@ export class SocialSellerService {
     const leadId = `social_${interaction.data.platform}_${interaction.data.username}_${interaction.data.timestamp}`
 
     const ltvScore = this._calculateInitialScore(analysis.urgencyLevel)
-    const tags = Object.freeze([
+    const tags: string[] = [
       'social',
       `platform_${interaction.data.platform}`,
       `urgency_${analysis.urgencyLevel}`,
       ...(analysis.extractedPhone ? ['phone_extracted'] : []),
-    ])
+    ]
 
     return LeadProfile.create({
       id: leadId,
