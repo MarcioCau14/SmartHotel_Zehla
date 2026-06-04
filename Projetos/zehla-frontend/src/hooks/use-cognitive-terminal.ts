@@ -32,7 +32,7 @@ export function useCognitiveTerminal() {
       const result = await apiPost<{ reply: string }>(API.BRAIN.METRICS, { command })
       if (result.isFail) throw result.error
       setCommandHistory((prev) => Object.freeze([...prev, command]))
-      return result.value
+      return result.getOrThrow()
     },
   })
 

@@ -12,6 +12,7 @@ export const API = {
   },
   DASHBOARD: {
     METRICS: '/api/dashboard/metrics',
+    FORECAST: '/api/dashboard/metrics/forecast',
   },
   BRAIN: {
     METRICS: '/api/brain/metrics',
@@ -25,5 +26,14 @@ export const API = {
   RESERVATIONS: {
     BASE: '/api/reservations',
     CANCEL: (id: string) => `/api/reservations/${id}/cancel`,
+  },
+  STRATEGY: {
+    RECOMMEND: '/api/comercial/leads/recommend',
+    BATCH_RECOMMEND: '/api/comercial/leads/recommend/batch',
+  },
+  OUTBOUND: {
+    DISPATCH: '/api/marketing/outbound/dispatch',
+    BATCH_DISPATCH: '/api/marketing/outbound/batch',
+    VARIANTS: '/api/marketing/outbound/variants',
   },
 } as const
