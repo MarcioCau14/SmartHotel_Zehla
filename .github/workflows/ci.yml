@@ -67,7 +67,22 @@ jobs:
     name: 🧪 Unit & Integration Tests
     needs: lint-and-typecheck
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: zehla_test
+          POSTGRES_PASSWORD: zehla_password
+          POSTGRES_DB: smarthotel_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout
@@ -98,10 +113,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run Vitest
-        run: pnpm test:ci
+      - name: Prisma Generate & Push (Ephemeral DB)
         env:
-          CI: 'true'
+          DATABASE_URL: postgresql://zehla_test:zehla_password@localhost:5432/smarthotel_test
+        run: |
+          npx prisma generate
+          npx prisma db push --accept-data-loss
+
+      - name: Run Vitest (SB21 Integration + Unit)
+        env:
+          DATABASE_URL: postgresql://zehla_test:zehla_password@localhost:5432/smarthotel_test
+          JWT_SECRET: "ci_dummy_secret_for_testing"
+          META_APP_SECRET: "ci_dummy_meta_secret"
+          META_VERIFY_TOKEN: "ci_dummy_verify_token"
+        run: pnpm test:ci
 
   e2e-tests:
     name: 🎭 E2E (Playwright)
@@ -142,9 +167,9 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run E2E tests
-        run: pnpm test:e2e
         env:
           CI: 'true'
+        run: pnpm test:e2e
 
       - name: Upload Playwright artifacts on failure
         if: failure()
