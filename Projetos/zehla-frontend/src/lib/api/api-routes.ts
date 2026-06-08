@@ -22,6 +22,7 @@ export const API = {
     QUALITY_PROXY: '/api/brain/quality-proxy',
   },
   SOCIAL: {
+    WEBHOOK: '/api/webhooks/social',
     QUEUE_STATS: '/api/social/queue/stats',
     CAPTURED: '/api/social/captured',
   },
@@ -30,12 +31,14 @@ export const API = {
     CANCEL: (id: string) => `/api/reservations/${id}/cancel`,
   },
   STRATEGY: {
-    RECOMMEND: '/api/comercial/leads/recommend',
-    BATCH_RECOMMEND: '/api/comercial/leads/recommend/batch',
+    BASE: '/api/revenue/strategy',
+    RECOMMEND: '/api/revenue/strategy',
+    BATCH_RECOMMEND: '/api/revenue/strategy',
   },
   OUTBOUND: {
-    DISPATCH: '/api/marketing/outbound/dispatch',
-    BATCH_DISPATCH: '/api/marketing/outbound/batch',
-    VARIANTS: '/api/marketing/outbound/variants',
+    BASE: '/api/marketing/outbound',
+    VARIANTS: '/api/marketing/outbound',
+    DISPATCH: '/api/marketing/outbound',
+    BATCH_DISPATCH: '/api/marketing/outbound',
   },
 } as const

@@ -10,8 +10,11 @@ export interface PlanoPreco {
   readonly nome: string
   readonly valorPix: number
   readonly valorCartao: number
+  readonly posicionamento: string
   readonly trialDias: number
+  readonly canalMinimo: string
   readonly propriedadesLimite: number
+  readonly iaTemplates: string
   readonly temWhatsAppNativo: boolean
   readonly temChannelManager: boolean
   readonly temBookingEngine: boolean
@@ -23,8 +26,11 @@ export const PLANOS: ReadonlyArray<PlanoPreco> = Object.freeze([
     nome: 'LITE',
     valorPix: 197,
     valorCartao: 247,
+    posicionamento: 'A Fundação Inteligente — Pare de pagar comissão ao Booking',
     trialDias: 14,
+    canalMinimo: 'email_corporativo',
     propriedadesLimite: 1,
+    iaTemplates: '30 templates fixos (resposta automática)',
     temWhatsAppNativo: true,
     temChannelManager: false,
     temBookingEngine: true,
@@ -34,8 +40,11 @@ export const PLANOS: ReadonlyArray<PlanoPreco> = Object.freeze([
     nome: 'PRO',
     valorPix: 397,
     valorCartao: 447,
+    posicionamento: 'A Inteligência Ativa — Automação híbrida com IA',
     trialDias: 14,
+    canalMinimo: 'whatsapp_optin',
     propriedadesLimite: 3,
+    iaTemplates: '100+ templates com auto-matching + sugestão IA',
     temWhatsAppNativo: true,
     temChannelManager: true,
     temBookingEngine: true,
@@ -45,8 +54,11 @@ export const PLANOS: ReadonlyArray<PlanoPreco> = Object.freeze([
     nome: 'MAX',
     valorPix: 697,
     valorCartao: 797,
+    posicionamento: 'O Autopilot Total — IA gera respostas e ajusta preços',
     trialDias: 14,
+    canalMinimo: 'whatsapp_optin',
     propriedadesLimite: 999,
+    iaTemplates: 'Templates ilimitados + IA gerativa (Kimi K2.6 / Gemma 4)',
     temWhatsAppNativo: true,
     temChannelManager: true,
     temBookingEngine: true,

@@ -21,6 +21,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             <li><a href="/reservas" className="block rounded px-3 py-2 font-medium hover:bg-accent">Reservas</a></li>
             <li><a href="/brain" className="block rounded px-3 py-2 font-medium hover:bg-accent">Cognitive Terminal</a></li>
             <li><a href="/social" className="block rounded px-3 py-2 font-medium hover:bg-accent">Social Capture</a></li>
+            <li><a href="/revenue" className="block rounded px-3 py-2 font-medium hover:bg-accent">Inteligência de Mercado</a></li>
           </ul>
         </nav>
         <main className="flex-1 p-6">{children}</main>

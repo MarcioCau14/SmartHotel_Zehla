@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { apiGet } from '@/lib/api/api-client'
+import { apiGet, apiPost } from '@/lib/api/api-client'
 import { API } from '@/lib/api/api-routes'
 import { CONVERSION_RATES, PLANOS, LGPD_CLASSIFICACOES } from '@/types/commercial'
 import type { PlanoPreco, LGPDClassificacao, PainVariant } from '@/types/commercial'
@@ -35,7 +35,7 @@ export function useCommercialStrategy(leadId?: string) {
     queryKey: [...STRATEGY_KEY, leadId],
     queryFn: async (): Promise<LeadStrategyRecommendation | null> => {
       if (!leadId) return null
-      const result = await apiGet<LeadStrategyRecommendation>(`${API.STRATEGY.RECOMMEND}/${leadId}`)
+      const result = await apiPost<LeadStrategyRecommendation>(API.STRATEGY.RECOMMEND, { leadId })
       if (result.isFail) throw result.error
       return result.getOrThrow()
     },
@@ -47,7 +47,7 @@ export function useCommercialStrategy(leadId?: string) {
   const batchQuery = useQuery({
     queryKey: STRATEGY_KEY,
     queryFn: async () => {
-      const result = await apiGet<LeadStrategyRecommendation[]>(API.STRATEGY.BATCH_RECOMMEND)
+      const result = await apiPost<LeadStrategyRecommendation[]>(API.STRATEGY.BATCH_RECOMMEND, { leads: [] })
       if (result.isFail) throw result.error
       return Object.freeze(result.getOrThrow())
     },
