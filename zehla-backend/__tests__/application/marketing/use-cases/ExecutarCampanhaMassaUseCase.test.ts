@@ -2,11 +2,11 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { ExecutarCampanhaMassaUseCase } from '../../../../src/application/marketing/use-cases/ExecutarCampanhaMassaUseCase'
 import { CampaignOrchestrator } from '../../../../src/domain/marketing/services/CampaignOrchestrator'
 import { CampanhaInMemoryRepository } from '../../../../src/infrastructure/persistence/marketing/CampanhaInMemoryRepository'
-import { FakeMessagingGateway } from '../fakes/FakeMessagingGateway'
+import { FakeQueue } from '../fakes/FakeQueue'
 
 describe('ExecutarCampanhaMassaUseCase', () => {
   let campanhaRepo: CampanhaInMemoryRepository
-  let messagingGateway: FakeMessagingGateway
+  let fakeQueue: FakeQueue
   let orchestrator: CampaignOrchestrator
   let useCase: ExecutarCampanhaMassaUseCase
 
@@ -34,9 +34,9 @@ describe('ExecutarCampanhaMassaUseCase', () => {
 
   beforeEach(async () => {
     campanhaRepo = new CampanhaInMemoryRepository()
-    messagingGateway = new FakeMessagingGateway()
+    fakeQueue = new FakeQueue()
     orchestrator = new CampaignOrchestrator()
-    useCase = new ExecutarCampanhaMassaUseCase(campanhaRepo, messagingGateway, orchestrator)
+    useCase = new ExecutarCampanhaMassaUseCase(campanhaRepo, orchestrator, fakeQueue as any)
 
     const campanhaResult = await campanhaRepo.criarCampanha({
       propriedadeId: 'prop-1',
@@ -54,8 +54,15 @@ describe('ExecutarCampanhaMassaUseCase', () => {
     expect(result.isOk).toBe(true)
     expect(result.value.status).toBe('em_execucao')
     expect(result.value.totalRecipients).toBe(3)
+    expect(result.value.batchesDispatched).toBe(1)
     expect(result.value.batchSize).toBe(3)
     expect(result.value.estimatedMinutes).toBeGreaterThan(0)
+  })
+
+  it('should dispatch batch jobs to queue', async () => {
+    await useCase.execute(validInput)
+    expect(fakeQueue.getJobCount()).toBe(1)
+    expect(fakeQueue.jobs[0].name).toBe('SendCampaignBatch')
   })
 
   it('should fail if campaign not found', async () => {
@@ -95,7 +102,7 @@ describe('ExecutarCampanhaMassaUseCase', () => {
     expect(campanhaResult.value!.status).toBe('em_execucao')
   })
 
-  it('should calculate correct batch size for many recipients', async () => {
+  it('should calculate correct batch size and dispatch multiple batches', async () => {
     const manyRecipients = Array.from({ length: 150 }, (_, i) => ({
       id: `guest-${i}`,
       name: `Guest ${i}`,
@@ -105,6 +112,8 @@ describe('ExecutarCampanhaMassaUseCase', () => {
     const result = await useCase.execute({ ...validInput, recipients: manyRecipients })
     expect(result.isOk).toBe(true)
     expect(result.value.batchSize).toBe(100)
+    expect(result.value.batchesDispatched).toBe(2)
+    expect(fakeQueue.getJobCount()).toBe(2)
   })
 
   it('should handle recipients from different properties', async () => {
@@ -123,5 +132,18 @@ describe('ExecutarCampanhaMassaUseCase', () => {
     })
     expect(result.isOk).toBe(true)
     expect(result.value.campanhaId).toBe(campanha2.value!.id)
+    expect(fakeQueue.getJobCount()).toBe(1)
+  })
+
+  it('should include batch metadata in job data', async () => {
+    await useCase.execute(validInput)
+    const jobData = fakeQueue.jobs[0].data as any
+    expect(jobData.campaignId).toBe(validInput.campanhaId)
+    expect(jobData.propertyId).toBe('prop-1')
+    expect(jobData.templateId).toBe('template_promocao')
+    expect(jobData.recipients).toHaveLength(3)
+    expect(jobData.batchIndex).toBe(0)
+    expect(jobData.totalBatches).toBe(1)
+    expect(jobData.baseDelayMs).toBeGreaterThanOrEqual(0)
   })
 })

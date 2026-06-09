@@ -15,6 +15,7 @@ export const QUEUE_NAMES = {
   ACT:      'brain-act',
   SWIPE_MATCH: 'brain-swipe-match',
   DEEP_SCRAPE: 'brain-deep-scrape',
+  CAMPAIGN_OUTBOUND: 'campaign-outbound',
 } as const;
 
 // Configuração de Concorrência e Rate Limiting (Proteção de API Keys)
@@ -120,5 +121,15 @@ export const classifyQueue = new Queue(QUEUE_NAMES.CLASSIFY, queueOptions);
 export const actQueue      = new Queue(QUEUE_NAMES.ACT,      queueOptions);
 export const swipeMatchQueue = new Queue(QUEUE_NAMES.SWIPE_MATCH, queueOptions);
 export const scraperQueue  = new Queue(QUEUE_NAMES.DEEP_SCRAPE, queueOptions);
+export const campaignOutboundQueue = new Queue(QUEUE_NAMES.CAMPAIGN_OUTBOUND, {
+  ...queueOptions,
+  defaultJobOptions: {
+    ...queueOptions.defaultJobOptions,
+    attempts: 3,
+    backoff: { type: 'exponential', delay: 10000 },
+    removeOnComplete: { count: 5000 },
+    removeOnFail: { count: 1000 },
+  },
+});
 
 

@@ -1558,6 +1558,36 @@ model MarketingMetrica {
   @@map("marketing_metricas")
 }
 
+// ===== GUIDEBOOK DOMAIN MODELS (ZEHLA PRIME SB25) =====
+
+model DigitalGuide {
+  id         String   @id @default(cuid())
+  propertyId String
+  status     String   @default("rascunho")
+  version    Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  sections   GuideSection[]
+
+  @@unique([propertyId])
+  @@index([propertyId, status])
+  @@map("digital_guides")
+}
+
+model GuideSection {
+  id          String      @id @default(cuid())
+  guideId     String
+  sectionType String
+  icon        String?
+  order       Int
+  content     Json
+  guide       DigitalGuide @relation(fields: [guideId], references: [id], onDelete: Cascade)
+
+  @@index([guideId, order])
+  @@map("guide_sections")
+}
+
 enum LeadEventType {
   EMAIL_OPEN
   LINK_CLICK
