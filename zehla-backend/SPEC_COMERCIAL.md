@@ -1,8 +1,10 @@
-# SPEC — Domínio Comercial (Bounded Context)
+# SPEC — Domínio Comercial (Bounded Context) v2.0
 
-> **Propósito:** Especificar o Bounded Context Comercial — o sistema límbico de vendas e marketing do ZEHLA PRIME — suas entidades, invariantes de negócio, contratos de porta e as fronteiras dos agentes Zé-Sales e Zé-Marketer. Nenhuma linha de código. Apenas intenção, regras e contratos.
+> **Propósito:** Especificar o Bounded Context Comercial — o sistema límbico de vendas e CRM Cognitivo do ZEHLA PRIME — suas entidades, Máquina de Estados Finito (FSM), fronteiras dos agentes Zé-Sales (SDR) e Zé-Closer, Escada de Valor e Domain Events. Nenhuma linha de código. Apenas intenção, regras e contratos.
 >
-> **Arquitetura:** DDD Estrito + Ports & Adapters + Topologia Mesh de Agentes
+> **Arquitetura:** DDD Estrito + Ports & Adapters + CQRS + Event-Driven
+>
+> **Fonte de Verdade de Negócio:** Playbook Interno de Estruturação Comercial (Full Sales System)
 >
 > **Linguagem:** Natural (Português) — ubíqua, não técnica
 
@@ -11,19 +13,24 @@
 ## 1. Contexto Delimitado (Bounded Context)
 
 ### 1.1 Nome
-**Comercial Context** — também referido como **Domínio de Vendas** ou **Funil de Conversão**.
+**Comercial Context** — também referido como **CRM Cognitivo** ou **Funil de Conversão**.
 
 ### 1.2 Propósito
-Gerencia o ciclo de vida comercial do cliente potencial ao pagamento confirmado: captura de leads, nutrição, propostas comerciais, precificação de pacotes, processamento de pagamentos, e gatilhos de marketing. É o contexto que alimenta a receita da pousada. Tolerância a falhas: zero.
+Gerencia o ciclo de vida comercial completo do cliente potencial ao onboarding pós-venda: captura de leads, Social Selling, nutrição, qualificação, agendamento, propostas, fechamento, sinal, conversão e handoff para onboarding. Este contexto é o **sistema límbico** do ZEHLA — onde a receita é gerada e o relacionamento com o cliente é iniciado. Tolerância a falhas: zero.
 
 ### 1.3 Fronteira (O que PERTENCE ao contexto)
-- Captura e qualificação de **Leads** (site, WhatsApp, marketplace, indicação)
-- Criação e gestão de **Propostas** comerciais (orçamentos, pré-reservas)
-- Definição e versionamento de **Pacotes** (produtos compostos: quarto + serviços + diárias)
-- Processamento de **Pagamentos** (PIX, cartão, link de pagamento, voucher)
+- Captura e qualificação de **Leads** (site, WhatsApp, Instagram, marketplace, indicação)
+- **Social Selling** receptivo e prospectivo (SDR2)
+- **Prospecção ativa** (SDR3 - Hunter)
+- **Repescagem de leads** (SDR4 - Sales Farmer)
+- Criação e gestão de **Propostas** comerciais
+- Definição e versionamento de **Pacotes**
+- Processamento de **Pagamentos** (sinal e total)
 - Registro de **Conversões** (lead → cliente pagante)
-- Gatilhos de **Marketing** (e-mail automático, WhatsApp, push, ofertas sazonais)
-- Yield Management (sugestão de descontos e upgrades via Zé-Analyst)
+- **Escada de Valor** (Upsell/Cross-sell pós-conversão)
+- **Handoff Humano** (SDR → Closer) com gatilhos explícitos
+- Gatilhos de **Marketing** (e-mail, WhatsApp, push via eventos)
+- Yield Management (desconto inteligente via Zé-Analyst)
 
 ### 1.4 Fronteira (O que NÃO pertence)
 - Cadastro de hóspedes e reservas → **Hospitalidade Context**
@@ -32,294 +39,622 @@ Gerencia o ciclo de vida comercial do cliente potencial ao pagamento confirmado:
 - Pós-checkout e feedback → **Hospitalidade Context**
 - Criptografia, JWT, HMAC → **Segurança Context**
 - Automação de limpeza e manutenção → **Operacional Context**
+- Análise de sentimento e campanhas → **Marketing Context**
+- Decisão de roteamento LLM → **Decision Context**
 
 ### 1.5 Interfaces de Porta (Segregadas)
-O contexto expõe **5 portas granulares** no diretório `application/comercial/ports/`. Nenhum agente ou serviço acessa entidades diretamente. Toda interação passa pela porta correspondente.
+O contexto expõe **5 portas granulares**. Nenhum agente ou serviço acessa entidades diretamente.
 
 | Porta | Agente Consumidor |
 |---|---|
-| `ILeadPort` | Zé-Sales, Zé-Marketer |
-| `IPropostaPort` | Zé-Sales |
+| `ILeadPort` | Zé-Sales, Zé-Marketer, Zé-Closer (leitura) |
+| `IPropostaPort` | Zé-Sales, Zé-Closer |
 | `IPacotePort` | Zé-Marketer, Zé-Analyst |
 | `IPagamentoPort` | Zé-Sales (leitura), Infraestrutura (escrita) |
-| `IConversaoPort` | Zé-Sales, Zé-Analyst |
+| `IConversaoPort` | Zé-Sales, Zé-Analyst, Financeiro |
 
 ---
 
-## 2. Linguagem Ubíqua
+## 2. Linguagem Ubíqua (Glossário Comercial)
+
+### 2.1 Personas e Papéis
 
 | Termo | Definição |
 |---|---|
-| **Lead** | Pessoa ou empresa com potencial de compra. Origem: site, WhatsApp, marketplace, indicação. Possui score de qualificação. |
-| **Proposta** | Oferta comercial formal contendo pacote, período, valor, condições de pagamento e validade. Pode ser editada até a conversão. |
-| **Pacote** | Produto composto pré-definido: combinação de tipo de quarto, diárias, serviços e regras de precificação. Versionado. |
-| **Pagamento** | Transação financeira vinculada a uma proposta. Pode ser parcial (sinal) ou total. Suporta PIX, cartão e voucher. |
-| **Conversão** | Evento de domínio que marca a transição de Lead para Cliente. Exige pagamento validado vinculado à proposta. |
-| **Sinal** | Percentual mínimo do valor total pago antes do check-in para garantir a reserva. Definido por política da pousada. |
-| **Yield** | Precificação dinâmica: desconto ou upgrade sugerido por data, ocupação e perfil do lead. |
-| **Nutrição** | Sequência automatizada de contatos (e-mail, WhatsApp) para leads não convertidos. |
-| **Gatilho** | Evento que dispara uma ação de marketing (ex: lead parou na proposta → e-mail de recuperação). |
-| **Score** | Nota de 0 a 100 que indica probabilidade de conversão do lead. Calculado por comportamento + dados cadastrais. |
-| **Canal** | Origem do lead: `site`, `whatsapp`, `booking-engine`, `marketplace`, `indicacao`, `presencial`. |
+| **Lead** | Pessoa física (PF) ou jurídica (PJ) com potencial de compra de uma solução ZEHLA. Origem: site, WhatsApp, Instagram, marketplace, indicação, presencial. |
+| **ICP** | Ideal Customer Profile — perfil do cliente ideal. Guia a pontuação e qualificação do lead. Definição: `{ faturamentoMinimo, setor, cargo, regiao }` |
+| **SDR** | Sales Development Representative — profissional de pré-vendas. No ZEHLA, o SDR é um agente de IA (Zé-Sales) com 4 especializações. |
+| **Social Seller (SDR2)** | SDR especializado em Social Selling receptivo e prospectivo. Atua no Instagram, WhatsApp e redes sociais. |
+| **Hunter (SDR3)** | SDR de prospecção ativa. Busca leads que se encaixam no ICP mas ainda não têm contato com a empresa. |
+| **Sales Farmer (SDR4)** | SDR de repescagem. Atua na recuperação coordenada e periódica de leads frios ou perdidos. |
+| **Closer** | Fechador de vendas (humano). Responsável pela reunião de fechamento, negociação de objeções e conversão. |
+| **Zé-Sales** | Agente cognitivo de IA que atua como SDR1, SDR2, SDR3 e SDR4 conforme o estágio do lead. |
+| **Zé-Closer** | Não é um agente de IA — é o humano no loop. O Zé-Sales prepara o terreno e faz handoff para o Closer no momento certo. |
+| **Lead Score** | Nota de 0 a 100 que indica probabilidade de conversão. Calculado por: dados cadastrais + comportamento + fit com ICP + interações. |
+
+### 2.2 Ciclo de Vida do Lead (Pipeline)
+
+| Termo | Definição |
+|---|---|
+| **Entrada** | Lead é capturado por qualquer canal. Status inicial. |
+| **Primeira Interação** | Zé-Sales (SDR1) faz o primeiro contato (WhatsApp, e-mail, direct). |
+| **Follow-up** | Sequência de contatos programados (cadência) com intervalo definido por política. |
+| **Agendamento** | Lead aceita uma reunião com o Closer. |
+| **Sinal** | Percentual mínimo (padrão: 30-50%) do valor total pago para garantir a venda. |
+| **No-Show** | Lead agendou mas não compareceu à reunião. Entra em cadência de recuperação. |
+| **Venda com Sinal** | Lead pagou o sinal. Contrato firmado. Transição para Onboarding. |
+| **Onboarding** | Período pós-venda onde o cliente é ambientado no produto ZEHLA. |
+| **Sales Farming** | Ciclo de reaproximação de leads perdidos ou expirados em intervalos regulares. |
+| **Handoff** | Transferência de um lead do SDR (IA) para o Closer (humano). |
+
+### 2.3 Métricas Comerciais
+
+| Termo | Definição |
+|---|---|
+| **Taxa de Agendamento** | % de leads que avançam para uma reunião agendada. Meta: 15-25% |
+| **Taxa de Comparecimento** | % de leads que comparecem à reunião. Meta: > 70% |
+| **Taxa de Conversão** | % de reuniões que viram venda. Meta: 20-30% |
+| **Ticket Médio** | Valor médio das vendas realizadas. |
+| **Ciclo de Vendas** | Tempo médio entre captura e conversão. |
+| **CAC** | Custo de Aquisição de Cliente: investimento total / número de novos clientes. |
+| **ROAS** | Retorno sobre investimento em anúncios. |
+| **Custo por Lead** | Investimento em marketing / número de leads capturados. |
+| **Custo por Comparecimento** | Custo por lead × taxa de comparecimento. |
+
+### 2.4 Escada de Valor (Produtos)
+
+| Termo | Definição |
+|---|---|
+| **Front-End** | Produto de entrada, baixo ticket. Ex: diagnóstico gratuito, isca digital, workshop. |
+| **Back-End** | Produto principal, ticket médio. Ex: ZEHLA PRIME (plano mensal). |
+| **High-End** | Produto premium, alto ticket. Ex: ZEHLA Enterprise, consultoria dedicada. |
+| **Isca** | Produto gratuito ou de custo muito baixo para atrair o ICP. Ex: Playbook, calculadora online. |
+| **Complementar** | Upsell/Cross-sell pós-venda. Ex: módulo de IA avançado, treinamento de equipe. |
+| **Upsell** | Upgrade para um plano superior (ex: Lite → Pro, Pro → Max). |
+| **Cross-sell** | Adição de módulo complementar sem mudar o plano base. |
 
 ---
 
-## 3. Entidades (Modelo Rico)
+## 3. A Máquina de Estados do Lead (FSM)
 
-Nenhuma entidade expõe setters públicos. Nenhuma entidade aceita estado inválido. Toda mutação retorna `Result<T, E>`.
+### 3.1 Pipeline Completo (Pré-Vendas + Vendas + Pós-Vendas)
 
-### 3.1 Lead
+O pipeline segue a estrutura dogmática do Playbook FSS, dividido em 3 setores:
+
+```
+PRÉ-VENDAS (Zé-Sales / IA)
+──────────────────────────────────────────────
+    Entrada → Primeira Interação → Follow-up 1 → Follow-up 2 → Follow-up 3 → Agendamento
+                                                                                  │
+                                                                    (Reagendamento ← ┘)
+                                                                                  │
+                                                                       Transferência de SDR
+                                                                                  │
+                                                                            ┌─────┴──────┐
+                                                                            │            │
+                                                                       Compareceu    No-Show
+                                                                            │
+VENDAS (Closer / Humano)                                                      │
+──────────────────────────────────────────────                                │
+                                                                             │
+                                                                   Agendado (reunião de fechamento)
+                                                                        │              │
+                                                                   Venda c/        Perdeu
+                                                                   Sinal
+                                                                     │
+                                                              Venda Concluída
+                                                                     │
+PÓS-VENDAS (Zé-Onboarding)                                               │
+──────────────────────────────────────────────                          │
+                                                                 Onboarding
+                                                                     │
+                                                            Acompanhamento
+                                                                     │
+                                                            Renovação
+```
+
+### 3.2 Estados do Lead (Formal)
+
+| Estado | Setor | Descrição |
+|---|---|---|
+| `entrada` | Pré-Vendas | Lead capturado, nenhuma ação tomada |
+| `primeira_interacao` | Pré-Vendas | Zé-Sales fez o primeiro contato |
+| `follow_up_1` | Pré-Vendas | Primeiro follow-up da cadência |
+| `follow_up_2` | Pré-Vendas | Segundo follow-up da cadência |
+| `follow_up_3` | Pré-Vendas | Terceiro follow-up da cadência |
+| `agendado` | Pré-Vendas | Lead agendou reunião com o Closer |
+| `reagendado` | Pré-Vendas | Lead reagendou a reunião |
+| `no_show` | Pré-Vendas | Lead não compareceu à reunião |
+| `transferido_sdr` | Pré-Vendas | Lead transferido entre SDRs |
+| `em_negociacao` | Vendas | Closer está conduzindo a reunião de fechamento |
+| `venda_sinal` | Vendas | Lead pagou o sinal, venda garantida |
+| `venda_concluida` | Vendas | Pagamento total confirmado |
+| `perdido` | Vendas | Lead recusou ou desistiu |
+| `em_onboarding` | Pós-Vendas | Cliente em processo de ambientação |
+| `acompanhamento` | Pós-Vendas | Cliente ativo, em uso do produto |
+| `renovacao` | Pós-Vendas | Próximo do vencimento, em negociação de renovação |
+| `sales_farming` | Repescagem | Lead frio sendo reaproximado periodicamente |
+
+### 3.3 Transições Válidas (Grafo FSM)
+
+```
+entrada ──(primeiro_contato)──→ primeira_interacao
+primeira_interacao ──(follow_up)──→ follow_up_1
+follow_up_1 ──(follow_up)──→ follow_up_2
+follow_up_2 ──(follow_up)──→ follow_up_3
+follow_up_3 ──(agendar)──→ agendado
+qualquer follow_up ──(agendar)──→ agendado
+agendado ──(reagendar)──→ reagendado
+reagendado ──(reagendar)──→ reagendado
+agendado ──(no_show)──→ no_show
+no_show ──(reagendar)──→ reagendado
+agendado ──(transferir_sdr)──→ transferido_sdr
+transferido_sdr ──(agendar)──→ agendado
+agendado ──(iniciar_negociacao)──→ em_negociacao
+em_negociacao ──(fechar_sinal)──→ venda_sinal
+venda_sinal ──(concluir_pagamento)──→ venda_concluida
+venda_concluida ──(iniciar_onboarding)──→ em_onboarding
+em_onboarding ──(completar_onboarding)──→ acompanhamento
+acompanhamento ──(proximo_renovacao)──→ renovacao
+renovacao ──(renovar)──→ acompanhamento
+qualquer estado (exceto venda_sinal, venda_concluida, em_onboarding) ──(perder)──→ perdido
+perdido ──(reativar)──→ entrada
+qualquer estado sem interação por 30+ dias ──→ sales_farming (automático)
+sales_farming ──(follow_up)──→ primeira_interacao
+sales_farming ──(perder)──→ perdido
+```
+
+### 3.4 Invariantes (Dogmas da FSM)
+
+| # | Invariante | Justificativa (Playbook FSS) |
+|---|---|---|
+| 1 | Um lead NÃO pode pular de `entrada` para `venda_sinal` sem passar por `agendado` e `em_negociacao` | O Playbook determina que a qualificação e o agendamento são etapas obrigatórias para garantir a qualidade da venda. Pular etapas queima o Closer com leads não qualificados. |
+| 2 | Um lead NÃO pode ir de `follow_up_1` para `follow_up_3` sem passar por `follow_up_2` | A cadência de follow-up existe para aquecer o lead gradualmente. Pulá-la quebra a taxa de agendamento (meta: 15-25%). |
+| 3 | `venda_sinal` exige um `Pagamento` confirmado com tipo `sinal` (mínimo 30% do valor) | O sinal é a prova de compromisso financeiro. Sem ele, o lead pode desistir sem custo. |
+| 4 | `venda_concluida` exige que a soma de pagamentos confirmados ≥ valor total da proposta | A venda só é concluída quando o valor integral está garantido. |
+| 5 | `perdido` só pode sair para `entrada` via reativação explícita | Um lead perdido não pode ser reaquecido automaticamente — exige uma nova abordagem estratégica. |
+| 6 | Um lead em `em_onboarding` ou `acompanhamento` não pode retroceder no funil | Cliente ativo está em jornada pós-venda; não faz sentido recolocá-lo no funil de captação. |
+| 7 | A transição automática `→ sales_farming` só ocorre após 30+ dias sem interação | O Playbook define a repescagem como um ciclo coordenado, não aleatório. |
+| 8 | Todo lead em `agendado` tem um tempo máximo de 7 dias para comparecer. Após isso → `no_show` automático | O Playbook estipula que a taxa de comparecimento deve ser > 70%. Leads que não comparecem precisam ser recuperados ativamente. |
+
+### 3.5 Atributos da Entidade Lead (Modelo Rico)
 
 **Identidade:** `leadId: UUIDv7`
 
-**Atributos imutáveis (definidos na criação):**
-- `canal` — enum: `site | whatsapp | booking-engine | marketplace | indicacao | presencial`
-- `dataCaptura` — timestamp ISO, gerado na criação
+**Atributos imutáveis:**
+- `canal` — enum: `site | whatsapp | instagram | booking-engine | marketplace | indicacao | presencial`
+- `dataCaptura` — timestamp ISO
 - `propriedadeId` — escopo RLS (tenant)
 
-**Atributos mutáveis (por processo específico):**
+**Atributos mutáveis:**
 - `nome` — string não-vazia, mínimo 2 caracteres
 - `email` — Value Object `Email`, validado estruturalmente
 - `telefone` — string BR formatada (opcional)
 - `documento` — Value Object `Documento` (CPF/CNPJ), opcional até a conversão
-- `score` — inteiro 0-100, calculado pelo domínio
-- `status` — enum: `novo | qualificado | propostado | convertido | perdido | inativo`
-- `origemUrl` — string, URL de captura (UTM params)
+- `empresa` — string, nome do negócio (opcional)
+- `cargo` — string, cargo do contato (opcional)
+- `faturamentoEstimado` — Money, para validação de ICP (opcional)
+- `score` — inteiro 0-100
+- `estado` — enum FSM (seção 3.2)
+- `icpFit` — enum: `ideal | minimo | fora_icp`
+- `tipoSdr` — enum: `sdr1_funis | sdr2_social_seller | sdr3_hunter | sdr4_sales_farmer | closer`
+- `sdrResponsavel` — string, ID do SDR (agente ou humano)
+- `closerResponsavel` — string, ID do Closer (humano), opcional até agendamento
+- `ultimaInteracao` — timestamp da última atividade
+- `quantidadeInteracoes` — contador de interações no ciclo atual
+- `origemUrl` — string, URL de captura com UTM params
 - `tags` — array de strings para segmentação
-- `ultimaInteracao` — timestamp da última atividade com o lead
-
-**Invariantes:**
-- Um lead não pode ser convertido sem um pagamento validado vinculado
-- `status` só avança no funil: `novo → qualificado → propostado → convertido`. Não retrocede (exceto `perdido`).
-- `score` mínimo para qualificação: 30
-- Nome e email são obrigatórios para qualquer status exceto `novo`
-- Documento é obrigatório para `convertido` (validação LGPD)
-
-**Transições de status:**
-
-```
-novo ──(qualificar)──→ qualificado
-qualificado ──(propostar)──→ propostado
-propostado ──(converter)──→ convertido
-qualificado ──(perder)──→ perdido
-propostado ──(perder)──→ perdido
-novo ──(perder)──→ perdido
-qualificado ──(reativar)──→ novo
-perdido ──(reativar)──→ novo
-```
+- `observacoes` — texto livre, até 1000 caracteres
+- `dataAgendamento` — timestamp, preenchido quando transita para `agendado`
+- `dataUltimoFollowUp` — timestamp do último follow-up enviado
 
 **Eventos emitidos:**
 - `LeadCapturadoEvent` — lead criado
-- `LeadQualificadoEvent` — score atinge mínimo
-- `LeadConvertidoEvent` — lead vira cliente (dispara faturamento no Financeiro Context)
-
-### 3.2 Proposta
-
-**Identidade:** `propostaId: UUIDv7`
-
-**Atributos imutáveis (definidos na criação):**
-- `leadId` — referência ao lead
-- `pacoteId` — referência ao pacote contratado
-- `dataCriacao` — timestamp ISO
-- `propriedadeId` — escopo RLS
-
-**Atributos mutáveis:**
-- `dataCheckIn` — data ISO, deve ser futura na criação
-- `dataCheckOut` — data ISO, deve ser posterior ao check-in
-- `quantidadeHospedes` — inteiro positivo, respeita capacidade do pacote
-- `valorTotal` — Value Object `Money`, calculado pelo domínio (pacote + serviços + diárias)
-- `valorSinal` — Value Object `Money`, percentual do total definido por política
-- `descontoAplicado` — Value Object `Money`, opcional, não pode exceder valor total
-- `status` — enum: `rascunho | enviada | vista | negociacao | aceita | recusada | expirada | convertida`
-- `validade` — data ISO, proposta expira após 7 dias (padrão) ou conforme política
-- `observacoes` — texto livre, até 1000 caracteres
-- `historicoVersoes` — lista de snapshots anteriores da proposta (rastreabilidade)
-
-**Invariantes:**
-- `dataCheckIn` deve ser no mínimo 1 dia após a data de criação
-- `dataCheckOut` - `dataCheckIn` ≥ 1 noite
-- `quantidadeHospedes` ≤ capacidade máxima do pacote
-- `descontoAplicado` + `valorSinal` ≤ `valorTotal`
-- Nenhum campo de valor pode ser alterado após a proposta estar `aceita`
-- Uma proposta `convertida` não pode ser reaberta
-- Proposta expira automaticamente se `validade` < `agora` e status não for `aceita` ou `convertida`
-
-**Transições de status:**
-
-```
-rascunho ──(enviar)──→ enviada
-enviada ──(visualizar)──→ vista
-vista ──(negociar)──→ negociacao
-negociacao ──(aceitar)──→ aceita
-aceita ──(converter)──→ convertida
-enviada ──(recusar)──→ recusada
-vista ──(recusar)──→ recusada
-negociacao ──(recusar)──→ recusada
-qualquer(exceto convertida) ──→ expirada (automático)
-rascunho ──(editar)──→ rascunho (loop de edição)
-```
-
-**Eventos emitidos:**
-- `PropostaCriadaEvent` — proposta gerada para lead
-- `PropostaAceitaEvent` — lead aceita os termos (dispara cobrança de sinal)
-- `PropostaConvertidaEvent` — proposta vinculada a conversão
-- `PropostaExpiradaEvent` — proposta perdeu validade
-
-### 3.3 Pacote
-
-**Identidade:** `pacoteId: UUIDv7`
-
-**Atributos imutáveis:**
-- `propriedadeId` — escopo RLS
-
-**Atributos:**
-- `nome` — string, não-vazia, até 120 caracteres
-- `descricao` — string, até 500 caracteres (markdown permitido)
-- `tipoQuarto` — string, referência ao tipo no Hospitalidade Context
-- `capacidadeMaxima` — inteiro positivo
-- `servicosInclusos` — array de referências a serviços
-- `regraPrecificacao` — Value Object: `{ tipo: 'por_diaria' | 'pacote_fechado', valorBase: Money, ajustePorOcupacao?: number }`
-- `validadeInicio` — data ISO, início da vigência
-- `validadeFim` — data ISO, fim da vigência
-- `status` — `ativo | pausado | arquivado`
-- `versao` — inteiro, incrementado a cada alteração
-- `categorias` — array de strings (ex: `["romântico", "família", "aventura"]`)
-- `midias` — array de URLs de fotos/vídeos
-
-**Invariantes:**
-- Um pacote não pode ter `valorBase ≤ 0`
-- `validadeFim` > `validadeInicio`
-- Serviços inclusos devem existir no catálogo do Hospitalidade Context (validação via porta)
-- Apenas pacotes `ativo` podem ser usados em novas propostas
-- Alterações em pacote com propostas ativas criam nova versão (não altera propostas existentes)
-- Capacidade máxima não pode ser alterada se houver propostas ativas
-
-**Eventos emitidos:**
-- `PacoteCriadoEvent`
-- `PacoteAtualizadoEvent`
-- `PacoteArquivadoEvent`
-
-### 3.4 Pagamento
-
-**Identidade:** `pagamentoId: UUIDv7`
-
-**Atributos imutáveis:**
-- `propostaId` — vínculo com a proposta
-- `propriedadeId` — escopo RLS
-- `dataCriacao` — timestamp ISO
-
-**Atributos:**
-- `tipo` — `sinal | restante | total`
-- `metodo` — `pix | cartao_credito | cartao_debito | voucher | boleto | dinheiro`
-- `valor` — Value Object `Money`, deve ser > 0
-- `status` — `pendente | processando | confirmado | recusado | estornado | reembolsado`
-- `codigoTransacao` — string, código do gateway (opcional até confirmação)
-- `dataConfirmacao` — timestamp ISO, preenchido na confirmação
-- `gatewayResponse` — JSON opaco com resposta do provedor
-- `parcelas` — inteiro, 1-12, apenas para cartão de crédito
-
-**Invariantes:**
-- Um `sinal` não pode exceder 50% do valor total da proposta
-- A soma de todos pagamentos `confirmado` para uma proposta não pode exceder o valor total da proposta
-- Antes de `confirmado`, o pagamento pode ser cancelado sem efeitos
-- Um `estorno` só é possível se houve `confirmado` antes
-- Pagamento `recusado` pode ser retentado (novo pagamento para mesma proposta)
-- A proposta só pode ser `convertida` após ao menos um pagamento `confirmado`
-
-**Transições de status:**
-
-```
-pendente ──(processar)──→ processando
-processando ──(confirmar)──→ confirmado
-processando ──(recusar)──→ recusado
-confirmado ──(estornar)──→ estornado
-estornado ──(reembolsar)──→ reembolsado
-pendente ──(cancelar)──→ recusado
-```
-
-**Eventos emitidos:**
-- `PagamentoConfirmadoEvent` — dispara conversão se for o pagamento mínimo exigido
-- `PagamentoRecusadoEvent` — dispara notificação ao lead + alerta no Zé-Sales
-- `PagamentoEstornadoEvent` — dispara reversão no Financeiro Context
-
-### 3.5 Conversão
-
-**Identidade:** `conversaoId: UUIDv7`
-
-**Atributos imutáveis:**
-- `leadId` — referência ao lead convertido
-- `propostaId` — referência à proposta aceita
-- `pagamentoId` — referência ao pagamento que confirmou a conversão
-- `dataConversao` — timestamp ISO
-- `propriedadeId` — escopo RLS
-
-**Atributos:**
-- `valorTotal` — Value Object `Money`, snapshot do valor final pago
-- `comissao` — Value Object `Money`, calculada por regra de negócio (se marketplace)
-- `canal` — herdado do lead no momento da conversão
-- `observacoes` — texto livre, até 500 caracteres
-
-**Invariantes:**
-- Conversão é IMUTÁVEL após criada — não pode ser editada ou removida
-- Uma conversão só existe se `Pagamento.status === 'confirmado'` para a proposta vinculada
-- Um lead só pode ter UMA conversão ativa (não pode ser convertido duas vezes)
-- Uma proposta só pode gerar UMA conversão
-- `valorTotal` da conversão = snapshot do `Pagamento.valor` no momento da confirmação (congela câmbio/preço)
-
-**Eventos emitidos:**
-- `ConversaoRegistradaEvent` — lead vira hóspede (disparaa criação de cadastro no Hospitalidade Context)
-- `ConversaoComissionadaEvent` — se marketplace, dispara financeiro
+- `LeadPrimeiraInteracaoEvent` — primeiro contato feito
+- `LeadFollowUpRealizadoEvent` — follow-up enviado
+- `LeadAgendadoEvent` — reunião agendada
+- `LeadNoShowEvent` — lead não compareceu
+- `LeadReagendadoEvent` — reagendamento ocorreu
+- `LeadHandoffParaCloserEvent` — lead transferido para o Closer
+- `LeadEmNegociacaoEvent` — Closer iniciou negociação
+- `LeadVendaSinalEvent` — sinal pago
+- `LeadVendaConcluidaEvent` — pagamento total confirmado
+- `LeadPerdidoEvent` — lead perdido
+- `LeadReativadoEvent` — lead reativado
+- `LeadSalesFarmingEvent` — lead entrou em ciclo de repescagem
+- `LeadOnboardingIniciadoEvent` — cliente em onboarding
+- `LeadRenovacaoProximaEvent` — renovação próxima
 
 ---
 
-## 4. Value Objects
+## 4. O Modelo de Agenciamento (Zé-Sales SDR)
 
-### 4.1 Email
-- Valida estrutura: `local@domínio.tld`
-- Imutável — uma vez criado, não muda
-- Armazenado em lowercase normalizado
-- Invariante: não pode ser vazio, deve conter exatamente um `@`
+### 4.1 Arquitetura do Zé-Sales
 
-### 4.2 Documento (CPF/CNPJ)
-- Tipo: `cpf | cnpj | passaporte`
-- CPF: 11 dígitos, validação de dígitos verificadores
-- CNPJ: 14 dígitos, validação de dígitos verificadores
-- Passaporte: string alfanumérica, sem validação além de não-vazia
-- Armazenado sem formatação (apenas dígitos)
-- Invariante: tipo `cpf` exige 11 dígitos numéricos com DV válido
+O Zé-Sales é um **agente cognitivo de IA** que incorpora os 4 papéis de SDR definidos pelo Playbook FSS. Ele não é um chatbot genérico — é um sistema especialista que segue roteiros, cadências e gatilhos rigorosos.
 
-### 4.3 Money
-- `centavos: number` — inteiro positivo
-- `moeda: string` — ISO 4217 (padrão `BRL`)
-- Operações: `add`, `subtract`, `multiply`, `percentage`, `compare`
-- Invariante: `centavos ≥ 0`
+```
+Zé-Sales (Agente Mestre)
+├── Modo SDR1 (Funis)
+│   ├── Atende leads de funil (site, booking-engine, marketplace)
+│   ├── Segue cadência fixa de 30 dias
+│   └── Scripts de abordagem: ligação → WhatsApp → e-mail
+├── Modo SDR2 (Social Seller)
+│   ├── Atua no Social Selling receptivo (direct Instagram, comentários)
+│   ├── Atua no Social Selling prospectivo (abordagem ativa de seguidores)
+│   └── 50-150 abordagens/dia, 30-50 directs/dia
+├── Modo SDR3 (Hunter)
+│   ├── Prospecção ativa em leads que se encaixam no ICP
+│   ├── Busca em listas, grupos, concorrentes, hashtags
+│   └── Abordagem fria qualificada
+└── Modo SDR4 (Sales Farmer)
+    ├── Repescagem coordenada da base fria
+    ├── Cadência trimestral de reaproximação
+    └── Ofertas especiais para reativação
+```
 
-### 4.4 Score
-- `valor: number` entre 0 e 100
-- Invariante: sempre arredondado para inteiro
-- Regras de cálculo (serviço de domínio):
-  - +30 pontos se lead tem documento completo
-  - +20 pontos se lead já se hospedou antes (via Hospitalidade Context)
-  - +10 pontos por interação nos últimos 7 dias (até +30)
-  - +20 pontos se origem é indicação
-  - -15 pontos se lead não responde há 30+ dias
+### 4.2 Fronteira de Atuação da IA (O que Zé-Sales PODE)
 
-### 4.5 RegraPrecificacao
-- `tipo: 'por_diaria' | 'pacote_fechado'`
-- `valorBase: Money`
-- `ajustePorOcupacao?: number` — percentual de acréscimo por hóspede extra (0-100)
-- `temporada?: { inicio: Date; fim: Date; multiplicador: number }[]`
-- Invariante: `tipo 'por_diaria'` exige `ajustePorOcupacao` opcional; `tipo 'pacote_fechado'` ignora ocupação
+**PODE:**
+- Capturar leads de todos os canais (automático via webhook ou manual)
+- Classificar o lead por ICP Fit e calcular score
+- Executar a cadência de follow-up completa (SDR1) — até 3 follow-ups
+- Realizar Social Selling receptivo (SDR2) — responder directs e comentários
+- Realizar Social Selling prospectivo (SDR2) — abordar seguidores que se encaixam no ICP
+- Prospectar ativamente (SDR3) — buscar leads em listas públicas, grupos, hashtags
+- Qualificar leads via perguntas estruturadas (BANT: Budget, Authority, Need, Timeline)
+- Agendar reuniões na agenda do Closer (via integração de calendário)
+- Criar e editar propostas comerciais (rascunho, envio, negociação básica)
+- Aplicar descontos padrão (até 10%) desde que validados pelo Zé-Analyst
+- Executar repescagem (SDR4) — reativar leads perdidos com ofertas especiais
+- Enviar lembretes automáticos de reunião (reduzir no-show)
+- Atualizar o estado do lead na FSM conforme as interações
+- Disparar eventos de domínio para outros contextos
 
-### 4.6 Canal
-- Enum: `site | whatsapp | booking-engine | marketplace | indicacao | presencial`
-- Cada canal tem um `custoAquisicao` associado (para métricas de marketing)
+### 4.3 Fronteira de Atuação da IA (O que Zé-Sales NÃO PODE)
+
+**NÃO PODE:**
+- ❌ Conduzir a reunião de fechamento — isso é domínio exclusivo do Closer humano
+- ❌ Aprovar descontos acima de 10% — precisa de validação do Zé-Analyst + Closer
+- ❌ Confirmar pagamentos — processamento é feito por gateway externo
+- ❌ Aceitar ou recusar propostas em nome do lead — o lead precisa agir
+- ❌ Acessar dados de outros tenants (RLS inviolável)
+- ❌ Modificar proposta depois de `aceita` ou `convertida`
+- ❌ Criar conversão manualmente — conversão só existe após pagamento confirmado
+- ❌ Excluir leads ou propostas
+- ❌ Alterar regras de precificação de pacotes
+- ❌ Decidir sozinho que um lead é `perdido` — precisa de 30+ dias sem interação
+
+### 4.4 Gatilhos de Handoff Humano (SDR → Closer)
+
+O **Handoff** é o momento crítico onde o Zé-Sales (IA) para de atuar e repassa o controle para o Closer (humano). Esses gatilhos são dogmáticos e não podem ser ignorados pela IA.
+
+#### Gatilhos OBRIGATÓRIOS de Handoff
+
+| # | Gatilho | Condição | Ação |
+|---|---|---|---|
+| H1 | **ICP Confirmado** | Lead respondeu às perguntas de qualificação e se encaixa no ICP mínimo | Zé-Sales agenda reunião e transfere para o Closer |
+| H2 | **Interesse Explícito** | Lead perguntou "quanto custa?", "como funciona?", "quero comprar" | Handoff imediato sem follow-up adicional |
+| H3 | **Objeção Complexa** | Lead levantou objeção técnica, financeira ou legal que a IA não pode resolver | Zé-Sales documenta objeção e passa para o Closer |
+| H4 | **Reagendamento > 2x** | Lead reagendou a reunião mais de 2 vezes | Zé-Sales para de tentar e notifica o Closer para intervenção manual |
+| H5 | **Solicitação Explícita** | Lead pediu para falar com um humano | Handoff imediato e obrigatório |
+
+#### Gatilhos OPCIONAIS de Handoff
+
+| # | Gatilho | Condição | Ação |
+|---|---|---|---|
+| H6 | **Alto Score** | Lead com score > 80 e ICP ideal | Zé-Sales pode optar por acelerar o handoff |
+| H7 | **Proposta Vista sem Retorno** | Lead visualizou proposta mas não respondeu em 48h | Zé-Sales notifica Closer para call de fechamento |
+| H8 | **Objeção de Preço** | Lead disse "é caro" ou "não tenho budget" | Zé-Sales aplica desconto padrão; se lead recusar, handoff para Closer |
+
+#### Protocolo de Handoff
+
+```
+1. Zé-Sales identifica gatilho de handoff
+2. Zé-Sales congela o lead no estado atual (ex: agendado, em_negociacao)
+3. Zé-Sales gera um SummaryPackage contendo:
+   a. Histórico completo de interações
+   b. Respostas do lead às perguntas de qualificação
+   c. Score e ICP Fit
+   d. Objeções levantadas e respostas dadas
+   e. Próximo passo recomendado pelo Zé-Sales
+4. Zé-Sales dispara LeadHandoffParaCloserEvent
+5. Closer recebe notificação com o SummaryPackage
+6. Lead é marcado com tipoSdr = 'closer'
+7. Zé-Sales para de interagir com o lead (exceto se Closer devolver)
+```
+
+#### Protocolo de Devolução (Closer → SDR)
+
+Se o Closer identificar que o lead não está pronto para fechamento, ele pode **devolver** o lead para o Zé-Sales com instruções:
+
+```
+1. Closer marca lead para devolução com motivo (ex: "lead precisa de mais nutrição")
+2. Zé-Sales retoma o lead no estado anterior (ex: follow_up_2)
+3. Zé-Sales ajusta a cadência conforme as instruções do Closer
+4. Lead é marcado com o tipoSdr apropriado
+```
 
 ---
 
-## 5. Portas (Interfaces)
+## 5. Casos de Uso (Application Layer)
 
-### 5.1 ILeadPort
+### 5.1 CapturarLeadUseCase
+- **Input:** `{ canal, nome?, email?, telefone?, empresa?, cargo?, origemUrl?, tags?, utmParams? }`
+- **Fluxo:**
+  1. Verifica duplicidade por email ou telefone
+  2. Se lead existente e `perdido` ou `sales_farming` → reativa
+  3. Se lead existente e ativo → retorna lead existente (não duplica)
+  4. Calcula ICP Fit e Score iniciais
+  5. Cria Lead com estado `entrada` e tipoSdr conforme canal:
+     - `site`, `booking-engine`, `marketplace` → sdr1_funis
+     - `instagram` → sdr2_social_seller
+     - `indicacao` → sdr1_funis
+     - `presencial`, `whatsapp` → sdr1_funis
+  6. Dispara `LeadCapturadoEvent`
+- **Output:** `Result<Lead, Erro>`
+
+### 5.2 QualificarLeadUseCase
+- **Input:** `{ leadId }`
+- **Fluxo:**
+  1. Busca lead por ID
+  2. Executa perguntas de qualificação BANT (via Zé-Sales):
+     - **B**udget: lead tem orçamento? qual a faixa?
+     - **A**uthority: lead tem poder de decisão?
+     - **N**eed: qual a necessidade identificada?
+     - **T**imeline: qual o prazo para implementação?
+  3. Recalcula score com base nas respostas
+  4. Se score ≥ 50: lead é qualificado como ICP ideal
+  5. Se score ≥ 30 e < 50: lead é qualificado como ICP mínimo
+  6. Se score < 30: lead permanece em follow-up para mais nutrição
+  7. Atualiza `icpFit` e dispara `LeadQualificadoEvent`
+- **Output:** `Result<Lead, Erro>`
+
+### 5.3 MoverPipelineUseCase (Validador da FSM)
+- **Input:** `{ leadId, novaEstado, metadata? }`
+- **Fluxo:**
+  1. Busca lead por ID
+  2. Valida a transição no grafo FSM (seção 3.3)
+  3. Se transição inválida → retorna erro `TRANSICAO_INVALIDA`
+  4. Valida invariantes da transição (seção 3.4):
+     - Se `agendado`: valida que existe data de agendamento
+     - Se `venda_sinal`: valida que existe pagamento do tipo sinal confirmado
+     - Se `venda_concluida`: valida que soma de pagamentos ≥ valor total
+     - Se `perdido`: valida que lead está há 30+ dias sem interação
+  5. Se `follow_up`: incrementa `quantidadeInteracoes` e atualiza `dataUltimoFollowUp`
+  6. Atualiza estado do lead
+  7. Dispara evento de domínio correspondente
+- **Invariante:** O estado transicionado deve respeitar EXATAMENTE o grafo FSM. Não existe "atalho".
+- **Output:** `Result<Lead, Erro>`
+
+### 5.4 ExecutarCadenciaFollowUpUseCase
+- **Input:** `{ leadId }`
+- **Fluxo:**
+  1. Busca lead com estado em follow_up_1, follow_up_2, ou follow_up_3
+  2. Verifica intervalo mínimo desde o último follow-up:
+     - Follow-up 1 → 24h após primeira interação
+     - Follow-up 2 → 48h após follow-up 1
+     - Follow-up 3 → 72h após follow-up 2
+  3. Se intervalo não respeitado → retorna erro `INTERVALO_FOLLOWUP_INVALIDO`
+  4. Gera mensagem personalizada baseada no perfil do lead e estágio
+  5. Envia via canal preferencial do lead (WhatsApp > E-mail > Instagram)
+  6. Transita lead para próximo estado de follow-up (ou mantém se for o último)
+  7. Dispara `LeadFollowUpRealizadoEvent`
+- **Output:** `Result<Lead, Erro>`
+
+### 5.5 RealizarHandoffParaCloserUseCase
+- **Input:** `{ leadId, gatilho, summaryPackage }`
+- **Fluxo:**
+  1. Busca lead, valida que está em estado que permite handoff (`agendado`, `em_negociacao`)
+  2. Gera SummaryPackage com:
+     - Histórico de interações
+     - Respostas BANT
+     - Score e ICP Fit
+     - Objeções e respostas
+     - Próximo passo recomendado
+  3. Marca lead com `tipoSdr = 'closer'`
+  4. Atribui `closerResponsavel` (próximo Closer disponível por round-robin)
+  5. Dispara `LeadHandoffParaCloserEvent` com SummaryPackage
+  6. Zé-Sales para de interagir com o lead (modo leitura)
+- **Output:** `Result<{ lead: Lead; summaryPackage: SummaryPackage }, Erro>`
+
+### 5.6 RegistrarPagamentoSinalUseCase
+- **Input:** `{ propostaId, metodo, valor }`
+- **Fluxo:**
+  1. Busca proposta, valida que está `aceita`
+  2. Valida que valor do sinal está entre 30% e 50% do valor total
+  3. Cria Pagamento com tipo `sinal`, status `pendente`
+  4. Dispara `PagamentoSinalSolicitadoEvent`
+- **Output:** `Result<Pagamento, Erro>`
+
+### 5.7 ConfirmarPagamentoUseCase
+- **Input:** `{ pagamentoId, codigoTransacao }`
+- **Fluxo:**
+  1. Busca pagamento, valida status `pendente`
+  2. Transita para `confirmado`
+  3. Se pagamento é `sinal`:
+     - Busca lead vinculado
+     - Transita lead para `venda_sinal` via MoverPipelineUseCase
+     - Dispara `LeadVendaSinalEvent`
+  4. Se pagamento é `total` (ou complemento) e já existe sinal:
+     - Verifica se soma de pagamentos ≥ valor total
+     - Se sim: transita lead para `venda_concluida`
+     - Dispara `LeadVendaConcluidaEvent` → `ConversaoRegistradaEvent`
+- **Output:** `Result<Pagamento, Erro>`
+
+### 5.8 CalcularEscadaDeValorUseCase (Upsell/Cross-sell)
+- **Input:** `{ leadId, produtoAtual }`
+- **Fluxo:**
+  1. Busca lead pelo ID (deve estar em `venda_concluida`, `em_onboarding` ou `acompanhamento`)
+  2. Identifica o plano/produto atual do cliente
+  3. Consulta a matriz de Upsell/Cross-sell:
+     - Se plano `Lite` → sugere upgrade para `Pro` (+X% de valor)
+     - Se plano `Pro` → sugere upgrade para `Max` (+Y% de valor)
+     - Se plano `Max` → sugere módulos complementares (IA avançada, treinamento)
+  4. Calcula o valor adicional potencial:
+     - `valorUpsell = precoProximoPlano - precoPlanoAtual`
+     - `valorCrossSell = somaDosModulosComplementares`
+     - `valorTotalEscada = max(valorUpsell, valorCrossSell) * probabilidadePorPerfil`
+  5. Gera recomendação textual para o Zé-Sales ou Closer abordar na renovação
+  6. Dispara `EscadaDeValorCalculadaEvent`
+- **Output:** `Result<{ recomendacao: string; valorPotencial: Money; acoes: AcaoRecomendada[] }, Erro>`
+
+### 5.9 ProcessarNoShowUseCase (Job Automático)
+- **Input:** `{ leadId }`
+- **Fluxo:**
+  1. Busca leads em `agendado` com data de agendamento > 24h sem comparecimento
+  2. Transita para `no_show`
+  3. Zé-Sales envia mensagem de recuperação: "Notamos que você não pôde comparecer..."
+  4. Oferece novo agendamento (reagendamento)
+  5. Dispara `LeadNoShowEvent`
+- **Output:** `Result<void, Erro>`
+
+### 5.10 ExecutarSalesFarmingUseCase (Job de Repescagem)
+- **Input:** `{ leadId }`
+- **Fluxo:**
+  1. Busca leads nos estados `perdido` ou sem interação há 30+ dias
+  2. Transita para `sales_farming`
+  3. Zé-Sales envia oferta especial de reativação (ex: 15% de desconto no primeiro mês)
+  4. Se lead responde → transita para `primeira_interacao`
+  5. Se lead não responde em 30 dias → mantém em `sales_farming` (ciclo trimestral)
+  6. Dispara `LeadSalesFarmingEvent`
+- **Output:** `Result<void, Erro>`
+
+---
+
+## 6. A Escada de Valor (Value Ladder)
+
+### 6.1 Matriz de Produtos ZEHLA
+
+| Degrau | Produto | Ticket Médio | Público-Alvo |
+|---|---|---|---|
+| **Isca** | Playbook / Diagnóstico Gratuito | R$ 0 | Todo lead |
+| **Front-End** | ZEHLA Lite | R$ 97-197/mês | Pequenas pousadas (1-5 quartos) |
+| **Back-End** | ZEHLA Pro | R$ 497-997/mês | Pousadas médias (5-20 quartos) |
+| **High-End** | ZEHLA Max | R$ 1.997-4.997/mês | Hotéis e redes (20+ quartos) |
+| **Complementar** | Módulo IA Avançada | +R$ 297/mês | Qualquer plano |
+| **Complementar** | Treinamento de Equipe | R$ 2.997 (único) | Qualquer plano |
+| **Complementar** | Consultoria Dedicada | R$ 9.997/mês | Planos Pro e Max |
+
+### 6.2 Regras de Upsell
+
+| De | Para | Gatilho | Timing |
+|---|---|---|---|
+| Lite | Pro | Cliente atingiu 80% da capacidade do plano | Após 3 meses de uso ativo |
+| Lite | Max | Cliente cresceu 2x+ desde a contratação | Após 6 meses |
+| Pro | Max | Cliente atingiu 80% da capacidade do plano | Após 3 meses de uso ativo |
+| Qualquer | +IA | Cliente usa o sistema há 2+ meses | Na renovação |
+
+### 6.3 Regras de Cross-sell
+
+| Produto Base | Complementar | Gatilho |
+|---|---|---|
+| Lite/Pro/Max | Treinamento de Equipe | Nova contratação de colaborador |
+| Lite/Pro/Max | Consultoria Dedicada | Cliente com ticket > R$ 2.000/mês |
+| Pro/Max | Módulo IA Avançada | Cliente usa recursos básicos de IA há 1+ mês |
+
+---
+
+## 7. Reatividade via Domain Events
+
+### 7.1 Catálogo de Eventos
+
+| Evento | Origem (Caso de Uso) | Payload | Consumidores | Ação |
+|---|---|---|---|---|
+| `LeadCapturadoEvent` | CapturarLeadUseCase | `{ leadId, nome, email, canal, score, icpFit }` | Zé-Marketer, N8N | Iniciar nutrição + disparar webhook de boas-vindas |
+| `LeadQualificadoEvent` | QualificarLeadUseCase | `{ leadId, score, icpFit, questoesBant }` | Zé-Sales (SDR1), N8N | Avançar na cadência + notificar SDR |
+| `LeadAgendadoEvent` | MoverPipelineUseCase | `{ leadId, dataAgendamento, closerId }` | Closer, N8N, Google Calendar | Criar evento na agenda do Closer + email de confirmação |
+| `LeadHandoffParaCloserEvent` | RealizarHandoffParaCloserUseCase | `{ leadId, closerId, summaryPackage }` | Closer, N8N, Slack | Notificar Closer com resumo do lead + disparar alerta |
+| `LeadNoShowEvent` | ProcessarNoShowUseCase | `{ leadId, dataAgendamentoOriginal }` | Zé-Sales (SDR4), N8N | Disparar mensagem de recuperação + oferta de reagendamento |
+| `LeadVendaSinalEvent` | ConfirmarPagamentoUseCase | `{ leadId, propostaId, valorSinal, plano }` | Financeiro, N8N, Slack | Criar contrato + notificar equipe + disparar onboarding |
+| `LeadVendaConcluidaEvent` | ConfirmarPagamentoUseCase | `{ leadId, conversaoId, valorTotal, plano }` | Hospitalidade, Financeiro, N8N | Criar cadastro de hóspede + emitir NF + disparar checklist de onboarding |
+| `LeadPerdidoEvent` | MoverPipelineUseCase | `{ leadId, motivo, diasNoFunil }` | Zé-Marketer, N8N | Adicionar a lista de repescagem + disparar oferta de recuperação em 30 dias |
+| `LeadSalesFarmingEvent` | ExecutarSalesFarmingUseCase | `{ leadId, diasDesdeUltimaInteracao }` | Zé-Sales (SDR4), N8N | Iniciar cadência trimestral de reaproximação |
+| `EscadaDeValorCalculadaEvent` | CalcularEscadaDeValorUseCase | `{ leadId, produtoAtual, upsellSugerido, crossSellSugerido, valorPotencial }` | Zé-Sales, N8N | Agendar abordagem de renovação com oferta de upgrade |
+| `PropostaCriadaEvent` | CriarPropostaUseCase | `{ propostaId, leadId, valorTotal, pacote }` | Zé-Sales, Zé-Marketer | Acompanhar funil + notificar lead |
+| `PropostaAceitaEvent` | AceitarPropostaUseCase | `{ propostaId, leadId, valorSinal }` | Zé-Sales, Financeiro | Solicitar pagamento do sinal |
+| `PagamentoRecusadoEvent` | ConfirmarPagamentoUseCase | `{ pagamentoId, propostaId, motivo }` | Zé-Sales, N8N | Notificar lead + oferecer nova forma de pagamento |
+| `ConversaoRegistradaEvent` | ConfirmarPagamentoUseCase | `{ leadId, conversaoId, valorTotal, plano }` | **Hospitalidade Context**, N8N, Slack | Criar cadastro de hóspede + disparar onboarding |
+
+### 7.2 Mapa de Reatividade Assíncrona
+
+```
+                    ┌──────────────────────────────────────────────┐
+                    │               DOMÍNIO COMERCIAL              │
+                    │                                              │
+                    │  Casos de Uso ──emitem──→ DomainEvents       │
+                    │                           │                  │
+                    └───────────────────────────┼──────────────────┘
+                                                │
+                    ┌───────────────────────────┼──────────────────┐
+                    │                           ▼                  │
+                    │                Message Bus (Event Bus)       │
+                    │                           │                  │
+                    │          ┌────────────────┼────────────┐     │
+                    │          ▼                ▼            ▼     │
+                    │    Zé-Sales (IA)    Zé-Marketer (IA)   N8N  │
+                    │    (processa evento (processa evento   │     │
+                    │     e decide ação)  e decide ação)     │     │
+                    │                                        ▼     │
+                    │                                  Webhooks   │
+                    │                              (E-mail, SMS,  │
+                    │                               Slack,        │
+                    │                              Google Calendar)│
+                    └──────────────────────────────────────────────┘
+
+```
+
+### 7.3 Contrato de Eventos (Exemplo)
+
+```typescript
+interface DomainEvent {
+  eventId: string       // UUIDv7
+  aggregateId: string   // ID da entidade raiz
+  aggregateType: string // "lead" | "proposta" | "pagamento" | "conversao"
+  eventType: string     // ex: "LeadHandoffParaCloserEvent"
+  timestamp: string     // ISO 8601
+  data: Record<string, unknown>
+  metadata: {
+    tenantId: string
+    correlationId: string  // rastreabilidade entre eventos do mesmo fluxo
+    causationId?: string   // evento que causou este evento
+  }
+}
+
+// Exemplo concreto:
+// LeadHandoffParaCloserEvent
+{
+  eventId: "0193a7f0-5e6b-7b00-8c00-123456789abc",
+  aggregateId: "lead_abc123",
+  aggregateType: "lead",
+  eventType: "LeadHandoffParaCloserEvent",
+  timestamp: "2026-06-01T14:30:00.000Z",
+  data: {
+    leadId: "lead_abc123",
+    closerId: "closer_456",
+    summaryPackage: {
+      score: 85,
+      icpFit: "ideal",
+      interacoes: 4,
+      objecoes: ["preco"],
+      respostas: ["cliente disse que precisa ver ROI"],
+      ultimoEstado: "agendado"
+    },
+    gatilho: "H1-ICP_CONFIRMADO"
+  },
+  metadata: {
+    tenantId: "tenant_pousada_sol",
+    correlationId: "flow_lead_abc123_20260601",
+    causationId: "event_qualificacao_abc123"
+  }
+}
+```
+
+---
+
+## 8. Portas (Interfaces)
+
+### 8.1 ILeadPort
 ```typescript
 interface ILeadPort {
   getById(id: string): Promise<Result<Lead, Error>>
@@ -329,345 +664,96 @@ interface ILeadPort {
   delete(id: string): Promise<Result<void, Error>>
   countByPeriod(inicio: Date, fim: Date): Promise<Result<number, Error>>
   listByCanal(canal: Canal): Promise<Result<Lead[], Error>>
+  listByEstado(estado: EstadoLead): Promise<Result<Lead[], Error>>
+  listBySdrResponsavel(sdrId: string): Promise<Result<Lead[], Error>>
+  listByCloserResponsavel(closerId: string): Promise<Result<Lead[], Error>>
+  listParaFollowUp(): Promise<Result<Lead[], Error>>            // leads que precisam de follow-up hoje
+  listParaNoShow(): Promise<Result<Lead[], Error>>              // leads agendados há > 24h sem ação
+  listParaSalesFarming(): Promise<Result<Lead[], Error>>        // leads sem interação há 30+ dias
+  listParaReativacao(): Promise<Result<Lead[], Error>>          // leads em sales_farming há 90+ dias
 }
 ```
 
-### 5.2 IPropostaPort
-```typescript
-interface IPropostaPort {
-  getById(id: string): Promise<Result<Proposta, Error>>
-  listByLead(leadId: string): Promise<Result<Proposta[], Error>>
-  listByPeriod(inicio: Date, fim: Date): Promise<Result<Proposta[], Error>>
-  save(proposta: Proposta): Promise<Result<Proposta, Error>>
-  delete(id: string): Promise<Result<void, Error>>
-  listByStatus(status: StatusProposta): Promise<Result<Proposta[], Error>>
-  listExpiradas(): Promise<Result<Proposta[], Error>>  // para job de expiração
-}
-```
-
-### 5.3 IPacotePort
-```typescript
-interface IPacotePort {
-  getById(id: string): Promise<Result<Pacote, Error>>
-  listAtivos(): Promise<Result<Pacote[], Error>>
-  listByCategoria(categoria: string): Promise<Result<Pacote[], Error>>
-  listByPeriodo(data: Date): Promise<Result<Pacote[], Error>>  // vigentes na data
-  save(pacote: Pacote): Promise<Result<Pacote, Error>>
-  archive(id: string): Promise<Result<void, Error>>
-  getVersao(id: string, versao: number): Promise<Result<Pacote, Error>>
-}
-```
-
-### 5.4 IPagamentoPort
-```typescript
-interface IPagamentoPort {
-  getById(id: string): Promise<Result<Pagamento, Error>>
-  listByProposta(propostaId: string): Promise<Result<Pagamento[], Error>>
-  save(pagamento: Pagamento): Promise<Result<Pagamento, Error>>
-  confirmar(id: string, codigoTransacao: string): Promise<Result<Pagamento, Error>>
-  recusar(id: string): Promise<Result<Pagamento, Error>>
-  estornar(id: string): Promise<Result<Pagamento, Error>>
-  totalConfirmadoPorProposta(propostaId: string): Promise<Result<Money, Error>>
-}
-```
-
-### 5.5 IConversaoPort
-```typescript
-interface IConversaoPort {
-  getById(id: string): Promise<Result<Conversao, Error>>
-  listByLead(leadId: string): Promise<Result<Conversao[], Error>>
-  listByPeriod(inicio: Date, fim: Date): Promise<Result<Conversao[], Error>>
-  save(conversao: Conversao): Promise<Result<Conversao, Error>>
-  countByCanal(inicio: Date, fim: Date): Promise<Result<{ canal: Canal; total: number }[], Error>>
-  taxaConversao(inicio: Date, fim: Date): Promise<Result<number, Error>>  // convertidos / leads
-}
-```
-
----
-
-## 6. Casos de Uso
-
-### 6.1 CapturarLeadUseCase
-- **Input:** canal, nome, email, telefone (opcional), origemUrl (opcional), tags (opcional)
-- **Fluxo:**
-  1. Verifica se lead já existe pelo email (duplicidade)
-  2. Se existir e estiver `perdido`, reativa
-  3. Cria Lead com status `novo`
-  4. Calcula score inicial
-  5. Dispara `LeadCapturadoEvent`
-- **Regras de negócio:** validadas na entidade
-- **Output:** Lead criado
-
-### 6.2 QualificarLeadUseCase
-- **Input:** leadId, documento (opcional)
-- **Fluxo:**
-  1. Busca lead por ID
-  2. Se score < 30, retorna erro `SCORE_INSUFICIENTE`
-  3. Transita lead para `qualificado`
-  4. Dispara `LeadQualificadoEvent`
-- **Invariante:** score mínimo validado na entidade
-
-### 6.3 CriarPropostaUseCase
-- **Input:** leadId, pacoteId, dataCheckIn, dataCheckOut, quantidadeHospedes
-- **Fluxo:**
-  1. Busca lead e pacote via portas
-  2. Valida capacidade do pacote vs quantidade de hóspedes
-  3. Calcula valor total via serviço de precificação
-  4. Cria Proposta com status `rascunho`
-  5. Dispara `PropostaCriadaEvent`
-- **Output:** Proposta criada
-- **Nota:** Zé-Sales pode instruir descontos, mas a proposta só é editada via `EditarPropostaUseCase`
-
-### 6.4 AceitarPropostaUseCase
-- **Input:** propostaId
-- **Fluxo:**
-  1. Busca proposta, valida se está `vista` ou `negociacao`
-  2. Transita para `aceita`
-  3. Calcula valor do sinal (percentual configurado por propriedade)
-  4. Cria Pagamento do tipo `sinal` com status `pendente`
-  5. Dispara `PropostaAceitaEvent`
-- **Output:** Proposta + Pagamento (sinal pendente)
-
-### 6.5 ConfirmarPagamentoUseCase
-- **Input:** pagamentoId, codigoTransacao, metodo
-- **Fluxo:**
-  1. Busca pagamento, valida status `pendente` ou `processando`
-  2. Transita para `confirmado`
-  3. Se pagamento é `sinal` OU `total`:
-     - Busca proposta vinculada
-     - Se for primeira confirmação da proposta, dispara `ConversaoRegistradaEvent`
-     - Cria Conversão via `IConversaoPort`
-     - Transita lead para `convertido` via `ILeadPort`
-  4. Dispara `PagamentoConfirmadoEvent`
-- **Invariante:** Conversão só é criada se pagamento está confirmado
-
-### 6.6 CalcularTaxaConversaoUseCase
-- **Input:** dataInicio, dataFim
-- **Fluxo:**
-  1. Conta leads capturados no período via `ILeadPort`
-  2. Conta conversões no período via `IConversaoPort`
-  3. Calcula: `conversoes / leads * 100`
-- **Output:** taxa percentual + breakdown por canal
-
-### 6.7 SugerirDescontoUseCase (Zé-Analyst / Yield Management)
-- **Input:** propostaId, ocupacaoAtual (do Hospitalidade Context)
-- **Fluxo:**
-  1. Busca proposta e pacote
-  2. Consulta ocupação do período via `IReservaPort` (Hospitalidade)
-  3. Se ocupação < 60%, sugere desconto de 10% no pacote
-  4. Se ocupação < 30%, sugere desconto de 20%
-  5. Se lead está há 7+ dias sem resposta, sugere desconto gradual
-- **Output:** `{ descontoSugerido: Money, justificativa: string }`
-- **Nota:** Zé-Sales NÃO PODE aprovar o desconto sozinho — a sugestão passa pelo Zé-Analyst que valida viabilidade financeira
-
-### 6.8 ProcessarPropostasExpiradasUseCase (Job)
-- **Input:** (nenhum — job schedulado)
-- **Fluxo:**
-  1. Lista propostas expiradas via `listExpiradas`
-  2. Para cada uma, transita para `expirada`
-  3. Dispara `PropostaExpiradaEvent` + gatilho de marketing (Zé-Marketer)
-
----
-
-## 7. Fronteira dos Agentes
-
-### 7.1 Zé-Sales (Sistema Límbico — Conversão e Fechamento)
-
-**Personalidade:** Fechador, persuasivo, orientado a dados de conversão. Fala a linguagem do hóspede, não do sistema.
-
-**PODE:**
-- Consultar leads, propostas, pacotes e conversões (via portas de leitura)
-- Capturar leads manuais (recepcionista qualifica no balcão)
-- Criar e editar propostas (rascunho, envio, negociação)
-- Aplicar descontos DESDE QUE validados pelo Zé-Analyst
-- Solicitar reativação de leads perdidos
-- Visualizar taxas de conversão e métricas de funil
-- Encaminhar lead para Zé-Marketer para nutrição automática
-- Acionar o `AceitarPropostaUseCase` para iniciar fluxo de pagamento
-
-**NÃO PODE:**
-- ❌ Aprovar pagamentos sozinho — pagamento é processado por gateway externo, validado pelo `ConfirmarPagamentoUseCase`
-- ❌ Alterar regras de precificação de pacotes — isso é domínio do Zé-Marketer
-- ❌ Acessar dados de outros tenants (RLS inviolável)
-- ❌ Modificar proposta depois de `aceita`
-- ❌ Criar conversão manualmente — conversão só existe após pagamento confirmado
-- ❌ Ver dados brutos de pagamento (apenas status e valor)
-- ❌ Excluir leads ou propostas
-
-### 7.2 Zé-Marketer (Córtex Criativo — Copywriting e Campanhas)
-
-**Personalidade:** Criativo, analítico, orientado a métricas de engajamento. Pensa em segmentação, timing e conteúdo.
-
-**PODE:**
-- Consultar leads por segmento (tags, canal, score, status)
-- Criar e gerenciar pacotes (versões, precificação, categorias)
-- Ativar/pausar/arquivar pacotes
-- Disparar gatilhos de marketing (e-mail, WhatsApp, push) baseados em eventos
-- Visualizar taxas de conversão por canal e campanha
-- Consultar métricas de nutrição (abertura, clique, resposta)
-- Sugerir segmentações para campanhas
-
-**NÃO PODE:**
-- ❌ Acessar propostas de leads individuais sem permissão do Zé-Sales
-- ❌ Aprovar descontos ou yield management (competência do Zé-Analyst)
-- ❌ Ver dados de pagamento (apenas saber se houve ou não conversão)
-- ❌ Acessar dados de outros tenants (RLS inviolável)
-- ❌ Criar propostas comerciais
-- ❌ Solicitar conversão manual
-
----
-
-## 8. Fluxos de Domínio (Sagas)
-
-### 8.1 Funil de Conversão (Fluxo Principal)
-
-```
-Lead entra no sistema (site/WhatsApp)
-    │
-    ▼
-CapturarLeadUseCase → Lead.novo
-    │
-    ▼ (score ≥ 30)
-QualificarLeadUseCase → Lead.qualificado
-    │
-    ▼ (Zé-Sales cria oferta)
-CriarPropostaUseCase → Proposta.rascunho → enviada
-    │
-    ▼ (Lead visualiza)
-Proposta.vista
-    │
-    ▼ (Negociação)
-Proposta.negociacao → aceita
-    │
-    ▼ (Sinal ou Total)
-AceitarPropostaUseCase → Pagamento.pendente
-    │
-    ▼ (Gateway confirma)
-ConfirmarPagamentoUseCase → Pagamento.confirmado → Conversao → Lead.convertido
-    │
-    ▼ (Dispara criação de hóspede)
-Evento: ConversaoRegistradaEvent → Hospitalidade Context
-```
-
-### 8.2 Abandono de Funil (Recuperação)
-
-```
-Proposta.enviada ou vista sem interação por 3+ dias
-    │
-    ▼ (Gatilho Zé-Marketer)
-E-mail/WhatsApp de recuperação automática
-    │
-    ▼ (Lead responde)
-Lead volta ao fluxo → Zé-Sales retoma negociação
-    │
-    ▼ (Lead não responde por 7+ dias)
-Proposta → expirada → Gatilho de oferta especial
-```
-
-### 8.3 Yield Management (Desconto Inteligente)
-
-```
-Ocupação do período < 60%
-    │
-    ▼
-SugerirDescontoUseCase → { desconto, justificativa }
-    │
-    ▼ (Zé-Analyst valida)
-Zé-Sales aplica desconto na proposta
-    │
-    ▼ (Lead recebe nova versão)
-Proposta.negociacao com valor atualizado
-```
+### 8.2 IPropostaPort, IPacotePort, IPagamentoPort, IConversaoPort
+(As interfaces permanecem conforme especificado na versão anterior — vide seções 5.2 a 5.5 da v1.)
 
 ---
 
 ## 9. Invariantes de Negócio (Resumo)
 
-| # | Invariante | Onde é validada |
-|---|---|---|
-| 1 | Lead não converte sem pagamento confirmado | `Conversao.create()` |
-| 2 | Score mínimo 30 para qualificação | `Lead.qualificar()` |
-| 3 | Desconto não excede valor total da proposta | `Proposta.aplicarDesconto()` |
-| 4 | Sinal máximo 50% do valor total | `Pagamento.create(tipo: 'sinal')` |
-| 5 | Soma pagamentos confirmados ≤ valor total | `ConfirmarPagamentoUseCase` |
-| 6 | Proposta expira após validade | `ProcessarPropostasExpiradasUseCase` |
-| 7 | Proposta convertida é imutável | `Proposta.transitar('convertida')` |
-| 8 | Um lead = uma conversão ativa | `ConversaoPort.listByLead()` |
-| 9 | Capacidade do pacote respeitada | `Proposta.create()` |
-| 10 | Conversão é imutável | `Conversao` sem setters |
-| 11 | Documento obrigatório na conversão (LGPD) | `Lead.converter()` |
-| 12 | RLS: dado comercial pertence a UMA propriedade | Todas as portas |
-
----
-
-## 10. Swarm Lite — Mapa de Agentes
-
-| Agente | Contexto | Portas Consumidas | Gatilhos |
+| # | Invariante | Onde é validada | Playbook FSS |
 |---|---|---|---|
-| **Zé-Sales** | Comercial (Conversão) | `ILeadPort`, `IPropostaPort`, `IPagamentoPort` (leitura), `IConversaoPort` | Lead qualificado, proposta vista, pagamento recusado |
-| **Zé-Marketer** | Comercial (Marketing) | `ILeadPort`, `IPacotePort`, `IConversaoPort` | Lead capturado, proposta expirada, lead inativo 7+ dias |
-| **Zé-Analyst** | Comercial (Yield) | `IPacotePort`, `IPropostaPort`, `IReservaPort` (via Hospitalidade) | Ocupação baixa, lead parado na negociação |
+| 1 | Transições de estado respeitam o grafo FSM dogmático | `MoverPipelineUseCase` | Funil não pode pular etapas |
+| 2 | Lead não pula de `entrada` para `venda_sinal` | `MoverPipelineUseCase` | Qualificação obrigatória |
+| 3 | `follow_up_N` segue ordem sequencial | `ExecutarCadenciaFollowUpUseCase` | Cadência precisa ser respeitada |
+| 4 | Sinal mínimo de 30% do valor total | `RegistrarPagamentoSinalUseCase` | Compromisso financeiro mínimo |
+| 5 | Sinal máximo de 50% do valor total | `RegistrarPagamentoSinalUseCase` | Não onerar o cliente |
+| 6 | Handoff só ocorre em estados permitidos | `RealizarHandoffParaCloserUseCase` | Não queimar o Closer |
+| 7 | Intervalo mínimo entre follow-ups respeitado | `ExecutarCadenciaFollowUpUseCase` | Não spammar o lead |
+| 8 | Lead `perdido` exige 30+ dias sem interação | `MoverPipelineUseCase` | Não desistir cedo demais |
+| 9 | Conversão só existe com pagamento confirmado | `ConfirmarPagamentoUseCase` | Venda só é venda com dinheiro |
+| 10 | Um lead = uma conversão ativa | `IConversaoPort` | Integridade do cliente |
+| 11 | Escada de Valor só calculada para clientes ativos | `CalcularEscadaDeValorUseCase` | Upsell só para quem já comprou |
+| 12 | RLS: dado comercial pertence a UMA propriedade | Todas as portas | Isolamento de tenant |
 
 ---
 
-## 11. Eventos de Domínio (Cross-Context)
+## 10. Mapa de Agentes
 
-| Evento | Origem | Consumidores | Ação |
-|---|---|---|---|
-| `LeadCapturadoEvent` | Comercial | Zé-Marketer | Iniciar nutrição automática |
-| `LeadQualificadoEvent` | Comercial | Zé-Sales | Notificar para contato |
-| `PropostaCriadaEvent` | Comercial | Zé-Sales, Zé-Marketer | Acompanhar funil |
-| `PropostaAceitaEvent` | Comercial | Zé-Sales | Disparar cobrança de sinal |
-| `PagamentoConfirmadoEvent` | Comercial | Zé-Sales, Financeiro | Criar conversão + fatura |
-| `PagamentoRecusadoEvent` | Comercial | Zé-Sales | Notificar lead + tentar nova forma |
-| `ConversaoRegistradaEvent` | Comercial → **Hospitalidade** | Zé-Concierge | Criar cadastro de hóspede + reserva |
-| `PropostaExpiradaEvent` | Comercial | Zé-Marketer | Disparar oferta de recuperação |
+| Agente | Papel | Contexto | Portas Consumidas | Gatilhos |
+|---|---|---|---|---|
+| **Zé-Sales** | SDR1 (Funis) | Comercial (Pré-Vendas) | `ILeadPort`, `IPropostaPort` | Lead capturado, follow-up programado |
+| **Zé-Sales** | SDR2 (Social Seller) | Comercial (Social) | `ILeadPort` | Direct Instagram, comentário, menção |
+| **Zé-Sales** | SDR3 (Hunter) | Comercial (Prospecção) | `ILeadPort` | Lista de ICP, hashtag, concorrente |
+| **Zé-Sales** | SDR4 (Sales Farmer) | Comercial (Repescagem) | `ILeadPort` | 30+ dias sem interação, `LeadSalesFarmingEvent` |
+| **Zé-Closer** | Closer (Humano) | Comercial (Vendas) | `ILeadPort` (leitura), `IPropostaPort` (escrita) | `LeadHandoffParaCloserEvent` |
+| **Zé-Marketer** | Marketing | Marketing Context | `ILeadPort` (leitura) | `LeadCapturadoEvent`, nutrição |
+| **Zé-Analyst** | Yield | Revenue Context | `IPacotePort` (leitura) | Ocupação baixa, desconto |
 
 ---
 
-## 12. Erros de Domínio
+## 11. Erros de Domínio
 
 | Código | Mensagem | Contexto |
 |---|---|---|
-| `LEAD_NOT_FOUND` | Lead não encontrado | ILeadPort |
-| `LEAD_ALREADY_CONVERTED` | Este lead já foi convertido | QualificarLeadUseCase |
-| `SCORE_INSUFFICIENT` | Score mínimo para qualificação é 30 | QualificarLeadUseCase |
-| `INVALID_SCORE_VALUE` | Score deve estar entre 0 e 100 | Score.create() |
-| `PROPOSTA_NOT_FOUND` | Proposta não encontrada | IPropostaPort |
-| `PROPOSTA_EXPIRED` | Proposta expirada | AceitarPropostaUseCase |
-| `PROPOSTA_ALREADY_CONVERTED` | Proposta já convertida | AceitarPropostaUseCase |
-| `PROPOSTA_CANNOT_BE_EDITED` | Proposta não pode ser editada no status atual | EditarPropostaUseCase |
-| `DISCOUNT_EXCEEDS_TOTAL` | Desconto não pode exceder o valor total | Proposta.aplicarDesconto() |
-| `PACOTE_NOT_FOUND` | Pacote não encontrado | IPacotePort |
-| `PACOTE_INACTIVE` | Pacote inativo não pode ser usado em propostas | CriarPropostaUseCase |
-| `PACOTE_CAPACITY_EXCEEDED` | Quantidade de hóspedes excede capacidade do pacote | Proposta.create() |
-| `PAGAMENTO_NOT_FOUND` | Pagamento não encontrado | IPagamentoPort |
-| `PAGAMENTO_ALREADY_CONFIRMED` | Pagamento já confirmado | ConfirmarPagamentoUseCase |
-| `PAGAMENTO_EXCEEDS_TOTAL` | Pagamento excede valor total da proposta | ConfirmarPagamentoUseCase |
-| `SINAL_EXCEEDS_MAX` | Sinal não pode exceder 50% do valor total | Pagamento.create() |
-| `CONVERSAO_NOT_FOUND` | Conversão não encontrada | IConversaoPort |
-| `CONVERSAO_ALREADY_EXISTS` | Lead já possui conversão ativa | ConfirmarPagamentoUseCase |
-| `INVALID_DOCUMENT` | Documento inválido para o tipo informado | Documento.create() |
-| `INVALID_EMAIL` | E-mail inválido | Email.create() |
-| `PAYMENT_REQUIRED_FOR_CONVERSION` | Pagamento é obrigatório para conversão | Conversao.create() |
+| `TRANSICAO_INVALIDA` | A transição solicitada não é permitida no grafo FSM | `MoverPipelineUseCase` |
+| `LEAD_JA_CONVERTIDO` | Este lead já foi convertido | `CapturarLeadUseCase` |
+| `SCORE_INSUFICIENTE` | Score mínimo para qualificação é 30 | `QualificarLeadUseCase` |
+| `ICP_FIT_INSUFICIENTE` | Lead não se encaixa no ICP mínimo | `QualificarLeadUseCase` |
+| `INTERVALO_FOLLOWUP_INVALIDO` | Intervalo mínimo entre follow-ups não respeitado | `ExecutarCadenciaFollowUpUseCase` |
+| `HANDOFF_NAO_PERMITIDO` | Handoff só pode ocorrer nos estados `agendado` ou `em_negociacao` | `RealizarHandoffParaCloserUseCase` |
+| `SINAL_ACIMA_MAXIMO` | Sinal não pode exceder 50% do valor total | `RegistrarPagamentoSinalUseCase` |
+| `SINAL_ABAIXO_MINIMO` | Sinal mínimo é 30% do valor total | `RegistrarPagamentoSinalUseCase` |
+| `LEAD_NAO_ATIVO` | Escada de Valor só pode ser calculada para clientes ativos | `CalcularEscadaDeValorUseCase` |
+| `LEAD_NOT_FOUND` | Lead não encontrado | `ILeadPort` |
+| `PROPOSTA_NOT_FOUND` | Proposta não encontrada | `IPropostaPort` |
+| `PROPOSTA_EXPIRED` | Proposta expirada | `AceitarPropostaUseCase` |
+| `PAGAMENTO_NOT_FOUND` | Pagamento não encontrado | `IPagamentoPort` |
+| `CONVERSAO_NOT_FOUND` | Conversão não encontrada | `IConversaoPort` |
+| `PAGAMENTO_EXCEDE_TOTAL` | Soma de pagamentos excede valor total da proposta | `ConfirmarPagamentoUseCase` |
 
 ---
 
-## 13. Glossário de Eventos vs Gatilhos de Marketing
+## 12. Glossário de Eventos vs Automações Externas (N8N)
 
-| Evento de Domínio | Gatilho Zé-Marketer | Canal |
-|---|---|---|
-| `LeadCapturadoEvent` | Boas-vindas automáticas | WhatsApp + E-mail |
-| `Lead.qualificado` sem proposta em 24h | Lembrete de oferta | E-mail |
-| `PropostaCriadaEvent` | Resumo da proposta | WhatsApp |
-| `Proposta vista` sem retorno em 48h | Oferta especial limitada | E-mail + WhatsApp |
-| `PropostaExpiradaEvent` | "Saudades" com desconto exclusivo | E-mail |
-| `PagamentoRecusadoEvent` | "Tivemos um problema" + nova tentativa | WhatsApp |
-| `PagamentoConfirmadoEvent` | Confirmação + próximos passos | WhatsApp |
-| `ConversaoRegistradaEvent` | Preparação para estadia (checklist) | E-mail |
+| Evento | Webhook / Automação | Canal | Gatilho N8N |
+|---|---|---|---|
+| `LeadCapturadoEvent` | Boas-vindas automáticas | WhatsApp + E-mail | `POST /webhook/boas-vindas` |
+| `LeadQualificadoEvent` | Notificar SDR responsável | Slack / Discord | `POST /webhook/notificar-sdr` |
+| `LeadAgendadoEvent` | Criar evento no Google Calendar | Google Calendar API | `POST /webhook/criar-evento` |
+| `LeadHandoffParaCloserEvent` | Notificar Closer com resumo | Slack + WhatsApp | `POST /webhook/notificar-closer` |
+| `LeadNoShowEvent` | Disparar mensagem de recuperação | WhatsApp | `POST /webhook/recuperar-no-show` |
+| `LeadVendaSinalEvent` | Parabenizar equipe + criar contrato | Slack + E-mail | `POST /webhook/venda-sinal` |
+| `LeadVendaConcluidaEvent` | Emitir NF + iniciar onboarding | API Financeira + E-mail | `POST /webhook/venda-concluida` |
+| `LeadPerdidoEvent` | Adicionar à fila de repescagem | CRM (tag) | `POST /webhook/lead-perdido` |
+| `LeadSalesFarmingEvent` | Disparar oferta de reativação | E-mail + WhatsApp | `POST /webhook/sales-farming` |
+| `PagamentoRecusadoEvent` | Notificar lead + oferecer nova forma | WhatsApp | `POST /webhook/pagamento-recusado` |
+| `EscadaDeValorCalculadaEvent` | Agendar abordagem de renovação | CRM (tarefa) | `POST /webhook/agendar-upsell` |
 
 ---
 
-> **This specification is the contract.** The Commercial Context is the artery through which revenue flows. Zero tolerance for failure. All code is disposable — these invariants, ports, and agent boundaries are the immutable assets.
+> **This specification is the contract.** The Commercial Context v2.0 é o sistema límbico do ZEHLA — onde leads viram clientes, vendas viram receita e a máquina comercial opera em escala previsível.
+>
+> O Playbook Interno de Estruturação Comercial (Full Sales System) é a fonte de verdade de negócio. A FSM é dogmática. Os handoffs são explícitos. Os eventos são o sistema nervoso.
 >
 > *Nenhuma linha de controlador, banco ou framework será escrita antes da homologação destes contratos.*
