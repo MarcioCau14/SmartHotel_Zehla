@@ -55,7 +55,8 @@ export const blastProcessWorker = new Worker(
         data: {
           status: 'sent',
           sentAt: new Date(),
-          instanceId: instance.id
+          instanceId: instance.id,
+          metaMessageId: response?.externalId
         }
       });
 

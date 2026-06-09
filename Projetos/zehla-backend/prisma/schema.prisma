@@ -1762,7 +1762,7 @@ model BrainSimulationScenario {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  roundsRel SimulationRound[]
+  simulationRounds SimulationRound[]
   agents    SimulationAgent[]
 
   @@index([tenantId])
@@ -2116,11 +2116,13 @@ model BlastMessage {
   failedReason    String?
   optedOutAt      DateTime?
   brainEventId    String?
+  metaMessageId   String?
   createdAt       DateTime @default(now())
 
   @@index([campaignId])
   @@index([status])
   @@index([contactPhone])
+  @@index([metaMessageId])
   @@map("blast_messages")
 }
 

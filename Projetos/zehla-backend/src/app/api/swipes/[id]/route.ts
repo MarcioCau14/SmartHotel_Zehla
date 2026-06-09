@@ -2,18 +2,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const swipe = await prisma.swipeTemplate.findUnique({ where: { id: params.id } });
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const swipe = await prisma.swipeTemplate.findUnique({ where: { id } });
   return NextResponse.json(swipe);
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const body = await req.json();
-  const swipe = await prisma.swipeTemplate.update({ where: { id: params.id }, data: body });
+  const swipe = await prisma.swipeTemplate.update({ where: { id }, data: body });
   return NextResponse.json(swipe);
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  await prisma.swipeTemplate.update({ where: { id: params.id }, data: { isActive: false } });
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  await prisma.swipeTemplate.update({ where: { id }, data: { isActive: false } });
   return NextResponse.json({ success: true });
 }

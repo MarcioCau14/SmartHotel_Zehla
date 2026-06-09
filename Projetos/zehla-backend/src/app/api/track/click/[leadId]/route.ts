@@ -3,9 +3,9 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { leadId: string } }
+  { params }: { params: Promise<{ leadId: string }> }
 ) {
-  const { leadId } = params;
+  const { leadId } = await params;
   const targetUrl = req.nextUrl.searchParams.get('url') || '/';
 
   try {
