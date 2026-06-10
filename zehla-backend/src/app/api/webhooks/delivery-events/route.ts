@@ -1,44 +1,72 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { WebhookSigner } from '@/lib/delivery/services/webhook-signer';
-import { IdempotencyGuard } from '@/lib/delivery/services/idempotency-guard';
+import { HMACValidator } from '@/infrastructure/hardening/HMACValidator';
 import { webhookRateGuard } from '@/lib/security/rate-limit-webhook';
+import { AtualizarStatusEntregaUseCase } from '@/application/comercial/use-cases/AtualizarStatusEntregaUseCase';
+import { PrismaLeadRepository } from '@/infrastructure/persistence/comercial/PrismaLeadRepository';
+import { prisma } from '@/lib/prisma';
 
 /**
- * ZCC WEBHOOK RECEIVER
- * Recebe eventos da Delivery Machine (Cliques, Hot Leads, Bounces).
+ * ZEHLA WEBHOOK DELIVERY EVENTS
+ * Recebe eventos de status de entrega de mensagens (SENT, DELIVERED, READ, FAILED) com blindagem Zero-Trust.
  */
-
 export async function POST(req: NextRequest) {
-  const guard = await webhookRateGuard(req)
-  if (guard) return guard
+  // 1. Defesa de Borda / Rate Limit
+  const guard = await webhookRateGuard(req);
+  if (guard) return guard;
 
   try {
-    const signature = req.headers.get('x-zehla-signature');
-    const timestamp = parseInt(req.headers.get('x-zehla-timestamp') || '0');
-    const payload = await req.json();
+    // 2. Extração do Cabeçalho de Assinatura
+    const signatureHeader = req.headers.get('x-hub-signature-256') || req.headers.get('x-zehla-signature') || '';
+    const signature = signatureHeader.replace('sha256=', '').trim();
 
-    // 1. Validação de Blindagem (HMAC-SHA256)
-    if (!signature || !WebhookSigner.verify(payload, timestamp, signature)) {
+    if (!signature) {
+      return NextResponse.json({ error: 'Missing signature header' }, { status: 401 });
+    }
+
+    const secret = process.env.WHATSAPP_WEBHOOK_SECRET || process.env.EVOLUTION_WEBHOOK_SECRET || 'zehla_whatsapp_webhook_secret_2026';
+
+    // 3. Obter rawBody para validação HMAC timing-safe antes de fazer parse JSON (Fail-Fast)
+    const rawBody = await req.text();
+
+    const hmacValidator = new HMACValidator('sha256');
+    const isValid = hmacValidator.verify(rawBody, signature, secret);
+
+    if (!isValid) {
+      console.warn('⚠️ [SECURITY] Webhook signature invalid. Potential tampering or spoofing.');
       return NextResponse.json({ error: 'Unauthorized Signature' }, { status: 401 });
     }
 
-    // 2. Proteção contra Duplicidade (Idempotência)
-    const eventId = payload.eventId || `${timestamp}-${payload.leadId}`;
-    if (!(await IdempotencyGuard.canProcess(eventId))) {
-      return NextResponse.json({ status: 'ignored', reason: 'duplicate' }, { status: 200 });
+    // 4. Ingestão do Evento e Parse Seguro
+    const payload = JSON.parse(rawBody);
+    const { leadId, status, propriedadeId } = payload;
+
+    if (!leadId || !status || !propriedadeId) {
+      return NextResponse.json({ error: 'Bad Request: Missing required fields' }, { status: 400 });
     }
 
-    // 3. Processamento de Evento
-    console.log(`🔥 [EVENT] Novo evento recebido: ${payload.type} para Lead ${payload.leadId}`);
-    
-    if (payload.type === 'HOT_LEAD_CLICK') {
-      // Aqui integraria com o sistema de Alertas do SDR (WhatsApp/Dashboard)
-      console.log('🚀 ACIONANDO SDR: Lead quente detectado em tempo recorde!');
+    // 5. Instanciar Caso de Uso (Controller Anêmico)
+    const repository = new PrismaLeadRepository(prisma);
+    const useCase = new AtualizarStatusEntregaUseCase(repository);
+
+    const result = await useCase.execute({
+      leadId,
+      propriedadeId,
+      status
+    });
+
+    if (result.isFail) {
+      return NextResponse.json({ error: result.error.message }, { status: 422 });
     }
 
-    return NextResponse.json({ status: 'success' });
+    return NextResponse.json({
+      success: true,
+      status: 'processed',
+      leadId: result.value.id
+    }, { status: 200 });
+
   } catch (error) {
-    console.error('❌ [WEBHOOK_ERROR]', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    const msg = error instanceof Error ? error.message : 'Internal Server Error';
+    console.error('❌ [DELIVERY WEBHOOK ERROR]', error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
