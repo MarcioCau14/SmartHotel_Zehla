@@ -49,7 +49,7 @@ export class ProcessFollowUpUseCase {
       messageContent = `Olá ${nome}, gostaríamos de dar continuidade ao nosso contato. Como estão as coisas por aí?`
     }
 
-    const sendResult = await this.messagingGateway.sendMessage(lead.telefone, messageContent)
+    const sendResult = await this.messagingGateway.sendText(lead.telefone, messageContent)
     if (sendResult.isFail) {
       return Result.fail(sendResult.error)
     }

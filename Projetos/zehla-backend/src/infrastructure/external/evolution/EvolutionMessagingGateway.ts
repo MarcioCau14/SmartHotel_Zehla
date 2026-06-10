@@ -27,13 +27,13 @@ export class EvolutionMessagingGateway implements IMessagingGateway {
     return res.json();
   }
 
-  async sendMessage(phone: string, content: string): Promise<Result<void, MessagingError>> {
+  async sendText(phone: string, message: string): Promise<Result<void, MessagingError>> {
     const instance = this.config.defaultInstance;
     try {
       await this.request('POST', `/message/sendText/${instance}`, {
         number: phone,
         options: { delay: 1200, presence: 'composing' },
-        textMessage: { text: content },
+        textMessage: { text: message },
       });
       return Result.ok(undefined);
     } catch (error) {

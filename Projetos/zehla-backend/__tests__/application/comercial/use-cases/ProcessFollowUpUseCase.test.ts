@@ -10,14 +10,14 @@ import { DomainEventPublisher } from '../../../../src/domain/shared/events/Domai
 
 // Simple mock for IMessagingGateway
 class MockMessagingGateway implements IMessagingGateway {
-  public sentMessages: Array<{ phone: string; content: string }> = []
+  public sentMessages: Array<{ phone: string; message: string }> = []
   public shouldFail = false
 
-  async sendMessage(phone: string, content: string): Promise<Result<void, MessagingError>> {
+  async sendText(phone: string, message: string): Promise<Result<void, MessagingError>> {
     if (this.shouldFail) {
       return Result.fail(new MessagingError('API Connection Timeout'))
     }
-    this.sentMessages.push({ phone, content })
+    this.sentMessages.push({ phone, message })
     return Result.ok(undefined)
   }
 
@@ -91,9 +91,9 @@ describe('ProcessFollowUpUseCase Unit Tests', () => {
     expect(messagingGateway.sentMessages.length).toBe(1)
     const sent = messagingGateway.sentMessages[0]
     expect(sent.phone).toBe('5511988887777')
-    expect(sent.content).toContain('Olá Carlos Drummond!')
-    expect(sent.content).toContain('Seu score de maturidade é 85/100')
-    expect(sent.content).toContain('/playbooks/playbook_prop_xyz_789.md')
+    expect(sent.message).toContain('Olá Carlos Drummond!')
+    expect(sent.message).toContain('Seu score de maturidade é 85/100')
+    expect(sent.message).toContain('/playbooks/playbook_prop_xyz_789.md')
 
     // Verify lead state was updated to follow_up_1
     const updatedLeadResult = await leadAdapter.buscarPorId('lead_followup_999')
@@ -114,7 +114,7 @@ describe('ProcessFollowUpUseCase Unit Tests', () => {
 
     expect(messagingGateway.sentMessages.length).toBe(1)
     const sent = messagingGateway.sentMessages[0]
-    expect(sent.content).toBe('Olá Carlos Drummond, gostaríamos de dar continuidade ao nosso contato. Como estão as coisas por aí?')
+    expect(sent.message).toBe('Olá Carlos Drummond, gostaríamos de dar continuidade ao nosso contato. Como estão as coisas por aí?')
 
     const updatedLeadResult = await leadAdapter.buscarPorId('lead_followup_999')
     expect(updatedLeadResult.value?.estado).toBe('follow_up_1')

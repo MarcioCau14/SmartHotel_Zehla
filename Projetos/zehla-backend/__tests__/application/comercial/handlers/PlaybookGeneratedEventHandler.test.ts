@@ -46,11 +46,11 @@ describe('PlaybookGeneratedEventHandler Unit Tests', () => {
       }
     })
 
-    // Delay must be 2 hours (7,200,000 ms) + Gaussian Jitter (between 30,000 ms and 300,000 ms)
+    // Delay must be 2 hours (7,200,000 ms) + Gaussian Jitter (between 5,000 ms and 45,000 ms)
     const baseDelayMs = 2 * 60 * 60 * 1000
     const delay = options.delay
-    expect(delay).toBeGreaterThanOrEqual(baseDelayMs + 30000)
-    expect(delay).toBeLessThanOrEqual(baseDelayMs + 300000)
+    expect(delay).toBeGreaterThanOrEqual(baseDelayMs + 5000)
+    expect(delay).toBeLessThanOrEqual(baseDelayMs + 45000)
 
     expect(options.attempts).toBe(3)
     expect(options.backoff).toEqual({

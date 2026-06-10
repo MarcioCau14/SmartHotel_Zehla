@@ -8,7 +8,7 @@ export class MessagingError extends Error {
 }
 
 export interface IMessagingGateway {
-  sendMessage(phone: string, content: string): Promise<Result<void, MessagingError>>;
+  sendText(phone: string, message: string): Promise<Result<void, MessagingError>>;
   sendTemplate(
     phone: string,
     templateId: string,
