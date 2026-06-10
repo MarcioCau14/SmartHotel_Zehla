@@ -20,6 +20,23 @@ export class PrismaCRMRepository implements ICRMRepositoryPort {
     }
   }
 
+  async atualizarLead(lead: LeadProfile): Promise<Result<LeadProfile, Error>> {
+    return this.salvarLead(lead)
+  }
+
+  async buscarLeadPorPropriedade(propriedadeId: string): Promise<Result<LeadProfile | null, Error>> {
+    try {
+      const row = await prisma.comercialLead.findFirst({
+        where: { propriedadeId },
+        include: { interactions: { orderBy: { timestamp: 'desc' }, take: 5 } },
+      })
+      if (!row) return Result.ok(null)
+      return this.hydrate(row)
+    } catch (err) {
+      return Result.fail(err instanceof Error ? err : new Error('Falha ao buscar lead por propriedade'))
+    }
+  }
+
   async buscarLeadPorId(id: string): Promise<Result<LeadProfile | null, Error>> {
     try {
       const row = await prisma.comercialLead.findUnique({
@@ -129,6 +146,8 @@ export class PrismaCRMRepository implements ICRMRepositoryPort {
     pipelineStage: string; ltvScore: number; persona: string;
     totalSpentUsd: number; staysCount: number;
     bookingValueUsd: number | null; assignedCloserId: string | null;
+    readinessScore: number | null; lgpdRiskLevel: string | null;
+    roiEstimation: string | null;
   } {
     return {
       id: lead.id,
@@ -149,6 +168,9 @@ export class PrismaCRMRepository implements ICRMRepositoryPort {
       staysCount: lead.staysCount,
       bookingValueUsd: lead.bookingValueUsd,
       assignedCloserId: lead.assignedCloserId,
+      readinessScore: lead.readinessScore,
+      lgpdRiskLevel: lead.lgpdRiskLevel,
+      roiEstimation: lead.roiEstimation,
     }
   }
 
@@ -171,6 +193,9 @@ export class PrismaCRMRepository implements ICRMRepositoryPort {
       assignedCloserId: row.assignedCloserId ? String(row.assignedCloserId) : null,
       tags: row.tags ? this.parseTags(String(row.tags)) : undefined,
       updatedAt: row.updatedAt as Date | undefined,
+      readinessScore: row.readinessScore !== undefined && row.readinessScore !== null ? Number(row.readinessScore) : null,
+      lgpdRiskLevel: row.lgpdRiskLevel ? String(row.lgpdRiskLevel) : null,
+      roiEstimation: row.roiEstimation ? String(row.roiEstimation) : null,
     })
   }
 

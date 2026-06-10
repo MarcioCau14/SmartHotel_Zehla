@@ -19,6 +19,9 @@ export interface LeadProfileProps {
   assignedCloserId?: string | null
   tags?: string[]
   updatedAt?: Date
+  readinessScore?: number | null
+  lgpdRiskLevel?: string | null
+  roiEstimation?: string | null
 }
 
 export class LeadProfile {
@@ -40,6 +43,9 @@ export class LeadProfile {
     public readonly assignedCloserId: string | null,
     public readonly tags: ReadonlyArray<string>,
     public readonly updatedAt: Date,
+    public readonly readinessScore: number | null,
+    public readonly lgpdRiskLevel: string | null,
+    public readonly roiEstimation: string | null,
   ) {
     Object.freeze(this)
   }
@@ -84,6 +90,9 @@ export class LeadProfile {
         props.assignedCloserId ?? null,
         Object.freeze([...(props.tags ?? [])]),
         props.updatedAt ?? now,
+        props.readinessScore ?? null,
+        props.lgpdRiskLevel ?? null,
+        props.roiEstimation ?? null,
       ),
     )
   }
@@ -108,6 +117,36 @@ export class LeadProfile {
         this.assignedCloserId,
         this.tags,
         new Date(),
+        this.readinessScore,
+        this.lgpdRiskLevel,
+        this.roiEstimation,
+      ),
+    )
+  }
+
+  withReadiness(score: number, risk: string, roi: string): Result<LeadProfile, Error> {
+    return Result.ok(
+      new LeadProfile(
+        this.id,
+        this.nome,
+        this.telefone,
+        this.email,
+        this.canalOrigem,
+        this.ltvScore,
+        this.stage,
+        this.createdAt,
+        this.propriedadeId,
+        this.persona,
+        this.totalSpentUsd,
+        this.staysCount,
+        this.lastInteractionAt,
+        this.bookingValueUsd,
+        this.assignedCloserId,
+        this.tags,
+        new Date(),
+        score,
+        risk,
+        roi,
       ),
     )
   }

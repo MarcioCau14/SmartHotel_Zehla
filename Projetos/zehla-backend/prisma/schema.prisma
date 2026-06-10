@@ -1723,18 +1723,23 @@ model Tenant {
 }
 
 model ApiConfig {
-  id        String   @id @default(cuid())
-  provider  String
-  model     String   @default("default")
-  isActive  Boolean  @default(true)
-  hasKey    Boolean  @default(false)
-  usageCurrent Int   @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  provider     String
+  model        String   @default("default")
+  isActive     Boolean  @default(true)
+  apiKey       String   @default("")
+  apiSecret    String   @default("")
+  baseUrl      String   @default("")
+  usageLimit   Int      @default(0)
+  usageCurrent Int      @default(0)
+  notes        String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  tenantId String
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
+  @@unique([tenantId, provider])
   @@map("api_configs")
 }
 
@@ -2507,6 +2512,9 @@ model ComercialLead {
   staysCount       Int?
   bookingValueUsd  Float?
   assignedCloserId String?
+  readinessScore   Int?
+  lgpdRiskLevel    String?
+  roiEstimation    String?
   updatedAt        DateTime          @updatedAt
 
   propostas        ComercialProposta[]
