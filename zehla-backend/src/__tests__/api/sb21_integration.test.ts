@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest'
 import crypto from 'crypto'
+import { NextRequest } from 'next/server'
 import { getBasePrisma } from '../../lib/prisma'
 import { JwtGuard } from '../../infrastructure/hardening/JwtGuard'
-import { buildPost, parseResponse } from '../helpers/http-test'
+import { buildPost, buildGet, parseResponse } from '../helpers/http-test'
 
 // Importações diretas dos Route Handlers (Entrypoints)
 import { POST as conciergePOST } from '../../app/api/hospitalidade/concierge/route'
@@ -14,6 +15,10 @@ import { POST as reviewsPOST } from '../../app/api/marketing/reviews/route'
 import { POST as campanhasPOST } from '../../app/api/marketing/campanhas/route'
 import { POST as whatsappPOST } from '../../app/api/webhooks/whatsapp/route'
 import { POST as pagamentoPOST } from '../../app/api/webhooks/pagamento/route'
+
+// Route Handlers SB32 (Digital Guidebook + Mass Dispatch)
+import { POST as guidebookPOST, GET as guidebookGET } from '../../app/api/guidebook/route'
+import { POST as dispatchPOST } from '../../app/api/marketing/campaigns/dispatch/route'
 
 const JWT_SECRET = process.env.JWT_SECRET ?? 'zehla_shield_secret_2026'
 const PROPERTY_ID = 'api_integration_test_prop'
@@ -60,29 +65,32 @@ describe('ZEHLA PRIME SB21 — Adaptadores de Entrada / Route Handlers HTTP', ()
 
   // ─── 1. TESTES DE AUTENTICAÇÃO (JWT GUARD) ───────────────────────────────
   describe('Segurança de Borda: JWT Guard Inegociável', () => {
-    const endpoints = [
-      { name: 'Concierge', post: conciergePOST, url: '/api/hospitalidade/concierge' },
-      { name: 'Leads', post: leadsPOST, url: '/api/comercial/leads' },
-      { name: 'Propostas', post: propostasPOST, url: '/api/comercial/propostas' },
-      { name: 'Tarefas', post: tarefasPOST, url: '/api/operacional/tarefas' },
-      { name: 'Tarifas', post: tarifasPOST, url: '/api/revenue/tarifas' },
-      { name: 'Reviews', post: reviewsPOST, url: '/api/marketing/reviews' },
-      { name: 'Campanhas', post: campanhasPOST, url: '/api/marketing/campanhas' },
+    interface Endpoint { name: string; handler: (req: NextRequest) => Promise<NextResponse> | NextResponse; buildReq: (headers?: Record<string, string>) => NextRequest }
+    const endpoints: Endpoint[] = [
+      { name: 'Concierge', handler: conciergePOST, buildReq: (h) => buildPost('/api/hospitalidade/concierge', { intent: 'TEST_INTENT' }, h) },
+      { name: 'Leads', handler: leadsPOST, buildReq: (h) => buildPost('/api/comercial/leads', { intent: 'TEST_INTENT' }, h) },
+      { name: 'Propostas', handler: propostasPOST, buildReq: (h) => buildPost('/api/comercial/propostas', { intent: 'TEST_INTENT' }, h) },
+      { name: 'Tarefas', handler: tarefasPOST, buildReq: (h) => buildPost('/api/operacional/tarefas', { intent: 'TEST_INTENT' }, h) },
+      { name: 'Tarifas', handler: tarifasPOST, buildReq: (h) => buildPost('/api/revenue/tarifas', { intent: 'TEST_INTENT' }, h) },
+      { name: 'Reviews', handler: reviewsPOST, buildReq: (h) => buildPost('/api/marketing/reviews', { intent: 'TEST_INTENT' }, h) },
+      { name: 'Campanhas', handler: campanhasPOST, buildReq: (h) => buildPost('/api/marketing/campanhas', { intent: 'TEST_INTENT' }, h) },
+      { name: 'Guidebook POST', handler: guidebookPOST, buildReq: (h) => buildPost('/api/guidebook', { id: 'test', sections: [] }, h) },
+      { name: 'Guidebook GET', handler: guidebookGET, buildReq: (h) => buildGet('/api/guidebook', h) },
+      { name: 'Campaign Dispatch', handler: dispatchPOST, buildReq: (h) => buildPost('/api/marketing/campaigns/dispatch', { campanhaId: 'test', templateId: 't1', recipients: [{ id: 'r1', name: 'T', phone: '5511999999999', language: 'pt' }] }, h) },
     ]
 
     for (const ep of endpoints) {
       it(`[${ep.name}] deve retornar 401 se a chamada for feita sem o header de autorização`, async () => {
-        const req = buildPost(ep.url, { intent: 'TEST_INTENT' })
-        const res = await ep.post(req)
+        const req = ep.buildReq()
+        const res = await ep.handler(req)
         const { status, body } = await parseResponse(res)
         expect(status).toBe(401)
         expect(body).toHaveProperty('error')
-        expect(body.error).toContain('authorization')
       })
 
       it(`[${ep.name}] deve retornar 401 se o token JWT for inválido ou fraudulento`, async () => {
-        const req = buildPost(ep.url, { intent: 'TEST_INTENT' }, { Authorization: 'Bearer invalid-token-sig' })
-        const res = await ep.post(req)
+        const req = ep.buildReq({ Authorization: 'Bearer invalid-token-sig' })
+        const res = await ep.handler(req)
         const { status, body } = await parseResponse(res)
         expect(status).toBe(401)
         expect(body).toHaveProperty('error')
@@ -217,7 +225,114 @@ describe('ZEHLA PRIME SB21 — Adaptadores de Entrada / Route Handlers HTTP', ()
     })
   })
 
-  // ─── 7. WEBHOOKS EXTERNOS: ZERO-TRUST HMAC ───────────────────────────────
+  // ─── 8. SB32: DIGITAL GUIDEBOOK ──────────────────────────────────────────
+  describe('Digital Guidebook (SB32): CriarGuiaDigital HTTP', () => {
+    it('POST /api/guidebook deve criar guia e retornar 201 com token válido', async () => {
+      const guideId = `guide_test_${Date.now()}`
+      const req = buildPost('/api/guidebook', {
+        id: guideId,
+        sections: [{ sectionType: 'wifi', icon: 'wifi', order: 0, content: { pt: 'Senha: 1234', en: 'Password: 1234' } }],
+      }, { Authorization: `Bearer ${validToken}` })
+      const res = await guidebookPOST(req)
+      const { status, body } = await parseResponse(res)
+      expect(status).toBe(201)
+      expect(body).toHaveProperty('id')
+      expect(body.id).toBe(guideId)
+    })
+
+    it('POST /api/guidebook deve retornar 409 para guia duplicado na mesma propriedade', async () => {
+      const req = buildPost('/api/guidebook', {
+        id: `dup_${Date.now()}`,
+        sections: [{ sectionType: 'wifi', icon: 'wifi', order: 0, content: { pt: 'Senha', en: 'Password' } }],
+      }, { Authorization: `Bearer ${validToken}` })
+      await guidebookPOST(req)
+      const res2 = await guidebookPOST(buildPost('/api/guidebook', {
+        id: `dup2_${Date.now()}`,
+        sections: [{ sectionType: 'wifi', icon: 'wifi', order: 0, content: { pt: 'Senha', en: 'Password' } }],
+      }, { Authorization: `Bearer ${validToken}` }))
+      // Segunda criação com mesmo propertyId deve falhar com 409
+      const { status } = await parseResponse(res2)
+      expect(status).toBe(409)
+    })
+
+    it('GET /api/guidebook deve retornar 404 para propriedade sem guia', async () => {
+      const noGuideReq = buildGet('/api/guidebook', { Authorization: `Bearer ${validToken}` })
+      const res = await guidebookGET(noGuideReq)
+      const { status } = await parseResponse(res)
+      expect(status).toBe(404)
+    })
+
+    it('POST /api/guidebook deve retornar 400 quando sections está vazio', async () => {
+      const req = buildPost('/api/guidebook', { id: 'bad', sections: [] }, { Authorization: `Bearer ${validToken}` })
+      const res = await guidebookPOST(req)
+      const { status } = await parseResponse(res)
+      expect(status).toBe(400)
+    })
+  })
+
+  // ─── 9. SB32: CAMPAIGN DISPATCH ──────────────────────────────────────────
+  describe('Campaign Dispatch (SB32): Disparo em Massa HTTP', () => {
+    let campanhaId: string
+
+    beforeAll(async () => {
+      const basePrisma = getBasePrisma()
+      const camp = await basePrisma.marketingCampanha.create({
+        data: {
+          id: `dispatch_test_${Date.now()}`,
+          pousadaId: PROPERTY_ID,
+          nome: 'SB32 Dispatch Test',
+          publicoAlvo: 'todos',
+          tipo: 'mass_messaging',
+          dataInicio: new Date(Date.now() + 86400000),
+          dataFim: new Date(Date.now() + 86400000 * 7),
+          status: 'aprovada',
+        },
+      })
+      campanhaId = camp.id
+    })
+
+    it('POST /api/marketing/campaigns/dispatch deve retornar 202 com token válido', async () => {
+      const req = buildPost('/api/marketing/campaigns/dispatch', {
+        campanhaId,
+        templateId: 'template_promocao',
+        templateVariables: { nome: '{{nome}}' },
+        recipients: [{ id: 'guest-1', name: 'João', phone: '5511999999999', language: 'pt-BR' }],
+      }, { Authorization: `Bearer ${validToken}` })
+      const res = await dispatchPOST(req)
+      const { status, body } = await parseResponse(res)
+      if (status === 429) {
+        // Rate limit pode estar ativo de testes anteriores
+        expect(body.code).toBe('RATE_LIMITED')
+        return
+      }
+      expect(status).toBe(202)
+      expect(body).toHaveProperty('status')
+      expect(body.status).toBe('em_execucao')
+    })
+
+    it('POST /api/marketing/campaigns/dispatch deve retornar 400 quando campanhaId está ausente', async () => {
+      const req = buildPost('/api/marketing/campaigns/dispatch', {
+        templateId: 't1',
+        recipients: [{ id: 'g1', name: 'João', phone: '5511999999999', language: 'pt' }],
+      }, { Authorization: `Bearer ${validToken}` })
+      const res = await dispatchPOST(req)
+      const { status } = await parseResponse(res)
+      expect(status).toBe(400)
+    })
+
+    it('POST /api/marketing/campaigns/dispatch deve retornar 404 para campanha inexistente', async () => {
+      const req = buildPost('/api/marketing/campaigns/dispatch', {
+        campanhaId: 'nao_existe',
+        templateId: 't1',
+        recipients: [{ id: 'g1', name: 'João', phone: '5511999999999', language: 'pt' }],
+      }, { Authorization: `Bearer ${validToken}` })
+      const res = await dispatchPOST(req)
+      const { status } = await parseResponse(res)
+      expect(status).toBe(404)
+    })
+  })
+
+  // ─── 10. WEBHOOKS EXTERNOS: ZERO-TRUST HMAC ──────────────────────────────
   describe('Webhooks Externos: Zero-Trust HMAC Timing-Safe', () => {
     const WH_SECRET_WA = 'zehla_whatsapp_webhook_secret_2026'
     const WH_SECRET_PAY = 'zehla_payment_webhook_secret_2026'

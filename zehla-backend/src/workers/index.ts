@@ -4,6 +4,7 @@ import { classifyWorker } from './classifyWorker';
 import { enrichWorker } from './enrichWorker';
 import { subconsciousWorker } from '../lib/ml/subconscious-worker';
 import { validateWorker } from './validateWorker';
+import { campaignOutboundWorker } from './campaignOutboundWorker';
 
 
 // src/workers/index.ts — ZEHLA Brain v4: Worker Orchestrator
@@ -16,6 +17,7 @@ const workers = [
   { name: 'Classify', worker: classifyWorker },
   { name: 'Act', worker: actWorker },
   { name: 'Subconscious', worker: subconsciousWorker },
+  { name: 'CampaignOutbound', worker: campaignOutboundWorker },
 ];
 
 async function startAllWorkers() {

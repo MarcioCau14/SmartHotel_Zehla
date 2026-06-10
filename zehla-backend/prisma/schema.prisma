@@ -169,6 +169,7 @@ model Property {
   workflows            Workflow[]
   financeiroInvoices   FinanceiroInvoice[]
   financeiroPayments   FinanceiroPayment[]
+  digitalGuides        DigitalGuide[]
 
   @@map("properties")
 }

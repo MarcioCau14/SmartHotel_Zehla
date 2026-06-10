@@ -117,105 +117,75 @@ O contexto expõe **5 portas granulares**. Nenhum agente ou serviço acessa enti
 
 ## 3. A Máquina de Estados do Lead (FSM)
 
-### 3.1 Pipeline Completo (Pré-Vendas + Vendas + Pós-Vendas)
+### 3.1 Pipeline Consolidado (7 Estados)
 
-O pipeline segue a estrutura dogmática do Playbook FSS, dividido em 3 setores:
+O pipeline segue o modelo simplificado ZEHLA Core, consolidando os 17 estados originais em 7 estados gerenciáveis:
 
 ```
-PRÉ-VENDAS (Zé-Sales / IA)
-──────────────────────────────────────────────
-    Entrada → Primeira Interação → Follow-up 1 → Follow-up 2 → Follow-up 3 → Agendamento
-                                                                                  │
-                                                                    (Reagendamento ← ┘)
-                                                                                  │
-                                                                       Transferência de SDR
-                                                                                  │
-                                                                            ┌─────┴──────┐
-                                                                            │            │
-                                                                       Compareceu    No-Show
-                                                                            │
-VENDAS (Closer / Humano)                                                      │
-──────────────────────────────────────────────                                │
-                                                                             │
-                                                                   Agendado (reunião de fechamento)
-                                                                        │              │
-                                                                   Venda c/        Perdeu
-                                                                   Sinal
-                                                                     │
-                                                              Venda Concluída
-                                                                     │
-PÓS-VENDAS (Zé-Onboarding)                                               │
-──────────────────────────────────────────────                          │
-                                                                 Onboarding
-                                                                     │
-                                                            Acompanhamento
-                                                                     │
-                                                            Renovação
+PROSPECT ──(qualificar)──→ QUALIFIED ──(iniciar_trial)──→ TRIAL
+TRIAL ──(negociar)──→ NEGOTIATION
+NEGOTIATION ──(fechar)──→ CONVERTED
+qualquer estado exceto CONVERTED ──(perder)──→ CHURNED
+CHURNED ──(reativar)──→ PROSPECT
+TRIAL ou NEGOTIATION com 30+ dias inativos ──(perder)──→ CHURNED
 ```
 
-### 3.2 Estados do Lead (Formal)
+**Setores:**
+| Estado | Setor | Descrição |
+|---|---|---|
+| `PROSPECT` | Aquisição | Lead capturado, sendo qualificado |
+| `QUALIFIED` | Aquisição | ICP confirmado, lead pronto para trial |
+| `TRIAL` | Experiência | Lead em período de teste do produto |
+| `NEGOTIATION` | Fechamento | Proposta em negociação ativa |
+| `CONVERTED` | Cliente | Pagamento confirmado, cliente ativo |
+| `CHURNED` | Perda | Lead perdido ou cancelado |
+| `REACTIVATED` | Retenção | Lead reativado via repescagem |
+
+> **Nota:** A especificação anterior detalhava 17 estados (entrada → sales_farming). Esse modelo granular permanece documentado como **Apêndice A — FSM Expandida (Advanced Mode)** para implantação futura quando o volume de leads justificar a complexidade adicional.
+
+### 3.2 Estados do Lead (Core — 7 Estados)
 
 | Estado | Setor | Descrição |
 |---|---|---|
-| `entrada` | Pré-Vendas | Lead capturado, nenhuma ação tomada |
-| `primeira_interacao` | Pré-Vendas | Zé-Sales fez o primeiro contato |
-| `follow_up_1` | Pré-Vendas | Primeiro follow-up da cadência |
-| `follow_up_2` | Pré-Vendas | Segundo follow-up da cadência |
-| `follow_up_3` | Pré-Vendas | Terceiro follow-up da cadência |
-| `agendado` | Pré-Vendas | Lead agendou reunião com o Closer |
-| `reagendado` | Pré-Vendas | Lead reagendou a reunião |
-| `no_show` | Pré-Vendas | Lead não compareceu à reunião |
-| `transferido_sdr` | Pré-Vendas | Lead transferido entre SDRs |
-| `em_negociacao` | Vendas | Closer está conduzindo a reunião de fechamento |
-| `venda_sinal` | Vendas | Lead pagou o sinal, venda garantida |
-| `venda_concluida` | Vendas | Pagamento total confirmado |
-| `perdido` | Vendas | Lead recusou ou desistiu |
-| `em_onboarding` | Pós-Vendas | Cliente em processo de ambientação |
-| `acompanhamento` | Pós-Vendas | Cliente ativo, em uso do produto |
-| `renovacao` | Pós-Vendas | Próximo do vencimento, em negociação de renovação |
-| `sales_farming` | Repescagem | Lead frio sendo reaproximado periodicamente |
+| `PROSPECT` | Aquisição | Lead capturado, sendo qualificado. Nenhuma ação comercial tomada além da captura. |
+| `QUALIFIED` | Aquisição | ICP confirmado via perguntas BANT. Lead pronto para avançar para trial. |
+| `TRIAL` | Experiência | Lead em período de teste do produto. Prazo padrão: 7-14 dias. |
+| `NEGOTIATION` | Fechamento | Proposta enviada e em negociação ativa com o Closer. |
+| `CONVERTED` | Cliente | Pagamento confirmado. Cliente ativo com acesso completo. |
+| `CHURNED` | Perda | Lead perdeu interesse, recusou proposta, ou cancelou assinatura. |
+| `REACTIVATED` | Retenção | Lead que estava perdido e foi reativado via repescagem. Retorna a `QUALIFIED` na próxima interação. |
 
-### 3.3 Transições Válidas (Grafo FSM)
+### 3.3 Transições Válidas (Grafo FSM Simplificado)
 
 ```
-entrada ──(primeiro_contato)──→ primeira_interacao
-primeira_interacao ──(follow_up)──→ follow_up_1
-follow_up_1 ──(follow_up)──→ follow_up_2
-follow_up_2 ──(follow_up)──→ follow_up_3
-follow_up_3 ──(agendar)──→ agendado
-qualquer follow_up ──(agendar)──→ agendado
-agendado ──(reagendar)──→ reagendado
-reagendado ──(reagendar)──→ reagendado
-agendado ──(no_show)──→ no_show
-no_show ──(reagendar)──→ reagendado
-agendado ──(transferir_sdr)──→ transferido_sdr
-transferido_sdr ──(agendar)──→ agendado
-agendado ──(iniciar_negociacao)──→ em_negociacao
-em_negociacao ──(fechar_sinal)──→ venda_sinal
-venda_sinal ──(concluir_pagamento)──→ venda_concluida
-venda_concluida ──(iniciar_onboarding)──→ em_onboarding
-em_onboarding ──(completar_onboarding)──→ acompanhamento
-acompanhamento ──(proximo_renovacao)──→ renovacao
-renovacao ──(renovar)──→ acompanhamento
-qualquer estado (exceto venda_sinal, venda_concluida, em_onboarding) ──(perder)──→ perdido
-perdido ──(reativar)──→ entrada
-qualquer estado sem interação por 30+ dias ──→ sales_farming (automático)
-sales_farming ──(follow_up)──→ primeira_interacao
-sales_farming ──(perder)──→ perdido
+PROSPECT ──(qualificar)────────────→ QUALIFIED
+PROSPECT ──(perder)────────────────→ CHURNED
+QUALIFIED ──(iniciar_trial)────────→ TRIAL
+QUALIFIED ──(perder)───────────────→ CHURNED
+TRIAL ──(negociar)────────────────→ NEGOTIATION
+TRIAL ──(perder)──────────────────→ CHURNED
+TRIAL ──(converter_direto)────────→ CONVERTED
+NEGOTIATION ──(fechar)────────────→ CONVERTED
+NEGOTIATION ──(perder)────────────→ CHURNED
+CONVERTED ──(cancelar)────────────→ CHURNED
+CHURNED ──(reativar)──────────────→ PROSPECT
+CHURNED ──(reativar_qualificado)──→ QUALIFIED
+REACTIVATED ──(interagir)─────────→ QUALIFIED
+REACTIVATED ──(perder)────────────→ CHURNED
 ```
 
-### 3.4 Invariantes (Dogmas da FSM)
+### 3.4 Invariantes (Dogmas da FSM Simplificada)
 
-| # | Invariante | Justificativa (Playbook FSS) |
+| # | Invariante | Justificativa |
 |---|---|---|
-| 1 | Um lead NÃO pode pular de `entrada` para `venda_sinal` sem passar por `agendado` e `em_negociacao` | O Playbook determina que a qualificação e o agendamento são etapas obrigatórias para garantir a qualidade da venda. Pular etapas queima o Closer com leads não qualificados. |
-| 2 | Um lead NÃO pode ir de `follow_up_1` para `follow_up_3` sem passar por `follow_up_2` | A cadência de follow-up existe para aquecer o lead gradualmente. Pulá-la quebra a taxa de agendamento (meta: 15-25%). |
-| 3 | `venda_sinal` exige um `Pagamento` confirmado com tipo `sinal` (mínimo 30% do valor) | O sinal é a prova de compromisso financeiro. Sem ele, o lead pode desistir sem custo. |
-| 4 | `venda_concluida` exige que a soma de pagamentos confirmados ≥ valor total da proposta | A venda só é concluída quando o valor integral está garantido. |
-| 5 | `perdido` só pode sair para `entrada` via reativação explícita | Um lead perdido não pode ser reaquecido automaticamente — exige uma nova abordagem estratégica. |
-| 6 | Um lead em `em_onboarding` ou `acompanhamento` não pode retroceder no funil | Cliente ativo está em jornada pós-venda; não faz sentido recolocá-lo no funil de captação. |
-| 7 | A transição automática `→ sales_farming` só ocorre após 30+ dias sem interação | O Playbook define a repescagem como um ciclo coordenado, não aleatório. |
-| 8 | Todo lead em `agendado` tem um tempo máximo de 7 dias para comparecer. Após isso → `no_show` automático | O Playbook estipula que a taxa de comparecimento deve ser > 70%. Leads que não comparecem precisam ser recuperados ativamente. |
+| 1 | Um lead NÃO pode pular de `PROSPECT` para `CONVERTED` sem passar por `QUALIFIED` → `TRIAL` → `NEGOTIATION` | Qualificação, trial e negociação são etapas obrigatórias para garantir qualidade da venda. |
+| 2 | `CONVERTED` exige pagamento confirmado (sinal ≥ 30% ou total) | Venda só é venda com dinheiro. |
+| 3 | `CHURNED` só pode sair via reativação explícita (`reativar` ou `reativar_qualificado`) | Um lead perdido não pode ser reaquecido automaticamente — exige nova abordagem estratégica. |
+| 4 | `CONVERTED` não pode retroceder no funil | Cliente ativo está em jornada pós-venda; não faz sentido recolocá-lo no funil de captação. |
+| 5 | `TRIAL` com 14+ dias sem interação → `CHURNED` automático | Trial sem engajamento é lead frio. |
+| 6 | `NEGOTIATION` com 30+ dias sem resposta → `CHURNED` automático | Proposta sem retorno por 30 dias é lead perdido. |
+
+> **Arquivo:** A especificação granular anterior (17 estados com `entrada` → `sales_farming`) está preservada no Apêndice A para referência futura.
 
 ### 3.5 Atributos da Entidade Lead (Modelo Rico)
 
@@ -235,35 +205,28 @@ sales_farming ──(perder)──→ perdido
 - `cargo` — string, cargo do contato (opcional)
 - `faturamentoEstimado` — Money, para validação de ICP (opcional)
 - `score` — inteiro 0-100
-- `estado` — enum FSM (seção 3.2)
+- `estado` — enum FSM (seção 3.2): PROSPECT | QUALIFIED | TRIAL | NEGOTIATION | CONVERTED | CHURNED | REACTIVATED
 - `icpFit` — enum: `ideal | minimo | fora_icp`
 - `tipoSdr` — enum: `sdr1_funis | sdr2_social_seller | sdr3_hunter | sdr4_sales_farmer | closer`
 - `sdrResponsavel` — string, ID do SDR (agente ou humano)
-- `closerResponsavel` — string, ID do Closer (humano), opcional até agendamento
+- `closerResponsavel` — string, ID do Closer (humano), opcional a partir de NEGOTIATION
 - `ultimaInteracao` — timestamp da última atividade
 - `quantidadeInteracoes` — contador de interações no ciclo atual
 - `origemUrl` — string, URL de captura com UTM params
 - `tags` — array de strings para segmentação
 - `observacoes` — texto livre, até 1000 caracteres
-- `dataAgendamento` — timestamp, preenchido quando transita para `agendado`
-- `dataUltimoFollowUp` — timestamp do último follow-up enviado
+- `dataTrialInicio` — timestamp, preenchido quando transita para TRIAL
+- `dataTrialFim` — timestamp, calculado como dataTrialInicio + 14 dias
 
 **Eventos emitidos:**
-- `LeadCapturadoEvent` — lead criado
-- `LeadPrimeiraInteracaoEvent` — primeiro contato feito
-- `LeadFollowUpRealizadoEvent` — follow-up enviado
-- `LeadAgendadoEvent` — reunião agendada
-- `LeadNoShowEvent` — lead não compareceu
-- `LeadReagendadoEvent` — reagendamento ocorreu
-- `LeadHandoffParaCloserEvent` — lead transferido para o Closer
-- `LeadEmNegociacaoEvent` — Closer iniciou negociação
-- `LeadVendaSinalEvent` — sinal pago
-- `LeadVendaConcluidaEvent` — pagamento total confirmado
-- `LeadPerdidoEvent` — lead perdido
-- `LeadReativadoEvent` — lead reativado
-- `LeadSalesFarmingEvent` — lead entrou em ciclo de repescagem
-- `LeadOnboardingIniciadoEvent` — cliente em onboarding
-- `LeadRenovacaoProximaEvent` — renovação próxima
+- `LeadCapturadoEvent` — lead criado em PROSPECT
+- `LeadQualificadoEvent` — lead transitou para QUALIFIED
+- `LeadTrialIniciadoEvent` — lead iniciou trial (TRIAL)
+- `LeadNegociacaoIniciadaEvent` — lead em negociação (NEGOTIATION)
+- `LeadConvertidoEvent` — lead fechou (CONVERTED)
+- `LeadPerdidoEvent` — lead perdido (CHURNED)
+- `LeadReativadoEvent` — lead reativado (REACTIVATED)
+- `LeadChurnPorInatividadeEvent` — churn automático por inatividade
 
 ---
 
@@ -681,20 +644,18 @@ interface ILeadPort {
 
 ## 9. Invariantes de Negócio (Resumo)
 
-| # | Invariante | Onde é validada | Playbook FSS |
-|---|---|---|---|
-| 1 | Transições de estado respeitam o grafo FSM dogmático | `MoverPipelineUseCase` | Funil não pode pular etapas |
-| 2 | Lead não pula de `entrada` para `venda_sinal` | `MoverPipelineUseCase` | Qualificação obrigatória |
-| 3 | `follow_up_N` segue ordem sequencial | `ExecutarCadenciaFollowUpUseCase` | Cadência precisa ser respeitada |
-| 4 | Sinal mínimo de 30% do valor total | `RegistrarPagamentoSinalUseCase` | Compromisso financeiro mínimo |
-| 5 | Sinal máximo de 50% do valor total | `RegistrarPagamentoSinalUseCase` | Não onerar o cliente |
-| 6 | Handoff só ocorre em estados permitidos | `RealizarHandoffParaCloserUseCase` | Não queimar o Closer |
-| 7 | Intervalo mínimo entre follow-ups respeitado | `ExecutarCadenciaFollowUpUseCase` | Não spammar o lead |
-| 8 | Lead `perdido` exige 30+ dias sem interação | `MoverPipelineUseCase` | Não desistir cedo demais |
-| 9 | Conversão só existe com pagamento confirmado | `ConfirmarPagamentoUseCase` | Venda só é venda com dinheiro |
-| 10 | Um lead = uma conversão ativa | `IConversaoPort` | Integridade do cliente |
-| 11 | Escada de Valor só calculada para clientes ativos | `CalcularEscadaDeValorUseCase` | Upsell só para quem já comprou |
-| 12 | RLS: dado comercial pertence a UMA propriedade | Todas as portas | Isolamento de tenant |
+| # | Invariante | Onde é validada |
+|---|---|---|
+| 1 | Transições de estado respeitam o grafo FSM simplificado (7 estados) | `MoverPipelineUseCase` |
+| 2 | Lead não pula de `PROSPECT` para `CONVERTED` sem passar por `QUALIFIED` | `MoverPipelineUseCase` |
+| 3 | Sinal mínimo de 30% do valor total | `RegistrarPagamentoSinalUseCase` |
+| 4 | Sinal máximo de 50% do valor total | `RegistrarPagamentoSinalUseCase` |
+| 5 | `TRIAL` com 14+ dias sem interação → `CHURNED` automático | Job agendado |
+| 6 | `NEGOTIATION` com 30+ dias sem resposta → `CHURNED` automático | Job agendado |
+| 7 | Conversão só existe com pagamento confirmado | `ConfirmarPagamentoUseCase` |
+| 8 | Um lead = uma conversão ativa | `IConversaoPort` |
+| 9 | Escada de Valor só calculada para `CONVERTED` | `CalcularEscadaDeValorUseCase` |
+| 10 | RLS: dado comercial pertence a UMA propriedade | Todas as portas |
 
 ---
 
@@ -716,15 +677,13 @@ interface ILeadPort {
 
 | Código | Mensagem | Contexto |
 |---|---|---|
-| `TRANSICAO_INVALIDA` | A transição solicitada não é permitida no grafo FSM | `MoverPipelineUseCase` |
+| `TRANSICAO_INVALIDA` | A transição solicitada não é permitida no grafo FSM (7 estados) | `MoverPipelineUseCase` |
 | `LEAD_JA_CONVERTIDO` | Este lead já foi convertido | `CapturarLeadUseCase` |
 | `SCORE_INSUFICIENTE` | Score mínimo para qualificação é 30 | `QualificarLeadUseCase` |
 | `ICP_FIT_INSUFICIENTE` | Lead não se encaixa no ICP mínimo | `QualificarLeadUseCase` |
-| `INTERVALO_FOLLOWUP_INVALIDO` | Intervalo mínimo entre follow-ups não respeitado | `ExecutarCadenciaFollowUpUseCase` |
-| `HANDOFF_NAO_PERMITIDO` | Handoff só pode ocorrer nos estados `agendado` ou `em_negociacao` | `RealizarHandoffParaCloserUseCase` |
 | `SINAL_ACIMA_MAXIMO` | Sinal não pode exceder 50% do valor total | `RegistrarPagamentoSinalUseCase` |
 | `SINAL_ABAIXO_MINIMO` | Sinal mínimo é 30% do valor total | `RegistrarPagamentoSinalUseCase` |
-| `LEAD_NAO_ATIVO` | Escada de Valor só pode ser calculada para clientes ativos | `CalcularEscadaDeValorUseCase` |
+| `LEAD_NAO_ATIVO` | Escada de Valor só pode ser calculada para `CONVERTED` | `CalcularEscadaDeValorUseCase` |
 | `LEAD_NOT_FOUND` | Lead não encontrado | `ILeadPort` |
 | `PROPOSTA_NOT_FOUND` | Proposta não encontrada | `IPropostaPort` |
 | `PROPOSTA_EXPIRED` | Proposta expirada | `AceitarPropostaUseCase` |
@@ -754,6 +713,80 @@ interface ILeadPort {
 
 > **This specification is the contract.** The Commercial Context v2.0 é o sistema límbico do ZEHLA — onde leads viram clientes, vendas viram receita e a máquina comercial opera em escala previsível.
 >
-> O Playbook Interno de Estruturação Comercial (Full Sales System) é a fonte de verdade de negócio. A FSM é dogmática. Os handoffs são explícitos. Os eventos são o sistema nervoso.
+> O Playbook Interno de Estruturação Comercial (Full Sales System) é a fonte de verdade de negócio. A FSM consolidada (7 estados) é o core. O Apêndice A preserva a FSM expandida (17 estados) para referência futura.
 >
 > *Nenhuma linha de controlador, banco ou framework será escrita antes da homologação destes contratos.*
+
+---
+
+## Apêndice A — FSM Expandida (17 Estados / Advanced Mode)
+
+Este apêndice preserva a especificação granular original para referência quando o volume de leads justificar a complexidade adicional.
+
+### A.1 Pipeline Completo (Pré-Vendas + Vendas + Pós-Vendas)
+
+```
+PRÉ-VENDAS (Zé-Sales / IA)
+──────────────────────────────────────────────
+    Entrada → Primeira Interação → Follow-up 1 → Follow-up 2 → Follow-up 3 → Agendamento
+                                                                                  │
+                                                                    (Reagendamento ← ┘)
+                                                                                  │
+                                                                       Transferência de SDR
+                                                                                  │
+                                                                            ┌─────┴──────┐
+                                                                            │            │
+                                                                       Compareceu    No-Show
+                                                                            │
+VENDAS (Closer / Humano)                                                    │
+──────────────────────────────────────────────                              │
+                                                                           │
+                                                                 Agendado (reunião de fechamento)
+                                                                      │              │
+                                                                 Venda c/        Perdeu
+                                                                 Sinal
+                                                                   │
+                                                            Venda Concluída
+                                                                   │
+PÓS-VENDAS (Zé-Onboarding)                                              │
+──────────────────────────────────────────────                         │
+                                                             Onboarding
+                                                                   │
+                                                          Acompanhamento
+                                                                   │
+                                                          Renovação
+```
+
+### A.2 Estados do Lead (Formal — 17 Estados)
+
+| Estado | Setor | Descrição |
+|---|---|---|
+| `entrada` | Pré-Vendas | Lead capturado, nenhuma ação tomada |
+| `primeira_interacao` | Pré-Vendas | Zé-Sales fez o primeiro contato |
+| `follow_up_1` | Pré-Vendas | Primeiro follow-up da cadência |
+| `follow_up_2` | Pré-Vendas | Segundo follow-up da cadência |
+| `follow_up_3` | Pré-Vendas | Terceiro follow-up da cadência |
+| `agendado` | Pré-Vendas | Lead agendou reunião com o Closer |
+| `reagendado` | Pré-Vendas | Lead reagendou a reunião |
+| `no_show` | Pré-Vendas | Lead não compareceu à reunião |
+| `transferido_sdr` | Pré-Vendas | Lead transferido entre SDRs |
+| `em_negociacao` | Vendas | Closer está conduzindo a reunião de fechamento |
+| `venda_sinal` | Vendas | Lead pagou o sinal, venda garantida |
+| `venda_concluida` | Vendas | Pagamento total confirmado |
+| `perdido` | Vendas | Lead recusou ou desistiu |
+| `em_onboarding` | Pós-Vendas | Cliente em processo de ambientação |
+| `acompanhamento` | Pós-Vendas | Cliente ativo, em uso do produto |
+| `renovacao` | Pós-Vendas | Próximo do vencimento, em negociação de renovação |
+| `sales_farming` | Repescagem | Lead frio sendo reaproximado periodicamente |
+
+### A.3 Transições (17 Estados)
+
+```
+entrada → primeira_interacao → follow_up_1 → follow_up_2 → follow_up_3 → agendado
+agendado ↔ reagendado | agendado → no_show → reagendado
+agendado → transferido_sdr → agendado
+agendado → em_negociacao → venda_sinal → venda_concluida → em_onboarding → acompanhamento
+acompanhamento → renovacao → acompanhamento
+qualquer → perdido → entrada (reativação)
+qualquer (30+ dias inativo) → sales_farming → primeira_interacao | perdido
+```
