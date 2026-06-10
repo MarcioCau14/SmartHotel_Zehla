@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { HMACValidator } from '@/infrastructure/hardening/HMACValidator';
 import { webhookRateGuard } from '@/lib/security/rate-limit-webhook';
-import { AtualizarStatusEntregaUseCase } from '@/application/comercial/use-cases/AtualizarStatusEntregaUseCase';
-import { PrismaLeadRepository } from '@/infrastructure/persistence/comercial/PrismaLeadRepository';
-import { prisma } from '@/lib/prisma';
+import { trackingEventsQueue } from '@/lib/queues';
 
 /**
  * ZEHLA WEBHOOK DELIVERY EVENTS
  * Recebe eventos de status de entrega de mensagens (SENT, DELIVERED, READ, FAILED) com blindagem Zero-Trust.
+ * Os eventos são enfileirados no BullMQ para processamento assíncrono mitigando exaustão de conexões no Supabase.
  */
 export async function POST(req: NextRequest) {
   // 1. Defesa de Borda / Rate Limit
@@ -44,25 +43,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Bad Request: Missing required fields' }, { status: 400 });
     }
 
-    // 5. Instanciar Caso de Uso (Controller Anêmico)
-    const repository = new PrismaLeadRepository(prisma);
-    const useCase = new AtualizarStatusEntregaUseCase(repository);
-
-    const result = await useCase.execute({
+    // 5. Enfileirar o evento no BullMQ para processamento assíncrono com concorrência limitada (limite de 5)
+    await trackingEventsQueue.add('process-delivery-status', {
       leadId,
       propriedadeId,
       status
     });
 
-    if (result.isFail) {
-      return NextResponse.json({ error: result.error.message }, { status: 422 });
-    }
-
     return NextResponse.json({
       success: true,
-      status: 'processed',
-      leadId: result.value.id
-    }, { status: 200 });
+      status: 'queued',
+      message: 'Delivery event received and queued'
+    }, { status: 202 });
 
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Internal Server Error';

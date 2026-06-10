@@ -132,4 +132,15 @@ export const campaignOutboundQueue = new Queue(QUEUE_NAMES.CAMPAIGN_OUTBOUND, {
   },
 });
 
+export const trackingEventsQueue = new Queue('tracking-events', {
+  ...queueOptions,
+  defaultJobOptions: {
+    ...queueOptions.defaultJobOptions,
+    attempts: 3,
+    backoff: { type: 'exponential', delay: 5000 },
+    removeOnComplete: { count: 1000 },
+    removeOnFail: { count: 500 },
+  },
+});
+
 
