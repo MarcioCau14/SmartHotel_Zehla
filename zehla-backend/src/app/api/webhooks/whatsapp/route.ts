@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyHmacSignature } from '../../../../infrastructure/http/auth/hmacAuth'
+import { webhookRateGuard } from '../../../../lib/security/rate-limit-webhook'
 
 export async function POST(request: NextRequest) {
+  const guard = await webhookRateGuard(request)
+  if (guard) return guard
+
   try {
     const rawBody = await request.text()
     const signature = request.headers.get('X-Hub-Signature-256') || request.headers.get('X-WhatsApp-Signature') || ''

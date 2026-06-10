@@ -46,6 +46,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Secret scan (truffleHog)
+        run: |
+          curl -sSfL https://github.com/trufflesecurity/trufflehog/releases/latest/download/trufflehog_linux_amd64.tar.gz | tar xz
+          ./trufflehog filesystem --no-verification --fail ./
+        continue-on-error: true
+
       - name: pnpm audit
         run: pnpm audit --audit-level=high
         continue-on-error: true

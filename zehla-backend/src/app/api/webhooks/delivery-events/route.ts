@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { WebhookSigner } from '@/lib/delivery/services/webhook-signer';
 import { IdempotencyGuard } from '@/lib/delivery/services/idempotency-guard';
+import { webhookRateGuard } from '@/lib/security/rate-limit-webhook';
 
 /**
  * ZCC WEBHOOK RECEIVER
@@ -8,6 +9,9 @@ import { IdempotencyGuard } from '@/lib/delivery/services/idempotency-guard';
  */
 
 export async function POST(req: NextRequest) {
+  const guard = await webhookRateGuard(req)
+  if (guard) return guard
+
   try {
     const signature = req.headers.get('x-zehla-signature');
     const timestamp = parseInt(req.headers.get('x-zehla-timestamp') || '0');

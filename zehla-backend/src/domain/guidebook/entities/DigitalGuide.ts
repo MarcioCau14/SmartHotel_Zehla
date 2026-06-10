@@ -1,6 +1,7 @@
-import { Result } from '../../shared/Result'
 import { GuideSection } from '../value-objects/GuideSection'
 import { GuideStatus } from '../enums'
+import { Result } from '../../shared/Result'
+import type { GuidebookError } from '../errors'
 
 const STATUS_TRANSICOES: Record<GuideStatus, GuideStatus[]> = {
   rascunho: ['publicado', 'arquivado'],
@@ -40,15 +41,15 @@ export class DigitalGuide {
     Object.freeze(this)
   }
 
-  static create(props: DigitalGuideProps): Result<DigitalGuide, Error> {
+  static create(props: DigitalGuideProps): Result<DigitalGuide, GuidebookError> {
     if (!props.id || props.id.trim().length === 0) {
-      return Result.fail(new Error('ID do guia é obrigatório'))
+      return Result.fail({ code: 'ID_REQUIRED', field: 'guide_id' })
     }
     if (!props.propertyId || props.propertyId.trim().length === 0) {
-      return Result.fail(new Error('ID da propriedade é obrigatório'))
+      return Result.fail({ code: 'ID_REQUIRED', field: 'property_id' })
     }
     if (!props.sections || props.sections.length === 0) {
-      return Result.fail(new Error('Guia precisa ter ao menos uma seção'))
+      return Result.fail({ code: 'LOCALIZED_CONTENT_REQUIRED', detail: 'ao menos uma seção' })
     }
 
     const events = [
@@ -69,10 +70,10 @@ export class DigitalGuide {
     return new DigitalGuide(props)
   }
 
-  addSection(section: GuideSection): Result<DigitalGuide, Error> {
+  addSection(section: GuideSection): Result<DigitalGuide, GuidebookError> {
     const exists = this.sections.some(s => s.id === section.id)
     if (exists) {
-      return Result.fail(new Error('Seção já existe no guia'))
+      return Result.fail({ code: 'SECTION_ALREADY_EXISTS', sectionId: section.id })
     }
     const newSections = [...this.sections, section].sort((a, b) => a.order - b.order)
     const newEvents = [...this._events, {
@@ -91,10 +92,10 @@ export class DigitalGuide {
     }, newEvents))
   }
 
-  removeSection(sectionId: string): Result<DigitalGuide, Error> {
+  removeSection(sectionId: string): Result<DigitalGuide, GuidebookError> {
     const section = this.sections.find(s => s.id === sectionId)
     if (!section) {
-      return Result.fail(new Error('Seção não encontrada no guia'))
+      return Result.fail({ code: 'SECTION_NOT_FOUND', sectionId })
     }
     const newSections = this.sections.filter(s => s.id !== sectionId)
     const newEvents = [...this._events, {
@@ -112,16 +113,16 @@ export class DigitalGuide {
     }, newEvents))
   }
 
-  reorderSections(orderedIds: string[]): Result<DigitalGuide, Error> {
+  reorderSections(orderedIds: string[]): Result<DigitalGuide, GuidebookError> {
     if (orderedIds.length !== this.sections.length) {
-      return Result.fail(new Error('Número de IDs não corresponde ao número de seções'))
+      return Result.fail({ code: 'REORDER_MISMATCH', expected: this.sections.length, received: orderedIds.length })
     }
     const sectionMap = new Map(this.sections.map(s => [s.id, s]))
     const newSections: GuideSection[] = []
     for (let i = 0; i < orderedIds.length; i++) {
       const section = sectionMap.get(orderedIds[i])
       if (!section) {
-        return Result.fail(new Error(`Seção ${orderedIds[i]} não encontrada`))
+        return Result.fail({ code: 'SECTION_NOT_FOUND', sectionId: orderedIds[i] })
       }
       const reorderedResult = GuideSection.create({
         ...section.props,
@@ -138,9 +139,9 @@ export class DigitalGuide {
     }, [...this._events]))
   }
 
-  publish(): Result<DigitalGuide, Error> {
+  publish(): Result<DigitalGuide, GuidebookError> {
     if (!STATUS_TRANSICOES[this.status].includes('publicado')) {
-      return Result.fail(new Error(`Guia ${this.status} não pode ser publicado`))
+      return Result.fail({ code: 'INVALID_TRANSITION', from: this.status, to: 'publicado' })
     }
     const newEvents = [...this._events, {
       type: 'GuiaPublicadoEvent',
@@ -155,9 +156,9 @@ export class DigitalGuide {
     }, newEvents))
   }
 
-  archive(): Result<DigitalGuide, Error> {
+  archive(): Result<DigitalGuide, GuidebookError> {
     if (!STATUS_TRANSICOES[this.status].includes('arquivado')) {
-      return Result.fail(new Error(`Guia ${this.status} não pode ser arquivado`))
+      return Result.fail({ code: 'INVALID_TRANSITION', from: this.status, to: 'arquivado' })
     }
     return Result.ok(new DigitalGuide({
       ...this, status: 'arquivado', updatedAt: new Date(),

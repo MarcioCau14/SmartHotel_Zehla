@@ -5,12 +5,13 @@ import { Score } from '../value-objects/Score'
 import { Canal } from '../value-objects/Canal'
 
 export type LeadStatus = 
-  | 'novo'
-  | 'qualificado'
-  | 'propostado'
-  | 'convertido'
-  | 'perdido'
-  | 'inativo'
+  | 'prospect'
+  | 'qualified'
+  | 'trial'
+  | 'negotiation'
+  | 'converted'
+  | 'churned'
+  | 'reactivated'
 
 export interface LeadProps {
   id: string
@@ -65,9 +66,9 @@ export class Lead {
       return Result.fail(new Error('Capture date is required'))
     }
     
-    // Nome é obrigatório para qualquer status exceto 'novo'
-    if (props.status && props.status !== 'novo' && (!props.nome || props.nome.trim().length < 2)) {
-      return Result.fail(new Error('Name must be at least 2 characters for status != novo'))
+    // Nome é obrigatório para qualquer status exceto 'prospect'
+    if (props.status && props.status !== 'prospect' && (!props.nome || props.nome.trim().length < 2)) {
+      return Result.fail(new Error('Name must be at least 2 characters for status != prospect'))
     }
     
     // Email é obrigatório se fornecido (para validação)
@@ -97,7 +98,7 @@ export class Lead {
     }
     
     // Status: deve ser um dos valores válidos
-    const validStatuses: LeadStatus[] = ['novo', 'qualificado', 'propostado', 'convertido', 'perdido', 'inativo']
+    const validStatuses: LeadStatus[] = ['prospect', 'qualified', 'trial', 'negotiation', 'converted', 'churned', 'reactivated']
     if (props.status && !validStatuses.includes(props.status)) {
       return Result.fail(new Error(`Invalid status: ${props.status}`))
     }
@@ -122,7 +123,7 @@ export class Lead {
       props.telefone?.trim() || undefined,
       props.documento,
       props.score,
-      props.status || 'novo',
+      props.status || 'prospect',
       props.origemUrl?.trim() || undefined,
       props.tags?.filter(t => t.trim().length > 0) || undefined,
       props.ultimaInteracao
@@ -144,114 +145,76 @@ export class Lead {
     return this.status === 'convertido'
   }
 
-  get ehPerdido(): boolean {
-    return this.status === 'perdido'
+  get ehChurn(): boolean {
+    return this.status === 'churned'
   }
 
   get ehAtivo(): boolean {
-    return this.status === 'novo' || this.status === 'qualificado' || this.status === 'propostado'
+    return this.status === 'prospect' || this.status === 'qualified' || this.status === 'trial' || this.status === 'negotiation'
   }
 
-  // Métodos de transição de estado
   qualificar(): Result<Lead, Error> {
+    if (this.status !== 'prospect') {
+      return Result.fail(new Error('Only prospect leads can be qualified'))
+    }
     if (!this.score) {
       return Result.fail(new Error('Lead must have a score to be qualified'))
     }
     if (!this.score.isQualificado()) {
       return Result.fail(new Error('Lead score is insufficient for qualification'))
     }
-    
-    return Result.ok(new Lead(
-      this.id,
-      this.canal,
-      this.propriedadeId,
-      this.dataCaptura,
-      this.nome,
-      this.email,
-      this.telefone,
-      this.documento,
-      this.score,
-      'qualificado',
-      this.origemUrl,
-      this.tags,
-      new Date() // atualiza ultimaInteracao
-    ))
+
+    return this._transition('qualified')
   }
 
-  propostar(): Result<Lead, Error> {
-    if (this.status !== 'qualificado') {
-      return Result.fail(new Error('Only qualified leads can be proposed'))
+  iniciarTrial(): Result<Lead, Error> {
+    if (this.status !== 'qualified') {
+      return Result.fail(new Error('Only qualified leads can start trial'))
     }
-    
-    return Result.ok(new Lead(
-      this.id,
-      this.canal,
-      this.propriedadeId,
-      this.dataCaptura,
-      this.nome,
-      this.email,
-      this.telefone,
-      this.documento,
-      this.score,
-      'propostado',
-      this.origemUrl,
-      this.tags,
-      new Date()
-    ))
+    return this._transition('trial')
+  }
+
+  negociar(): Result<Lead, Error> {
+    if (this.status !== 'trial') {
+      return Result.fail(new Error('Only trial leads can enter negotiation'))
+    }
+    return this._transition('negotiation')
   }
 
   converter(): Result<Lead, Error> {
-    if (this.status !== 'propostado') {
-      return Result.fail(new Error('Only proposed leads can be converted'))
+    if (this.status !== 'negotiation') {
+      return Result.fail(new Error('Only negotiation leads can be converted'))
     }
     if (!this.documento) {
       return Result.fail(new Error('Document is required for conversion (LGPD)'))
     }
-    
-    return Result.ok(new Lead(
-      this.id,
-      this.canal,
-      this.propriedadeId,
-      this.dataCaptura,
-      this.nome,
-      this.email,
-      this.telefone,
-      this.documento,
-      this.score,
-      'convertido',
-      this.origemUrl,
-      this.tags,
-      new Date()
-    ))
+    return this._transition('converted')
   }
 
-  perder(motivo?: string): Result<Lead, Error> {
-    if (this.status === 'convertido') {
-      return Result.fail(new Error('Converted leads cannot be marked as lost'))
+  churn(motivo?: string): Result<Lead, Error> {
+    if (this.status === 'converted') {
+      return this._transition('churned')
     }
-    
-    return Result.ok(new Lead(
-      this.id,
-      this.canal,
-      this.propriedadeId,
-      this.dataCaptura,
-      this.nome,
-      this.email,
-      this.telefone,
-      this.documento,
-      this.score,
-      'perdido',
-      this.origemUrl,
-      this.tags,
-      new Date()
-    ))
+    if (this.status === 'trial') {
+      return this._transition('churned')
+    }
+    if (this.status === 'negotiation') {
+      return this._transition('churned')
+    }
+    if (this.status === 'reactivated') {
+      return this._transition('churned')
+    }
+    return Result.fail(new Error(`Cannot churn from status ${this.status}`))
   }
 
   reativar(): Result<Lead, Error> {
-    if (this.status !== 'perdido') {
-      return Result.fail(new Error('Only lost leads can be reactivated'))
+    if (this.status !== 'churned') {
+      return Result.fail(new Error('Only churned leads can be reactivated'))
     }
-    
+    return this._transition('reactivated')
+  }
+
+  private _transition(newStatus: LeadStatus): Result<Lead, Error> {
     return Result.ok(new Lead(
       this.id,
       this.canal,
@@ -262,7 +225,7 @@ export class Lead {
       this.telefone,
       this.documento,
       this.score,
-      'novo',
+      newStatus,
       this.origemUrl,
       this.tags,
       new Date()

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getBasePrisma } from '../../../../lib/prisma'
 import { verifyHmacSignature } from '../../../../infrastructure/http/auth/hmacAuth'
+import { webhookRateGuard } from '../../../../lib/security/rate-limit-webhook'
 import { PrismaLeadRepository } from '../../../../infrastructure/persistence/comercial/PrismaLeadRepository'
 import { PrismaPropostaRepository } from '../../../../infrastructure/persistence/comercial/PrismaPropostaRepository'
 import { PrismaPacoteRepository } from '../../../../infrastructure/persistence/comercial/PrismaPacoteRepository'
@@ -15,6 +16,9 @@ import { ConfirmarPagamentoUseCase } from '../../../../application/comercial/use
 import { ZeSalesCognitiveService } from '../../../../application/comercial/cognitive/ZeSalesCognitiveService'
 
 export async function POST(request: NextRequest) {
+  const guard = await webhookRateGuard(request)
+  if (guard) return guard
+
   try {
     const rawBody = await request.text()
     const signature = request.headers.get('X-Payment-Signature') || ''

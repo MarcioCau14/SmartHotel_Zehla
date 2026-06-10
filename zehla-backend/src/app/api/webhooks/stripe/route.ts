@@ -1,12 +1,21 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { sendWhatsAppAlert } from '@/lib/notifications';
+import { checkRateLimit, limiters } from '@/lib/security/rate-limit';
 
 // Ensure Stripe is initialized only if the key is provided
 const stripeKey = process.env.STRIPE_SECRET_KEY || '';
 const stripe = stripeKey ? new Stripe(stripeKey, { apiVersion: '2023-10-16' as any }) : null;
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || req.headers.get('x-real-ip')
+    || 'unknown'
+  const rl = await checkRateLimit(limiters.webhook, `wh:${ip}`)
+  if (!rl.success) {
+    return NextResponse.json({ error: 'Too many requests', code: 'RATE_LIMITED' }, { status: 429 })
+  }
+
   try {
     const body = await req.text();
     const signature = req.headers.get('stripe-signature') as string;

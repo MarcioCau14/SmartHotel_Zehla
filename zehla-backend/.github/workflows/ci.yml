@@ -95,6 +95,20 @@ jobs:
           DATABASE_URL: postgresql://zehla:zehla_secret_2026@localhost:5432/zehla_db
           REDIS_URL: redis://localhost:6379
 
+      - name: Prisma migration diff check
+        run: |
+          pnpm prisma migrate diff \
+            --from-migrations prisma/migrations \
+            --to-schema-datamodel prisma/schema.prisma \
+            --exit-code
+        continue-on-error: true
+
+      - name: Secret scan (truffleHog)
+        run: |
+          curl -sSfL https://github.com/trufflesecurity/trufflehog/releases/latest/download/trufflehog_linux_amd64.tar.gz | tar xz
+          ./trufflehog filesystem --no-verification --fail ./
+        continue-on-error: true
+
       - name: Build
         run: pnpm build
         env:

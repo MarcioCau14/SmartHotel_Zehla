@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { webhookRateGuard } from '@/lib/security/rate-limit-webhook'
 
 export async function POST(request: NextRequest) {
+  const guard = await webhookRateGuard(request)
+  if (guard) return guard
+
   try {
     const body = await request.json()
     const { id, status, data } = body

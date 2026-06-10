@@ -199,13 +199,26 @@ Diagnóstico: Código com 918 erros tsc (apenas 2 arquivos externos),
 FSM SPEC atualizada mas código de domínio ainda com estados antigos,
 134 testes verdes, 6 dependem de PG local.
 
-CRÍTICOS (Semanas 1-2):
+FEITO (SB33.1 — Session Atual):
+  ✓ rate-limiter-flexible instalado + limiters por camada (api: 50/60s,
+    campaign: 1/600s, webhook: 100/60s, auth: 10/60s)
+  ✓ Webhook rate limiting: whatsapp, stripe, pagamento, pagarme, pix,
+    delivery-events — todos com IP-based rate guard (429 c/ Retry-After)
+  ✓ Distribuited error types para guidebook, marketing, comercial
+  ✓ FSM propagada: LeadStatus.ts com 7 estados (PROSPECT→REACTIVATED)
+    + transições validadas + FunnelStage atualizada
+  ✓ Lead.ts (comercial): estados 'prospect'|'qualified'|'trial'|'negotiation'
+    |'converted'|'churned'|'reactivated' + métodos novos (iniciarTrial,
+    negociar, churn) + _transition helper
+  ✓ CI/CD hardening: truffleHog secret scan + prisma migrate diff check
+
+PRÓXIMOS (SB33 Continuation):
   [ ] 1. Subir PostgreSQL local (docker compose up PG + Redis)
-       → validar 10 testes SB21 integration em CI
-  [ ] 2. Propagar FSM 7 estados da SPEC para o código:
-       → Lead.ts: substituir estados legacy por PROSPECT|QUALIFIED|TRIAL|...
-       → Use cases: transições PROSPECT→QUALIFIED (scoring ≥0.7) etc
-       → Remover estados órfãos do domínio (manter apenas 7)
+       → validar 10 testes SB21 + 3 pentest cross-tenant
+  [ ] 2. Propagar FSM do código de domínio para use cases:
+       → CapturarLeadUseCase → usar PROSPECT
+       → QualificarLeadUseCase → PROSPECT→QUALIFIED
+       → + conversão dos use cases existentes
   [ ] 3. Rate limit + throttling na Evolution API:
        → 1 msg/3s por phone (Meta anti-spam)
        → Se 429 da Evolution, exponential backoff na fila (já existe)
@@ -214,33 +227,21 @@ CRÍTICOS (Semanas 1-2):
   [ ] 5. Conectar webhook de delivery status da Evolution API
        → getDeliveryStatus() atual: stub — precisa polling ou webhook real
        → Novo worker: campaign-delivery-monitor
-
-IMPORTANTES (Semanas 3-4):
   [ ] 6. Revisão LGPD: opt-out explícito em campanhas massivas
        → Novo campo marketing_campanha.opt_out_links
        → Bloqueio automático se lead opt-out
-  [ ] 7. Retry-After header consistente em todos os rate limits
-       → rateLimit() já retorna retryAfter, propagar nas responses
-  [ ] 8. Dashboard de campanhas no ZCC
+  [ ] 7. Dashboard de campanhas no ZCC
        → Expor: dispatched, delivered, failed, opt-out count por campanha
-
-MÉDIO PRAZO (SB34):
-  [ ] 9. Multi-idioma Guidebook (SmartAI + locale resolver)
-  [ ] 10. ROICalculator no frontend (dashboard property)
-  [ ] 11. Template builder de campanhas (drag & drop)
-  [ ] 12. A/B testing de templates de mensagem
-
-LONGO PRAZO:
-  [ ] 13. Expansão LATAM/Europa
-  [ ] 14. Channel Manager (Booking, Airbnb, Expedia)
-  [ ] 15. Marketplace integrações
-  [ ] 16. Swarm auto-gestionável
+  [ ] 8. Prisma multi-file schema (schema/*.prisma) — pendente
+  [ ] 9. Refatorar Result<_, string> remanescente em domínios legados
+       (property, room, reservation, financeiro, lead/lead, swarm)
+  [ ] 10. Multi-idioma Guidebook, ROI Calculator frontend, template builder
 
 ═══════════════════════════════════════════════════════════════════════════════
 MÉTRICAS DE CÓDIGO
 ═══════════════════════════════════════════════════════════════════════════════
 
-Commits: 165+1 | TS: ~37k LOC | Testes: 134 suites | BCs: 17 (7 Core + 10 Labs)
+Commits: 166 | TS: ~37k LOC | Testes: 134 suites | BCs: 17 (7 Core + 10 Labs)
 Modelos: 124 | Enums: 28 | Filas: 8 | Workers: 8 | Rotas: 120+
 Testes Verdes: 134 suites / 1658 tests (--7 que precisam PG local)
 Dependências: ~50 | Docker: 5 svc
@@ -284,5 +285,5 @@ Segurança:
   → DLQ Alert: WhatsApp admin
 
 ═══════════════════════════════════════════════════════════════════════════════
-║  FIM — SB32.2 HARDENING | Junho 2026 | Atualizar na próxima SB             ║
+║  FIM — SB33.1 RATE LIMIT + FSM + RESULT | Junho 2026                       ║
 ═══════════════════════════════════════════════════════════════════════════════
