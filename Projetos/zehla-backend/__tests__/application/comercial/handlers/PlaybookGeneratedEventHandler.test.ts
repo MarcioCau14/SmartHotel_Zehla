@@ -23,7 +23,8 @@ describe('PlaybookGeneratedEventHandler Unit Tests', () => {
         score: 85,
         category: 'Brains',
         lgpdRisk: 'LOW',
-        playbookUrl: '/playbooks/playbook_prop_123.md'
+        playbookUrl: '/playbooks/playbook_prop_123.md',
+        roiSavings: 1500,
       }
     }
 
@@ -42,7 +43,8 @@ describe('PlaybookGeneratedEventHandler Unit Tests', () => {
         score: 85,
         category: 'Brains',
         lgpdRisk: 'LOW',
-        playbookUrl: '/playbooks/playbook_prop_123.md'
+        playbookUrl: '/playbooks/playbook_prop_123.md',
+        roiSavings: 1500,
       }
     })
 

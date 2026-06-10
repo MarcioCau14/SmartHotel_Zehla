@@ -2,6 +2,7 @@ import { Result } from '../../../shared/Result'
 import { IComercialLeadPort } from '../ports/IComercialLeadPort'
 import { IMessagingGateway } from '../../../domain/marketing/ports/IMessagingGateway'
 import { DomainEventPublisher } from '../../../domain/shared/events/DomainEventPublisher'
+import { CognitiveCopywriterService } from '../../../domain/comercial/cognitive/CognitiveCopywriterService'
 
 export interface ProcessFollowUpInput {
   leadId: string
@@ -11,6 +12,7 @@ export interface ProcessFollowUpInput {
     category: string
     lgpdRisk: string
     playbookUrl: string
+    roiSavings?: number
   }
 }
 
@@ -18,6 +20,7 @@ export class ProcessFollowUpUseCase {
   constructor(
     private readonly leadPort: IComercialLeadPort,
     private readonly messagingGateway: IMessagingGateway,
+    private readonly copywriterService: CognitiveCopywriterService,
     private readonly publisher?: DomainEventPublisher
   ) {}
 
@@ -39,11 +42,20 @@ export class ProcessFollowUpUseCase {
 
     if (input.cadenceType === 'ENGAJAMENTO' && input.roiData) {
       const nome = lead.nome || 'Parceiro'
-      const { score, category, playbookUrl } = input.roiData
-      
-      messageContent = `Olá ${nome}! Analisamos o perfil da sua propriedade e geramos o seu Playbook de Prontidão IA. ` +
-        `Seu score de maturidade é ${score}/100 (Categoria: ${category}). ` +
-        `Acesse o seu diagnóstico completo e estimativa de ROI aqui: ${playbookUrl}`
+      const { lgpdRisk, playbookUrl, roiSavings } = input.roiData
+
+      const copywriterResult = await this.copywriterService.generate({
+        leadName: nome,
+        roiSavings: roiSavings || 0,
+        lgpdRisk: lgpdRisk,
+        playbookUrl: playbookUrl,
+      })
+
+      if (copywriterResult.isFail) {
+        return Result.fail(copywriterResult.error)
+      }
+
+      messageContent = copywriterResult.value
     } else {
       const nome = lead.nome || 'Parceiro'
       messageContent = `Olá ${nome}, gostaríamos de dar continuidade ao nosso contato. Como estão as coisas por aí?`

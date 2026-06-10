@@ -152,3 +152,14 @@ export function LeadSalesFarmingEvent(leadId: string, payload: {
 }): DomainEvent {
   return criarEvento(leadId, 'LeadSalesFarmingEvent', payload as unknown as Record<string, unknown>)
 }
+
+// --- ZRT Readiness ---
+export function PlaybookGeneratedEvent(leadId: string, payload: {
+  score: number
+  category: string
+  lgpdRisk: string
+  playbookUrl: string
+  roiSavings?: number
+}): DomainEvent {
+  return criarEvento(leadId, 'PlaybookGeneratedEvent', payload as unknown as Record<string, unknown>)
+}

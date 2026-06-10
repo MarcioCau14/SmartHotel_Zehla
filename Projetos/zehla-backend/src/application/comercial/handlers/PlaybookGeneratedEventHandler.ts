@@ -14,7 +14,7 @@ export class PlaybookGeneratedEventHandler implements IDomainEventHandler {
     }
 
     const leadId = event.aggregateId;
-    const { score, category, lgpdRisk, playbookUrl } = event.payload;
+    const { score, category, lgpdRisk, playbookUrl, roiSavings } = event.payload;
 
     console.log(`[Event Handler] Playbook gerado para Lead ${leadId}. Agendando follow-up.`);
 
@@ -36,6 +36,7 @@ export class PlaybookGeneratedEventHandler implements IDomainEventHandler {
           category,
           lgpdRisk,
           playbookUrl,
+          roiSavings: roiSavings || 0,
         },
       },
       {

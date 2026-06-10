@@ -108,6 +108,7 @@ export const handlePlaybookJob = async (job: Job) => {
                 category: assessment.category,
                 lgpdRisk: assessment.lgpdRisk,
                 playbookUrl: `/playbooks/${fileName}`,
+                roiSavings: roi?.totalMonthlyGain || 0,
               });
               await eventBus.publish(event);
               console.log(`🚀 [PLAYBOOK WORKER] Evento de domínio PlaybookGeneratedEvent publicado para o lead ${lead.id}.`);
