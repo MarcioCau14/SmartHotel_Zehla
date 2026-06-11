@@ -143,14 +143,30 @@ export class DigitalGuide {
     if (!STATUS_TRANSICOES[this.status].includes('publicado')) {
       return Result.fail({ code: 'INVALID_TRANSITION', from: this.status, to: 'publicado' })
     }
-    const newEvents = [...this._events, {
-      type: 'GuiaPublicadoEvent',
-      payload: {
-        guiaId: this.id,
-        propertyId: this.propertyId,
-        version: this.version,
+    const newEvents = [
+      ...this._events,
+      {
+        type: 'GuiaPublicadoEvent',
+        payload: {
+          guiaId: this.id,
+          propertyId: this.propertyId,
+          version: this.version,
+        },
       },
-    }]
+      {
+        type: 'DigitalGuidePublishedEvent',
+        payload: {
+          propertyId: this.propertyId,
+          sections: this.sections.map(s => ({
+            id: s.id,
+            sectionType: s.sectionType,
+            icon: s.icon,
+            order: s.order,
+            content: s.content.map(c => ({ ...c })),
+          })),
+        },
+      },
+    ]
     return Result.ok(new DigitalGuide({
       ...this, status: 'publicado', updatedAt: new Date(),
     }, newEvents))

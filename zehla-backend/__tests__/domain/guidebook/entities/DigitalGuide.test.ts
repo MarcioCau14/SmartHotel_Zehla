@@ -150,8 +150,9 @@ describe('DigitalGuide', () => {
   it('should emit event on publish', () => {
     const guide = DigitalGuide.create(validProps).value
     const published = guide.publish().value
-    expect(published.events).toHaveLength(2)
+    expect(published.events).toHaveLength(3)
     expect(published.events[1].type).toBe('GuiaPublicadoEvent')
+    expect(published.events[2].type).toBe('DigitalGuidePublishedEvent')
   })
 
   it('should restore without events', () => {

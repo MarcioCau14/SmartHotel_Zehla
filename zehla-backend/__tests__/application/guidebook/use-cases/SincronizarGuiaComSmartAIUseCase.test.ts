@@ -3,6 +3,7 @@ import { SincronizarGuiaComSmartAIUseCase } from '../../../../src/application/gu
 import { InMemoryDigitalGuideRepository } from '../../../../src/infrastructure/persistence/guidebook/InMemoryDigitalGuideRepository'
 import { DigitalGuide } from '../../../../src/domain/guidebook/entities/DigitalGuide'
 import { GuideSection } from '../../../../src/domain/guidebook/value-objects/GuideSection'
+import { InMemoryZaosMemoryAdapter } from '../../../../src/infrastructure/persistence/memory/InMemoryZaosMemoryAdapter'
 
 describe('SincronizarGuiaComSmartAIUseCase', () => {
   let repo: InMemoryDigitalGuideRepository
@@ -84,5 +85,58 @@ describe('SincronizarGuiaComSmartAIUseCase', () => {
     const result = await useCase.execute('prop-multi')
     expect(result.isOk).toBe(true)
     expect(result.value.languages).toHaveLength(3)
+  })
+
+  it('should split guide sections and store them in memory with proper RLS propertyId', async () => {
+    const memoryAdapter = new InMemoryZaosMemoryAdapter()
+    const syncUseCase = new SincronizarGuiaComSmartAIUseCase(repo, memoryAdapter)
+
+    const sections = [
+      GuideSection.create({
+        id: 'sec-wifi', sectionType: 'wifi', order: 0,
+        content: [
+          { title: 'Wi-Fi', content: 'Senha123', language: 'pt-BR' },
+          { title: 'WiFi', content: 'Pass123', language: 'en' },
+        ],
+      }).value,
+      GuideSection.create({
+        id: 'sec-cafe', sectionType: 'cafe', order: 1,
+        content: [
+          { title: 'Café da Manhã', content: 'Servido das 7h às 10h', language: 'pt-BR' },
+        ],
+      }).value,
+    ]
+
+    const guide = DigitalGuide.create({
+      id: 'guide-rls-test',
+      propertyId: 'pousada-santa-maria',
+      sections,
+    }).value
+
+    await repo.save(guide.publish().value)
+
+    const result = await syncUseCase.execute('pousada-santa-maria')
+    expect(result.isOk).toBe(true)
+
+    // We have 3 localized contents in total (2 in wifi, 1 in cafe)
+    const storedMemoriesResult = await memoryAdapter.getByTenant('pousada-santa-maria')
+    expect(storedMemoriesResult.isOk).toBe(true)
+    const storedMemories = storedMemoriesResult.value
+
+    expect(storedMemories).toHaveLength(3)
+
+    // Check that each stored memory has correct tenantId, pousadaId and metadata
+    for (const memory of storedMemories) {
+      expect(memory.tenantId).toBe('pousada-santa-maria')
+      expect(memory.pousadaId).toBe('pousada-santa-maria')
+      expect(memory.metadata.tenantId).toBe('pousada-santa-maria')
+      expect(memory.metadata.propertyId).toBe('pousada-santa-maria')
+      expect(memory.metadata.guideId).toBe('guide-rls-test')
+    }
+
+    // Check one of the content details
+    const wifiPt = storedMemories.find(m => m.id === 'guide_guide-rls-test_sec_sec-wifi_pt-BR')
+    expect(wifiPt).toBeDefined()
+    expect(wifiPt?.content).toContain('Senha123')
   })
 })
