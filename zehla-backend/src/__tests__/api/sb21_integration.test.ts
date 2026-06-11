@@ -4,6 +4,7 @@ import { NextRequest } from 'next/server'
 import { getBasePrisma } from '../../lib/prisma'
 import { JwtGuard } from '../../infrastructure/hardening/JwtGuard'
 import { buildPost, buildGet, parseResponse } from '../helpers/http-test'
+import { redis } from '../../lib/redis'
 
 // Importações diretas dos Route Handlers (Entrypoints)
 import { POST as conciergePOST } from '../../app/api/hospitalidade/concierge/route'
@@ -227,11 +228,24 @@ describe('ZEHLA PRIME SB21 — Adaptadores de Entrada / Route Handlers HTTP', ()
 
   // ─── 8. SB32: DIGITAL GUIDEBOOK ──────────────────────────────────────────
   describe('Digital Guidebook (SB32): CriarGuiaDigital HTTP', () => {
+    beforeAll(async () => {
+      const bp = getBasePrisma()
+      await bp.guideSection.deleteMany({ where: { guide: { propertyId: PROPERTY_ID } } })
+      await bp.digitalGuide.deleteMany({ where: { propertyId: PROPERTY_ID } })
+    })
+
+    it('GET /api/guidebook deve retornar 404 para propriedade sem guia', async () => {
+      const noGuideReq = buildGet('/api/guidebook', { Authorization: `Bearer ${validToken}` })
+      const res = await guidebookGET(noGuideReq)
+      const { status } = await parseResponse(res)
+      expect(status).toBe(404)
+    })
+
     it('POST /api/guidebook deve criar guia e retornar 201 com token válido', async () => {
       const guideId = `guide_test_${Date.now()}`
       const req = buildPost('/api/guidebook', {
         id: guideId,
-        sections: [{ sectionType: 'wifi', icon: 'wifi', order: 0, content: { pt: 'Senha: 1234', en: 'Password: 1234' } }],
+        sections: [{ sectionType: 'wifi', icon: 'wifi', order: 0, content: [{ title: 'Wi-Fi', content: 'Senha: 1234', language: 'pt-BR' }] }],
       }, { Authorization: `Bearer ${validToken}` })
       const res = await guidebookPOST(req)
       const { status, body } = await parseResponse(res)
@@ -243,23 +257,15 @@ describe('ZEHLA PRIME SB21 — Adaptadores de Entrada / Route Handlers HTTP', ()
     it('POST /api/guidebook deve retornar 409 para guia duplicado na mesma propriedade', async () => {
       const req = buildPost('/api/guidebook', {
         id: `dup_${Date.now()}`,
-        sections: [{ sectionType: 'wifi', icon: 'wifi', order: 0, content: { pt: 'Senha', en: 'Password' } }],
+        sections: [{ sectionType: 'wifi', icon: 'wifi', order: 0, content: [{ title: 'Wi-Fi', content: 'Senha', language: 'pt-BR' }] }],
       }, { Authorization: `Bearer ${validToken}` })
       await guidebookPOST(req)
       const res2 = await guidebookPOST(buildPost('/api/guidebook', {
         id: `dup2_${Date.now()}`,
-        sections: [{ sectionType: 'wifi', icon: 'wifi', order: 0, content: { pt: 'Senha', en: 'Password' } }],
+        sections: [{ sectionType: 'wifi', icon: 'wifi', order: 0, content: [{ title: 'Wi-Fi', content: 'Senha', language: 'pt-BR' }] }],
       }, { Authorization: `Bearer ${validToken}` }))
-      // Segunda criação com mesmo propertyId deve falhar com 409
       const { status } = await parseResponse(res2)
       expect(status).toBe(409)
-    })
-
-    it('GET /api/guidebook deve retornar 404 para propriedade sem guia', async () => {
-      const noGuideReq = buildGet('/api/guidebook', { Authorization: `Bearer ${validToken}` })
-      const res = await guidebookGET(noGuideReq)
-      const { status } = await parseResponse(res)
-      expect(status).toBe(404)
     })
 
     it('POST /api/guidebook deve retornar 400 quando sections está vazio', async () => {
@@ -276,6 +282,8 @@ describe('ZEHLA PRIME SB21 — Adaptadores de Entrada / Route Handlers HTTP', ()
 
     beforeAll(async () => {
       const basePrisma = getBasePrisma()
+      await basePrisma.marketingCampanha.deleteMany({ where: { pousadaId: PROPERTY_ID } })
+      try { await redis.del(`rl:dispatch:${PROPERTY_ID}`) } catch {}
       const camp = await basePrisma.marketingCampanha.create({
         data: {
           id: `dispatch_test_${Date.now()}`,
@@ -289,25 +297,6 @@ describe('ZEHLA PRIME SB21 — Adaptadores de Entrada / Route Handlers HTTP', ()
         },
       })
       campanhaId = camp.id
-    })
-
-    it('POST /api/marketing/campaigns/dispatch deve retornar 202 com token válido', async () => {
-      const req = buildPost('/api/marketing/campaigns/dispatch', {
-        campanhaId,
-        templateId: 'template_promocao',
-        templateVariables: { nome: '{{nome}}' },
-        recipients: [{ id: 'guest-1', name: 'João', phone: '5511999999999', language: 'pt-BR' }],
-      }, { Authorization: `Bearer ${validToken}` })
-      const res = await dispatchPOST(req)
-      const { status, body } = await parseResponse(res)
-      if (status === 429) {
-        // Rate limit pode estar ativo de testes anteriores
-        expect(body.code).toBe('RATE_LIMITED')
-        return
-      }
-      expect(status).toBe(202)
-      expect(body).toHaveProperty('status')
-      expect(body.status).toBe('em_execucao')
     })
 
     it('POST /api/marketing/campaigns/dispatch deve retornar 400 quando campanhaId está ausente', async () => {
@@ -329,6 +318,24 @@ describe('ZEHLA PRIME SB21 — Adaptadores de Entrada / Route Handlers HTTP', ()
       const res = await dispatchPOST(req)
       const { status } = await parseResponse(res)
       expect(status).toBe(404)
+    })
+
+    it('POST /api/marketing/campaigns/dispatch deve retornar 202 com token válido', async () => {
+      const req = buildPost('/api/marketing/campaigns/dispatch', {
+        campanhaId,
+        templateId: 'template_promocao',
+        templateVariables: { nome: '{{nome}}' },
+        recipients: [{ id: 'guest-1', name: 'João', phone: '5511999999999', language: 'pt-BR' }],
+      }, { Authorization: `Bearer ${validToken}` })
+      const res = await dispatchPOST(req)
+      const { status, body } = await parseResponse(res)
+      if (status === 429) {
+        expect(body.code).toBe('RATE_LIMITED')
+        return
+      }
+      expect(status).toBe(202)
+      expect(body).toHaveProperty('status')
+      expect(body.status).toBe('em_execucao')
     })
   })
 

@@ -1,6 +1,5 @@
 import { LLMRequest, LLMResponse } from '../../types'
 
-// Interfaces para o Zehla ML Brain (RAG / Fine-Tuning)
 export interface MLInteractionLog {
   tenantId: string;
   leadId: string;
@@ -9,11 +8,11 @@ export interface MLInteractionLog {
   confidenceScore: number;
   vectorsGenerated: boolean;
 }
+
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434'
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1'
 const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || ''
 
-// Modelos locais disponíveis no Ollama
 const LOCAL_MODELS = {
   general: 'qwen2.5-coder:14b',
   reasoning: 'deepseek-r1:14b',
@@ -22,8 +21,25 @@ const LOCAL_MODELS = {
   fallback: 'glm-4.7-flash:9b'
 }
 
-// Modelo cloud (fallback)
-const CLOUD_MODEL = 'moonshotai/kimi-k2-6'
+interface CloudModelConfig {
+  model: string
+  costPerMInput: number
+  costPerMOutput: number
+}
+
+const AGENT_CLOUD_MODELS: Record<string, CloudModelConfig> = {
+  'ze-sales':     { model: 'moonshotai/kimi-k2-6',               costPerMInput: 0.7448, costPerMOutput: 4.655 },
+  'ze-marketer':  { model: 'openai/gpt-4o-mini',                 costPerMInput: 0.15,   costPerMOutput: 0.60 },
+  'ze-analyst':   { model: 'moonshotai/kimi-k2-6',               costPerMInput: 0.7448, costPerMOutput: 4.655 },
+  'zmg-receive':  { model: 'deepseek/deepseek-chat-v3-0324',     costPerMInput: 0,      costPerMOutput: 0 },
+  'zmg-classify': { model: 'deepseek/deepseek-chat-v3-0324',     costPerMInput: 0,      costPerMOutput: 0 },
+}
+
+const DEFAULT_CLOUD: CloudModelConfig = {
+  model: 'moonshotai/kimi-k2-6',
+  costPerMInput: 0.7448,
+  costPerMOutput: 4.655,
+}
 
 export class LLMRouter {
   private useLocal: boolean = true
@@ -33,7 +49,6 @@ export class LLMRouter {
   async generate(request: LLMRequest): Promise<LLMResponse> {
     const startTime = Date.now()
 
-    // Tenta modelo local primeiro
     if (this.useLocal || request.forceLocal) {
       try {
         const response = await this.callOllama(request)
@@ -41,33 +56,31 @@ export class LLMRouter {
         return { ...response, duration: Date.now() - startTime }
       } catch (error) {
         if (request.forceLocal) {
-          console.error('❌ [FINOPS BLOCK] Modelo local falhou e forceLocal está ativo. Abortando para evitar custos.')
+          console.error('[FINOPS BLOCK] Modelo local falhou e forceLocal está ativo. Abortando para evitar custos.')
           throw new Error('LLM_LOCAL_UNAVAILABLE: O motor local falhou e o custo zero é obrigatório.')
         }
-
         this.localFailureCount++
-        console.warn(`⚠️ Ollama falhou (${this.localFailureCount}/${this.MAX_LOCAL_FAILURES})`)
-
+        console.warn(`Ollama falhou (${this.localFailureCount}/${this.MAX_LOCAL_FAILURES})`)
         if (this.localFailureCount >= this.MAX_LOCAL_FAILURES) {
           this.useLocal = false
-          console.log('🔄 Switching to cloud model (Kimi K2.6)')
+          const agentLabel = request.agentType || 'general'
+          const cloudCfg = AGENT_CLOUD_MODELS[agentLabel] || DEFAULT_CLOUD
+          console.log(`Switching to cloud: ${cloudCfg.model} (agent: ${agentLabel})`)
         }
       }
     }
 
-    // Fallback para Kimi K2.6 via OpenRouter
     try {
       const response = await this.callOpenRouter(request)
       return { ...response, duration: Date.now() - startTime }
     } catch (cloudError) {
-      console.error('❌ Both local and cloud models failed')
+      console.error('Both local and cloud models failed')
       throw new Error('LLM_UNAVAILABLE: Nenhum modelo disponível no momento')
     }
   }
 
   private async callOllama(request: LLMRequest): Promise<Omit<LLMResponse, 'duration'>> {
     const model = LOCAL_MODELS[request.model as keyof typeof LOCAL_MODELS] || LOCAL_MODELS.general
-
     const response = await fetch(`${OLLAMA_URL}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -81,22 +94,23 @@ export class LLMRouter {
         }
       })
     })
-
     if (!response.ok) {
       throw new Error(`Ollama error: ${response.status}`)
     }
-
     const data = await response.json()
-
     return {
       content: data.message?.content || '',
       model: data.model || model,
       tokensUsed: data.eval_count || 0,
-      cost: 0 // Local é gratuito
+      cost: 0
     }
   }
 
   private async callOpenRouter(request: LLMRequest): Promise<Omit<LLMResponse, 'duration'>> {
+    const agentLabel = request.agentType || 'general'
+    const cloudCfg = AGENT_CLOUD_MODELS[agentLabel] || DEFAULT_CLOUD
+    const modelToUse = cloudCfg.model
+
     const response = await fetch(`${OPENROUTER_URL}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -106,36 +120,35 @@ export class LLMRouter {
         'X-Title': 'ZEHLA SmartHotel'
       },
       body: JSON.stringify({
-        model: CLOUD_MODEL,
+        model: modelToUse,
         messages: request.messages,
         temperature: request.temperature || 0.7,
         max_tokens: request.maxTokens || 2048
       })
     })
-
     if (!response.ok) {
       throw new Error(`OpenRouter error: ${response.status}`)
     }
-
     const data = await response.json()
     const usage = data.usage || {}
-
     return {
       content: data.choices?.[0]?.message?.content || '',
-      model: data.model || CLOUD_MODEL,
+      model: data.model || modelToUse,
       tokensUsed: usage.total_tokens || 0,
-      cost: this.calculateCost(usage)
+      cost: this.calculateCost(usage, cloudCfg)
     }
   }
 
-  private calculateCost(usage: { prompt_tokens?: number; completion_tokens?: number }): number {
+  private calculateCost(
+    usage: { prompt_tokens?: number; completion_tokens?: number },
+    config: CloudModelConfig
+  ): number {
     const inputTokens = usage.prompt_tokens || 0
     const outputTokens = usage.completion_tokens || 0
-    // Kimi K2.6 via OpenRouter: $0.7448/M input, $4.655/M output
-    return (inputTokens / 1_000_000 * 0.7448) + (outputTokens / 1_000_000 * 4.655)
+    return (inputTokens / 1_000_000 * config.costPerMInput) +
+           (outputTokens / 1_000_000 * config.costPerMOutput)
   }
 
-  // Força uso de modelo específico
   async forceLocal(request: LLMRequest): Promise<LLMResponse> {
     this.useLocal = true
     this.localFailureCount = 0
@@ -149,28 +162,16 @@ export class LLMRouter {
     return { ...response, duration: Date.now() - startTime }
   }
 
-  // --- Zehla ML Brain: Feedback Loop (RAG & Fine-Tuning) ---
-  /**
-   * Grava o resultado de uma interação (ex: conversão no WhatsApp) 
-   * no banco de dados para retroalimentar o modelo de Machine Learning.
-   */
   async recordMLInteraction(log: MLInteractionLog): Promise<void> {
     try {
-      // Aqui integrariamos com o Prisma Client para gravar no banco de dados.
-      // Exemplo conceitual:
-      // await prisma.mlInteraction.create({ data: log })
-      
-      console.log(`🧠 [Zehla ML Brain] Interação registrada para Tenant: ${log.tenantId} | Resultado: ${log.outcome}`)
-      
+      console.log(`[Zehla ML Brain] Interação registrada para Tenant: ${log.tenantId} | Resultado: ${log.outcome}`)
       if (log.outcome === 'BOOKED') {
-        console.log(`📈 [Zehla ML Brain] Reforço Positivo: Preparando threadHistory para vetorização (RAG).`)
-        // Trigger para job de geração de embeddings...
+        console.log(`[Zehla ML Brain] Reforço Positivo: Preparando threadHistory para vetorização (RAG).`)
       }
     } catch (error) {
-      console.error(`❌ [Zehla ML Brain] Erro ao registrar interação ML:`, error)
+      console.error(`[Zehla ML Brain] Erro ao registrar interação ML:`, error)
     }
   }
 }
 
-// Singleton
 export const llmRouter = new LLMRouter()

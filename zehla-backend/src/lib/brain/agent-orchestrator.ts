@@ -5,6 +5,7 @@ import { AgentRequest, AgentResponse } from '@/types'
 import { prisma } from '../prisma'
 import { getCachedResponse, setCachedResponse } from '@/lib/ai/semanticCache'
 import { llmRouter } from '../ai/llm-router'
+import { akashicBridge } from '../akashico/AkashicBridge'
 import { SecurityProcessor } from './processors/SecurityProcessor';
 import { TrialValidator } from './processors/TrialValidator';
 import { PromptBuilder } from './processors/PromptBuilder';
@@ -110,7 +111,8 @@ export class AgentOrchestrator {
       };
     }
 
-    // 8. Execução LLM via Router
+    // 8. Execução LLM via Router (roteamento por agente)
+    const agentType = this.getAgentType(intent)
     const llmResponse = await llmRouter.generate({
       model: intent === 'PRICE_INQUIRY' || intent === 'RESERVATION_CREATE' ? 'reasoning' : 'general',
       messages: [
@@ -118,7 +120,8 @@ export class AgentOrchestrator {
         { role: 'user', content: userPrompt }
       ],
       temperature: 0.7,
-      maxTokens: 2048
+      maxTokens: 2048,
+      agentType
     })
 
     // Gravar no cache
@@ -141,7 +144,25 @@ export class AgentOrchestrator {
       }
     })
 
-    // 10. Preparar Resposta Final com Metadados de Voz
+    // 10. Ingestão no Campo Akáshico (fire-and-forget)
+    const phone = (context?.phone as string) || ''
+    void akashicBridge.ingestEvent({
+      pousada_id: propertyId,
+      source_channel: 'whatsapp',
+      guest_id: phone || undefined,
+      input_text: message,
+      intent_classified: intent,
+      ai_response: llmResponse.content,
+      provider_used: llmResponse.model || 'unknown',
+      tier_used: llmResponse.cost > 0 ? 2 : 1,
+      outcome: 'resolved',
+      sentiment_after: 0,
+      duration_ms: Date.now() - startTime,
+      tokens_used: llmResponse.tokensUsed,
+      cadmas_bucket: 4,
+    })
+
+    // 11. Preparar Resposta Final com Metadados de Voz
     const response: AgentResponse = {
       success: true,
       agent: this.getAgentName(intent),
@@ -196,6 +217,15 @@ export class AgentOrchestrator {
       UNKNOWN: 'RECEPTIONIST'
     }
     return map[intent] || 'RECEPTIONIST'
+  }
+
+  private getAgentType(intent: string): 'ze-sales' | 'ze-analyst' | 'general' {
+    const salesIntents = ['PRICE_INQUIRY', 'RESERVATION_CREATE', 'RESERVATION_MODIFY', 'RESERVATION_CANCEL',
+      'CHECK_IN', 'CHECK_OUT', 'PAYMENT_STATUS']
+    const analystIntents = ['ROOM_AVAILABILITY', 'CANCELATION_POLICY']
+    if (salesIntents.includes(intent)) return 'ze-sales'
+    if (analystIntents.includes(intent)) return 'ze-analyst'
+    return 'general'
   }
 
   private buildError(message: string, startTime: number, agent: string = 'SYSTEM'): AgentResponse {

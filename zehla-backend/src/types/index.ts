@@ -40,7 +40,8 @@ export interface LLMRequest {
   temperature?: number
   maxTokens?: number
   tools?: unknown[]
-  forceLocal?: boolean // Força uso do motor local (Custo Zero)
+  forceLocal?: boolean
+  agentType?: 'ze-sales' | 'ze-marketer' | 'ze-analyst' | 'zmg-receive' | 'zmg-classify' | 'general'
 }
 
 export interface LLMResponse {

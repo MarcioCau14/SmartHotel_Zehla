@@ -315,17 +315,21 @@ model AgentLog {
 }
 
 model Message {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   phone        String
   name         String?
   content      String
   direction    String
-  type         String   @default("TEXT")
-  status       String   @default("SENT")
+  type         String    @default("TEXT")
+  status       String    @default("SENT")
+  error        String?
+  deliveredAt  DateTime?
+  readAt       DateTime?
+  failedAt     DateTime?
   agentHandled String?
-  createdAt    DateTime @default(now())
+  createdAt    DateTime  @default(now())
   propertyId   String
-  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  property     Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@index([propertyId, phone, createdAt])
   @@map("messages")

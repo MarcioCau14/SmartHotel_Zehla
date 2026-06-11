@@ -54,4 +54,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# akashico
+services/akashico/__pycache__/
+services/akashico/data/
+
 /src/generated/prisma

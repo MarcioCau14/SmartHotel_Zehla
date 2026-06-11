@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { CognitiveTerminal } from '../../components/zcc/CognitiveTerminal'
 import { LeadKanban } from '../../components/zcc/LeadKanban'
 import { RoomsGrid } from '../../components/zcc/RoomsGrid'
+import { CampaignMetricsCard } from '../../components/zcc/marketing/CampaignMetricsCard'
 import { useDashboardMetrics } from '../../hooks/useDashboardMetrics'
 
 export default function ZCCDashboardPage() {
@@ -100,6 +101,9 @@ export default function ZCCDashboardPage() {
           </form>
         </div>
       </header>
+
+      {/* Campaign Metrics */}
+      <CampaignMetricsCard />
 
       {/* Main Grid Layout */}
       <main className="grid grid-cols-1 lg:grid-cols-3 gap-6">

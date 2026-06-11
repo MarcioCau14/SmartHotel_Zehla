@@ -20,18 +20,6 @@ export async function POST(request: NextRequest) {
     const session = authResult.value
     const propertyId = session.pousadaId
 
-    const rlResult = await rateLimit(`dispatch:${propertyId}`, DISPATCH_MAX_PER_WINDOW, DISPATCH_WINDOW_SECONDS)
-    if (!rlResult.success) {
-      return NextResponse.json({
-        error: 'Muitas requisições. Limite de 1 disparo a cada 10 minutos por propriedade.',
-        code: 'RATE_LIMITED',
-        retryAfter: rlResult.reset - Math.floor(Date.now() / 1000),
-      }, {
-        status: 429,
-        headers: { 'Retry-After': String(rlResult.reset - Math.floor(Date.now() / 1000)) },
-      })
-    }
-
     const body = await request.json()
     const { campanhaId, segmentFilter, templateId, templateVariables, schedule, recipients } = body || {}
 
@@ -43,6 +31,18 @@ export async function POST(request: NextRequest) {
     }
     if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
       return NextResponse.json({ error: 'recipients é obrigatório' }, { status: 400 })
+    }
+
+    const rlResult = await rateLimit(`dispatch:${propertyId}`, DISPATCH_MAX_PER_WINDOW, DISPATCH_WINDOW_SECONDS)
+    if (!rlResult.success) {
+      return NextResponse.json({
+        error: 'Muitas requisições. Limite de 1 disparo a cada 10 minutos por propriedade.',
+        code: 'RATE_LIMITED',
+        retryAfter: rlResult.reset - Math.floor(Date.now() / 1000),
+      }, {
+        status: 429,
+        headers: { 'Retry-After': String(rlResult.reset - Math.floor(Date.now() / 1000)) },
+      })
     }
 
     const campanhaRepo = new PrismaCampanhaRepository(getBasePrisma())

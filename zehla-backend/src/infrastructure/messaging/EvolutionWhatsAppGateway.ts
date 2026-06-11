@@ -1,6 +1,11 @@
 import { Result } from '../../domain/shared/Result';
 import { IMessagingGateway, MessageDeliveryStatus } from '../../application/marketing/ports/IMessagingGateway';
 import { EvolutionWhatsAppAdapter } from '../external/evolution/EvolutionWhatsAppAdapter';
+import {
+  checkMessagingRateLimit,
+  registerBackoff,
+  resetBackoff,
+} from '../../lib/security/rate-limit-messaging';
 
 function stripPlus(phone: string): string {
   return phone.startsWith('+') ? phone.slice(1) : phone;
@@ -23,7 +28,7 @@ export class EvolutionWhatsAppGateway implements IMessagingGateway {
     while (v === 0) v = Math.random();
     const num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     const delay = num * stdDevMs + meanMs;
-    return Math.max(500, Math.floor(delay)); // Garante pelo menos 500ms
+    return Math.max(500, Math.floor(delay));
   }
 
   private async sleep(ms: number): Promise<void> {
@@ -46,9 +51,17 @@ export class EvolutionWhatsAppGateway implements IMessagingGateway {
 
   private async send(phone: string, text: string): Promise<Result<MessageDeliveryStatus, Error>> {
     try {
-      // Injeta delay gaussiano com Box-Muller (média 2s, desvio padrão 0.5s)
-      const delayMs = this.getGaussianDelayMs(2000, 500);
-      await this.sleep(delayMs);
+      // Rate limit check (1 msg/3s per phone)
+      const rateCheck = await checkMessagingRateLimit(phone)
+      if (!rateCheck.allowed) {
+        if (rateCheck.retryAfterMs > 100) {
+          await this.sleep(rateCheck.retryAfterMs)
+        }
+      }
+
+      // Gaussian anti-ban delay (mean 2s, stddev 0.5s)
+      const gaussianMs = this.getGaussianDelayMs(2000, 500);
+      await this.sleep(gaussianMs);
 
       const result = await this.adapter.sendText({
         to: stripPlus(phone),
@@ -57,6 +70,7 @@ export class EvolutionWhatsAppGateway implements IMessagingGateway {
       });
 
       if (result.success) {
+        await resetBackoff(phone)
         return Result.ok({
           messageId: result.externalId || `msg_${Date.now()}`,
           recipientId: phone,
@@ -65,9 +79,23 @@ export class EvolutionWhatsAppGateway implements IMessagingGateway {
         });
       }
 
+      const isRateLimited = result.error?.toLowerCase().includes('429') ||
+        result.error?.toLowerCase().includes('rate') ||
+        result.error?.toLowerCase().includes('too many')
+      if (isRateLimited) {
+        await registerBackoff(phone)
+      }
+
       return Result.fail(new Error(result.error || 'Falha ao enviar mensagem'));
     } catch (error) {
-      return Result.fail(error instanceof Error ? error : new Error('Erro ao enviar mensagem via Evolution API'));
+      const errMsg = error instanceof Error ? error.message : 'Erro ao enviar mensagem via Evolution API'
+      const isRateLimited = errMsg.toLowerCase().includes('429') ||
+        errMsg.toLowerCase().includes('rate') ||
+        errMsg.toLowerCase().includes('too many')
+      if (isRateLimited) {
+        await registerBackoff(phone)
+      }
+      return Result.fail(error instanceof Error ? error : new Error(errMsg));
     }
   }
 

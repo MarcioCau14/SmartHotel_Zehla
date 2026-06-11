@@ -53,6 +53,7 @@ Responda APENAS em JSON no formato:
 
   const response = await llmRouter.generate({
     model: 'classification',
+    agentType: 'zmg-classify',
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: message }

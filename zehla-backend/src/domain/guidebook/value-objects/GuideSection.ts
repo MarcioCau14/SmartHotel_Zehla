@@ -27,7 +27,7 @@ export class GuideSection {
     if (props.order < 0) {
       return Result.fail(new Error('Ordem da seção não pode ser negativa'))
     }
-    if (!props.content || props.content.length === 0) {
+    if (!Array.isArray(props.content) || props.content.length === 0) {
       return Result.fail(new Error('Seção precisa ter ao menos um conteúdo localizado'))
     }
     for (const loc of props.content) {
