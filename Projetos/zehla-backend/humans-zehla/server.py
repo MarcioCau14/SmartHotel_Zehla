@@ -21,6 +21,15 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 from contextlib import asynccontextmanager
 
+# Campo Akashico Import
+try:
+    from campo_akashico_core import initialize_akashico, create_akashic_routes, CampoAkashico
+    AKASHICO_AVAILABLE = True
+except ImportError as e:
+    logging.getLogger("zehla-brain").error(f"Erro ao importar campo_akashico_core: {e}")
+    AKASHICO_AVAILABLE = False
+
+
 # ============================================================
 # CONFIGURAÇÃO
 # ============================================================
@@ -705,6 +714,32 @@ class ZehlaBrain:
         self.client = None
         self.sessions: Dict[str, dict] = {}
         self._init_client()
+        self.akashico = None
+        self._init_akashico()
+    
+    def _init_akashico(self):
+        if not AKASHICO_AVAILABLE:
+            logger.warning("Campo Akashico não disponível.")
+            return
+        
+        try:
+            redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+            # Corrige a URL do Redis para usar redis:// no cliente Python se for rediss://
+            # Upstash suporta conexão não-SSL local se necessário, mas redis-py lida com rediss:// nativamente.
+            db_path = os.getenv("AKASHIC_DB_PATH", "./zehla_data/akashic")
+            chroma_path = os.getenv("AKASHIC_CHROMA_PATH", "./zehla_chroma")
+            
+            # Inicializa o Campo Akashico
+            self.akashico = initialize_akashico(
+                redis_url=redis_url,
+                db_path=db_path,
+                chroma_path=chroma_path,
+                start_loop=True
+            )
+            logger.info("Campo Akashico inicializado no ZehlaBrain.")
+        except Exception as e:
+            logger.error(f"Erro ao inicializar Campo Akashico: {e}")
+
     
     def _init_client(self):
         """Inicializa cliente LLM."""
@@ -730,6 +765,7 @@ class ZehlaBrain:
     def chat(self, message: str, session_id: str = None, 
              pousada_id: str = None, system_prompt: str = None) -> dict:
         """Processa uma mensagem e retorna resposta."""
+        start_time = time.time()
         
         # Gerar session_id se necessário
         if not session_id:
@@ -750,8 +786,17 @@ class ZehlaBrain:
         # Buscar skills relevantes
         skills = self.memory.search_skills(message[:100])
         
+        # Buscar memórias do Campo Akashico se ativo e tiver pousada_id
+        akashic_insights = []
+        if self.akashico and pousada_id:
+            try:
+                # Busca semântica de conhecimentos cristalizados
+                akashic_insights = self.akashico.query_context(pousada_id, message, top_k=5)
+            except Exception as e:
+                logger.error(f"Erro ao consultar Campo Akashico: {e}")
+
         # System prompt
-        default_system = self._build_system_prompt(pousada_id, skills)
+        default_system = self._build_system_prompt(pousada_id, skills, akashic_insights)
         sys_prompt = system_prompt or default_system
         
         # Montar messages
@@ -764,7 +809,7 @@ class ZehlaBrain:
         
         # Verificar se tem cliente LLM
         if not self.client:
-            return {
+            result = {
                 "session_id": session_id,
                 "response": self._demo_response(message, pousada_id),
                 "model": "demo",
@@ -772,6 +817,9 @@ class ZehlaBrain:
                 "tools_called": [],
                 "timestamp": datetime.utcnow().isoformat()
             }
+            duration_ms = int((time.time() - start_time) * 1000)
+            self._ingest_akashic_episode(message, result, pousada_id, duration_ms)
+            return result
         
         # Loop do agente (versão simplificada do HERMES)
         tools_called = []
@@ -810,7 +858,7 @@ class ZehlaBrain:
                                                assistant_msg.content, 
                                                tools_called)
                     
-                    return {
+                    result = {
                         "session_id": session_id,
                         "response": assistant_msg.content,
                         "model": HERMES_MODEL,
@@ -818,44 +866,101 @@ class ZehlaBrain:
                         "tools_called": tools_called,
                         "timestamp": datetime.utcnow().isoformat()
                     }
+                    duration_ms = int((time.time() - start_time) * 1000)
+                    self._ingest_akashic_episode(message, result, pousada_id, duration_ms)
+                    return result
                 
                 # Executar tool calls
                 for tool_call in assistant_msg.tool_calls:
                     tool_name = tool_call.function.name
                     tool_args = json.loads(tool_call.function.arguments)
                     
-                    result = self.tools.execute_tool(tool_name, tool_args, session_id)
+                    result_tool = self.tools.execute_tool(tool_name, tool_args, session_id)
                     tools_called.append(tool_name)
                     
                     messages.append({
                         "role": "tool",
                         "tool_call_id": tool_call.id,
-                        "content": result
+                        "content": result_tool
                     })
                     
                     self.memory.save_message(
                         session_id, "tool",
-                        f"[{tool_name}] {result[:200]}..."
+                        f"[{tool_name}] {result_tool[:200]}..."
                     )
                     
             except Exception as e:
                 logger.error(f"Erro no loop do agente: {e}")
-                return {
+                err_result = {
                     "session_id": session_id,
                     "response": f"Erro ao processar: {str(e)}",
                     "model": HERMES_MODEL,
                     "error": str(e),
                     "timestamp": datetime.utcnow().isoformat()
                 }
+                duration_ms = int((time.time() - start_time) * 1000)
+                self._ingest_akashic_episode(message, err_result, pousada_id, duration_ms)
+                return err_result
         
-        return {
+        limit_result = {
             "session_id": session_id,
             "response": "Limite de iterações atingido. Tente reformular sua pergunta.",
             "model": HERMES_MODEL,
             "timestamp": datetime.utcnow().isoformat()
         }
+        duration_ms = int((time.time() - start_time) * 1000)
+        self._ingest_akashic_episode(message, limit_result, pousada_id, duration_ms)
+        return limit_result
     
-    def _build_system_prompt(self, pousada_id: str = None, skills: list = None) -> str:
+    def _ingest_akashic_episode(self, message: str, response_data: dict, pousada_id: str, duration_ms: int = 0):
+        if not self.akashico or not pousada_id:
+            return
+        
+        try:
+            tools = response_data.get("tools_called", [])
+            cadmas_bucket = 4  # faq_general_misc
+            if any("preco" in t or "pricing" in t or "sugerir" in t for t in tools):
+                cadmas_bucket = 5  # pricing_simple_query
+            elif any("marketing" in t or "conteudo" in t for t in tools):
+                cadmas_bucket = 22  # content_social_media
+            elif any("reviews" in t for t in tools):
+                cadmas_bucket = 25  # review_google_trustpilot
+            
+            outcome = "resolved"
+            if "error" in response_data:
+                outcome = "error"
+            elif len(tools) > 0 and "sucesso" not in response_data.get("response", "").lower():
+                outcome = "neutral"
+                
+            sentiment = 0.0
+            resp_lower = response_data.get("response", "").lower()
+            if any(w in resp_lower for w in ["ótimo", "excelente", "perfeito", "sucesso", "parabéns", "legal", "obrigado", "😊"]):
+                sentiment = 0.5
+            elif any(w in resp_lower for w in ["erro", "falha", "desculpe", "infelizmente", "problema", "difícil"]):
+                sentiment = -0.3
+                
+            event_data = {
+                "pousada_id": pousada_id,
+                "source_channel": "zcc_chat",
+                "guest_id": response_data.get("session_id"),
+                "input_text": message,
+                "intent_classified": response_data.get("model", "unknown"),
+                "ai_response": response_data.get("response", ""),
+                "provider_used": response_data.get("model", "unknown"),
+                "tier_used": 2,
+                "outcome": outcome,
+                "sentiment_after": sentiment,
+                "duration_ms": duration_ms,
+                "tokens_used": response_data.get("tokens_used", 0),
+                "cadmas_bucket": cadmas_bucket,
+                "was_sticky": len(tools) > 0
+            }
+            
+            self.akashico.ingest_event(event_data)
+        except Exception as e:
+            logger.error(f"Erro ao registrar episódio no Campo Akashico: {e}")
+
+    def _build_system_prompt(self, pousada_id: str = None, skills: list = None, akashic_insights: list = None) -> str:
         """Monta system prompt contextualizado."""
         prompt = """Você é o ZEHLA Brain — o assistente cognitivo inteligente da plataforma ZEHLA para pousadas brasileiras.
 
@@ -899,6 +1004,16 @@ CONTEXTO DA POUSADA:
             prompt += "\n\nSKILLS DISPONÍVEIS (aprendidos de experiências anteriores):"
             for skill in skills[:3]:
                 prompt += f"\n- [{skill.get('category')}] {skill.get('name')}: {skill.get('content', '')[:200]}"
+
+        if akashic_insights:
+            prompt += "\n\nINSIGHTS & MEMÓRIAS DO CAMPO AKÁSHICO (Registros Históricos/Padrões):"
+            for item in akashic_insights:
+                meta = item.get("metadata", {})
+                title = meta.get("title", "Insight")
+                category = meta.get("category", "insight").upper()
+                prompt += f"\n- [{category}] {title}: {item.get('content', '')} (Confiança: {meta.get('confidence', 0.5):.2f})"
+                if meta.get("action_suggested"):
+                    prompt += f" | Ação sugerida: {meta.get('action_suggested')}"
         
         return prompt
     
@@ -988,6 +1103,9 @@ if FASTAPI_AVAILABLE:
         brain.health_check()
         yield
         logger.info("ZEHLA Brain desligando...")
+        if AKASHICO_AVAILABLE and brain.akashico:
+            logger.info("Parando loop de cristalização do Campo Akashico...")
+            brain.akashico.stop()
     
     app = FastAPI(
         title="ZEHLA Brain — HERMES Engine",
@@ -1003,6 +1121,11 @@ if FASTAPI_AVAILABLE:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    
+    if AKASHICO_AVAILABLE and brain.akashico:
+        app.include_router(create_akashic_routes(brain.akashico))
+        logger.info("Rotas do Campo Akashico registradas em /api/v2/akashic/*")
+
     
     def verify_api_key(authorization: str = Header(None)):
         if authorization != f"Bearer {HERMES_API_KEY}":
