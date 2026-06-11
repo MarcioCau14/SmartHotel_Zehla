@@ -26,7 +26,7 @@ export class ProcessPaymentProofUseCase {
         where: { 
           propertyId, 
           guestPhone: phone, 
-          status: 'PENDING_PAYMENT' 
+          status: 'PENDING' 
         },
         orderBy: { createdAt: 'desc' }
       });
@@ -49,18 +49,13 @@ export class ProcessPaymentProofUseCase {
             externalId: receiptData.transactionId,
             propertyId,
             reservationId: targetReservationId as string,
-            metadata: JSON.stringify({
-              ...receiptData,
-              processedAt: new Date().toISOString(),
-              autoMatched: true
-            })
           }
         });
 
         // Atualizar a reserva
         await tx.reservation.update({
           where: { id: targetReservationId },
-          data: { status: 'PAID' }
+          data: { status: 'CONFIRMED' }
         });
 
         console.log(`✅ [FINANCIAL SUCCESS] Reserva ${targetReservationId} confirmada via Transação.`);

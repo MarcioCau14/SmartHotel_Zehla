@@ -58,9 +58,11 @@ describe('AESGCMEncryptor', () => {
     const encryptedResult = encryptor.encrypt(plaintext)
     expect(encryptedResult.isOk).toBe(true)
 
+    const originalCiphertext = encryptedResult.value.ciphertext;
+    const corruptedCiphertext = originalCiphertext[0] === 'a' ? 'b' + originalCiphertext.slice(1) : 'a' + originalCiphertext.slice(1);
     const corrupted = {
       ...encryptedResult.value,
-      ciphertext: encryptedResult.value.ciphertext.slice(0, -2) + '00',
+      ciphertext: corruptedCiphertext,
     }
 
     const decryptedResult = encryptor.decrypt(corrupted)

@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-
 import { prisma } from '@/lib/prisma';
-
 import { withApiSecurity } from '@/lib/server/with-api-security';
+import { authenticateRequest } from '@/infrastructure/http/auth/jwtAuth';
 
-async function _GET() {
+async function _GET(req: NextRequest) {
   try {
-  const pipelines = await prisma.crmPipeline.findMany({
+    const auth = await authenticateRequest(req);
+    if (auth.isFail) {
+      return NextResponse.json({ error: auth.error.message }, { status: 401 });
+    }
+    const propertyId = auth.value.pousadaId;
+
+    const pipelines = await prisma.crmPipeline.findMany({
+      where: { propertyId },
       orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
       include: {
         _count: { select: { deals: true } },
@@ -24,7 +30,13 @@ export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSecond
 
 async function _POST(req: NextRequest) {
   try {
-  const body = await req.json();
+    const auth = await authenticateRequest(req);
+    if (auth.isFail) {
+      return NextResponse.json({ error: auth.error.message }, { status: 401 });
+    }
+    const propertyId = auth.value.pousadaId;
+
+    const body = await req.json();
     const { name, stages, isDefault } = body;
 
     if (!name) {
@@ -37,7 +49,7 @@ async function _POST(req: NextRequest) {
 
     if (isDefault) {
       await prisma.crmPipeline.updateMany({
-        where: { isDefault: true },
+        where: { propertyId, isDefault: true },
         data: { isDefault: false },
       });
     }
@@ -47,6 +59,7 @@ async function _POST(req: NextRequest) {
         name,
         stages,
         isDefault: isDefault || false,
+        propertyId,
       },
     });
 

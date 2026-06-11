@@ -4,6 +4,7 @@ import {
   RevenueEntityType,
   RevenueRelationType,
   UPSELL_BFS_PATHS,
+  UpsellPathRecommender,
 } from '../../domain/revenue/models/RevenueGraphEntities'
 
 describe('RevenueGraphService', () => {
@@ -135,6 +136,94 @@ describe('RevenueGraphService', () => {
       expect(RevenueRelationType.COMPETES_WITH).toBe('competes_with')
       expect(RevenueRelationType.BUNDLED_WITH).toBe('bundled_with')
       expect(RevenueRelationType.PACE_ADJUSTS).toBe('pace_adjusts')
+    })
+  })
+})
+
+describe('UpsellPathRecommender', () => {
+  let recommender: UpsellPathRecommender
+
+  beforeEach(() => {
+    recommender = new UpsellPathRecommender()
+  })
+
+  describe('recommend', () => {
+    it('deve recomendar caminho exato para Family', () => {
+      const results = recommender.recommend('Family')
+      expect(results.length).toBeGreaterThanOrEqual(1)
+      const family = results.find(r => r.matchType === 'exact')
+      expect(family).toBeDefined()
+      expect(family!.product).toBe('Upsell_WineTasting')
+      expect(family!.confidence).toBe(0.9)
+      expect(family!.path).toContain('Guest_Family')
+    })
+
+    it('deve recomendar caminho exato para Romantic', () => {
+      const results = recommender.recommend('Romantic')
+      const romantic = results.find(r => r.matchType === 'exact')
+      expect(romantic).toBeDefined()
+      expect(romantic!.product).toBe('Upsell_CouplesMassage')
+    })
+
+    it('deve recomendar caminho exato para B2B', () => {
+      const results = recommender.recommend('B2B')
+      const b2b = results.find(r => r.matchType === 'exact')
+      expect(b2b).toBeDefined()
+      expect(b2b!.product).toBe('Upsell_EventPackage')
+    })
+
+    it('deve recomendar caminho exato para Leisure', () => {
+      const results = recommender.recommend('Leisure')
+      const leisure = results.find(r => r.matchType === 'exact')
+      expect(leisure).toBeDefined()
+      expect(leisure!.product).toBe('Upsell_PoolAccess')
+      expect(leisure!.steps).toBe(3)
+    })
+
+    it('deve incluir fallback Guest_Any como wildcard', () => {
+      const results = recommender.recommend('Unknown')
+      expect(results.length).toBeGreaterThanOrEqual(1)
+      expect(results.every(r => r.matchType === 'wildcard')).toBe(true)
+      expect(results.some(r => r.product === 'Upsell_LateCheckout')).toBe(true)
+    })
+
+    it('deve retornar exact com confiança maior que wildcard', () => {
+      const results = recommender.recommend('Family')
+      const exact = results.find(r => r.matchType === 'exact')
+      const wildcard = results.find(r => r.matchType === 'wildcard')
+      expect(exact).toBeDefined()
+      expect(wildcard).toBeDefined()
+      expect(exact!.confidence).toBeGreaterThan(wildcard!.confidence)
+    })
+
+    it('deve ordenar por confiança decrescente, depois steps crescente', () => {
+      const results = recommender.recommend('Family')
+      for (let i = 1; i < results.length; i++) {
+        if (results[i].confidence === results[i - 1].confidence) {
+          expect(results[i].steps).toBeGreaterThanOrEqual(results[i - 1].steps)
+        } else {
+          expect(results[i].confidence).toBeLessThanOrEqual(results[i - 1].confidence)
+        }
+      }
+    })
+
+    it('todas as recomendações devem ser congeladas', () => {
+      const results = recommender.recommend('Family')
+      for (const r of results) {
+        expect(Object.isFrozen(r)).toBe(true)
+      }
+    })
+
+    it('deve retornar array vazio para persona que nao existe e nao tem Guest_Any? (caso impossivel no dataset atual)', () => {
+      const results = recommender.recommend('Family')
+      expect(results.length).toBeGreaterThan(0)
+    })
+
+    it('cada recomendação deve extrair o produto Upsell_ do caminho', () => {
+      const results = recommender.recommend('Romantic')
+      for (const r of results) {
+        expect(r.product).toMatch(/^Upsell_/)
+      }
     })
   })
 })

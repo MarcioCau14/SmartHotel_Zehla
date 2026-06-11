@@ -3,12 +3,14 @@ import { LeadProfile } from '../models/LeadProfile'
 import { ReservationSnapshot } from '../models/ReservationSnapshot'
 import { ReactivationEligibility } from '../models/ReactivationEligibility'
 import { ReactivationCandidate } from '../models/ReactivationCandidate'
+import { ConsentimentoLGPD } from '../models/MarketIntelligence'
 
 export class FarmerReactivationService {
   execute(
     lead: LeadProfile,
     reservations: ReservationSnapshot[],
     currentDate: Date,
+    consentimentoLGPD: ConsentimentoLGPD = 'consentimento',
   ): Result<ReactivationCandidate | null, Error> {
     if (!lead) {
       return Result.fail(new Error('Lead é obrigatório'))
@@ -33,7 +35,7 @@ export class FarmerReactivationService {
     for (const reserva of reservasDoLead) {
       if (reserva.status !== 'COMPLETED') continue
 
-      const eligibilityResult = ReactivationEligibility.evaluate(reserva.checkoutDate, currentDate)
+      const eligibilityResult = ReactivationEligibility.evaluate(reserva.checkoutDate, currentDate, consentimentoLGPD)
       if (eligibilityResult.isFail) {
         return Result.fail(eligibilityResult.error)
       }

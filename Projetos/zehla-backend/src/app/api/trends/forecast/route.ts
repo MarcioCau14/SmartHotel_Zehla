@@ -31,7 +31,7 @@ async function _GET(request: NextRequest) {
     const keywords = await prisma.trendKeyword.findMany({
       where: { isActive: true },
     });
-    const keywordMap = new Map(keywords.map((k) => [k.id, k.keyword]));
+    const keywordMap = new Map(keywords.map((k: any) => [k.id, k.keyword]));
 
     const trendLines = new Map<string, { dates: string[]; scores: number[] }>();
     for (const dp of dataPoints) {
@@ -58,13 +58,13 @@ async function _GET(request: NextRequest) {
       data: {
         horizon,
         forecast,
-        activeSignals: signals.map((s) => ({
+        activeSignals: signals.map((s: any) => ({
           keyword: s.keyword,
           type: s.type,
           severity: s.severity,
           deltaPercent: s.deltaPercent,
         })),
-        upcomingHolidays: holidays.map((h) => ({
+        upcomingHolidays: holidays.map((h: any) => ({
           name: h.name,
           date: h.date,
           daysUntil: h.daysUntil,

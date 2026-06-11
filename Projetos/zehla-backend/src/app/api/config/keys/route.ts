@@ -69,7 +69,8 @@ export async function PUT(request: NextRequest) {
       data: {
         tenantId: tenant.id,
         action: 'update_api_key',
-        details: JSON.stringify({ provider, hasKey: true }),
+        resource: 'api_config',
+        metadata: { provider, hasKey: true },
       },
     });
 

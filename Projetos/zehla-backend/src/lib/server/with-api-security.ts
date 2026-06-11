@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 type RouteHandler = (
   req: NextRequest,
-  context?: { params: Promise<Record<string, string>> }
+  context?: any
 ) => Promise<NextResponse> | NextResponse;
 
 interface SecurityOptions {
@@ -77,7 +77,7 @@ const MUTATION_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
 export function withApiSecurity(handler: RouteHandler, options: SecurityOptions = {}): RouteHandler {
   const { rateLimit: rlConfig = { limit: 100, windowSeconds: 60 }, cors = true, csrf = false } = options;
 
-  return async (req: NextRequest, context?: { params: Promise<Record<string, string>> }): Promise<NextResponse> => {
+  return async (req: NextRequest, context?: any): Promise<NextResponse> => {
     const origin = getOrigin(req);
     const pathname = new URL(req.url).pathname;
 

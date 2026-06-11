@@ -9,9 +9,9 @@ const TRANSPARENT_GIF = Buffer.from(
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { leadId: string } }
+  context: { params: Promise<{ leadId: string }> }
 ) {
-  const { leadId } = params;
+  const { leadId } = await context.params;
 
   try {
     // 🧠 Estímulo ao Cérebro: Registrar o evento de abertura

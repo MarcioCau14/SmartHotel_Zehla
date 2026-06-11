@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { Money } from '../../../domain/comercial/value-objects/Money'
+import { Result } from '../../../shared/Result'
 import { ZeAnalystCognitiveService } from '../../../application/revenue/cognitive/ZeAnalystCognitiveService'
 import { ZeAnalystInput } from '../../../application/revenue/cognitive/ZeAnalystCognitiveTypes'
 import { TarifaInMemoryRepository } from '../../../infrastructure/persistence/revenue/TarifaInMemoryRepository'
@@ -183,8 +184,8 @@ describe('ZeAnalystCognitiveService', () => {
     })
   })
 
-  describe('CALCULAR_METRICAS_REVENUE', () => {
-    it('should calculate revenue metrics', async () => {
+  describe('CALCULAR_METRICAS_REVENUE & CONSULTAR_METRICAS', () => {
+    it('should calculate revenue metrics via CALCULAR_METRICAS_REVENUE intent', async () => {
       for (let i = 1; i <= 5; i++) {
         await ocupacaoRepo.registrarSnapshot({
           propriedadeId: 'prop_seed', data: new Date(`2026-06-${10 + i}`), tipo: 'realizada',
@@ -202,6 +203,37 @@ describe('ZeAnalystCognitiveService', () => {
       expect(output.success).toBe(true)
       expect(output.data).toHaveProperty('adr')
       expect(output.data).toHaveProperty('revpar')
+    })
+
+    it('should calculate revenue metrics via CONSULTAR_METRICAS intent and delegate calculations to use case', async () => {
+      const mockResult = Result.ok({
+        adr: 12000,
+        revpar: 9000,
+        goppar: 7000,
+        taxaOcupacaoMedia: 75,
+        breakEvenRatio: 60
+      })
+      
+      const spyExecute = vi.spyOn((service as any).calcularMetricasUseCase, 'execute').mockImplementation(async () => mockResult)
+
+      const output = await service.processIntent(makeInput('CONSULTAR_METRICAS', {
+        payload: {
+          dataInicio: '2026-06-10', dataFim: '2026-06-20',
+          custoOperacionalPorQuarto: 200,
+        },
+      }))
+
+      expect(output.success).toBe(true)
+      expect(spyExecute).toHaveBeenCalledTimes(1)
+      expect(spyExecute).toHaveBeenCalledWith({
+        propriedadeId: 'prop_seed',
+        dataInicio: new Date('2026-06-10'),
+        dataFim: new Date('2026-06-20'),
+        custoOperacionalPorQuarto: 20000
+      })
+      expect(output.responseText).toContain('ADR 120.00 | RevPAR 90.00 | GOPPAR 70.00 | Ocupação 75% | Break-even ratio 60%.')
+      
+      spyExecute.mockRestore()
     })
   })
 

@@ -70,8 +70,10 @@ export class SwarmEngine {
           scenarioId,
           name: agent.name,
           role: agent.role,
-          persona: agent.persona,
-          traits: agent.traits
+          config: {
+            persona: agent.persona,
+            traits: agent.traits
+          }
         }))
       })
     } catch (e) {
@@ -102,14 +104,15 @@ export class SwarmEngine {
         orderBy: { createdAt: 'asc' },
         take: 30 // Aumentado para melhor contexto
       })
-      const historyText = history.map(h => `${h.agentName}: ${h.content}`).join('\n')
+      const historyText = history.map((h: any) => `${h.input}: ${h.output}`).join('\n')
 
       const roundResponses = [];
 
       for (const agent of scenario.agents) {
+        const config = agent.config as any || {}
         const prompt = `
-          Você é ${agent.name}, com a seguinte persona: ${agent.persona}.
-          Seus traços são: ${agent.traits.join(', ')}.
+          Você é ${agent.name}, com a seguinte persona: ${config.persona || ''}.
+          Seus traços são: ${Array.isArray(config.traits) ? config.traits.join(', ') : ''}.
           Estamos na Rodada ${r} de uma simulação sobre: ${scenario.context}.
 
           HISTÓRICO DA CONVERSA:
@@ -127,10 +130,10 @@ export class SwarmEngine {
 
         roundResponses.push({
           scenarioId,
-          roundNumber: r,
-          agentName: agent.name,
-          content: response.content,
-          sentiment: 'NEUTRAL'
+          round: r,
+          input: agent.name,
+          output: response.content,
+          metadata: { sentiment: 'NEUTRAL' }
         });
       }
 
@@ -153,7 +156,7 @@ export class SwarmEngine {
       orderBy: { createdAt: 'asc' }
     })
 
-    const transcript = rounds.map(r => `${r.agentName}: ${r.content}`).join('\n')
+    const transcript = rounds.map((r: any) => `${r.input}: ${r.output}`).join('\n')
 
     const prompt = `
       Analise a seguinte simulação social e gere um relatório de predição de ROI e comportamento.
@@ -182,8 +185,7 @@ export class SwarmEngine {
         where: { id: scenarioId },
         data: {
           status: 'COMPLETED',
-          result: report,
-          roiEstimate: report.roiEstimate
+          result: report
         }
       })
     } catch (e) {

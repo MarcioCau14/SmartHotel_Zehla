@@ -31,7 +31,7 @@ describe('Lead Entity', () => {
       telefone: '11999999999',
       documento: obterValor(Documento.criar('123.456.789-09', 'CPF')),
       score: obterValor(Score.criar(85)),
-      status: 'novo'
+      status: 'prospect'
     })
     
     expect(leadResult.isOk).toBe(true)
@@ -39,7 +39,7 @@ describe('Lead Entity', () => {
       const lead = leadResult.value
       expect(lead.id).toBe('lead_1')
       expect(lead.nome).toBe('João Silva')
-      expect(lead.status).toBe('novo')
+      expect(lead.status).toBe('prospect')
     }
   })
 
@@ -63,7 +63,7 @@ describe('Lead Entity', () => {
       nome: 'João Silva',
       email: obterValor(Email.criar('joao@example.com')),
       score: obterValor(Score.criar(85)),
-      status: 'novo'
+      status: 'prospect'
     })
     
     expect(leadResult.isOk).toBe(true)
@@ -72,7 +72,7 @@ describe('Lead Entity', () => {
       const result = lead.qualificar()
       expect(result.isOk).toBe(true)
       if (result.isOk) {
-        expect(result.value.status).toBe('qualificado')
+        expect(result.value.status).toBe('qualified')
       }
     }
   })
@@ -86,7 +86,7 @@ describe('Lead Entity', () => {
       nome: 'João Silva',
       email: obterValor(Email.criar('joao@example.com')),
       score: obterValor(Score.criar(25)), // abaixo do mínimo
-      status: 'novo'
+      status: 'prospect'
     })
     
     expect(leadResult.isOk).toBe(true)
@@ -106,51 +106,59 @@ describe('Lead Entity', () => {
       nome: 'João Silva',
       email: obterValor(Email.criar('joao@example.com')),
       score: obterValor(Score.criar(85)),
-      status: 'novo'
+      status: 'prospect'
     })
     
     expect(leadResult.isOk).toBe(true)
     if (leadResult.isOk) {
       let lead = leadResult.value
       
-      // novo -> qualificado
+      // prospect -> qualified
       let result = lead.qualificar()
       expect(result.isOk).toBe(true)
       if (result.isOk) {
         let qualifiedLead = result.value
-        expect(qualifiedLead.status).toBe('qualificado')
+        expect(qualifiedLead.status).toBe('qualified')
         
-        // qualificado -> proposto
-        result = qualifiedLead.propostar()
-        expect(result.isOk).toBe(true)
-        if (result.isOk) {
-          let proposedLead = result.value
-          expect(proposedLead.status).toBe('propostado')
-          
-          // proposto -> convertido (com documento)
-          const leadWithDocResult = Lead.create({
-            id: proposedLead.id,
-            canal: proposedLead.canal,
-            propriedadeId: proposedLead.propriedadeId,
-            dataCaptura: proposedLead.dataCaptura,
-            nome: proposedLead.nome,
-            email: proposedLead.email,
-            telefone: proposedLead.telefone,
-            documento: obterValor(Documento.criar('123.456.789-09', 'CPF')),
-            score: proposedLead.score,
-            status: proposedLead.status,
-            origemUrl: proposedLead.origemUrl,
-            tags: proposedLead.tags,
-            ultimaInteracao: proposedLead.ultimaInteracao
-          })
-          
-          expect(leadWithDocResult.isOk).toBe(true)
-          if (leadWithDocResult.isOk) {
-            result = leadWithDocResult.value.converter()
-            expect(result.isOk).toBe(true)
-            if (result.isOk) {
-              let convertedLead = result.value
-              expect(convertedLead.status).toBe('convertido')
+        // qualified -> trial
+        const trialResult = qualifiedLead.iniciarTrial()
+        expect(trialResult.isOk).toBe(true)
+        if (trialResult.isOk) {
+          let trialLead = trialResult.value
+          expect(trialLead.status).toBe('trial')
+
+          // trial -> negotiation
+          result = trialLead.negociar()
+          expect(result.isOk).toBe(true)
+          if (result.isOk) {
+            let proposedLead = result.value
+            expect(proposedLead.status).toBe('negotiation')
+            
+            // negotiation -> converted (com documento)
+            const leadWithDocResult = Lead.create({
+              id: proposedLead.id,
+              canal: proposedLead.canal,
+              propriedadeId: proposedLead.propriedadeId,
+              dataCaptura: proposedLead.dataCaptura,
+              nome: proposedLead.nome,
+              email: proposedLead.email,
+              telefone: proposedLead.telefone,
+              documento: obterValor(Documento.criar('123.456.789-09', 'CPF')),
+              score: proposedLead.score,
+              status: proposedLead.status,
+              origemUrl: proposedLead.origemUrl,
+              tags: proposedLead.tags,
+              ultimaInteracao: proposedLead.ultimaInteracao
+            })
+            
+            expect(leadWithDocResult.isOk).toBe(true)
+            if (leadWithDocResult.isOk) {
+              result = leadWithDocResult.value.converter()
+              expect(result.isOk).toBe(true)
+              if (result.isOk) {
+                let convertedLead = result.value
+                expect(convertedLead.status).toBe('converted')
+              }
             }
           }
         }

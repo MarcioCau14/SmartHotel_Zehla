@@ -34,7 +34,7 @@ describe('ConvertLeadUseCase', () => {
     eventBus.clear()
 
     const l2 = await leadRepo.findById(capturedId)
-    l2!.transitionStatus(LeadStatus.TRIAL_STARTED)
+    l2!.transitionStatus(LeadStatus.TRIAL)
     await leadRepo.update(l2!)
     eventBus.clear()
 

@@ -3,9 +3,9 @@ import { launchCampaign } from '@/services/blast/campaign-sender';
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const id = params.id;
+  const { id } = await context.params;
 
   try {
     await launchCampaign(id);

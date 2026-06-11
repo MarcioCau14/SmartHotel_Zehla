@@ -30,7 +30,7 @@ export async function collectAllTrends(tierFilter?: string) {
   // 1. Google Trends RSS (Tempo Real)
   const rssTrends = await fetchRSSFeeds();
   for (const trend of rssTrends) {
-    const matchedKeyword = keywords.find(kw =>
+    const matchedKeyword = keywords.find((kw: any) =>
       trend.title.toLowerCase().includes(kw.keyword.toLowerCase()) ||
       kw.keyword.toLowerCase().includes(trend.title.toLowerCase())
     );
@@ -54,7 +54,7 @@ export async function collectAllTrends(tierFilter?: string) {
   }
 
   // 2. Wikipedia (Proxy de Demanda — 50 Destinos)
-  const wikiDestinations = keywords.filter(k => k.category === "destino");
+  const wikiDestinations = keywords.filter((k: any) => k.category === "destino");
   for (const kw of wikiDestinations) {
     // Remover "pousada em " para buscar o artigo da cidade na Wikipedia
     const articleTitle = kw.keyword.replace(/^pousada em /i, "").trim();

@@ -33,10 +33,62 @@ export class SelfHealingEngine {
         await this.applyHeal(pattern.source, pattern.message);
       }
 
+      // 2. Executar auditoria de FinOps (Budget Circuit Breaker)
+      await this.runFinOpsCheck();
+
       return errorPatterns.length;
     } catch (error) {
       console.error('❌ [Self-Healing] Erro durante diagnóstico:', error);
       return 0;
+    }
+  }
+
+  /**
+   * Executa checagem de gastos e aciona circuit breaker se exceder 95% do teto
+   */
+  private static async runFinOpsCheck() {
+    try {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+
+      // 1. Obter todas as propriedades ativas
+      const properties = await prisma.property.findMany({
+        where: { status: 'ACTIVE' },
+        select: { id: true, name: true }
+      });
+
+      for (const prop of properties) {
+        // 2. Somar custos dos AgentLogs de hoje para este tenant
+        const costSummary = await prisma.agentLog.aggregate({
+          _sum: { cost: true },
+          where: {
+            propertyId: prop.id,
+            createdAt: { gte: todayStart }
+          }
+        });
+
+        const spentToday = costSummary._sum.cost || 0;
+        const dailyLimit = 50.0; // R$ 50/dia por padrão
+        const threshold = dailyLimit * 0.95; // 95% = R$ 47.50
+
+        if (spentToday >= threshold) {
+          const breakerKey = `config:tenant:${prop.id}:force_tier_1`;
+          const alreadyBlocked = await redis.get(breakerKey);
+
+          if (!alreadyBlocked) {
+            await CognitiveTerminal.error(
+              'FINOPS-BREAKER',
+              `Estouro de budget diário: R$ ${spentToday.toFixed(2)} / R$ ${dailyLimit.toFixed(2)} consumidos. Bloqueando acesso a modelos pagantes e forçando rebaixamento automático para o Tier 1 (Rules Engine de custo zero).`,
+              { spentToday, dailyLimit },
+              prop.id
+            );
+            // Bloqueio por 24 horas no Redis
+            await redis.setex(breakerKey, 86400, 'true');
+          }
+        }
+      }
+    } catch (error) {
+      console.error('❌ [Self-Healing] Erro na rotina de FinOps Check:', error);
     }
   }
 

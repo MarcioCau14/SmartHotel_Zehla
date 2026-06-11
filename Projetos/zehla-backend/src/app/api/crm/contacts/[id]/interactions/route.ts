@@ -60,7 +60,7 @@ async function _POST(
 
     const contact = await prisma.crmContact.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true },
+      select: { id: true, propertyId: true },
     });
 
     if (!contact) {
@@ -73,6 +73,7 @@ async function _POST(
         content,
         metadata: metadata || null,
         contactId: id,
+        propertyId: contact.propertyId,
       },
     });
 

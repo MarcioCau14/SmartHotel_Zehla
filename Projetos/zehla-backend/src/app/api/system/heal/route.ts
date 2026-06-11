@@ -67,11 +67,10 @@ async function _POST(req: Request) {
       case 'flush_queue': {
         const { captureQueue, validateQueue, enrichQueue, classifyQueue, actQueue } = await import('@/lib/queues');
         const queues = [captureQueue, validateQueue, enrichQueue, classifyQueue, actQueue];
-        let count = 0;
         for (const q of queues) {
-          count += await q.drain();
+          await q.drain();
         }
-        result = `${count} jobs removidos das filas.`;
+        result = `Todas as filas BullMQ foram esvaziadas com sucesso.`;
         break;
       }
       case 'clear_cache': {

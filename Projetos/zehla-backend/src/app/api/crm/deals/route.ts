@@ -108,6 +108,7 @@ async function _POST(req: NextRequest) {
         value: value || 0,
         stage: dealStage,
         pipelineId,
+        propertyId: pipeline.propertyId,
         contactId,
         ownerId,
         expectedCloseDate: expectedCloseDate ? new Date(expectedCloseDate) : null,

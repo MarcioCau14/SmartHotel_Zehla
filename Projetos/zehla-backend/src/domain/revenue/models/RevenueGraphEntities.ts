@@ -34,6 +34,46 @@ export interface PricingRecommendation {
   readonly reasoning: string;
 }
 
+export interface UpsellRecommendation {
+  readonly path: ReadonlyArray<string>;
+  readonly product: string;
+  readonly confidence: number;
+  readonly matchType: 'exact' | 'wildcard';
+  readonly steps: number;
+}
+
+export class UpsellPathRecommender {
+  recommend(persona: string, now: number = Date.now()): UpsellRecommendation[] {
+    const results: UpsellRecommendation[] = [];
+    const seen = new Set<string>();
+
+    for (const path of UPSELL_BFS_PATHS) {
+      const matchType = path[0] === `Guest_${persona}` ? 'exact' as const
+        : path[0] === 'Guest_Any' ? 'wildcard' as const
+        : null;
+      if (!matchType) continue;
+
+      const product = [...path].reverse().find(s => s.startsWith('Upsell_'));
+      if (!product) continue;
+
+      const key = `${path.join('→')}|${matchType}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      results.push(Object.freeze({
+        path,
+        product,
+        confidence: matchType === 'exact' ? 0.9 : 0.5,
+        matchType,
+        steps: path.length - 1,
+      }));
+    }
+
+    results.sort((a, b) => b.confidence - a.confidence || a.steps - b.steps);
+    return results;
+  }
+}
+
 export class RevenueGraphService {
   private readonly pricingRules = new Map<string, {
     readonly basePrice: number;

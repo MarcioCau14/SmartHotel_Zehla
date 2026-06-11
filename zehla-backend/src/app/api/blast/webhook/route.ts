@@ -82,10 +82,13 @@ export async function POST(req: Request) {
       const status = data.status;
       const messageId = data.key.id;
       
-      // Localizar a mensagem pelo metaMessageId (ID retornado pelo WhatsApp)
-      // Nota: No Evolution, o data.key.id é o ID da mensagem
+      // Localizar a última mensagem enviada para este telefone
       const blastMessage = await prisma.blastMessage.findFirst({
-        where: { metaMessageId: messageId }
+        where: {
+          contactPhone: phone,
+          status: 'sent'
+        },
+        orderBy: { sentAt: 'desc' }
       });
 
       if (blastMessage) {

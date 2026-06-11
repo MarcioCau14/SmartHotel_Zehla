@@ -22,7 +22,7 @@ describe('CapturarLeadUseCase', () => {
     expect(lead.id).toBeDefined()
     expect(lead.nome).toBe('João da Silva')
     expect(lead.email?.valor).toBe('joao@example.com')
-    expect(lead.status).toBe('novo')
+    expect(lead.status).toBe('prospect')
 
     // Confirmar persistência no fake repositório
     const leadPersistidoResult = await leadPort.buscarLeadPorId(lead.id, 'prop_123')
@@ -46,10 +46,10 @@ describe('CapturarLeadUseCase', () => {
 
     // Forçar status para 'perdido'
     const leadPerdidoResult = await leadPort.atualizarLead(leadFake.id, leadFake.propriedadeId, {
-      status: 'perdido'
+      status: 'churned'
     })
     expect(leadPerdidoResult.isOk).toBe(true)
-    expect(leadPerdidoResult.value.status).toBe('perdido')
+    expect(leadPerdidoResult.value.status).toBe('churned')
 
     // Tentar capturar novamente com o mesmo e-mail (deve reativar)
     const reativarResult = await useCase.execute({
@@ -62,12 +62,12 @@ describe('CapturarLeadUseCase', () => {
     expect(reativarResult.isOk).toBe(true)
     const leadReativado = reativarResult.value
     expect(leadReativado.id).toBe(leadFake.id)
-    expect(leadReativado.status).toBe('novo')
+    expect(leadReativado.status).toBe('reactivated')
 
     // Verificar se foi persistido como novo no repo
     const checkResult = await leadPort.buscarLeadPorId(leadFake.id, 'prop_123')
     expect(checkResult.isOk).toBe(true)
-    expect(checkResult.value?.status).toBe('novo')
+    expect(checkResult.value?.status).toBe('reactivated')
   })
 
   it('should return failure if lead already exists and is active', async () => {

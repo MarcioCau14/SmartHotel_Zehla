@@ -11,4 +11,6 @@ export interface ICRMRepositoryPort {
   registrarInteracao(record: InteractionRecord): Promise<Result<InteractionRecord, Error>>
   listarInteracoesPorLead(leadId: string): Promise<Result<InteractionRecord[], Error>>
   atualizarStage(leadId: string, stage: CRMPipelineStage): Promise<Result<LeadProfile, Error>>
+  atualizarLead(lead: LeadProfile): Promise<Result<LeadProfile, Error>>
+  buscarLeadPorPropriedade(propriedadeId: string): Promise<Result<LeadProfile | null, Error>>
 }

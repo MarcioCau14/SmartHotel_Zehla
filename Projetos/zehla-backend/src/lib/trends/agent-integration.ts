@@ -72,8 +72,8 @@ export async function getRelevantSignalsForAgent(
   });
 
   return signals
-    .map((s) => ({ ...s, priority: getSignalPriority(s) }))
-    .sort((a, b) => b.priority - a.priority);
+    .map((s: any) => ({ ...s, priority: getSignalPriority(s) }))
+    .sort((a: any, b: any) => b.priority - a.priority);
 }
 
 export function getSignalPriority(signal: {

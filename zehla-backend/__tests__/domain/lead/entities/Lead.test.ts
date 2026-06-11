@@ -101,7 +101,7 @@ describe('Lead', () => {
       lead.clearEvents()
       lead.transitionStatus(LeadStatus.QUALIFIED)
       lead.clearEvents()
-      lead.transitionStatus(LeadStatus.TRIAL_STARTED)
+      lead.transitionStatus(LeadStatus.TRIAL)
       lead.clearEvents()
       const result = lead.transitionStatus(LeadStatus.CONVERTED)
       expect(result.isOk).toBe(true)

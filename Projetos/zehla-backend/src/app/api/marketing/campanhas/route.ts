@@ -14,7 +14,7 @@ import { AgendarPostUseCase } from '../../../../application/marketing/use-cases/
 import { CalcularMetricasMarketingUseCase } from '../../../../application/marketing/use-cases/CalcularMetricasMarketingUseCase'
 import { ProcessarWebhookReviewUseCase } from '../../../../application/marketing/use-cases/ProcessarWebhookReviewUseCase'
 import { ZeMarketerCognitiveService } from '../../../../application/marketing/cognitive/ZeMarketerCognitiveService'
-import { ZeMarketerIntent } from '../../../../application/marketing/cognitive/ZeMarketerIntent'
+import { ZeMarketerIntent } from '../../../../application/marketing/cognitive/ZeMarketerCognitiveTypes'
 import { Result } from '../../../../domain/shared/Result'
 
 export async function POST(request: NextRequest) {
@@ -36,18 +36,26 @@ export async function POST(request: NextRequest) {
 
     // Instanciação manual de dependências com isolamento de tenant usando basePrisma
     const basePrisma = getBasePrisma()
-    const reviewRepo = new PrismaReviewRepository(basePrisma, propertyId)
-    const conteudoRepo = new PrismaConteudoRepository(basePrisma, propertyId)
-    const postRepo = new PrismaPostRepository(basePrisma, propertyId)
-    const metricaRepo = new PrismaMetricaRepository(basePrisma, propertyId)
-    const campanhaRepo = new PrismaCampanhaRepository(basePrisma, propertyId)
+    const reviewRepo = new PrismaReviewRepository(basePrisma)
+    const conteudoRepo = new PrismaConteudoRepository(basePrisma)
+    const postRepo = new PrismaPostRepository(basePrisma)
+    const metricaRepo = new PrismaMetricaRepository(basePrisma)
+    const campanhaRepo = new PrismaCampanhaRepository(basePrisma)
 
     // Repositório de reserva real adaptado para a leitura cross-context
     const reservaRepo = new PrismaReservaRepository(basePrisma, propertyId)
     const readOnlyReservaPort = {
-      buscarReservaPorId: async (id: string) => {
+      buscarPorId: async (id: string) => {
         const result = await reservaRepo.getById(id)
-        return result
+        if (result.isFail) return null
+        const res = result.value
+        return {
+          id: res.id,
+          hospedeNome: 'Hóspede',
+          dataCheckIn: res.periodo.dataInicio,
+          dataCheckOut: res.periodo.dataFim,
+          quartoId: res.roomId
+        }
       }
     }
 

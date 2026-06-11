@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getBasePrisma } from '../../../../lib/prisma'
 import { verifyHmacSignature } from '../../../../infrastructure/http/auth/hmacAuth'
+import { PrismaComercialLeadRepository } from '../../../../infrastructure/persistence/comercial/PrismaComercialLeadRepository'
 import { PrismaLeadRepository } from '../../../../infrastructure/persistence/comercial/PrismaLeadRepository'
 import { PrismaPropostaRepository } from '../../../../infrastructure/persistence/comercial/PrismaPropostaRepository'
 import { PrismaPacoteRepository } from '../../../../infrastructure/persistence/comercial/PrismaPacoteRepository'
@@ -13,6 +14,7 @@ import { AceitarPropostaUseCase } from '../../../../application/comercial/use-ca
 import { SugerirDescontoUseCase } from '../../../../application/comercial/use-cases/SugerirDescontoUseCase'
 import { ConfirmarPagamentoUseCase } from '../../../../application/comercial/use-cases/ConfirmarPagamentoUseCase'
 import { ZeSalesCognitiveService } from '../../../../application/comercial/cognitive/ZeSalesCognitiveService'
+import { DomainEventPublisher } from '../../../../domain/shared/events/DomainEventPublisher'
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,14 +37,16 @@ export async function POST(request: NextRequest) {
 
     // Instanciação manual do Zé-Sales usando basePrisma
     const basePrisma = getBasePrisma()
-    const leadRepo = new PrismaLeadRepository(basePrisma, propriedadeId)
-    const propostaRepo = new PrismaPropostaRepository(basePrisma, propriedadeId)
-    const pacoteRepo = new PrismaPacoteRepository(basePrisma, propriedadeId)
-    const pagamentoRepo = new PrismaPagamentoRepository(basePrisma, propriedadeId)
-    const conversaoRepo = new PrismaConversaoRepository(basePrisma, propriedadeId)
+    const leadRepo = new PrismaLeadRepository(basePrisma)
+    const comercialLeadRepo = new PrismaComercialLeadRepository(basePrisma)
+    const propostaRepo = new PrismaPropostaRepository(basePrisma)
+    const pacoteRepo = new PrismaPacoteRepository(basePrisma)
+    const pagamentoRepo = new PrismaPagamentoRepository(basePrisma)
+    const conversaoRepo = new PrismaConversaoRepository(basePrisma)
 
+    const publisher = new DomainEventPublisher()
     const capturarLeadUC = new CapturarLeadUseCase(leadRepo)
-    const qualificarLeadUC = new QualificarLeadUseCase(leadRepo)
+    const qualificarLeadUC = new QualificarLeadUseCase(comercialLeadRepo, publisher)
     const criarPropostaUC = new CriarPropostaUseCase(propostaRepo, leadRepo, pacoteRepo)
     const aceitarPropostaUC = new AceitarPropostaUseCase(propostaRepo, pagamentoRepo)
     const sugerirDescontoUC = new SugerirDescontoUseCase(propostaRepo, pacoteRepo, leadRepo)

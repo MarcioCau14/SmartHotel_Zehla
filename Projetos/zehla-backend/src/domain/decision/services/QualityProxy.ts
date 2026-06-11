@@ -3,6 +3,8 @@
  * Módulo: src/domain/decision/services/QualityProxy.ts
  */
 
+import { TranscriptQualityScore, TESE7_WEIGHTS } from '../../crm/models/TranscriptQualityScore'
+
 export interface QualityAssessment {
   readonly schemaScore: number;
   readonly formatScore: number;
@@ -75,7 +77,11 @@ export class QualityProxy {
 
   // 1. SCHEMA: Valida se a resposta atende à estrutura esperada.
   // Se for um bucket JSON, valida se o texto é um JSON sintaticamente válido.
+  // Se vazar PII (CPF, telefone, email), schemaScore = 0 (dogma).
   private evaluateSchema(bucketId: string, text: string): number {
+    const hasPII = this._detectPII(text);
+    if (hasPII) return 0.0;
+
     const isJsonBucket = ['09', '10', '11', '18', '25', '26'].includes(bucketId);
     if (!isJsonBucket) {
       const clean = text.trim();
@@ -97,7 +103,11 @@ export class QualityProxy {
 
   // 2. FORMAT: Formatação WhatsApp amigável (ausência de cabeçalhos markdown h1/h2/h3 como "###",
   // uso correto de negritos e itálicos, ausência de bullet points brutos do markdown "- " se puder usar emojis, etc.).
+  // Se vazar PII (CPF, telefone, email), formatScore = 0 (dogma).
   private evaluateFormat(text: string): number {
+    const hasPII = this._detectPII(text);
+    if (hasPII) return 0.0;
+
     let score = 1.0;
 
     // Detectar H1, H2, H3 markdown (###, ##, #)
@@ -223,5 +233,29 @@ export class QualityProxy {
     }
 
     return 1.0;
+  }
+
+  transcriptAssess(responseText: string): TranscriptQualityScore {
+    const schemaScore = this.evaluateSchema('00', responseText);
+    const formatScore = this.evaluateFormat(responseText);
+    const sentimentScore = this.evaluateSentiment('00', responseText, '');
+    const keywordsScore = this.evaluateKeywords('00', responseText);
+    const hallucinationScore = this.evaluateHallucination(responseText);
+    const lengthScore = this.evaluateLength('00', responseText);
+
+    const result = TranscriptQualityScore.create({
+      schemaScore, formatScore, sentimentScore, keywordsScore, hallucinationScore, lengthScore,
+    });
+
+    return result.isOk ? result.value : TranscriptQualityScore.create({
+      schemaScore: 0, formatScore: 0, sentimentScore: 0, keywordsScore: 0, hallucinationScore: 0, lengthScore: 0,
+    }).value! as TranscriptQualityScore;
+  }
+
+  private _detectPII(text: string): boolean {
+    const cpfPattern = /\d{3}\.\d{3}\.\d{3}-\d{2}/;
+    const phonePattern = /\(\d{2}\)\s*\d{4,5}-\d{4}/;
+    const emailPattern = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+    return cpfPattern.test(text) || phonePattern.test(text) || emailPattern.test(text);
   }
 }

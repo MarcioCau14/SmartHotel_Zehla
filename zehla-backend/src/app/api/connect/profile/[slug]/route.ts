@@ -6,10 +6,10 @@ import { withApiSecurity } from '@/lib/server/with-api-security';
 
 async function _GET(
   req: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
-  const { slug } = params;
+    const { slug } = await context.params;
 
     const profile = await prisma.connectProfile.findUnique({
       where: { slug },

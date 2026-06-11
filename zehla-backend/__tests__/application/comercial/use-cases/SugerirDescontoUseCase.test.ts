@@ -32,7 +32,7 @@ describe('SugerirDescontoUseCase', () => {
       dataCaptura: new Date(),
       nome: 'João da Silva',
       score: Score.criar(50).value,
-      status: 'propostado',
+      status: 'negotiation',
       ultimaInteracao: new Date() // interagiu hoje
     }).value
     leadPort.addLeadDirectly(lead)
@@ -86,7 +86,7 @@ describe('SugerirDescontoUseCase', () => {
       propriedadeId: 'prop_123',
       dataCaptura: new Date(),
       nome: 'João da Silva',
-      status: 'propostado',
+      status: 'negotiation',
       ultimaInteracao: new Date()
     }).value
     leadPort.addLeadDirectly(lead)
@@ -143,7 +143,7 @@ describe('SugerirDescontoUseCase', () => {
       propriedadeId: 'prop_123',
       dataCaptura: new Date(),
       nome: 'João da Silva',
-      status: 'propostado',
+      status: 'negotiation',
       ultimaInteracao: inativoHa8Dias
     }).value
     leadPort.addLeadDirectly(lead)

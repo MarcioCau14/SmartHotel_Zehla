@@ -126,7 +126,7 @@ export class ConfirmarPagamentoUseCase {
           }
         }
 
-        if (leadParaConverter.status === 'propostado') {
+        if (leadParaConverter.status === 'negotiation') {
           const leadConvertidoResult = leadParaConverter.converter()
           if (leadConvertidoResult.isOk) {
             const leadConvertido = leadConvertidoResult.value

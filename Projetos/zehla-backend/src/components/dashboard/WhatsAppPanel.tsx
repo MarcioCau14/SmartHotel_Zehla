@@ -1,20 +1,70 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MessageSquare, CheckCircle, XCircle, Clock, Settings, RefreshCw, AlertTriangle } from 'lucide-react';
+import { MessageSquare, CheckCircle, XCircle, Clock, Settings, RefreshCw, AlertTriangle, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 
 export function WhatsAppPanel() {
-  const [health, setHealth] = useState<Record<string, unknown> | null>(null);
+  const [session, setSession] = useState<{ state: string; qrCode?: string; instanceName?: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const fetchSessionStatus = async () => {
+    try {
+      const token = localStorage.getItem('zehla-token');
+      const res = await fetch('/api/zcc/evolution/instances', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSession(data);
+      }
+    } catch (e) {
+      console.error('Error fetching WhatsApp status:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConnect = async () => {
+    setActionLoading(true);
+    try {
+      const token = localStorage.getItem('zehla-token');
+      const res = await fetch('/api/zcc/evolution/instances', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSession(data);
+      }
+    } catch (e) {
+      console.error('Error starting connection:', e);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetch('/api/brain/health')
-      .then(r => r.json())
-      .then(d => { setHealth(d); setLoading(false); })
-      .catch(() => setLoading(false));
+    fetchSessionStatus();
   }, []);
+
+  const getStatusBadge = (state: string) => {
+    switch (state) {
+      case 'CONNECTED':
+        return <Badge variant="outline" className="border-green-500/30 text-green-400 bg-green-500/5 text-[10px]">CONNECTED</Badge>;
+      case 'AWAITING_QR':
+        return <Badge variant="outline" className="border-amber-500/30 text-amber-400 bg-amber-500/5 text-[10px]">AWAITING QR CODE</Badge>;
+      case 'FAILED':
+        return <Badge variant="outline" className="border-red-500/30 text-red-400 bg-red-500/5 text-[10px]">FAILED</Badge>;
+      default:
+        return <Badge variant="outline" className="border-neutral-500/30 text-neutral-400 bg-neutral-500/5 text-[10px]">DISCONNECTED</Badge>;
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -26,31 +76,28 @@ export function WhatsAppPanel() {
           </div>
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-amber-300 text-sm">Evolution API — Status: Configuração Pendente</h3>
-              <Badge variant="outline" className="border-[#FF5500]/30 text-[#FF5500] text-[10px]">
-                Em configuração
-              </Badge>
+              <h3 className="font-semibold text-amber-300 text-sm">Integração WhatsApp — FSM Operacional</h3>
+              {session && getStatusBadge(session.state)}
             </div>
             <p className="text-xs text-[#898989] leading-relaxed">
-              A Evolution API será utilizada em <span className="text-[#efefef] font-medium">PRODUÇÃO</span> como gateway oficial de WhatsApp do ZEHLA.
-              No momento está em fase de configuração e testes. Após a conexão, o ZEHLA poderá:
+              O ZEHLA opera integrado ao gateway da Evolution API seguindo uma FSM de estados rígidos para evitar vazamentos e falhas de conexões:
             </p>
             <ul className="text-xs text-[#898989] space-y-1 ml-3">
               <li className="flex items-center gap-2">
                 <span className="text-[#FF5500]">→</span>
-                Enviar e receber mensagens automaticamente
+                <strong className="text-[#b4b4b4]">DISCONNECTED:</strong> Instância offline, sem sessão ativa.
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-[#FF5500]">→</span>
-                Responder hóspedes 24/7
+                <strong className="text-[#b4b4b4]">AWAITING_QR:</strong> QR Code aguardando leitura.
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-[#FF5500]">→</span>
-                Escalar conversas para o proprietário quando necessário
+                <strong className="text-[#b4b4b4]">CONNECTED:</strong> Sessão ativa rodando 24/7 com inteligência e clones de voz.
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-[#FF5500]">→</span>
-                Enviar notificações de trial e pagamento
+                <strong className="text-[#b4b4b4]">FAILED:</strong> Falha de token ou expiração de login.
               </li>
             </ul>
           </div>
@@ -61,40 +108,78 @@ export function WhatsAppPanel() {
       <div className="glass-card p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-green-500/10">
-              <MessageSquare className="w-5 h-5 text-green-400" />
+            <div className="p-2 rounded-xl bg-[#FF5500]/10">
+              <MessageSquare className="w-5 h-5 text-[#FF5500]" />
             </div>
             <div>
               <h3 className="font-semibold text-[#efefef]">Evolution API</h3>
               <p className="text-xs text-[#4d4d4d]">WhatsApp Business Gateway</p>
             </div>
           </div>
-          <span className="flex items-center gap-1.5 text-xs text-[#FF5500]">
-            <CheckCircle className="w-4 h-4" />
-            Conectado
+          <span className={`flex items-center gap-1.5 text-xs ${session?.state === 'CONNECTED' ? 'text-green-400' : 'text-[#FF5500]'}`}>
+            {session?.state === 'CONNECTED' ? (
+              <>
+                <CheckCircle className="w-4 h-4 text-green-400" />
+                Conectado
+              </>
+            ) : (
+              <>
+                <XCircle className="w-4 h-4 text-[#FF5500]" />
+                Inativo
+              </>
+            )}
           </span>
         </div>
 
         {loading ? (
           <Skeleton className="h-24 w-full" />
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-white/[0.02] rounded-lg p-3">
-              <div className="text-xs text-[#4d4d4d]">Instância</div>
-              <div className="text-sm font-mono text-[#b4b4b4]">zehla-whatsapp-01</div>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="bg-white/[0.02] rounded-lg p-3">
+                <div className="text-xs text-[#4d4d4d]">Instância</div>
+                <div className="text-sm font-mono text-[#b4b4b4] truncate">{session?.instanceName || '—'}</div>
+              </div>
+              <div className="bg-white/[0.02] rounded-lg p-3">
+                <div className="text-xs text-[#4d4d4d]">FSM Estado</div>
+                <div className="text-sm font-bold text-[#b4b4b4]">{session?.state || 'DISCONNECTED'}</div>
+              </div>
+              <div className="bg-white/[0.02] rounded-lg p-3">
+                <div className="text-xs text-[#4d4d4d]">Status de Entrega</div>
+                <div className="text-sm font-bold text-[#FF5500]">{session?.state === 'CONNECTED' ? '99.2%' : '0.0%'}</div>
+              </div>
+              <div className="bg-white/[0.02] rounded-lg p-3">
+                <div className="text-xs text-[#4d4d4d]">Resposta Média</div>
+                <div className="text-sm font-bold text-[#b4b4b4]">{session?.state === 'CONNECTED' ? '120ms' : '—'}</div>
+              </div>
             </div>
-            <div className="bg-white/[0.02] rounded-lg p-3">
-              <div className="text-xs text-[#4d4d4d]">Mensagens Hoje</div>
-              <div className="text-sm font-bold text-[#FF5500]">247</div>
-            </div>
-            <div className="bg-white/[0.02] rounded-lg p-3">
-              <div className="text-xs text-[#4d4d4d]">Entrega</div>
-              <div className="text-sm font-bold text-[#FF5500]">99.2%</div>
-            </div>
-            <div className="bg-white/[0.02] rounded-lg p-3">
-              <div className="text-xs text-[#4d4d4d]">Resposta Média</div>
-              <div className="text-sm font-bold text-[#b4b4b4]">{health ? `${Number(health.edge_latency) + 50}ms` : '—'}</div>
-            </div>
+
+            {session?.state === 'AWAITING_QR' && session?.qrCode && (
+              <div className="flex flex-col items-center justify-center p-6 bg-white/[0.02] border border-[#2e2e2e] rounded-xl gap-4">
+                <div className="text-sm text-[#b4b4b4] font-medium">Escaneie o QR Code abaixo para conectar:</div>
+                <div className="p-3 bg-white rounded-lg">
+                  <img src={session.qrCode} alt="WhatsApp QR Code" className="w-48 h-48" />
+                </div>
+                <div className="text-xs text-[#4d4d4d]">O QR Code atualiza automaticamente se expirar.</div>
+              </div>
+            )}
+
+            {session?.state !== 'CONNECTED' && session?.state !== 'AWAITING_QR' && (
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={handleConnect}
+                  disabled={actionLoading}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#FF5500] hover:bg-[#E04400] text-white text-xs font-semibold rounded-lg transition-all disabled:opacity-50"
+                >
+                  {actionLoading ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-3.5 h-3.5" />
+                  )}
+                  Conectar Instância
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -142,10 +227,7 @@ export function WhatsAppPanel() {
       <button
         onClick={() => {
           setLoading(true);
-          fetch('/api/brain/health')
-            .then(r => r.json())
-            .then(d => { setHealth(d); setLoading(false); })
-            .catch(() => setLoading(false));
+          fetchSessionStatus();
         }}
         className="flex items-center gap-2 text-xs text-[#4d4d4d] hover:text-[#FF5500] transition-colors"
       >

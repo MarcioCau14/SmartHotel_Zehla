@@ -1,6 +1,24 @@
 import { describe, it, expect } from 'vitest'
 import { LeadConversionPosterior, ICP_CONVERSION_PRIORS } from '../../domain/crm/models/LeadConversionPosterior'
 import { LeadScoringService } from '../../domain/crm/services/LeadScoringService'
+import { LeadProfile } from '../../domain/crm/models/LeadProfile'
+import { CRMPipelineStage, ICPersona } from '../../domain/crm/models/CRMPipelineStage'
+
+function makeLead(overrides?: Partial<Parameters<typeof LeadProfile.create>[0]>) {
+  const r = LeadProfile.create({
+    id: 'lead-score-test',
+    nome: 'Lead Teste',
+    telefone: '5511999999999',
+    canalOrigem: 'website',
+    ltvScore: 50,
+    stage: CRMPipelineStage.ENTRADA,
+    createdAt: new Date('2026-01-01'),
+    propriedadeId: 'prop-1',
+    ...overrides,
+  })
+  if (r.isFail) throw r.error
+  return r.value
+}
 
 describe('Tese 2 — Lead Scoring Thompson Sampling', () => {
   describe('LeadConversionPosterior', () => {
@@ -131,5 +149,72 @@ describe('Tese 2 — Lead Scoring Thompson Sampling', () => {
       const result = service.scoreLead('whatsapp', 'hospede_romantico', () => 0.95)
       expect(result.recommendation).toBe('invest_heavy')
     })
+
+    it('T2.14: lead B2B/WhatsApp com alto histórico recebe score maior que lead novo desconhecido/website', () => {
+      const service = new LeadScoringService()
+      for (let i = 0; i < 50; i++) {
+        service.recordConversion('whatsapp', 'produtor_b2b', 1500)
+      }
+      const b2b = service.scoreLead('whatsapp', 'produtor_b2b', () => 0.95)
+      const desconhecido = service.scoreLead('website', 'desconhecido', () => 0.5)
+      expect(b2b.priorityScore).toBeGreaterThan(desconhecido.priorityScore)
+      expect(b2b.recommendation).toBe('invest_heavy')
+      expect(desconhecido.sampledConversionProb).toBeLessThan(b2b.sampledConversionProb)
+    })
+
+    it('T2.15: scoreLeadFromProfile deriva canal e persona do LeadProfile', () => {
+      const service = new LeadScoringService()
+      const lead = makeLead({ canalOrigem: 'whatsapp', persona: ICPersona.PRODUTOR_B2B })
+      for (let i = 0; i < 20; i++) {
+        service.recordConversion('whatsapp', 'produtor_b2b', 2000)
+      }
+      const result = service.scoreLeadFromProfile(lead, () => 0.85)
+      expect(result.key.originChannel).toBe('whatsapp')
+      expect(result.key.persona).toBe('produtor_b2b')
+      expect(result.sampledConversionProb).toBeGreaterThan(0.5)
+    })
+  })
+})
+
+describe('Tese 2 — Hardening (Imutabilidade + Cold Start)', () => {
+  it('T2.H1: LeadConversionPosterior uniform é imutável (Object.isFrozen)', () => {
+    const p = LeadConversionPosterior.uniform({ originChannel: 'whatsapp', persona: 'hospede_romantico' })
+    expect(Object.isFrozen(p)).toBe(true)
+    expect(Object.isFrozen(p.key)).toBe(true)
+  })
+
+  it('T2.H2: recordConversion retorna nova instância congelada (não muta a original)', () => {
+    const p = LeadConversionPosterior.uniform({ originChannel: 'instagram', persona: 'familiar_lazer' })
+    const updated = p.recordConversion(500)
+    expect(updated).not.toBe(p)
+    expect(p.nObservations).toBe(0)
+    expect(updated.nObservations).toBe(1)
+    expect(Object.isFrozen(updated)).toBe(true)
+  })
+
+  it('T2.H3: recordLoss retorna nova instância congelada', () => {
+    const p = LeadConversionPosterior.fromPriors({ originChannel: 'website', persona: 'produtor_b2b' }, 0.08)
+    const updated = p.recordLoss()
+    expect(updated).not.toBe(p)
+    expect(p.beta).toBeCloseTo(p.beta, 0)
+    expect(updated.beta).toBeGreaterThan(p.beta)
+    expect(Object.isFrozen(updated)).toBe(true)
+  })
+
+  it('T2.H4: Cold Start (Beta(1,1)) tem conversionProbability = 0.5 (score mediano de exploração)', () => {
+    const p = LeadConversionPosterior.uniform({ originChannel: 'whatsapp', persona: 'hospede_romantico' })
+    expect(p.alpha).toBe(1)
+    expect(p.beta).toBe(1)
+    expect(p.conversionProbability).toBe(0.5)
+    expect(p.nObservations).toBe(0)
+  })
+
+  it('T2.H5: Cold Start sample nunca falha (sempre retorna valor em [0,1])', () => {
+    const p = LeadConversionPosterior.uniform({ originChannel: 'website', persona: 'desconhecido' })
+    for (let i = 0; i < 100; i++) {
+      const s = p.sample()
+      expect(s).toBeGreaterThanOrEqual(0)
+      expect(s).toBeLessThanOrEqual(1)
+    }
   })
 })

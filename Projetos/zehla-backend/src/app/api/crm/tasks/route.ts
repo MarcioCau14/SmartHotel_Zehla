@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-
 import { prisma } from '@/lib/prisma';
-
 import { withApiSecurity } from '@/lib/server/with-api-security';
+import { authenticateRequest } from '@/infrastructure/http/auth/jwtAuth';
 
 async function _GET(req: NextRequest) {
   try {
-  const { searchParams } = new URL(req.url);
+    const auth = await authenticateRequest(req);
+    if (auth.isFail) {
+      return NextResponse.json({ error: auth.error.message }, { status: 401 });
+    }
+    const propertyId = auth.value.pousadaId;
+
+    const { searchParams } = new URL(req.url);
     const completed = searchParams.get('completed');
     const assignedToId = searchParams.get('assignedToId');
     const contactId = searchParams.get('contactId');
@@ -16,7 +21,7 @@ async function _GET(req: NextRequest) {
     const dueDateFrom = searchParams.get('dueDateFrom');
     const dueDateTo = searchParams.get('dueDateTo');
 
-    const where: any = {};
+    const where: any = { propertyId };
 
     if (completed === 'true') where.completed = true;
     else if (completed === 'false') where.completed = false;
@@ -58,7 +63,13 @@ export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSecond
 
 async function _POST(req: NextRequest) {
   try {
-  const body = await req.json();
+    const auth = await authenticateRequest(req);
+    if (auth.isFail) {
+      return NextResponse.json({ error: auth.error.message }, { status: 401 });
+    }
+    const propertyId = auth.value.pousadaId;
+
+    const body = await req.json();
     const { title, description, dueDate, priority, type, contactId, dealId, assignedToId } = body;
 
     if (!title) {
@@ -75,6 +86,7 @@ async function _POST(req: NextRequest) {
         contactId,
         dealId,
         assignedToId,
+        propertyId,
       },
       include: {
         assignedTo: { select: { id: true, name: true } },

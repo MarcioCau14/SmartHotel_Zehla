@@ -3,13 +3,14 @@ import { ReservationControllerFactory } from '@/infrastructure/http/reservation/
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params
     const body = await request.json()
     const { action } = body
 
-    const reservationId = params.id
+    const reservationId = id
 
     switch (action) {
       case 'CANCEL': {

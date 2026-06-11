@@ -27,7 +27,7 @@ describe('ProcessarPropostasExpiradasUseCase', () => {
       propriedadeId: 'prop_123',
       dataCaptura: new Date(),
       nome: 'Lead Um',
-      status: 'propostado'
+      status: 'negotiation'
     }).value
     leadPort.addLeadDirectly(lead)
 
@@ -62,9 +62,9 @@ describe('ProcessarPropostasExpiradasUseCase', () => {
     const checkProp = await propostaPort.buscarPropostaPorId('prop_expirada', 'prop_123')
     expect(checkProp.value?.status).toBe('expirada')
 
-    // Verificar se o lead mudou para 'perdido'
+    // Verificar se o lead mudou para 'churned'
     const checkLead = await leadPort.buscarLeadPorId('lead_1', 'prop_123')
-    expect(checkLead.value?.status).toBe('perdido')
+    expect(checkLead.value?.status).toBe('churned')
   })
 
   it('should keep lead active if it has other active proposals', async () => {
@@ -80,7 +80,7 @@ describe('ProcessarPropostasExpiradasUseCase', () => {
       propriedadeId: 'prop_123',
       dataCaptura: new Date(),
       nome: 'Lead Dois',
-      status: 'propostado'
+      status: 'negotiation'
     }).value
     leadPort.addLeadDirectly(lead)
 
@@ -134,12 +134,12 @@ describe('ProcessarPropostasExpiradasUseCase', () => {
     const checkProp = await propostaPort.buscarPropostaPorId('prop_expirada_2', 'prop_123')
     expect(checkProp.value?.status).toBe('expirada')
 
-    // Verificar se o lead continuou 'propostado'
+    // Verificar se o lead continuou 'negotiation'
     const checkLead = await leadPort.buscarLeadPorId('lead_2', 'prop_123')
-    expect(checkLead.value?.status).toBe('propostado')
+    expect(checkLead.value?.status).toBe('negotiation')
   })
 
-  it('should not transition lead status if lead status is not "propostado"', async () => {
+  it('should not transition lead status if lead status is not "negotiation"', async () => {
     const propostaPort = new FakePropostaRepository()
     const leadPort = new FakeLeadRepository()
     const useCase = new ProcessarPropostasExpiradasUseCase(propostaPort, leadPort)
@@ -152,7 +152,7 @@ describe('ProcessarPropostasExpiradasUseCase', () => {
       propriedadeId: 'prop_123',
       dataCaptura: new Date(),
       nome: 'Lead Tres',
-      status: 'qualificado'
+      status: 'qualified'
     }).value
     leadPort.addLeadDirectly(lead)
 
@@ -182,6 +182,6 @@ describe('ProcessarPropostasExpiradasUseCase', () => {
     expect(result.value.leadsAfetados).toHaveLength(0) // lead não mudou, pois status não era 'propostado'
 
     const checkLead = await leadPort.buscarLeadPorId('lead_3', 'prop_123')
-    expect(checkLead.value?.status).toBe('qualificado')
+    expect(checkLead.value?.status).toBe('qualified')
   })
 })

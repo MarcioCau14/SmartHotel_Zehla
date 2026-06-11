@@ -27,6 +27,7 @@ describe('ZaosNeuroRouter Lote 4 Test Suite — Persistência e Resiliência de 
       dbResolved,
       `${dbResolved}-wal`,
       `${dbResolved}-shm`,
+      `${dbResolved}.fallback.json`,
     ];
 
     for (const file of filesToDelete) {

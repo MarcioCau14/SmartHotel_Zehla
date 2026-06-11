@@ -1,4 +1,5 @@
-import { LeadConversionPosterior, LeadConversionKey, ICP_CONVERSION_PRIORS } from '../models/LeadConversionPosterior'
+import { LeadConversionPosterior, LeadConversionKey, ICP_CONVERSION_PRIORS, createPosteriorKey } from '../models/LeadConversionPosterior'
+import { LeadProfile } from '../models/LeadProfile'
 
 export interface LeadScoreResult {
   readonly key: Readonly<LeadConversionKey>
@@ -22,6 +23,13 @@ export class LeadScoringService {
         this.posteriors.set(this.makeKey(key), LeadConversionPosterior.fromPriors(key, prior.baseRate))
       }
     }
+  }
+
+  scoreLeadFromProfile(
+    lead: LeadProfile,
+    prng: () => number = Math.random,
+  ): LeadScoreResult {
+    return this.scoreLead(lead.canalOrigem, lead.persona, prng)
   }
 
   scoreLead(

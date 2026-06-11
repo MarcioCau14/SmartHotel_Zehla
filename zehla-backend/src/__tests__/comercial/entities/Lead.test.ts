@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest'
 import { Lead } from '../../../domain/comercial/entities/Lead'
 import { Canal } from '../../../domain/comercial/value-objects/Canal'
 import { Email } from '../../../domain/comercial/value-objects/Email'
@@ -26,7 +27,7 @@ describe('Lead Entity', () => {
         expect(lead.canal).toBe(canal)
         expect(lead.propriedadeId).toBe(propriedadeId)
         expect(lead.dataCaptura).toBe(dataCaptura)
-        expect(lead.status).toBe('novo')
+        expect(lead.status).toBe('prospect')
       }
     })
 
@@ -38,8 +39,8 @@ describe('Lead Entity', () => {
         dataCaptura
       })
 
-       expect(leadResult.isFail).toBe(true)
-       expect(leadResult.error).toBeInstanceOf(Error)
+      expect(leadResult.isFail).toBe(true)
+      expect(leadResult.error).toBeInstanceOf(Error)
     })
 
     it('should reject lead with missing propriedadeId', () => {
@@ -140,7 +141,7 @@ describe('Lead Entity', () => {
       expect(leadResult.isFail).toBe(true)
     })
 
-    it('should set status to novo by default', () => {
+    it('should set status to prospect by default', () => {
       const leadResult = Lead.create({
         id: 'lead_1',
         canal,
@@ -155,7 +156,7 @@ describe('Lead Entity', () => {
         expect(lead.canal).toBe(canal)
         expect(lead.propriedadeId).toBe(propriedadeId)
         expect(lead.dataCaptura).toBe(dataCaptura)
-        expect(lead.status).toBe('novo')
+        expect(lead.status).toBe('prospect')
       }
     })
   })
@@ -180,7 +181,7 @@ describe('Lead Entity', () => {
       const qualificacaoResult = lead.qualificar()
       expect(qualificacaoResult.isOk).toBe(true)
       if (qualificacaoResult.isOk) {
-        expect(qualificacaoResult.value.status).toBe('qualificado')
+        expect(qualificacaoResult.value.status).toBe('qualified')
       }
     })
 
@@ -215,47 +216,52 @@ describe('Lead Entity', () => {
 
     it('should transition from qualified to proposed', () => {
       const leadQualificado = lead.qualificar().value as Lead
-      const proposicaoResult = leadQualificado.propostar()
+      const trialResult = leadQualificado.iniciarTrial()
+      expect(trialResult.isOk).toBe(true)
+      const proposicaoResult = trialResult.value.negociar()
       expect(proposicaoResult.isOk).toBe(true)
       if (proposicaoResult.isOk) {
-        expect(proposicaoResult.value.status).toBe('propostado')
+        expect(proposicaoResult.value.status).toBe('negotiation')
       }
     })
 
-    it('should reject proposing non-qualified lead', () => {
-      const proposicaoResult = lead.propostar()
+    it('should reject proposing non-trial lead', () => {
+      const proposicaoResult = lead.negociar()
       expect(proposicaoResult.isFail).toBe(true)
     })
 
     it('should transition from proposed to converted with document', () => {
       const leadQualificado = lead.qualificar().value as Lead
-      const leadPropostado = leadQualificado.propostar().value as Lead
-      const leadComDoc = new Lead(
-        leadPropostado.id,
-        leadPropostado.canal,
-        leadPropostado.propriedadeId,
-        leadPropostado.dataCaptura,
-        leadPropostado.nome,
-        leadPropostado.email,
-        leadPropostado.telefone,
-        Documento.criar('123.456.789-09', 'CPF').value as Documento,
-        leadPropostado.score,
-        leadPropostado.status,
-        leadPropostado.origemUrl,
-        leadPropostado.tags,
-        leadPropostado.ultimaInteracao
-      )
+      const trialResult = leadQualificado.iniciarTrial().value as Lead
+      const leadPropostado = trialResult.negociar().value as Lead
+      const leadComDocResult = Lead.create({
+        id: leadPropostado.id,
+        canal: leadPropostado.canal,
+        propriedadeId: leadPropostado.propriedadeId,
+        dataCaptura: leadPropostado.dataCaptura,
+        nome: leadPropostado.nome,
+        email: leadPropostado.email,
+        telefone: leadPropostado.telefone,
+        documento: Documento.criar('123.456.789-09', 'CPF').value as Documento,
+        score: leadPropostado.score,
+        status: leadPropostado.status,
+        origemUrl: leadPropostado.origemUrl,
+        tags: leadPropostado.tags,
+        ultimaInteracao: leadPropostado.ultimaInteracao
+      })
 
-      const conversaoResult = leadComDoc.converter()
+      expect(leadComDocResult.isOk).toBe(true)
+      const conversaoResult = leadComDocResult.value.converter()
       expect(conversaoResult.isOk).toBe(true)
       if (conversaoResult.isOk) {
-        expect(conversaoResult.value.status).toBe('convertido')
+        expect(conversaoResult.value.status).toBe('converted')
       }
     })
 
     it('should reject converting proposed lead without document', () => {
       const leadQualificado = lead.qualificar().value as Lead
-      const leadPropostado = leadQualificado.propostar().value as Lead
+      const trialResult = leadQualificado.iniciarTrial().value as Lead
+      const leadPropostado = trialResult.negociar().value as Lead
 
       const conversaoResult = leadPropostado.converter()
       expect(conversaoResult.isFail).toBe(true)
@@ -263,31 +269,36 @@ describe('Lead Entity', () => {
 
     it('should transition from proposed to lost', () => {
       const leadQualificado = lead.qualificar().value as Lead
-      const leadPropostado = leadQualificado.propostar().value as Lead
+      const trialResult = leadQualificado.iniciarTrial().value as Lead
+      const leadPropostado = trialResult.negociar().value as Lead
 
-      const perderResult = leadPropostado.perder('Lost to competitor')
+      const perderResult = leadPropostado.churn('Lost to competitor')
       expect(perderResult.isOk).toBe(true)
       if (perderResult.isOk) {
-        expect(perderResult.value.status).toBe('perdido')
+        expect(perderResult.value.status).toBe('churned')
       }
     })
 
     it('should reject converting lost lead', () => {
       const leadQualificado = lead.qualificar().value as Lead
-      const leadPerdido = leadQualificado.perder('Lost').value as Lead
+      const trialResult = leadQualificado.iniciarTrial().value as Lead
+      const leadPropostado = trialResult.negociar().value as Lead
+      const leadPerdido = leadPropostado.churn('Lost').value as Lead
 
       const converterResult = leadPerdido.converter()
       expect(converterResult.isFail).toBe(true)
     })
 
-    it('should reactivate lost lead to novo', () => {
+    it('should reactivate lost lead to reactivated', () => {
       const leadQualificado = lead.qualificar().value as Lead
-      const leadPerdido = leadQualificado.perder('Lost').value as Lead
+      const trialResult = leadQualificado.iniciarTrial().value as Lead
+      const leadPropostado = trialResult.negociar().value as Lead
+      const leadPerdido = leadPropostado.churn('Lost').value as Lead
 
       const reativarResult = leadPerdido.reativar()
       expect(reativarResult.isOk).toBe(true)
       if (reativarResult.isOk) {
-        expect(reativarResult.value.status).toBe('novo')
+        expect(reativarResult.value.status).toBe('reactivated')
       }
     })
 
@@ -326,7 +337,7 @@ describe('Lead Entity', () => {
       expect(leadNaoQualificado.ehQualificado).toBe(false)
     })
 
-    it('should return converted status when status is convertido', () => {
+    it('should return converted status when status is converted', () => {
       const leadComDoc = Lead.create({
         id: 'lead_1',
         canal,
@@ -339,7 +350,8 @@ describe('Lead Entity', () => {
       }).value as Lead
 
       const leadQualificado = leadComDoc.qualificar().value as Lead
-      const leadPropostado = leadQualificado.propostar().value as Lead
+      const trialResult = leadQualificado.iniciarTrial().value as Lead
+      const leadPropostado = trialResult.negociar().value as Lead
       const leadConvertido = leadPropostado.converter().value as Lead
 
       expect(leadConvertido.ehConvertido).toBe(true)

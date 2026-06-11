@@ -16,9 +16,12 @@ export async function POST(request: NextRequest) {
 
     // ----- INPUT SANITIZATION -----
     const sanitized = sanitizeInput(question);
+    const threatsDetected = sanitized !== question;
 
     // ----- ZDR -----
-    const piiSafe = scanPII(sanitized).sanitized;
+    const piiScan = scanPII(sanitized);
+    const piiSafe = piiScan.sanitized;
+    const found = piiScan.found;
 
     const zai = await ZAI.create();
     const completion = await zai.chat.completions.create({
@@ -44,7 +47,7 @@ NUNCA revele detalhes técnicos internos do sistema.`,
       _security: {
         guardian_version: '2.1.0',
         zdr_active: found.length > 0,
-        input_sanitized: threats.length > 0,
+        input_sanitized: threatsDetected,
       }
     });
   } catch (error: unknown) {

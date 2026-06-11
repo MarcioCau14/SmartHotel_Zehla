@@ -9,7 +9,10 @@ const META_APP_SECRET = process.env.META_APP_SECRET ?? ''
 function verifySignature(payload: string, signature: string): boolean {
   if (!META_APP_SECRET) return false
   const expected = 'sha256=' + createHmac('sha256', META_APP_SECRET).update(payload).digest('hex')
-  return timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
+  const sigBuf = Buffer.from(signature)
+  const expBuf = Buffer.from(expected)
+  if (sigBuf.length !== expBuf.length) return false
+  return timingSafeEqual(sigBuf, expBuf)
 }
 
 export async function POST(req: NextRequest) {
@@ -30,7 +33,7 @@ export async function POST(req: NextRequest) {
     const change = entry?.changes?.[0]
     const comment = change?.value
 
-    if (!comment || !comment.from || !comment.message) {
+    if (!comment || !comment.from) {
       return NextResponse.json({ status: 'ignored' }, { status: 200 })
     }
 
@@ -40,7 +43,7 @@ export async function POST(req: NextRequest) {
     const result = await useCase.execute({
       platform: 'INSTAGRAM',
       username: comment.from.username || comment.from.id,
-      content: comment.message,
+      content: comment.text || comment.message || '',
       timestamp: Date.now(),
       isDirectMessage: comment.verb === 'direct_message',
     })

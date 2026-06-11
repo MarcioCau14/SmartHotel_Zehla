@@ -52,6 +52,21 @@ export class InMemoryCRMAdapter implements ICRMRepositoryPort {
     return Result.ok(atualizado.value)
   }
 
+  async atualizarLead(lead: LeadProfile): Promise<Result<LeadProfile, Error>> {
+    if (!this.leads.has(lead.id)) {
+      return Result.fail(new Error(`Lead ${lead.id} não encontrado`))
+    }
+    this.leads.set(lead.id, lead)
+    return Result.ok(lead)
+  }
+
+  async buscarLeadPorPropriedade(propriedadeId: string): Promise<Result<LeadProfile | null, Error>> {
+    for (const lead of this.leads.values()) {
+      if (lead.propriedadeId === propriedadeId) return Result.ok(lead)
+    }
+    return Result.ok(null)
+  }
+
   reset(): void {
     this.leads.clear()
     this.interacoes.clear()

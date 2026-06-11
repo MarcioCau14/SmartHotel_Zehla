@@ -36,7 +36,7 @@ describe('ConfirmarPagamentoUseCase', () => {
       nome: 'João da Silva',
       score: Score.criar(50).value,
       documento: document,
-      status: 'propostado'
+      status: 'negotiation'
     }).value
     leadPort.addLeadDirectly(lead)
 
@@ -86,7 +86,7 @@ describe('ConfirmarPagamentoUseCase', () => {
     // Verificar se o lead transitou para 'convertido'
     const leadResult = await leadPort.buscarLeadPorId('lead_123', 'prop_123')
     expect(leadResult.isOk).toBe(true)
-    expect(leadResult.value?.status).toBe('convertido')
+    expect(leadResult.value?.status).toBe('converted')
 
     // Verificar se a Conversao foi criada e confirmada
     const conversoesResult = await conversaoPort.listarConversoesPorProposta('proposta_123', 'prop_123')
@@ -114,7 +114,7 @@ describe('ConfirmarPagamentoUseCase', () => {
       dataCaptura: new Date(),
       nome: 'João da Silva',
       score: Score.criar(50).value,
-      status: 'propostado'
+      status: 'negotiation'
     }).value
     leadPort.addLeadDirectly(lead)
 
@@ -152,7 +152,7 @@ describe('ConfirmarPagamentoUseCase', () => {
     // Verificar se o lead transitou para convertido (o use case inseriu um fallback)
     const leadResult = await leadPort.buscarLeadPorId('lead_sem_doc', 'prop_123')
     expect(leadResult.isOk).toBe(true)
-    expect(leadResult.value?.status).toBe('convertido')
+    expect(leadResult.value?.status).toBe('converted')
     expect(leadResult.value?.documento).toBeDefined() // fallback de documento injetado com sucesso!
   })
 
@@ -170,7 +170,7 @@ describe('ConfirmarPagamentoUseCase', () => {
       dataCaptura: new Date(),
       nome: 'João da Silva',
       score: Score.criar(50).value,
-      status: 'propostado'
+      status: 'negotiation'
     }).value
     leadPort.addLeadDirectly(lead)
 

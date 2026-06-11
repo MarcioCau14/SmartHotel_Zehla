@@ -95,4 +95,17 @@ export class InMemoryZaosMemoryAdapter implements IZaosMemoryPort {
     }
     return Result.ok(tenantEntries)
   }
+
+  async deleteByLeadId(leadId: string, tenantId: string): Promise<Result<void>> {
+    try {
+      for (const [id, entry] of Array.from(this.entries.entries())) {
+        if (entry.tenantId === tenantId && entry.metadata?.leadId === leadId) {
+          this.entries.delete(id)
+        }
+      }
+      return Result.ok(undefined)
+    } catch (error) {
+      return Result.fail(error instanceof Error ? error : new Error('Failed to delete by leadId'))
+    }
+  }
 }

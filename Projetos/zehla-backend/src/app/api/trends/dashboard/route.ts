@@ -46,13 +46,13 @@ async function _GET(request: NextRequest) {
       }
     }
 
-    const typeBreakdown = signals.map((s) => ({
+    const typeBreakdown = signals.map((s: any) => ({
       type: s.type,
       severity: s.severity,
       count: s._count.id,
     }));
 
-    const timeline = dataPoints.map((dp) => ({
+    const timeline = dataPoints.map((dp: any) => ({
       date: dp.date.toISOString().slice(0, 10),
       score: dp.interestScore,
       keywordId: dp.keywordId,
@@ -64,9 +64,9 @@ async function _GET(request: NextRequest) {
       data: {
         period: { days, since },
         summary: {
-          totalSignals: signals.reduce((a, s) => a + s._count.id, 0),
+          totalSignals: signals.reduce((a: any, s: any) => a + s._count.id, 0),
           severityBreakdown,
-          uniqueTypes: new Set(signals.map((s) => s.type)).size,
+          uniqueTypes: new Set(signals.map((s: any) => s.type)).size,
         },
         typeBreakdown,
         timeline,

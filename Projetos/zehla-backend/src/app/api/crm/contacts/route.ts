@@ -83,6 +83,11 @@ async function _POST(req: NextRequest) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
+    const propertyId = body.propertyId || (await prisma.property.findFirst().then(p => p?.id));
+    if (!propertyId) {
+      return NextResponse.json({ error: 'Property ID is required' }, { status: 400 });
+    }
+
     const contact = await prisma.crmContact.create({
       data: {
         name,
@@ -96,6 +101,7 @@ async function _POST(req: NextRequest) {
         source: source || 'MANUAL',
         ownerId,
         assignedToId,
+        propertyId,
       },
     });
 

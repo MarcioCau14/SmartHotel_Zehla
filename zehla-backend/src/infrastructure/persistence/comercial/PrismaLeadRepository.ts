@@ -64,6 +64,11 @@ export class PrismaLeadRepository implements ILeadPort {
         }
       }
 
+      const validStatuses = ['prospect', 'qualified', 'trial', 'negotiation', 'converted', 'churned', 'reactivated']
+      if (!row.status || !validStatuses.includes(row.status)) {
+        return Result.fail(new Error('STATUS_CORROMPIDO_NO_BANCO'))
+      }
+
       const leadProps = {
         id: row.id,
         canal: canalResult.value,
@@ -126,7 +131,7 @@ export class PrismaLeadRepository implements ILeadPort {
         telefone: dados.telefone,
         documento: documentoObj,
         score: undefined,
-        status: 'novo' as const,
+        status: 'prospect' as const,
         origemUrl: dados.origemUrl,
         tags: dados.tags,
         ultimaInteracao: undefined

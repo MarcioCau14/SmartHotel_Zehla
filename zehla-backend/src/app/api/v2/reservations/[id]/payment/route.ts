@@ -3,14 +3,15 @@ import { ReservationControllerFactory } from '@/infrastructure/http/reservation/
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params
     const body = await request.json()
     const useCase = ReservationControllerFactory.makeLinkPaymentUseCase()
 
     const result = await useCase.execute({
-      reservationId: params.id,
+      reservationId: id,
       propertyId: body.propertyId,
       amount: body.amount,
       method: body.method,

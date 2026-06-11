@@ -3,6 +3,8 @@ import { InteractionRecord } from '../../domain/crm/models/InteractionRecord'
 import { QualityProxy } from '../../domain/decision/services/QualityProxy'
 import { AuditTranscriptSignature } from '../../domain/crm/cognitive/AuditTranscriptSignature'
 import { AuditorAgentService } from '../../domain/crm/services/AuditorAgentService'
+import { TranscriptQualityScore, COMPLIANCE_THRESHOLD, TESE7_WEIGHTS } from '../../domain/crm/models/TranscriptQualityScore'
+import { EWC_DR } from '../../domain/crm/services/EWC_DR'
 
 function makeInteraction(overrides?: Partial<Parameters<typeof InteractionRecord.create>[0]>) {
   return InteractionRecord.create({
@@ -196,5 +198,171 @@ describe('AuditorAgentService', () => {
     const service = new AuditorAgentService(AuditTranscriptSignature.analyzeTranscript)
     const result = service.execute([] as any)
     expect(result.isOk).toBe(false)
+  })
+})
+
+describe('Tese 7 — TranscriptQualityScore VO', () => {
+  it('T7.1: create com scores válidos retorna VO congelado', () => {
+    const r = TranscriptQualityScore.create({
+      schemaScore: 1.0, formatScore: 0.8, sentimentScore: 0.9,
+      keywordsScore: 1.0, hallucinationScore: 0.9, lengthScore: 1.0,
+    })
+    expect(r.isOk).toBe(true)
+    if (r.isOk) {
+      expect(Object.isFrozen(r.value)).toBe(true)
+    }
+  })
+
+  it('T7.2: rejeita score fora do intervalo [0,1]', () => {
+    const r = TranscriptQualityScore.create({
+      schemaScore: 1.5, formatScore: 0.8, sentimentScore: 0.9,
+      keywordsScore: 1.0, hallucinationScore: 0.9, lengthScore: 1.0,
+    })
+    expect(r.isFail).toBe(true)
+  })
+
+  it('T7.3: cálculo ponderado obedece precisamente aos pesos Tese 7', () => {
+    const r = TranscriptQualityScore.create({
+      schemaScore: 1.0, formatScore: 1.0, sentimentScore: 1.0,
+      keywordsScore: 1.0, hallucinationScore: 1.0, lengthScore: 1.0,
+    })
+    expect(r.isOk).toBe(true)
+    if (r.isOk) {
+      const expected = 1.0 * TESE7_WEIGHTS.schema + 1.0 * TESE7_WEIGHTS.format
+        + 1.0 * TESE7_WEIGHTS.sentiment + 1.0 * TESE7_WEIGHTS.keywords
+        + 1.0 * TESE7_WEIGHTS.hallucination + 1.0 * TESE7_WEIGHTS.length
+      expect(r.value.finalScore).toBeCloseTo(expected, 5)
+    }
+  })
+
+  it('T7.4: finalScore 0.86 é compliant (0.86 > 0.85)', () => {
+    const r = TranscriptQualityScore.create({
+      schemaScore: 1.0, formatScore: 0.8, sentimentScore: 0.8,
+      keywordsScore: 0.5, hallucinationScore: 1.0, lengthScore: 1.0,
+    })
+    expect(r.isOk).toBe(true)
+    if (r.isOk) {
+      expect(r.value.finalScore).toBeGreaterThan(COMPLIANCE_THRESHOLD)
+      const c = r.value.isCompliant()
+      expect(c.isOk).toBe(true)
+      if (c.isOk) expect(c.value).toBe(true)
+    }
+  })
+
+  it('T7.5: finalScore 0.50 NÃO é compliant (0.50 ≤ 0.85)', () => {
+    const r = TranscriptQualityScore.create({
+      schemaScore: 0.5, formatScore: 0.5, sentimentScore: 0.5,
+      keywordsScore: 0.5, hallucinationScore: 0.5, lengthScore: 0.5,
+    })
+    expect(r.isOk).toBe(true)
+    if (r.isOk) {
+      expect(r.value.finalScore).toBeLessThanOrEqual(COMPLIANCE_THRESHOLD)
+      const c = r.value.isCompliant()
+      expect(c.isOk).toBe(true)
+      if (c.isOk) expect(c.value).toBe(false)
+    }
+  })
+
+  it('T7.6: isCompliant rejeita threshold inválido', () => {
+    const r = TranscriptQualityScore.create({
+      schemaScore: 0.5, formatScore: 0.5, sentimentScore: 0.5,
+      keywordsScore: 0.5, hallucinationScore: 0.5, lengthScore: 0.5,
+    })
+    expect(r.isOk).toBe(true)
+    if (r.isOk) {
+      const c = r.value.isCompliant(1.5)
+      expect(c.isFail).toBe(true)
+    }
+  })
+})
+
+describe('Tese 7 — PII Detection (QualityProxy)', () => {
+  const proxy = new QualityProxy()
+
+  it('T7.7: transcrição com CPF zera schemaScore e formatScore', () => {
+    const result = proxy.assess('00', 'Meu CPF é 123.456.789-00, pode confirmar?', '')
+    expect(result.schemaScore).toBe(0)
+    expect(result.formatScore).toBe(0)
+  })
+
+  it('T7.8: transcrição com telefone zera schemaScore e formatScore', () => {
+    const result = proxy.assess('00', 'Ligue para (11) 91234-5678 para confirmar', '')
+    expect(result.schemaScore).toBe(0)
+    expect(result.formatScore).toBe(0)
+  })
+
+  it('T7.9: transcrição com email zera schemaScore e formatScore', () => {
+    const result = proxy.assess('00', 'Envie para test@exemplo.com.br', '')
+    expect(result.schemaScore).toBe(0)
+    expect(result.formatScore).toBe(0)
+  })
+
+  it('T7.10: transcrição sem PII mantém scores normais', () => {
+    const result = proxy.assess('00', 'O check-in é a partir das 14h, ok?', '')
+    expect(result.schemaScore).toBeGreaterThan(0)
+    expect(result.formatScore).toBeGreaterThan(0)
+  })
+
+  it('T7.11: transcriptAssess retorna TranscriptQualityScore congelado', () => {
+    const result = proxy.transcriptAssess('Resposta educada e dentro do padrão.')
+    expect(Object.isFrozen(result)).toBe(true)
+    expect(result.finalScore).toBeGreaterThan(0)
+  })
+})
+
+describe('Tese 7 — EWC-DR Barrier', () => {
+  const ewc = new EWC_DR()
+
+  function makeProposal(overrides?: Partial<{ ruleName: string; currentPrompt: string; proposedPrompt: string; reason: string }>) {
+    return {
+      ruleName: 'desconto_maximo',
+      currentPrompt: 'Nunca dê descontos acima de 10%',
+      proposedPrompt: 'Descontos de até 15% são permitidos com aprovação',
+      reason: 'Alta temporada requer flexibilidade',
+      ...overrides,
+    }
+  }
+
+  it('T7.12: EWC-DR bloqueia evolução quando qualidade está abaixo do threshold', () => {
+    const r = TranscriptQualityScore.create({
+      schemaScore: 0.5, formatScore: 0.5, sentimentScore: 0.5,
+      keywordsScore: 0.5, hallucinationScore: 0.5, lengthScore: 0.5,
+    })
+    expect(r.isOk).toBe(true)
+    if (r.isOk) {
+      const guard = ewc.guard(r.value, makeProposal())
+      expect(guard.isFail).toBe(true)
+      if (guard.isFail) {
+        expect(guard.error.message).toContain('BLOQUEADA')
+        expect(guard.error.message).toContain('desconto_maximo')
+      }
+    }
+  })
+
+  it('T7.13: EWC-DR permite evolução quando qualidade está acima do threshold', () => {
+    const r = TranscriptQualityScore.create({
+      schemaScore: 1.0, formatScore: 0.9, sentimentScore: 0.9,
+      keywordsScore: 1.0, hallucinationScore: 1.0, lengthScore: 1.0,
+    })
+    expect(r.isOk).toBe(true)
+    if (r.isOk) {
+      const guard = ewc.guard(r.value, makeProposal())
+      expect(guard.isOk).toBe(true)
+      if (guard.isOk) {
+        expect(guard.value.ruleName).toBe('desconto_maximo')
+      }
+    }
+  })
+
+  it('T7.14: EWC-DR rejeita proposal sem ruleName', () => {
+    const r = TranscriptQualityScore.create({
+      schemaScore: 1.0, formatScore: 1.0, sentimentScore: 1.0,
+      keywordsScore: 1.0, hallucinationScore: 1.0, lengthScore: 1.0,
+    })
+    expect(r.isOk).toBe(true)
+    if (r.isOk) {
+      const guard = ewc.guard(r.value, makeProposal({ ruleName: '' }))
+      expect(guard.isFail).toBe(true)
+    }
   })
 })

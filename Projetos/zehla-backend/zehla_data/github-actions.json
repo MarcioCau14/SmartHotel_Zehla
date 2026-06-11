@@ -1,0 +1,6 @@
+{
+  "updatedAt": "2026-06-11T12:05:24.305Z",
+  "repository": "MarcioCau14/SmartHotel_Zehla",
+  "error": "Nenhuma credencial segura encontrada.\n👉 Se você usa o GitHub CLI, faça login no seu terminal rodando: gh auth login\n👉 Ou defina a variável de ambiente GH_TOKEN ou GITHUB_TOKEN no seu terminal.",
+  "hasFailures": false
+}

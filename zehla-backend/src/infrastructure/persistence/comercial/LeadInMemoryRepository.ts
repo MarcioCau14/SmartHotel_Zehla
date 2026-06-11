@@ -65,7 +65,7 @@ export class LeadInMemoryRepository implements ILeadPort {
         telefone: dados.telefone,
         documento: documentoObj,
         score: scoreObj,
-        status: 'novo',
+        status: 'prospect',
         origemUrl: dados.origemUrl,
         tags: dados.tags,
         ultimaInteracao: undefined

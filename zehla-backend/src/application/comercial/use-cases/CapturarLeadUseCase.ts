@@ -41,14 +41,14 @@ export class CapturarLeadUseCase {
         const leadExistente = existenteResult.value
         if (leadExistente) {
           // Se existir e estiver perdido ou inativo, reativa
-          if (leadExistente.status === 'perdido' || leadExistente.status === 'inativo') {
+          if (leadExistente.status === 'churned') {
             const reativadoResult = leadExistente.reativar()
             if (reativadoResult.isFail) {
               return Result.fail(reativadoResult.error)
             }
 
             const updateResult = await this.leadPort.atualizarLead(leadExistente.id, leadExistente.propriedadeId, {
-              status: 'novo'
+              status: 'reactivated'
             })
             if (updateResult.isFail) {
               return Result.fail(updateResult.error)

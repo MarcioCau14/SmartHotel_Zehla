@@ -43,7 +43,7 @@ export class FakeLeadRepository implements ILeadPort {
         telefone: dados.telefone,
         documento: documentoResult ? documentoResult.value : undefined,
         score: scoreResult.value,
-        status: 'novo',
+        status: 'prospect',
         origemUrl: dados.origemUrl,
         tags: dados.tags,
         ultimaInteracao: new Date()

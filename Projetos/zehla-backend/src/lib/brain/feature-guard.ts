@@ -11,6 +11,8 @@ const PLAN_FEATURES: Record<Plan, Feature[]> = {
   LITE: ['COMMISSION_DISCOUNT'],
   PRO: ['COMMISSION_DISCOUNT', 'IA_PERSONA', 'WHATSAPP_LEARNING', 'ADVANCED_REPORTS'],
   MAX: ['COMMISSION_DISCOUNT', 'IA_PERSONA', 'WHATSAPP_LEARNING', 'ADVANCED_REPORTS', 'SUPPLIER_MANAGEMENT'],
+  BETA_TESTER: ['COMMISSION_DISCOUNT', 'IA_PERSONA', 'WHATSAPP_LEARNING', 'ADVANCED_REPORTS', 'SUPPLIER_MANAGEMENT'],
+  EARLY_ADOPTER: ['COMMISSION_DISCOUNT', 'IA_PERSONA', 'WHATSAPP_LEARNING', 'ADVANCED_REPORTS', 'SUPPLIER_MANAGEMENT'],
 };
 
 export function hasFeature(plan: Plan, feature: Feature): boolean {
@@ -22,6 +24,8 @@ export function getPlanName(plan: Plan): string {
     LITE: 'ZEHLA Lite',
     PRO: 'ZEHLA Pro',
     MAX: 'ZEHLA Max',
+    BETA_TESTER: 'ZEHLA Beta Tester',
+    EARLY_ADOPTER: 'ZEHLA Early Adopter',
   };
   return names[plan];
 }

@@ -186,3 +186,35 @@ Para cada artefato:
 - Subagentes nunca operam fora de seu contexto definido
 - Nenhuma implementação é mergeada sem passar pelo Revisor
 - O Arquiteto é o guardião da integridade arquitetural — suas decisões soberanas
+
+---
+
+## 🧠 Orquestração Cognitiva (Fable 5 & Anthropic Patterns)
+
+O ecossistema de agentes da ZEHLA é orquestrado sob o perfil cognitivo do **Claude Fable 5** (Mythos-class) e as diretrizes do manifesto *Building Effective Agents* da Anthropic. Quando você (o FULL STACK AGENT) estiver executando tarefas complexas, utilize um dos 5 padrões abaixo conforme a necessidade:
+
+### 1. Prompt Chaining (Encadeamento de Prompts)
+*   **Quando usar:** Quando a tarefa pode ser decomposta em etapas sequenciais e preditivas, onde cada chamada depende da saída da anterior.
+*   **Diretriz ZEHLA:** Evite prompts monolíticos gigantescos. Encadeie:
+    `Extração de Dados (Visão/OCR) ➔ Análise de Sensibilidade Causal ➔ Geração de Código/Estratégia ➔ Validação`.
+
+### 2. Routing (Roteamento Dinâmico)
+*   **Quando usar:** Para classificar uma requisição inicial e delegá-la ao especialista ideal, minimizando o desperdício de tokens de raciocínio.
+*   **Diretriz ZEHLA:** Consultas operacionais simples de reservas usam **Sonnet-class**; decisões de precificação financeira de RevPAR e insights causais usam **Fable 5**.
+
+### 3. Parallelization (Paralelização de Workers)
+*   **Quando usar:** Para analisar múltiplos dados de forma independente e simultânea, consolidando os resultados posteriormente.
+*   **Diretriz ZEHLA:** O monitoramento competitivo da ZEHLA roda tarefas paralelas (um worker por concorrente local) e depois as reúne no agregador da matriz de mercado.
+
+### 4. Orchestrator-Workers (Orquestrador e Executores)
+*   **Quando usar:** Para lidar com tarefas de longo alcance e escopo aberto que exigem planejamento dinâmico.
+*   **Diretriz ZEHLA:** O Maestro central (Fable 5) decompõe o objetivo global em sub-sprints, inicia workers isolados com contextos limitados e consolida a síntese final.
+
+### 5. Evaluator-Optimizer (Loop de Qualidade)
+*   **Quando usar:** Em tarefas críticas onde a precisão de alinhamento de tom (como Voice DNA) ou segurança contra jailbreaks é fundamental.
+*   **Diretriz ZEHLA:** Uma instância gera o rascunho de e-mail marketing ou copy, e outra atua de forma adversária revisando e aplicando refatoração iterativa até atingir score de brand-fit >= 0.90.
+
+### 🛠️ ACI (Agent-Computer Interface) e Resiliência
+*   **Desenho de Ferramentas:** Toda ferramenta de terminal/código deve ser documentada com exemplos claros, parâmetros explícitos e sem overhead de escape, fornecendo aos modelos espaço de pensamento estendido (*Extended Thinking* com budget adequado) antes de emitir ações.
+*   **Memória de Longa Duração:** Utilize o diretório `.opencode/memory/` ou `.brain/memory/` para salvar notas de checkpoints em tarefas complexas, reduzindo o clock drift e permitindo autossuficiência na recuperação de erros.
+

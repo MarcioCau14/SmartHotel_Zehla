@@ -22,10 +22,10 @@ const Reservations = dynamic(() => import('@/components/dashboard/Reservations')
 const Promotions = dynamic(() => import('@/components/dashboard/Promotions').then(m => m.Promotions), { ssr: false, loading: () => <DashboardSkeleton /> });
 const SettingsPanel = dynamic(() => import('@/components/client/SettingsPanel').then(m => m.SettingsPanel), { ssr: false, loading: () => <DashboardSkeleton /> });
 const FinancialReport = dynamic(() => import('@/components/dashboard/FinancialReport').then(m => m.FinancialReport), { ssr: false, loading: () => <DashboardSkeleton /> });
-const MarketingView = dynamic(() => import('@/components/dashboard/MarketingView'), { ssr: false, loading: () => <DashboardSkeleton /> });
+const MarketingView = dynamic(() => import('@/components/dashboard/MarketingView').then(m => m.MarketingView), { ssr: false, loading: () => <DashboardSkeleton /> });
 const ZehlaWarRoom = dynamic(() => import('@/components/dashboard/ZehlaWarRoom'), { ssr: false, loading: () => <DashboardSkeleton /> });
 const VisibilityDashboard = dynamic(() => import('@/components/dashboard/VisibilityDashboard').then(m => m.VisibilityDashboard), { ssr: false, loading: () => <DashboardSkeleton /> });
-const FNRHCheckinProvider = dynamic(() => import('@/components/dashboard/FNRHCheckinProvider'), { ssr: false, loading: () => <DashboardSkeleton /> });
+const FNRHCheckinProvider = dynamic(() => import('@/components/dashboard/FNRHCheckinProvider').then(m => m.FNRHCheckinProvider), { ssr: false, loading: () => <DashboardSkeleton /> });
 const VoiceStudioV2 = dynamic(() => import('@/components/VoiceStudio/VoiceStudioV2').then(m => m.VoiceStudioV2), { ssr: false, loading: () => <DashboardSkeleton /> });
 const BrainDashboard = dynamic(() => import('@/components/dashboard/BrainDashboard').then(m => m.BrainDashboard), { ssr: false, loading: () => <DashboardSkeleton /> });
 
@@ -266,6 +266,8 @@ function DashboardContent() {
       <div className="min-h-screen flex flex-col bg-[#0a0a0a]">
         <ClientTopNav 
           tenantData={topNavTenantData} 
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
           onOpenZCC={() => setActiveTab('sala-de-guerra')}
         />
         <div className="flex-1 flex items-center justify-center p-4">

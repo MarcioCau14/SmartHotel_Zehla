@@ -30,4 +30,5 @@ export interface IZaosMemoryPort {
   getById(id: string, tenantId: string): Promise<Result<MemoryEntry>>
   deleteById(id: string, tenantId: string): Promise<Result<void>>
   getByTenant(tenantId: string): Promise<Result<MemoryEntry[]>>
+  deleteByLeadId(leadId: string, tenantId: string): Promise<Result<void>>
 }

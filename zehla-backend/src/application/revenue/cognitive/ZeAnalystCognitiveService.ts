@@ -49,6 +49,7 @@ export class ZeAnalystCognitiveService {
         case 'GERAR_FORECAST':
           return await this.handleGerarForecast(input)
         case 'CALCULAR_METRICAS_REVENUE':
+        case 'CONSULTAR_METRICAS':
           return await this.handleCalcularMetricas(input)
         case 'REBALANCEAR_TARIFAS_POR_CANAL':
           return await this.handleRebalancearTarifas(input)

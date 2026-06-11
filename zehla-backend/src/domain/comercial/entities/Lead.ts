@@ -86,7 +86,7 @@ export class Lead {
     }
     
     // Documento obrigatório para leads convertidos (LGPD)
-    if (props.status === 'convertido' && !props.documento) {
+    if (props.status === 'converted' && !props.documento) {
       return Result.fail(new Error('Documento is required for converted lead (LGPD)'))
     }
     
@@ -142,7 +142,7 @@ export class Lead {
   }
 
   get ehConvertido(): boolean {
-    return this.status === 'convertido'
+    return this.status === 'converted'
   }
 
   get ehChurn(): boolean {

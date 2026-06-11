@@ -1,10 +1,19 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   SlotFillingState,
   ReservationSlot,
   ALL_SLOTS,
   REQUIRED_SLOTS,
 } from '../../domain/crm/models/SDRSlotFilling'
+import { ProcessSDRMessageUseCase } from '../../application/crm/use-cases/ProcessSDRMessageUseCase'
+import { ISlotExtractorPort, ExtractedSlot } from '../../domain/crm/ports/ISlotExtractorPort'
+import { Result } from '../../shared/Result'
+
+function createMockExtractor(results: ExtractedSlot[]): ISlotExtractorPort {
+  return {
+    extractSlots: vi.fn().mockResolvedValue(Result.ok(results)),
+  }
+}
 
 describe('SlotFillingState', () => {
   describe('create', () => {
@@ -166,6 +175,166 @@ describe('SlotFillingState', () => {
       state = state.fillSlot(ReservationSlot.CHECKOUT, '2027-06-14', 0.95)
       state = state.fillSlot(ReservationSlot.GUESTS, '2', 0.95)
       expect(state.data.currentTargetSlot).toBe(ReservationSlot.ROOM_TYPE)
+    })
+  })
+
+  describe('edge cases', () => {
+    it('deve sobrescrever slot já preenchido com novos valores', () => {
+      let state = SlotFillingState.create('s1', 'lead-123')
+      state = state.fillSlot(ReservationSlot.CHECKIN, '2027-06-10', 0.95, 1000)
+      state = state.fillSlot(ReservationSlot.CHECKIN, '2027-07-01', 0.80, 2000)
+      const checkin = state.data.slots.get(ReservationSlot.CHECKIN)!
+      expect(checkin.value).toBe('2027-07-01')
+      expect(checkin.confidence).toBe(0.80)
+      expect(checkin.extractedAt).toBe(2000)
+    })
+
+    it('deve aceitar string vazia como valor (edge: campo textual opcional)', () => {
+      const state = SlotFillingState.create('s1', 'lead-123')
+      const next = state.fillSlot(ReservationSlot.SPECIAL_REQUESTS, '', 0.5)
+      expect(next.data.slots.get(ReservationSlot.SPECIAL_REQUESTS)!.value).toBe('')
+    })
+
+    it('currentTargetSlot deve ser null apenas quando todos os 7 slots preenchidos', () => {
+      let state = SlotFillingState.create('s1', 'lead-123')
+      for (const slot of ALL_SLOTS) {
+        state = state.fillSlot(slot, 'any', 0.9)
+      }
+      expect(state.data.currentTargetSlot).toBeNull()
+    })
+
+    it('currentTargetSlot deve manter-se no primeiro required vazio após preencher apenas opcionais', () => {
+      let state = SlotFillingState.create('s1', 'lead-123')
+      state = state.fillSlot(ReservationSlot.ROOM_TYPE, 'Suite', 0.9)
+      state = state.fillSlot(ReservationSlot.BUDGET, '300', 0.8)
+      expect(state.data.currentTargetSlot).toBe(ReservationSlot.CHECKIN)
+    })
+  })
+})
+
+describe('ProcessSDRMessageUseCase', () => {
+  let extractor: ISlotExtractorPort
+  let useCase: ProcessSDRMessageUseCase
+
+  beforeEach(() => {
+    extractor = createMockExtractor([])
+    useCase = new ProcessSDRMessageUseCase(extractor)
+  })
+
+  describe('validação de entrada', () => {
+    it('deve rejeitar mensagem vazia', async () => {
+      const result = await useCase.execute({ message: '', sessionId: 's1', leadId: 'lead-1' })
+      expect(result.isFail).toBe(true)
+    })
+
+    it('deve rejeitar sessionId vazio', async () => {
+      const result = await useCase.execute({ message: 'Quero reservar', sessionId: '', leadId: 'lead-1' })
+      expect(result.isFail).toBe(true)
+    })
+
+    it('deve rejeitar leadId vazio', async () => {
+      const result = await useCase.execute({ message: 'Quero reservar', sessionId: 's1', leadId: '' })
+      expect(result.isFail).toBe(true)
+    })
+  })
+
+  describe('orquestração com extrator mockado', () => {
+    it('deve criar novo estado quando existingState não fornecido', async () => {
+      extractor = createMockExtractor([
+        { slot: ReservationSlot.CHECKIN, value: '2027-06-10', confidence: 0.95 },
+      ])
+      useCase = new ProcessSDRMessageUseCase(extractor)
+
+      const result = await useCase.execute({ message: '10 de junho', sessionId: 's1', leadId: 'lead-1' })
+      expect(result.isOk).toBe(true)
+      if (result.isOk) {
+        expect(result.value.state.data.sessionId).toBe('s1')
+        expect(result.value.state.data.leadId).toBe('lead-1')
+        expect(result.value.nextPrompt).toBe('ask_checkout_date')
+        expect(result.value.progress).toBe(14)
+      }
+    })
+
+    it('deve aplicar múltiplos slots extraídos em uma mensagem', async () => {
+      extractor = createMockExtractor([
+        { slot: ReservationSlot.CHECKIN, value: '10/06/2027', confidence: 0.92 },
+        { slot: ReservationSlot.CHECKOUT, value: '14/06/2027', confidence: 0.88 },
+        { slot: ReservationSlot.GUESTS, value: '2 adultos e 1 criança', confidence: 0.85 },
+      ])
+      useCase = new ProcessSDRMessageUseCase(extractor)
+
+      const result = await useCase.execute({ message: 'checkin 10/06, checkout 14/06, 2 adultos 1 criança', sessionId: 's1', leadId: 'lead-1' })
+      expect(result.isOk).toBe(true)
+      if (result.isOk) {
+        expect(result.value.nextPrompt).toBe('ask_room_preference')
+        expect(result.value.state.data.completedRequired).toBe(true)
+        expect(result.value.state.data.allCompleted).toBe(false)
+      }
+    })
+
+    it('deve continuar de estado existente', async () => {
+      const existing = SlotFillingState.create('s1', 'lead-1')
+        .fillSlot(ReservationSlot.CHECKIN, '2027-06-10', 0.95)
+
+      extractor = createMockExtractor([
+        { slot: ReservationSlot.CHECKOUT, value: '2027-06-14', confidence: 0.90 },
+      ])
+      useCase = new ProcessSDRMessageUseCase(extractor)
+
+      const result = await useCase.execute({
+        message: 'checkout 14 de junho',
+        sessionId: 's1',
+        leadId: 'lead-1',
+        existingState: existing,
+      })
+      expect(result.isOk).toBe(true)
+      if (result.isOk) {
+        expect(result.value.state.data.slots.get(ReservationSlot.CHECKIN)!.value).toBe('2027-06-10')
+        expect(result.value.state.data.slots.get(ReservationSlot.CHECKOUT)!.value).toBe('2027-06-14')
+      }
+    })
+
+    it('deve propagar falha do extrator', async () => {
+      extractor = { extractSlots: vi.fn().mockResolvedValue(Result.fail(new Error('Falha na extração'))) }
+      useCase = new ProcessSDRMessageUseCase(extractor)
+
+      const result = await useCase.execute({ message: 'alguma mensagem', sessionId: 's1', leadId: 'lead-1' })
+      expect(result.isFail).toBe(true)
+      if (result.isFail) {
+        expect(result.error.message).toContain('Falha na extração')
+      }
+    })
+  })
+
+  describe('invariantes de negócio', () => {
+    it('nextPrompt deve ser booking_confirmation quando todos os slots preenchidos', async () => {
+      extractor = createMockExtractor(
+        ALL_SLOTS.map(s => ({ slot: s, value: 'any', confidence: 0.9 }))
+      )
+      useCase = new ProcessSDRMessageUseCase(extractor)
+
+      const result = await useCase.execute({ message: 'tudo pronto', sessionId: 's1', leadId: 'lead-1' })
+      expect(result.isOk).toBe(true)
+      if (result.isOk) {
+        expect(result.value.nextPrompt).toBe('booking_confirmation')
+        expect(result.value.progress).toBe(100)
+      }
+    })
+
+    it('deve preencher apenas REQUIRED e avançar para opcionais no nextPrompt', async () => {
+      extractor = createMockExtractor([
+        { slot: ReservationSlot.CHECKIN, value: '10/06', confidence: 0.95 },
+        { slot: ReservationSlot.CHECKOUT, value: '14/06', confidence: 0.95 },
+        { slot: ReservationSlot.GUESTS, value: '2', confidence: 0.95 },
+      ])
+      useCase = new ProcessSDRMessageUseCase(extractor)
+
+      const result = await useCase.execute({ message: 'data completa', sessionId: 's1', leadId: 'lead-1' })
+      expect(result.isOk).toBe(true)
+      if (result.isOk) {
+        expect(result.value.state.data.completedRequired).toBe(true)
+        expect(result.value.nextPrompt).toBe('ask_room_preference')
+      }
     })
   })
 })

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { withApiSecurity } from '@/lib/server/with-api-security'
 import { authenticateRequest } from '@/infrastructure/http/auth/jwtAuth'
 import { PrismaCRMRepository } from '@/infrastructure/persistence/crm/PrismaCRMRepository'
+import { getWhatsAppPort } from '@/infrastructure/external/evolution'
+import { FarmerReactivationService } from '@/domain/crm/services/FarmerReactivationService'
 import { ReactivateColdLeadUseCase } from '@/application/crm/use-cases/ReactivateColdLeadUseCase'
 
 async function _POST(req: NextRequest) {
@@ -29,8 +31,10 @@ async function _POST(req: NextRequest) {
       return NextResponse.json({ error: 'Acesso negado a este lead' }, { status: 403 })
     }
 
-    const useCase = new ReactivateColdLeadUseCase(repo, async () => {})
-    const result = await useCase.execute(leadId, new Date())
+    const whatsApp = getWhatsAppPort()
+    const farmerService = new FarmerReactivationService()
+    const useCase = new ReactivateColdLeadUseCase(repo, whatsApp, farmerService, async () => {})
+    const result = await useCase.execute([leadResult.value], new Date())
 
     if (result.isFail) {
       return NextResponse.json({ error: result.error.message }, { status: 400 })

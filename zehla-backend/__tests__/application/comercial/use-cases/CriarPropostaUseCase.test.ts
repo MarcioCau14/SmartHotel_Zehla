@@ -31,7 +31,7 @@ describe('CriarPropostaUseCase', () => {
       dataCaptura: new Date(),
       nome: 'João da Silva',
       score: Score.criar(50).value,
-      status: 'qualificado'
+      status: 'qualified'
     }).value
     leadPort.addLeadDirectly(lead)
 
@@ -69,7 +69,7 @@ describe('CriarPropostaUseCase', () => {
     // Confirmar se o lead transitou para 'propostado'
     const leadAtualizadoResult = await leadPort.buscarLeadPorId('lead_qualificado', 'prop_123')
     expect(leadAtualizadoResult.isOk).toBe(true)
-    expect(leadAtualizadoResult.value?.status).toBe('propostado')
+    expect(leadAtualizadoResult.value?.status).toBe('negotiation')
   })
 
   it('should fail to create proposal if lead is not qualified', async () => {
@@ -86,7 +86,7 @@ describe('CriarPropostaUseCase', () => {
       dataCaptura: new Date(),
       nome: 'Maria da Silva',
       score: Score.criar(10).value,
-      status: 'novo'
+      status: 'prospect'
     }).value
     leadPort.addLeadDirectly(lead)
 
@@ -129,7 +129,7 @@ describe('CriarPropostaUseCase', () => {
       dataCaptura: new Date(),
       nome: 'João da Silva',
       score: Score.criar(50).value,
-      status: 'qualificado'
+      status: 'qualified'
     }).value
     leadPort.addLeadDirectly(lead)
 
@@ -173,7 +173,7 @@ describe('CriarPropostaUseCase', () => {
       dataCaptura: new Date(),
       nome: 'João da Silva',
       score: Score.criar(50).value,
-      status: 'qualificado'
+      status: 'qualified'
     }).value
     leadPort.addLeadDirectly(lead)
 
@@ -217,7 +217,7 @@ describe('CriarPropostaUseCase', () => {
       dataCaptura: new Date(),
       nome: 'João da Silva',
       score: Score.criar(50).value,
-      status: 'qualificado'
+      status: 'qualified'
     }).value
     leadPort.addLeadDirectly(lead)
 

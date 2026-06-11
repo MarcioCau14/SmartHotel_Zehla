@@ -4,6 +4,7 @@ import { classifyWorker } from './classifyWorker';
 import { enrichWorker } from './enrichWorker';
 import { subconsciousWorker } from '../lib/ml/subconscious-worker';
 import { validateWorker } from './validateWorker';
+import { ZccScheduler } from '../lib/ml/scheduler';
 
 
 // src/workers/index.ts — ZEHLA Brain v4: Worker Orchestrator
@@ -23,6 +24,8 @@ async function startAllWorkers() {
   
   
   
+  // Registrar e iniciar o agendador de repeatable jobs (BullMQ)
+  await ZccScheduler.start();
 
   for (const { name, worker } of workers) {
     worker.on('ready', () => {

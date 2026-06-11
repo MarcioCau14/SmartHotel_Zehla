@@ -20,7 +20,7 @@ describe('QualificarLeadUseCase', () => {
       dataCaptura: new Date(),
       nome: 'João da Silva',
       score,
-      status: 'novo'
+      status: 'prospect'
     }).value
 
     leadPort.addLeadDirectly(lead)
@@ -29,12 +29,12 @@ describe('QualificarLeadUseCase', () => {
 
     expect(result.isOk).toBe(true)
     const qualifiedLead = result.value
-    expect(qualifiedLead.status).toBe('qualificado')
+    expect(qualifiedLead.status).toBe('qualified')
 
     // Confirmar no repo
     const checkResult = await leadPort.buscarLeadPorId('lead_1', 'prop_123')
     expect(checkResult.isOk).toBe(true)
-    expect(checkResult.value?.status).toBe('qualificado')
+    expect(checkResult.value?.status).toBe('qualified')
   })
 
   it('should fail to qualify if lead score is insufficient', async () => {
@@ -51,7 +51,7 @@ describe('QualificarLeadUseCase', () => {
       dataCaptura: new Date(),
       nome: 'Maria Silva',
       score,
-      status: 'novo'
+      status: 'prospect'
     }).value
 
     leadPort.addLeadDirectly(lead)
@@ -73,7 +73,7 @@ describe('QualificarLeadUseCase', () => {
       propriedadeId: 'prop_123',
       dataCaptura: new Date(),
       nome: 'Carlos Souza',
-      status: 'novo'
+      status: 'prospect'
       // sem score
     }).value
 

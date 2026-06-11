@@ -20,15 +20,16 @@ async function getOwnedLinkId(session: { user: { id: string } }, linkId: string)
 
 async function _PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-  const session = await getServerSession(authOptions);
+    const { id } = await context.params;
+    const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const owns = await getOwnedLinkId(session as any, params.id);
+    const owns = await getOwnedLinkId(session as any, id);
     if (!owns) {
       return NextResponse.json({ error: 'Link não encontrado' }, { status: 404 });
     }
@@ -36,7 +37,7 @@ async function _PUT(
     const body = await req.json();
 
     const link = await prisma.connectLink.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         label: body.label,
         url: body.url,
@@ -59,21 +60,22 @@ async function _PUT(
 
 async function _DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-  const session = await getServerSession(authOptions);
+    const { id } = await context.params;
+    const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const owns = await getOwnedLinkId(session as any, params.id);
+    const owns = await getOwnedLinkId(session as any, id);
     if (!owns) {
       return NextResponse.json({ error: 'Link não encontrado' }, { status: 404 });
     }
 
     await prisma.connectLink.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ success: true });

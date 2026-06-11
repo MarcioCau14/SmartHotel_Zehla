@@ -9,9 +9,11 @@ import * as path from 'path';
 import { IRouterStatePort } from '../ports/IRouterStatePort';
 
 export class PosteriorRepository implements IRouterStatePort {
-  private readonly db: Database.Database;
+  private readonly db: Database.Database | null = null;
   private readonly dbPath: string;
   private readonly snapshotDir: string;
+  private readonly useSqlite: boolean;
+  private readonly fallbackJsonPath: string;
 
   // Buffers in-memory
   private posteriorBuffer: Map<string, {
@@ -32,6 +34,25 @@ export class PosteriorRepository implements IRouterStatePort {
     halfOpenAttempts: number;
   }> = new Map();
 
+  // Bancos de dados in-memory para fallback
+  private inMemoryPosteriors: Map<string, {
+    bucketId: string;
+    providerName: string;
+    alpha: number;
+    beta: number;
+    nObservations: number;
+    lastUpdateAt: number;
+  }> = new Map();
+
+  private inMemoryCbs: Map<string, {
+    state: string;
+    consecutiveFailures: number;
+    consecutiveSuccesses: number;
+    lastFailureAt: number;
+    openedAt: number;
+    halfOpenAttempts: number;
+  }> = new Map();
+
   private drainInterval: NodeJS.Timeout | null = null;
 
   constructor(
@@ -40,21 +61,30 @@ export class PosteriorRepository implements IRouterStatePort {
   ) {
     this.dbPath = path.resolve(dbPath);
     this.snapshotDir = path.resolve(snapshotDir);
+    this.fallbackJsonPath = this.dbPath + '.fallback.json';
 
     // Garantir caminhos de diretórios
     fs.mkdirSync(path.dirname(this.dbPath), { recursive: true });
     fs.mkdirSync(this.snapshotDir, { recursive: true });
 
-    // Iniciar banco SQLite
-    this.db = new Database(this.dbPath);
+    try {
+      // Iniciar banco SQLite
+      this.db = new Database(this.dbPath);
 
-    // Pragmas dogmáticos para ultra performance
-    this.db.pragma('journal_mode = WAL');
-    this.db.pragma('synchronous = NORMAL');
-    this.db.pragma('busy_timeout = 5000');
+      // Pragmas dogmáticos para ultra performance
+      this.db.pragma('journal_mode = WAL');
+      this.db.pragma('synchronous = NORMAL');
+      this.db.pragma('busy_timeout = 5000');
 
-    // Inicializar tabelas
-    this._initializeSchema();
+      this.useSqlite = true;
+
+      // Inicializar tabelas
+      this._initializeSchema();
+    } catch (err) {
+      console.warn("⚠️ Falha ao inicializar SQLite (better-sqlite3). Usando fallback in-memory + JSON. Erro:", err);
+      this.useSqlite = false;
+      this._loadFromFallbackJson();
+    }
 
     // Iniciar timer de drenagem a cada 500ms
     this._startDrainInterval();
@@ -63,7 +93,42 @@ export class PosteriorRepository implements IRouterStatePort {
     this._setupGracefulShutdown();
   }
 
+  private _loadFromFallbackJson(): void {
+    if (fs.existsSync(this.fallbackJsonPath)) {
+      try {
+        const content = fs.readFileSync(this.fallbackJsonPath, 'utf-8');
+        const data = JSON.parse(content);
+        if (data.posteriors) {
+          for (const p of data.posteriors) {
+            const key = `${p.bucketId}__${p.providerName}`;
+            this.inMemoryPosteriors.set(key, p);
+          }
+        }
+        if (data.circuitBreakers) {
+          for (const key in data.circuitBreakers) {
+            this.inMemoryCbs.set(key, data.circuitBreakers[key]);
+          }
+        }
+      } catch (e) {
+        console.error("Erro ao carregar dados do fallback JSON:", e);
+      }
+    }
+  }
+
+  private _saveToFallbackJson(): void {
+    try {
+      const data = {
+        posteriors: Array.from(this.inMemoryPosteriors.values()),
+        circuitBreakers: Object.fromEntries(this.inMemoryCbs.entries())
+      };
+      fs.writeFileSync(this.fallbackJsonPath, JSON.stringify(data, null, 2), 'utf-8');
+    } catch (e) {
+      console.error("Erro ao salvar dados no fallback JSON:", e);
+    }
+  }
+
   private _initializeSchema(): void {
+    if (!this.useSqlite || !this.db) return;
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS posteriors (
         bucket_id TEXT NOT NULL,
@@ -97,7 +162,9 @@ export class PosteriorRepository implements IRouterStatePort {
     const handleShutdown = (signal: string) => {
       // Dreno síncrono emergencial antes do encerramento
       this.drain();
-      this.db.close();
+      if (this.useSqlite && this.db) {
+        this.db.close();
+      }
       if (this.drainInterval) {
         clearInterval(this.drainInterval);
       }
@@ -122,38 +189,57 @@ export class PosteriorRepository implements IRouterStatePort {
     this.posteriorBuffer.clear();
     this.cbBuffer.clear();
 
-    const insertPosterior = this.db.prepare(`
-      INSERT INTO posteriors (bucket_id, provider_name, alpha, beta, n_observations, last_update_at)
-      VALUES (?, ?, ?, ?, ?, ?)
-      ON CONFLICT(bucket_id, provider_name) DO UPDATE SET
-        alpha = excluded.alpha,
-        beta = excluded.beta,
-        n_observations = excluded.n_observations,
-        last_update_at = excluded.last_update_at
-    `);
+    if (this.useSqlite && this.db) {
+      const insertPosterior = this.db.prepare(`
+        INSERT INTO posteriors (bucket_id, provider_name, alpha, beta, n_observations, last_update_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(bucket_id, provider_name) DO UPDATE SET
+          alpha = excluded.alpha,
+          beta = excluded.beta,
+          n_observations = excluded.n_observations,
+          last_update_at = excluded.last_update_at
+      `);
 
-    const insertCb = this.db.prepare(`
-      INSERT INTO circuit_breakers (key, state, consecutive_failures, consecutive_successes, last_failure_at, opened_at, half_open_attempts)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(key) DO UPDATE SET
-        state = excluded.state,
-        consecutive_failures = excluded.consecutive_failures,
-        consecutive_successes = excluded.consecutive_successes,
-        last_failure_at = excluded.last_failure_at,
-        opened_at = excluded.opened_at,
-        half_open_attempts = excluded.half_open_attempts
-    `);
+      const insertCb = this.db.prepare(`
+        INSERT INTO circuit_breakers (key, state, consecutive_failures, consecutive_successes, last_failure_at, opened_at, half_open_attempts)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(key) DO UPDATE SET
+          state = excluded.state,
+          consecutive_failures = excluded.consecutive_failures,
+          consecutive_successes = excluded.consecutive_successes,
+          last_failure_at = excluded.last_failure_at,
+          opened_at = excluded.opened_at,
+          half_open_attempts = excluded.half_open_attempts
+      `);
 
-    const transaction = this.db.transaction(() => {
+      const transaction = this.db.transaction(() => {
+        for (const p of posteriorsToSave) {
+          insertPosterior.run(p.bucketId, p.providerName, p.alpha, p.beta, p.nObservations, p.lastUpdateAt);
+        }
+        for (const [key, cb] of cbToSave) {
+          insertCb.run(key, cb.state, cb.consecutiveFailures, cb.consecutiveSuccesses, cb.lastFailureAt, cb.openedAt, cb.halfOpenAttempts);
+        }
+      });
+
+      transaction();
+    } else {
+      // Gravar no in-memory e salvar no JSON
       for (const p of posteriorsToSave) {
-        insertPosterior.run(p.bucketId, p.providerName, p.alpha, p.beta, p.nObservations, p.lastUpdateAt);
+        const key = `${p.bucketId}__${p.providerName}`;
+        this.inMemoryPosteriors.set(key, {
+          bucketId: p.bucketId,
+          providerName: p.providerName,
+          alpha: p.alpha,
+          beta: p.beta,
+          nObservations: p.nObservations,
+          lastUpdateAt: p.lastUpdateAt
+        });
       }
       for (const [key, cb] of cbToSave) {
-        insertCb.run(key, cb.state, cb.consecutiveFailures, cb.consecutiveSuccesses, cb.lastFailureAt, cb.openedAt, cb.halfOpenAttempts);
+        this.inMemoryCbs.set(key, { ...cb });
       }
-    });
-
-    transaction();
+      this._saveToFallbackJson();
+    }
   }
 
   // ── IRouterStatePort Implementation ──
@@ -164,16 +250,6 @@ export class PosteriorRepository implements IRouterStatePort {
     nObservations: number;
     lastUpdateAt: number;
   }> {
-    // 1. Ler do SQLite
-    const rows = this.db.prepare('SELECT * FROM posteriors').all() as Array<{
-      bucket_id: string;
-      provider_name: string;
-      alpha: number;
-      beta: number;
-      n_observations: number;
-      last_update_at: number;
-    }>;
-
     const map = new Map<string, {
       alpha: number;
       beta: number;
@@ -181,14 +257,36 @@ export class PosteriorRepository implements IRouterStatePort {
       lastUpdateAt: number;
     }>();
 
-    for (const r of rows) {
-      const key = `${r.bucket_id}__${r.provider_name}`;
-      map.set(key, {
-        alpha: r.alpha,
-        beta: r.beta,
-        nObservations: r.n_observations,
-        lastUpdateAt: r.last_update_at,
-      });
+    if (this.useSqlite && this.db) {
+      // 1. Ler do SQLite
+      const rows = this.db.prepare('SELECT * FROM posteriors').all() as Array<{
+        bucket_id: string;
+        provider_name: string;
+        alpha: number;
+        beta: number;
+        n_observations: number;
+        last_update_at: number;
+      }>;
+
+      for (const r of rows) {
+        const key = `${r.bucket_id}__${r.provider_name}`;
+        map.set(key, {
+          alpha: r.alpha,
+          beta: r.beta,
+          nObservations: r.n_observations,
+          lastUpdateAt: r.last_update_at,
+        });
+      }
+    } else {
+      // Ler do in-memory
+      for (const [key, r] of this.inMemoryPosteriors) {
+        map.set(key, {
+          alpha: r.alpha,
+          beta: r.beta,
+          nObservations: r.nObservations,
+          lastUpdateAt: r.lastUpdateAt
+        });
+      }
     }
 
     // 2. Sobrepor dados que estão pendentes no buffer em memória
@@ -229,16 +327,6 @@ export class PosteriorRepository implements IRouterStatePort {
     openedAt: number;
     halfOpenAttempts: number;
   }> {
-    const rows = this.db.prepare('SELECT * FROM circuit_breakers').all() as Array<{
-      key: string;
-      state: string;
-      consecutive_failures: number;
-      consecutive_successes: number;
-      last_failure_at: number;
-      opened_at: number;
-      half_open_attempts: number;
-    }>;
-
     const map = new Map<string, {
       state: string;
       consecutiveFailures: number;
@@ -248,15 +336,38 @@ export class PosteriorRepository implements IRouterStatePort {
       halfOpenAttempts: number;
     }>();
 
-    for (const r of rows) {
-      map.set(r.key, {
-        state: r.state,
-        consecutiveFailures: r.consecutive_failures,
-        consecutiveSuccesses: r.consecutive_successes,
-        lastFailureAt: r.last_failure_at,
-        openedAt: r.opened_at,
-        halfOpenAttempts: r.half_open_attempts,
-      });
+    if (this.useSqlite && this.db) {
+      const rows = this.db.prepare('SELECT * FROM circuit_breakers').all() as Array<{
+        key: string;
+        state: string;
+        consecutive_failures: number;
+        consecutive_successes: number;
+        last_failure_at: number;
+        opened_at: number;
+        half_open_attempts: number;
+      }>;
+
+      for (const r of rows) {
+        map.set(r.key, {
+          state: r.state,
+          consecutiveFailures: r.consecutive_failures,
+          consecutiveSuccesses: r.consecutive_successes,
+          lastFailureAt: r.last_failure_at,
+          openedAt: r.opened_at,
+          halfOpenAttempts: r.half_open_attempts,
+        });
+      }
+    } else {
+      for (const [key, r] of this.inMemoryCbs) {
+        map.set(key, {
+          state: r.state,
+          consecutiveFailures: r.consecutiveFailures,
+          consecutiveSuccesses: r.consecutiveSuccesses,
+          lastFailureAt: r.lastFailureAt,
+          openedAt: r.openedAt,
+          halfOpenAttempts: r.halfOpenAttempts
+        });
+      }
     }
 
     // Sobrepor dados pendentes no buffer
@@ -315,7 +426,9 @@ export class PosteriorRepository implements IRouterStatePort {
 
   public close(): void {
     this.drain();
-    this.db.close();
+    if (this.useSqlite && this.db) {
+      this.db.close();
+    }
     if (this.drainInterval) {
       clearInterval(this.drainInterval);
     }

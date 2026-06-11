@@ -71,6 +71,10 @@ export class FallbackChainExecutor {
         }
       }
 
+      const totalElapsed = Date.now() - startTime;
+      if (globalController.signal.aborted || totalElapsed >= (globalTimeoutMs - 100)) {
+        return Result.fail(new Error('Global execution timeout of 8.0s exceeded'));
+      }
       return Result.fail(new Error('All providers in the fallback chain failed'));
     } finally {
       clearTimeout(globalTimeoutId);

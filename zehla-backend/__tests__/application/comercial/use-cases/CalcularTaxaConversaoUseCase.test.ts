@@ -30,7 +30,7 @@ describe('CalcularTaxaConversaoUseCase', () => {
       dataCaptura: date,
       nome: 'João da Silva',
       documento: Documento.criar('12345678909').value,
-      status: 'convertido'
+      status: 'converted'
     }).value
     const lead2 = Lead.create({
       id: 'lead_2',
@@ -39,7 +39,7 @@ describe('CalcularTaxaConversaoUseCase', () => {
       dataCaptura: date,
       nome: 'Maria da Silva',
       documento: Documento.criar('12345678909').value,
-      status: 'convertido'
+      status: 'converted'
     }).value
     const lead3 = Lead.create({
       id: 'lead_3',
@@ -47,7 +47,7 @@ describe('CalcularTaxaConversaoUseCase', () => {
       propriedadeId: 'prop_123',
       dataCaptura: date,
       nome: 'Carlos da Silva',
-      status: 'novo'
+      status: 'prospect'
     }).value
     const lead4 = Lead.create({
       id: 'lead_4',
@@ -55,7 +55,7 @@ describe('CalcularTaxaConversaoUseCase', () => {
       propriedadeId: 'prop_123',
       dataCaptura: date,
       nome: 'Fernanda da Silva',
-      status: 'novo'
+      status: 'prospect'
     }).value
 
     leadPort.addLeadDirectly(lead1)

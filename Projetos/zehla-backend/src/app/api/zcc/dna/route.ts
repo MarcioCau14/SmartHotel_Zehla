@@ -4,7 +4,7 @@ import { getTenantId } from '@/lib/security/tenant-context';
 
 export async function POST(req: NextRequest) {
   try {
-    const tenantId = getTenantId();
+    const tenantId = await getTenantId();
     if (!tenantId) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const tenantId = getTenantId();
+    const tenantId = await getTenantId();
     if (!tenantId) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
