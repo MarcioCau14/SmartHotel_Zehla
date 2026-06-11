@@ -32,6 +32,7 @@ import {
   Eye,
   BarChart3,
   CheckCircle2,
+  FileText,
   Sparkles } from
 'lucide-react';
 import {
@@ -53,6 +54,7 @@ import {
   SelectValue } from
 '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { FiscalSettingsTab } from './settings/FiscalSettingsTab';
 
 /* ────────────────────────────────────────────
    DEMO DATA
@@ -1338,6 +1340,24 @@ export function SettingsPanel() {
                 </div>
               )}
             </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* ═══════════ SECTION 8: Configuração Fiscal ═══════════ */}
+        <AccordionItem value="section-8" className="glass-card border-[#2e2e2e] rounded-xl overflow-hidden">
+          <AccordionTrigger className="px-5 py-4 text-[#fafafa] hover:no-underline hover:text-[#FF5500] transition-colors [&>svg]:text-[#4d4d4d]">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-[#FF5500]/10 flex items-center justify-center">
+                <FileText className="w-4 h-4 text-[#FF5500]" />
+              </div>
+              <div className="text-left">
+                <div className="text-sm font-semibold">Configuração Fiscal</div>
+                <div className="text-xs text-[#4d4d4d]">CNPJ, regime tributário e provedor de notas fiscais</div>
+              </div>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="px-5 pb-5">
+            <FiscalSettingsTab />
           </AccordionContent>
         </AccordionItem>
 
