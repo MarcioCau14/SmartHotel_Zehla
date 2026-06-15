@@ -26,6 +26,17 @@ export class ZccScheduler {
         }
       );
       console.log('✅ [ZccScheduler] Agendada tarefa CHECK_TRIALS (a cada hora)');
+
+      // 3. Agendar relatório diário de consumo de IA (DISPATCH_FINOPS_REPORT) às 00:00 UTC
+      await subconsciousQueue.add(
+        'DISPATCH_FINOPS_REPORT',
+        { type: 'DISPATCH_FINOPS_REPORT' },
+        {
+          repeat: { pattern: '0 0 * * *' },
+          jobId: 'finops-report-job',
+        }
+      );
+      console.log('✅ [ZccScheduler] Agendada tarefa DISPATCH_FINOPS_REPORT (diário às 00:00 UTC)');
     } catch (error) {
       console.error('❌ [ZccScheduler] Erro ao registrar tarefas agendadas:', error);
     }

@@ -14,6 +14,69 @@ import { ProviderCircuitBreaker } from '../../domain/decision/services/ProviderC
 import { ParetoMultiObjectiveSelector } from '../../domain/decision/services/ParetoMultiObjectiveSelector';
 import { BetaBinomialPosterior } from '../../domain/decision/models/BetaBinomialPosterior';
 import { BudgetSnapshot } from '../../domain/decision/models/BudgetGuard';
+import { ICacheRepository } from '../../domain/shared/ports/ICacheRepository';
+import { Result } from '../../shared/Result';
+
+class InMemoryCacheRepository implements ICacheRepository {
+  private cache = new Map<string, { value: string; expiresAt: number }>()
+
+  async setNX(key: string, value: string, ttlSeconds: number): Promise<Result<boolean, Error>> {
+    const now = Date.now()
+    const entry = this.cache.get(key)
+    if (entry && entry.expiresAt > now) {
+      return Result.ok(false)
+    }
+    this.cache.set(key, { value, expiresAt: now + ttlSeconds * 1000 })
+    return Result.ok(true)
+  }
+
+  async exists(key: string): Promise<Result<boolean, Error>> {
+    const now = Date.now()
+    const entry = this.cache.get(key)
+    return Result.ok(!!(entry && entry.expiresAt > now))
+  }
+
+  async delete(key: string): Promise<Result<void, Error>> {
+    this.cache.delete(key)
+    return Result.ok(undefined)
+  }
+
+  async clear(): Promise<Result<void, Error>> {
+    this.cache.clear()
+    return Result.ok(undefined)
+  }
+
+  async get(key: string): Promise<Result<string | null, Error>> {
+    const now = Date.now()
+    const entry = this.cache.get(key)
+    if (entry && entry.expiresAt > now) {
+      return Result.ok(entry.value)
+    }
+    return Result.ok(null)
+  }
+
+  async set(key: string, value: string, ttlSeconds?: number): Promise<Result<void, Error>> {
+    const now = Date.now()
+    const expiresAt = ttlSeconds ? now + ttlSeconds * 1000 : Infinity
+    this.cache.set(key, { value, expiresAt })
+    return Result.ok(undefined)
+  }
+
+  async incrementByFloat(key: string, value: number, ttlSeconds: number): Promise<Result<number, Error>> {
+    const now = Date.now()
+    const entry = this.cache.get(key)
+    let currentVal = 0
+    if (entry && entry.expiresAt > now) {
+      currentVal = parseFloat(entry.value)
+    }
+    const newVal = currentVal + value
+    this.cache.set(key, {
+      value: String(newVal),
+      expiresAt: now + ttlSeconds * 1000
+    })
+    return Result.ok(newVal)
+  }
+}
 
 describe('ZaosNeuroRouter Lote 3 Test Suite — Aggregate Root & Bayesian Engine', () => {
 
@@ -202,5 +265,46 @@ describe('ZaosNeuroRouter Lote 3 Test Suite — Aggregate Root & Bayesian Engine
     expect(resFaq.isOk).toBe(true);
     // Para FAQ simples (minQuality = 0.5), o gpt-4o-mini ainda deve ser selecionável e dominante devido ao seu custo mais baixo na fronteira
     expect(resFaq.value.selectedProviderName).toBe('gpt-4o-mini'); // Isolamento impecável!
+  });
+
+  it('3.3. ZaosNeuroRouter — Bloqueio Financeiro Real-Time via Redis (FinOps)', async () => {
+    const cacheRepo = new InMemoryCacheRepository();
+    const budgetCb = new BudgetCircuitBreaker(cacheRepo);
+    const adapter = new InMemoryRouterStateAdapter();
+    const discretizer = new ContextDiscretizer();
+    const providerCb = new ProviderCircuitBreaker(adapter);
+    const paretoSelector = new ParetoMultiObjectiveSelector();
+
+    const router = new ZaosNeuroRouter(
+      adapter,
+      discretizer,
+      budgetCb,
+      providerCb,
+      paretoSelector,
+      providers
+    );
+
+    const ctx = RoutingContext.create({
+      inputText: 'Preciso de ajuda urgente',
+      sessionId: 'session_xyz',
+      tenantId: 'pousada_xyz',
+      turnsCount: 1,
+      sessionStartMs: Date.now(),
+      metadata: { dailyBudget: 10.0, monthlyBudget: 100.0 }
+    });
+
+    // 1. Tráfego permitido inicialmente (custo = 0)
+    const res1 = await router.route(ctx, undefined, lcgPrng);
+    expect(res1.isOk).toBe(true);
+    expect(res1.value.isEmergencyFallback).toBe(false);
+
+    // 2. Simular estouro de orçamento no cache (atinge 9.5 que é 95% do limite 10.0)
+    await budgetCb.addTokenCost('pousada_xyz', 9.5);
+
+    // 3. Tráfego deve ser bloqueado e redirecionado síncronamente para o emergencyFallback (Rules Engine)
+    const res2 = await router.route(ctx, undefined, lcgPrng);
+    expect(res2.isOk).toBe(true);
+    expect(res2.value.isEmergencyFallback).toBe(true);
+    expect(res2.value.selectedProviderName).toBe('rules_engine');
   });
 });

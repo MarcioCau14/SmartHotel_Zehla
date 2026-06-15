@@ -14,6 +14,69 @@ import { ProviderCircuitBreaker } from '../../domain/decision/services/ProviderC
 import { BudgetCircuitBreaker } from '../../domain/decision/services/BudgetCircuitBreaker';
 import { InMemoryRouterStateAdapter } from '../../domain/decision/adapters/InMemoryRouterStateAdapter';
 import { CircuitState, DEFAULT_CB_CONFIG } from '../../domain/decision/models/CircuitBreakerState';
+import { ICacheRepository } from '../../domain/shared/ports/ICacheRepository';
+import { Result } from '../../shared/Result';
+
+class InMemoryCacheRepository implements ICacheRepository {
+  private cache = new Map<string, { value: string; expiresAt: number }>()
+
+  async setNX(key: string, value: string, ttlSeconds: number): Promise<Result<boolean, Error>> {
+    const now = Date.now()
+    const entry = this.cache.get(key)
+    if (entry && entry.expiresAt > now) {
+      return Result.ok(false)
+    }
+    this.cache.set(key, { value, expiresAt: now + ttlSeconds * 1000 })
+    return Result.ok(true)
+  }
+
+  async exists(key: string): Promise<Result<boolean, Error>> {
+    const now = Date.now()
+    const entry = this.cache.get(key)
+    return Result.ok(!!(entry && entry.expiresAt > now))
+  }
+
+  async delete(key: string): Promise<Result<void, Error>> {
+    this.cache.delete(key)
+    return Result.ok(undefined)
+  }
+
+  async clear(): Promise<Result<void, Error>> {
+    this.cache.clear()
+    return Result.ok(undefined)
+  }
+
+  async get(key: string): Promise<Result<string | null, Error>> {
+    const now = Date.now()
+    const entry = this.cache.get(key)
+    if (entry && entry.expiresAt > now) {
+      return Result.ok(entry.value)
+    }
+    return Result.ok(null)
+  }
+
+  async set(key: string, value: string, ttlSeconds?: number): Promise<Result<void, Error>> {
+    const now = Date.now()
+    const expiresAt = ttlSeconds ? now + ttlSeconds * 1000 : Infinity
+    this.cache.set(key, { value, expiresAt })
+    return Result.ok(undefined)
+  }
+
+  async incrementByFloat(key: string, value: number, ttlSeconds: number): Promise<Result<number, Error>> {
+    const now = Date.now()
+    const entry = this.cache.get(key)
+    let currentVal = 0
+    if (entry && entry.expiresAt > now) {
+      currentVal = parseFloat(entry.value)
+    }
+    const newVal = currentVal + value
+    this.cache.set(key, {
+      value: String(newVal),
+      expiresAt: now + ttlSeconds * 1000
+    })
+    return Result.ok(newVal)
+  }
+}
 
 describe('ZaosNeuroRouter Lote 2 Test Suite — Domain Services & Analytics', () => {
 
@@ -325,6 +388,39 @@ describe('ZaosNeuroRouter Lote 2 Test Suite — Domain Services & Analytics', ()
       const allowed = budgetCb.filterAllowedProviders(providers, criticalSnapshot);
       expect(allowed.length).toBe(1);
       expect(allowed[0]).toBe('rules_engine');
+    });
+
+    it('6.3. BudgetCircuitBreaker — Persistência no Redis e Incremento Atômico', async () => {
+      const cacheRepo = new InMemoryCacheRepository();
+      const cb = new BudgetCircuitBreaker(cacheRepo);
+
+      // Inicia com custo zero e tráfego permitido
+      const allowed1 = await cb.isTrafficAllowed('tenant-xyz', 10.0);
+      expect(allowed1.isOk).toBe(true);
+
+      // Incrementa custo
+      await cb.addTokenCost('tenant-xyz', 5.0);
+
+      // Busca snapshot
+      const snapshot1 = await cb.fetchSnapshot('tenant-xyz', 10.0, 100.0);
+      expect(snapshot1.dailySpendUsd).toBe(5.0);
+
+      // Tráfego ainda permitido aos 50%
+      const allowed2 = await cb.isTrafficAllowed('tenant-xyz', 10.0);
+      expect(allowed2.isOk).toBe(true);
+
+      // Bate 9.5 (95% do teto diário)
+      await cb.addTokenCost('tenant-xyz', 4.5);
+
+      const snapshot2 = await cb.fetchSnapshot('tenant-xyz', 10.0, 100.0);
+      expect(snapshot2.dailySpendUsd).toBe(9.5);
+
+      // Tráfego bloqueado pelo FinOps Circuit Breaker
+      const allowed3 = await cb.isTrafficAllowed('tenant-xyz', 10.0);
+      expect(allowed3.isFail).toBe(true);
+      if (allowed3.isFail) {
+        expect(allowed3.error.message).toBe('FINOPS_CIRCUIT_OPEN');
+      }
     });
   });
 });

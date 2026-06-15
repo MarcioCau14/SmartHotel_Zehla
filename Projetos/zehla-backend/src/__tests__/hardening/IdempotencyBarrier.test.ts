@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { IdempotencyBarrier } from '../../infrastructure/hardening/IdempotencyBarrier'
-import { ICacheRepository } from '../../infrastructure/hardening/ports/ICacheRepository'
+import { ICacheRepository } from '../../domain/shared/ports/ICacheRepository'
 import { Result } from '../../shared/Result'
 
 class InMemoryCacheRepository implements ICacheRepository {
@@ -36,6 +36,37 @@ class InMemoryCacheRepository implements ICacheRepository {
   async clear(): Promise<Result<void, Error>> {
     this.cache.clear()
     return Result.ok(undefined)
+  }
+
+  async get(key: string): Promise<Result<string | null, Error>> {
+    const now = Date.now()
+    const entry = this.cache.get(key)
+    if (entry && entry.expiresAt > now) {
+      return Result.ok(entry.value)
+    }
+    return Result.ok(null)
+  }
+
+  async set(key: string, value: string, ttlSeconds?: number): Promise<Result<void, Error>> {
+    const now = Date.now()
+    const expiresAt = ttlSeconds ? now + ttlSeconds * 1000 : Infinity
+    this.cache.set(key, { value, expiresAt })
+    return Result.ok(undefined)
+  }
+
+  async incrementByFloat(key: string, value: number, ttlSeconds: number): Promise<Result<number, Error>> {
+    const now = Date.now()
+    const entry = this.cache.get(key)
+    let currentVal = 0
+    if (entry && entry.expiresAt > now) {
+      currentVal = parseFloat(entry.value)
+    }
+    const newVal = currentVal + value
+    this.cache.set(key, {
+      value: String(newVal),
+      expiresAt: now + ttlSeconds * 1000
+    })
+    return Result.ok(newVal)
   }
 
   expireKey(key: string): void {

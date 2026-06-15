@@ -1,6 +1,6 @@
 import type { IIdempotencyBarrier } from '../../application/hardening/ports/IIdempotencyBarrier'
 import { Result } from '../../shared/Result'
-import { ICacheRepository } from './ports/ICacheRepository'
+import { ICacheRepository } from '../../domain/shared/ports/ICacheRepository'
 
 export class IdempotencyBarrier implements IIdempotencyBarrier {
   private readonly cacheRepo: ICacheRepository

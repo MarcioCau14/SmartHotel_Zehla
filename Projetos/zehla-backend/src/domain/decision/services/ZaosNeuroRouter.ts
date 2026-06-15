@@ -27,7 +27,7 @@ export class ZaosNeuroRouter {
 
   async route(
     context: RoutingContext,
-    budgetSnapshot: BudgetSnapshot,
+    budgetSnapshot?: BudgetSnapshot,
     prng: () => number = Math.random
   ): Promise<Result<RoutingDecision, Error>> {
     // 1. Extrair o bucketId (de 00 a 34) usando o ContextDiscretizer
@@ -38,8 +38,31 @@ export class ZaosNeuroRouter {
     const bucket = discretizeResult.value;
     const bucketId = bucket.id;
 
+    // Checagem de FinOps síncrona/bloqueante usando o Redis (se configurado)
+    let finalSnapshot = budgetSnapshot;
+    if (this.budgetCb.hasCache()) {
+      const dailyBudget = (context.metadata.dailyBudget as number) ?? (budgetSnapshot?.dailyBudgetUsd) ?? 10.0;
+      const monthlyBudget = (context.metadata.monthlyBudget as number) ?? (budgetSnapshot?.monthlyBudgetUsd) ?? 100.0;
+      const allowedResult = await this.budgetCb.isTrafficAllowed(context.tenantId, dailyBudget);
+      if (allowedResult.isFail) {
+        return Result.ok(RoutingDecision.emergencyFallback(bucketId));
+      }
+      if (!finalSnapshot) {
+        finalSnapshot = await this.budgetCb.fetchSnapshot(context.tenantId, dailyBudget, monthlyBudget);
+      }
+    }
+
+    if (!finalSnapshot) {
+      finalSnapshot = {
+        dailySpendUsd: 0.0,
+        dailyBudgetUsd: 10.0,
+        monthlySpendUsd: 0.0,
+        monthlyBudgetUsd: 100.0,
+      };
+    }
+
     // 2. Consultar o BudgetCircuitBreaker para obter a lista de provedores permitidos
-    const allowedProviderNames = this.budgetCb.filterAllowedProviders(this.providers, budgetSnapshot);
+    const allowedProviderNames = this.budgetCb.filterAllowedProviders(this.providers, finalSnapshot);
     const budgetFilteredProviders = this.providers.filter(p => allowedProviderNames.includes(p.name));
 
     // 3. Filtrar provedores inativos consultando o ProviderCircuitBreaker
@@ -77,7 +100,7 @@ export class ZaosNeuroRouter {
 
       // Custo padrão estimado usando 10k tokens de entrada e 5k de saída
       const realCost = p.estimateCost(10_000, 5_000);
-      const adjustedCost = this.budgetCb.getAdjustedCost(realCost, p.tier, budgetSnapshot);
+      const adjustedCost = this.budgetCb.getAdjustedCost(realCost, p.tier, finalSnapshot);
       adjustedCosts.set(p.name, adjustedCost);
 
       // Qualidade amostrada combinando a baseline e a posterior temporal (Thompson)

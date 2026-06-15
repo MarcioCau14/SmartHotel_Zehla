@@ -55,6 +55,45 @@ export const subconsciousWorker = new Worker(
           await CognitiveTerminal.success('SECRETARIA-IA', `Qualificação do lead ${leadId} concluída com sucesso.`);
           break;
 
+        case 'DISPATCH_FINOPS_REPORT': {
+          await CognitiveTerminal.info('FINOPS', 'Iniciando geração de relatórios diários de consumo de IA para o ZCC...');
+          
+          const yesterday = new Date();
+          yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+          const dateStr = yesterday.toISOString().split('T')[0];
+
+          // Encontrar todas as chaves de custo diário do dia anterior
+          const keys = await connection.keys(`finops:cost:*:${dateStr}`);
+          let totalTenantsReported = 0;
+          let totalCostReported = 0;
+
+          for (const key of keys) {
+            const parts = key.split(':');
+            // Formato: finops:cost:tenantId:dateStr
+            const tenantId = parts[2];
+            const costVal = await connection.get(key);
+            const cost = costVal ? parseFloat(costVal) : 0;
+
+            if (cost > 0) {
+              await CognitiveTerminal.success(
+                'FINOPS',
+                `Relatório Diário: Inquilino ${tenantId} consumiu $${cost.toFixed(4)} USD em IA em ${dateStr}`,
+                { tenantId, cost, date: dateStr },
+                tenantId
+              );
+              totalTenantsReported++;
+              totalCostReported += cost;
+            }
+          }
+
+          await CognitiveTerminal.success(
+            'FINOPS',
+            `Relatório diário de consumo de IA enviado com sucesso. Total de inquilinos: ${totalTenantsReported}. Custo total: $${totalCostReported.toFixed(4)} USD`,
+            { date: dateStr, totalTenantsReported, totalCostReported }
+          );
+          break;
+        }
+
         default:
           console.warn(`[SubconsciousWorker] Tipo de job desconhecido: ${type}`);
       }
