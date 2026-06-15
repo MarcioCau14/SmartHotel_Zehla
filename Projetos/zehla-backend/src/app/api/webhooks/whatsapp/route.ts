@@ -9,16 +9,29 @@ export async function POST(request: NextRequest) {
     const signature = request.headers.get('X-Hub-Signature-256') || request.headers.get('X-WhatsApp-Signature') || ''
     const secret = process.env.WHATSAPP_WEBHOOK_SECRET ?? 'zehla_whatsapp_webhook_secret_2026'
 
+    const isDevSimulation = process.env.NODE_ENV === 'development' && signature === 'sandbox-mock-bypass-signature'
+
     // Validação timing-safe de assinatura HMAC
-    const verificationResult = verifyHmacSignature(rawBody, signature, secret)
-    if (verificationResult.isFail) {
-      return NextResponse.json({ error: verificationResult.error.message }, { status: 401 })
+    if (!isDevSimulation) {
+      const verificationResult = verifyHmacSignature(rawBody, signature, secret)
+      if (verificationResult.isFail) {
+        return NextResponse.json({ error: verificationResult.error.message }, { status: 401 })
+      }
     }
 
     const body = JSON.parse(rawBody)
 
-    // Extrai o telefone e o conteúdo da mensagem para o ProcessReplyUseCase
-    const { phone, content } = body
+    let phone = body.phone || ''
+    let content = body.content || ''
+    let messageId = body.messageId || 'unknown'
+
+    // Tratar o payload rico da Evolution API (messages.upsert)
+    if (body.event === 'messages.upsert' && body.data) {
+      const remoteJid = body.data.key?.remoteJid || ''
+      phone = remoteJid.split('@')[0] || ''
+      content = body.data.message?.conversation || ''
+      messageId = body.data.key?.id || 'unknown'
+    }
 
     if (phone && content) {
       const eventBus = new ConsoleEventBus()
@@ -34,7 +47,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       status: 'verified_and_processed',
-      messageId: body.messageId || 'unknown'
+      messageId
     }, { status: 200 })
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Internal Server Error'

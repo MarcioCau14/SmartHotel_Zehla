@@ -1,14 +1,24 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MessageSquare, CheckCircle, XCircle, Clock, Settings, RefreshCw, AlertTriangle, Loader2 } from 'lucide-react';
+import { MessageSquare, CheckCircle, XCircle, Clock, Settings, RefreshCw, AlertTriangle, Loader2, Send, Radio } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { useEvolutionSimulator } from '@/hooks/useEvolutionSimulator';
 
 export function WhatsAppPanel() {
   const [session, setSession] = useState<{ state: string; qrCode?: string; instanceName?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+
+  const { simulateIncomingMessage, simulateConnectionStatus, isLoading: simLoading, error: simError } = useEvolutionSimulator();
+  const [simPhone, setSimPhone] = useState('5511999999999');
+  const [simContent, setSimContent] = useState('');
+  const [simLogs, setSimLogs] = useState<string[]>([]);
+
+  const addSimLog = (msg: string) => {
+    setSimLogs((prev) => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev].slice(0, 10));
+  };
 
   const fetchSessionStatus = async () => {
     try {
@@ -63,6 +73,31 @@ export function WhatsAppPanel() {
         return <Badge variant="outline" className="border-red-500/30 text-red-400 bg-red-500/5 text-[10px]">FAILED</Badge>;
       default:
         return <Badge variant="outline" className="border-neutral-500/30 text-neutral-400 bg-neutral-500/5 text-[10px]">DISCONNECTED</Badge>;
+    }
+  };
+
+  const handleSimulateMessage = async () => {
+    if (!simContent.trim() || !simPhone.trim()) return;
+    const propertyId = session?.instanceName?.replace('zehla-instance-', '') || 'default-property';
+    addSimLog(`Simulando recebimento de: "${simContent}" de ${simPhone}...`);
+    const res = await simulateIncomingMessage(simPhone, simContent, propertyId);
+    if (res.isOk) {
+      addSimLog(`✅ Mensagem entregue com sucesso!`);
+      setSimContent('');
+    } else {
+      addSimLog(`❌ Falha ao entregar mensagem: ${res.error}`);
+    }
+  };
+
+  const handleSimulateStatus = async (status: 'CONNECTED' | 'AWAITING_QR' | 'FAILED' | 'DISCONNECTED') => {
+    const propertyId = session?.instanceName?.replace('zehla-instance-', '') || 'default-property';
+    addSimLog(`Simulando alteração de FSM para: ${status}...`);
+    const res = await simulateConnectionStatus(status, status === 'AWAITING_QR' ? 'mock-qr-code-data' : undefined, undefined, propertyId);
+    if (res.isOk) {
+      addSimLog(`✅ Transição FSM disparada: ${status}.`);
+      fetchSessionStatus();
+    } else {
+      addSimLog(`❌ Falha ao acionar FSM: ${res.error}`);
     }
   };
 
@@ -220,6 +255,111 @@ export function WhatsAppPanel() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Evolution API Simulator (Sandbox Local) */}
+      <div className="glass-card p-6 border border-orange-500/20 bg-orange-500/[0.02]">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 rounded-xl bg-orange-500/10">
+            <Radio className="w-5 h-5 text-orange-400 animate-pulse" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-[#efefef] flex items-center gap-2">
+              Evolution API Simulator
+              <Badge variant="outline" className="border-orange-500/30 text-orange-400 bg-orange-500/5 text-[9px]">SANDBOX LOCAL</Badge>
+            </h3>
+            <p className="text-xs text-[#4d4d4d]">Simule o tráfego do WhatsApp e transições de FSM sem dependências de rede</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Message Simulator */}
+          <div className="space-y-4">
+            <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Simulador de Mensagens de Entrada</h4>
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] text-neutral-500 block mb-1">Telefone do Hóspede (Dígitos)</label>
+                <input
+                  type="text"
+                  value={simPhone}
+                  onChange={(e) => setSimPhone(e.target.value)}
+                  placeholder="Ex: 5511999999999"
+                  className="w-full bg-[#161616] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-neutral-200 focus:outline-none focus:border-orange-500/50"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-neutral-500 block mb-1">Conteúdo da Mensagem</label>
+                <textarea
+                  value={simContent}
+                  onChange={(e) => setSimContent(e.target.value)}
+                  placeholder="Olá, gostaria de saber se tem quarto disponível..."
+                  rows={3}
+                  className="w-full bg-[#161616] border border-[#2e2e2e] rounded-lg px-3 py-2 text-xs text-neutral-200 focus:outline-none focus:border-orange-500/50 resize-none"
+                />
+              </div>
+              <button
+                onClick={handleSimulateMessage}
+                disabled={simLoading || !simContent.trim()}
+                className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 border border-orange-500/30 text-xs font-semibold rounded-lg transition-all disabled:opacity-50"
+              >
+                {simLoading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Send className="w-3.5 h-3.5" />
+                )}
+                Simular Mensagem de Entrada
+              </button>
+            </div>
+          </div>
+
+          {/* FSM Simulator */}
+          <div className="space-y-4">
+            <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Simulador de Sessão (FSM WhatsApp)</h4>
+            <p className="text-[11px] text-neutral-500">Acione webhooks de estado simulando a conexão física com o WhatsApp Web:</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => handleSimulateStatus('AWAITING_QR')}
+                disabled={simLoading}
+                className="px-3 py-2 bg-neutral-800/50 hover:bg-neutral-800 text-amber-400 border border-neutral-700/50 text-[11px] font-medium rounded-lg transition-all"
+              >
+                Awaiting QR Code
+              </button>
+              <button
+                onClick={() => handleSimulateStatus('CONNECTED')}
+                disabled={simLoading}
+                className="px-3 py-2 bg-neutral-800/50 hover:bg-neutral-800 text-green-400 border border-neutral-700/50 text-[11px] font-medium rounded-lg transition-all"
+              >
+                Connect Device
+              </button>
+              <button
+                onClick={() => handleSimulateStatus('FAILED')}
+                disabled={simLoading}
+                className="px-3 py-2 bg-neutral-800/50 hover:bg-neutral-800 text-red-400 border border-neutral-700/50 text-[11px] font-medium rounded-lg transition-all"
+              >
+                Fail Connection
+              </button>
+              <button
+                onClick={() => handleSimulateStatus('DISCONNECTED')}
+                disabled={simLoading}
+                className="px-3 py-2 bg-neutral-800/50 hover:bg-neutral-800 text-neutral-400 border border-neutral-700/50 text-[11px] font-medium rounded-lg transition-all"
+              >
+                Disconnect
+              </button>
+            </div>
+
+            {/* Console Log Display */}
+            <div className="mt-4">
+              <div className="text-[10px] text-neutral-500 mb-1">Console de Log do Simulador</div>
+              <div className="w-full h-24 bg-black/40 border border-[#2e2e2e] rounded-lg p-2 font-mono text-[9px] text-orange-400/80 overflow-y-auto zehla-scroll space-y-1">
+                {simLogs.length === 0 ? (
+                  <div className="text-[#363636] italic">Aguardando interações...</div>
+                ) : (
+                  simLogs.map((log, i) => <div key={i} className="truncate">{log}</div>)
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -88,8 +88,9 @@ describe('TrialPeriod', () => {
   })
 
   it('should check equality', () => {
-    const a = TrialPeriod.create(daysAgo(0)).value
-    const b = TrialPeriod.create(daysAgo(0)).value
+    const date = daysAgo(0)
+    const a = TrialPeriod.create(date).value
+    const b = TrialPeriod.create(date).value
     expect(a.equals(b)).toBe(true)
   })
 })

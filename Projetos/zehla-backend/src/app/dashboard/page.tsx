@@ -28,6 +28,7 @@ const VisibilityDashboard = dynamic(() => import('@/components/dashboard/Visibil
 const FNRHCheckinProvider = dynamic(() => import('@/components/dashboard/FNRHCheckinProvider').then(m => m.FNRHCheckinProvider), { ssr: false, loading: () => <DashboardSkeleton /> });
 const VoiceStudioV2 = dynamic(() => import('@/components/VoiceStudio/VoiceStudioV2').then(m => m.VoiceStudioV2), { ssr: false, loading: () => <DashboardSkeleton /> });
 const BrainDashboard = dynamic(() => import('@/components/dashboard/BrainDashboard').then(m => m.BrainDashboard), { ssr: false, loading: () => <DashboardSkeleton /> });
+const WhatsAppPanel = dynamic(() => import('@/components/dashboard/WhatsAppPanel').then(m => m.WhatsAppPanel), { ssr: false, loading: () => <DashboardSkeleton /> });
 
 import {
   LayoutDashboard,
@@ -65,11 +66,12 @@ import { ChartsSection } from '@/components/dashboard/ChartsSection';
 import { PaymentPanel } from '@/components/dashboard/PaymentPanel';
 import { SubscriptionSelector } from '@/components/subscription/SubscriptionSelector';
 
-type TabKey = 'painel' | 'sala-de-guerra' | 'marketing' | 'visibilidade' | 'check-in' | 'terminal' | 'quartos' | 'reservas' | 'financeiro' | 'relatorios' | 'planilhas' | 'promocoes' | 'configuracoes' | 'voice-studio';
+type TabKey = 'painel' | 'sala-de-guerra' | 'marketing' | 'visibilidade' | 'check-in' | 'terminal' | 'quartos' | 'reservas' | 'financeiro' | 'relatorios' | 'planilhas' | 'promocoes' | 'configuracoes' | 'voice-studio' | 'whatsapp';
 
 
 const tabs: { key: TabKey; label: string; icon: typeof LayoutDashboard }[] = [
   { key: 'painel', label: 'Painel', icon: LayoutDashboard },
+  { key: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
   { key: 'voice-studio', label: 'Voice Studio', icon: Mic },
   { key: 'check-in', label: 'Check-in', icon: TicketCheck },
   { key: 'terminal', label: 'Terminal', icon: Terminal },
@@ -333,6 +335,20 @@ function DashboardContent() {
                 </div>
 
                 <BrainDashboard />
+              </div>
+            )}
+
+            {/* ===== TAB: WHATSAPP ===== */}
+            {activeTab === 'whatsapp' && (
+              <div className="space-y-4">
+                <div>
+                  <h1 className="text-xl font-bold text-neutral-100 flex items-center gap-2">
+                    <MessageSquare className="w-5 h-5 text-orange-500" />
+                    Gerenciamento do WhatsApp
+                  </h1>
+                  <p className="text-sm text-neutral-500 mt-1">Conecte sua instância da Evolution API e gerencie o atendimento e os disparos do simulador local.</p>
+                </div>
+                <WhatsAppPanel />
               </div>
             )}
 
