@@ -2721,3 +2721,25 @@ model ComercialConversao {
   @@map("comercial_conversoes")
 }
 
+model Blacklist {
+  id        String   @id @default(cuid())
+  emailHash String   @unique
+  createdAt DateTime @default(now())
+
+  @@map("blacklist")
+}
+
+model AdsChangeProposal {
+  id          String   @id @default(cuid())
+  actionType  String
+  campaignId  String
+  adGroupId   String?
+  keyword     String?
+  reason      String?
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("ads_change_proposals")
+}
+

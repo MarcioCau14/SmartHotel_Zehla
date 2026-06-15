@@ -3,15 +3,26 @@ import { IEventBus } from '../../application/reservation/ports/IEventBus'
 import { DomainEventPublisher } from '../../domain/shared/events/DomainEventPublisher'
 import { PlaybookGeneratedEventHandler } from '../../application/comercial/handlers/PlaybookGeneratedEventHandler'
 import { followupQueue } from '../../lib/queues'
+import { ZdrPrivacyModule } from '../../domain/security/services/ZdrPrivacyModule'
+import { LeadBlacklistedHandler } from '../../application/growth/handlers/LeadBlacklistedHandler'
 
 export class ConsoleEventBus implements IEventBus {
   private readonly publisher: DomainEventPublisher
 
   constructor() {
     this.publisher = new DomainEventPublisher()
+    
+    // Playbook Generated
     this.publisher.subscribe(
       'PlaybookGeneratedEvent',
       new PlaybookGeneratedEventHandler(followupQueue)
+    )
+
+    // Outbound LGPD/ZDR Expunge
+    const zdrModule = new ZdrPrivacyModule()
+    this.publisher.subscribe(
+      'LeadBlacklistedEvent',
+      new LeadBlacklistedHandler(zdrModule)
     )
   }
 

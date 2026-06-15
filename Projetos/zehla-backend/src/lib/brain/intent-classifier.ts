@@ -16,6 +16,7 @@ export const INTENTS = [
   'GREETING',
   'FAREWELL',
   'SUPPLIER_INQUIRY',
+  'OPT_OUT',
   'UNKNOWN'
 ] as const
 
@@ -30,7 +31,7 @@ export interface ClassifiedIntent {
 
 export async function classifyIntent(message: string): Promise<ClassifiedIntent> {
   const systemPrompt = `Você é um classificador de intents para um sistema hoteleiro.
-Classifique a mensagem do hóspede em uma das seguintes categorias:
+Classifique a mensagem do hóspede/lead em uma das seguintes categorias:
 - RESERVATION_CREATE: Quer fazer uma nova reserva
 - RESERVATION_MODIFY: Quer alterar uma reserva existente
 - RESERVATION_CANCEL: Quer cancelar uma reserva
@@ -46,6 +47,7 @@ Classifique a mensagem do hóspede em uma das seguintes categorias:
 - GREETING: Saudação simples
 - FAREWELL: Despedida simples
 - SUPPLIER_INQUIRY: Mensagem de fornecedor, vendedor, representante ou oferta de serviços (B2B)
+- OPT_OUT: O lead/hóspede expressa desejo de sair da lista, parar de receber mensagens, não ter interesse, ou pede descadastro (ex: "não quero mais receber", "favor me retirar", "sair", "parar")
 - UNKNOWN: Não se encaixa em nenhuma categoria
 
 Responda APENAS em JSON no formato:
