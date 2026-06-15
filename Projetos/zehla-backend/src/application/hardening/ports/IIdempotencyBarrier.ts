@@ -1,7 +1,8 @@
+import { Result } from '../../../shared/Result'
+
 export interface IIdempotencyBarrier {
-  checkAndMark(id: string): boolean
-  isDuplicate(id: string): boolean
-  markProcessed(id: string): void
-  clear(): void
-  getProcessedCount(): number
+  checkAndMark(id: string): Promise<Result<void, Error>>
+  isDuplicate(id: string): Promise<boolean>
+  clear(): Promise<void>
 }
+

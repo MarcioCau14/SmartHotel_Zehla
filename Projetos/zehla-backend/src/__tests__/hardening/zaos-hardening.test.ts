@@ -3,6 +3,8 @@ import { TenantSession } from '../../domain/hardening/value-objects/TenantSessio
 import { JwtGuard } from '../../infrastructure/hardening/JwtGuard'
 import { HMACValidator } from '../../infrastructure/hardening/HMACValidator'
 import { IdempotencyBarrier } from '../../infrastructure/hardening/IdempotencyBarrier'
+import { ICacheRepository } from '../../infrastructure/hardening/ports/ICacheRepository'
+import { Result } from '../../shared/Result'
 
 describe('TenantSession', () => {
   it('deve criar sessao com pousadaId valido', () => {
@@ -229,94 +231,143 @@ describe('HMACValidator', () => {
   })
 })
 
+class InMemoryCacheRepository implements ICacheRepository {
+  private cache = new Map<string, { value: string; expiresAt: number }>()
+
+  async setNX(key: string, value: string, ttlSeconds: number): Promise<Result<boolean, Error>> {
+    const now = Date.now()
+    const entry = this.cache.get(key)
+    if (entry && entry.expiresAt > now) {
+      return Result.ok(false)
+    }
+    this.cache.set(key, { value, expiresAt: now + ttlSeconds * 1000 })
+    return Result.ok(true)
+  }
+
+  async exists(key: string): Promise<Result<boolean, Error>> {
+    const now = Date.now()
+    const entry = this.cache.get(key)
+    return Result.ok(!!(entry && entry.expiresAt > now))
+  }
+
+  async delete(key: string): Promise<Result<void, Error>> {
+    this.cache.delete(key)
+    return Result.ok(undefined)
+  }
+
+  async clear(): Promise<Result<void, Error>> {
+    this.cache.clear()
+    return Result.ok(undefined)
+  }
+
+  expireKey(key: string): void {
+    const entry = this.cache.get(key)
+    if (entry) {
+      entry.expiresAt = Date.now() - 1000
+    }
+  }
+
+  get size(): number {
+    const now = Date.now()
+    let count = 0
+    for (const entry of this.cache.values()) {
+      if (entry.expiresAt > now) count++
+    }
+    return count
+  }
+}
+
 describe('IdempotencyBarrier', () => {
+  let cacheRepo: InMemoryCacheRepository
   let barrier: IdempotencyBarrier
 
   beforeEach(() => {
-    barrier = new IdempotencyBarrier(60000)
-    barrier.clear()
+    cacheRepo = new InMemoryCacheRepository()
+    barrier = new IdempotencyBarrier(cacheRepo, 60)
   })
 
-  it('deve marcar webhookId como processado', () => {
-    const isDuplicate = barrier.checkAndMark('wh-001')
-    expect(isDuplicate).toBe(false)
-    expect(barrier.getProcessedCount()).toBe(1)
+  it('deve marcar webhookId como processado', async () => {
+    const result = await barrier.checkAndMark('wh-001')
+    expect(result.isOk).toBe(true)
+    expect(cacheRepo.size).toBe(1)
   })
 
-  it('deve detectar webhookId duplicado', () => {
-    barrier.checkAndMark('wh-001')
-    const isDuplicate = barrier.checkAndMark('wh-001')
-    expect(isDuplicate).toBe(true)
+  it('deve detectar webhookId duplicado', async () => {
+    await barrier.checkAndMark('wh-001')
+    const secondResult = await barrier.checkAndMark('wh-001')
+    expect(secondResult.isFail).toBe(true)
   })
 
-  it('deve detectar duplicata com isDuplicate', () => {
-    barrier.markProcessed('wh-001')
-    expect(barrier.isDuplicate('wh-001')).toBe(true)
-    expect(barrier.isDuplicate('wh-002')).toBe(false)
+  it('deve detectar duplicata com isDuplicate', async () => {
+    await barrier.checkAndMark('wh-001')
+    expect(await barrier.isDuplicate('wh-001')).toBe(true)
+    expect(await barrier.isDuplicate('wh-002')).toBe(false)
   })
 
-  it('deve permitir ids diferentes', () => {
-    barrier.checkAndMark('wh-001')
-    expect(barrier.checkAndMark('wh-002')).toBe(false)
-    expect(barrier.getProcessedCount()).toBe(2)
+  it('deve permitir ids diferentes', async () => {
+    const r1 = await barrier.checkAndMark('wh-001')
+    const r2 = await barrier.checkAndMark('wh-002')
+    expect(r1.isOk).toBe(true)
+    expect(r2.isOk).toBe(true)
   })
 
-  it('deve limpar todos os registros', () => {
-    barrier.markProcessed('wh-001')
-    barrier.markProcessed('wh-002')
-    barrier.clear()
-    expect(barrier.getProcessedCount()).toBe(0)
+  it('deve limpar todos os registros', async () => {
+    await barrier.checkAndMark('wh-001')
+    await barrier.checkAndMark('wh-002')
+    await barrier.clear()
+    expect(cacheRepo.size).toBe(0)
   })
 
-  it('deve expirar registros apos TTL', () => {
+  it('deve expirar registros apos TTL', async () => {
     vi.useFakeTimers()
-    const fastBarrier = new IdempotencyBarrier(50)
-    fastBarrier.markProcessed('wh-001')
-    expect(fastBarrier.isDuplicate('wh-001')).toBe(true)
-    vi.advanceTimersByTime(51)
-    expect(fastBarrier.isDuplicate('wh-001')).toBe(false)
+    const fastBarrier = new IdempotencyBarrier(cacheRepo, 50)
+    await fastBarrier.checkAndMark('wh-001')
+    expect(await fastBarrier.isDuplicate('wh-001')).toBe(true)
+    vi.advanceTimersByTime(51000) // 51 seconds (since ttl is in seconds)
+    expect(await fastBarrier.isDuplicate('wh-001')).toBe(false)
     vi.useRealTimers()
   })
 
-  it('deve remover apenas expirados e manter recentes', () => {
+  it('deve remover apenas expirados e manter recentes', async () => {
     vi.useFakeTimers()
-    const fastBarrier = new IdempotencyBarrier(100)
-    fastBarrier.markProcessed('wh-old')
-    vi.advanceTimersByTime(60)
-    fastBarrier.markProcessed('wh-recent')
-    vi.advanceTimersByTime(50)
-    expect(fastBarrier.isDuplicate('wh-old')).toBe(false)
-    expect(fastBarrier.isDuplicate('wh-recent')).toBe(true)
+    const fastBarrier = new IdempotencyBarrier(cacheRepo, 100)
+    await fastBarrier.checkAndMark('wh-old')
+    vi.advanceTimersByTime(60000)
+    await fastBarrier.checkAndMark('wh-recent')
+    vi.advanceTimersByTime(50000)
+    expect(await fastBarrier.isDuplicate('wh-old')).toBe(false)
+    expect(await fastBarrier.isDuplicate('wh-recent')).toBe(true)
     vi.useRealTimers()
   })
 
   it('deve retornar 0 para barrier vazia', () => {
-    expect(barrier.getProcessedCount()).toBe(0)
+    expect(cacheRepo.size).toBe(0)
   })
 
-  it('deve funcionar com idempotencia apos clear', () => {
-    barrier.markProcessed('wh-001')
-    barrier.clear()
-    expect(barrier.checkAndMark('wh-001')).toBe(false)
+  it('deve funcionar com idempotencia apos clear', async () => {
+    await barrier.checkAndMark('wh-001')
+    await barrier.clear()
+    const result = await barrier.checkAndMark('wh-001')
+    expect(result.isOk).toBe(true)
   })
 
-  it('deve aceitar webhookId com caracteres especiais', () => {
+  it('deve aceitar webhookId com caracteres especiais', async () => {
     const id = 'pix_evt_9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
-    barrier.markProcessed(id)
-    expect(barrier.isDuplicate(id)).toBe(true)
+    await barrier.checkAndMark(id)
+    expect(await barrier.isDuplicate(id)).toBe(true)
   })
 
-  it('deve manter contagem correta apos multiplos marks', () => {
+  it('deve manter contagem correta apos multiplos marks', async () => {
     for (let i = 0; i < 100; i++) {
-      barrier.markProcessed(`wh-${i}`)
+      await barrier.checkAndMark(`wh-${i}`)
     }
-    expect(barrier.getProcessedCount()).toBe(100)
+    expect(cacheRepo.size).toBe(100)
   })
 
-  it('deve retornar true para processado mesmo apos checkAndMark repetido', () => {
-    barrier.checkAndMark('wh-001')
-    barrier.checkAndMark('wh-001')
-    barrier.checkAndMark('wh-001')
-    expect(barrier.getProcessedCount()).toBe(1)
+  it('deve retornar true para processado mesmo apos checkAndMark repetido', async () => {
+    await barrier.checkAndMark('wh-001')
+    await barrier.checkAndMark('wh-001')
+    await barrier.checkAndMark('wh-001')
+    expect(cacheRepo.size).toBe(1)
   })
 })

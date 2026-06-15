@@ -1,50 +1,56 @@
 import type { IIdempotencyBarrier } from '../../application/hardening/ports/IIdempotencyBarrier'
-
-interface IdempotencyEntry {
-  timestamp: number
-}
+import { Result } from '../../shared/Result'
+import { ICacheRepository } from './ports/ICacheRepository'
 
 export class IdempotencyBarrier implements IIdempotencyBarrier {
-  private readonly processed: Map<string, IdempotencyEntry> = new Map()
-  private readonly ttlMs: number
+  private readonly cacheRepo: ICacheRepository
+  private readonly ttlSeconds: number
 
-  constructor(ttlMs: number = 3600000) {
-    this.ttlMs = ttlMs
+  constructor(cacheRepo: ICacheRepository, ttlSeconds: number = 86400) {
+    this.cacheRepo = cacheRepo
+    this.ttlSeconds = ttlSeconds
   }
 
-  checkAndMark(id: string): boolean {
-    this.evictExpired()
-    if (this.processed.has(id)) {
-      return true
-    }
-    this.processed.set(id, { timestamp: Date.now() })
-    return false
-  }
+  async checkAndMark(id: string): Promise<Result<void, Error>> {
+    try {
+      const key = `idempotency:${id}`
+      const result = await this.cacheRepo.setNX(key, 'processed', this.ttlSeconds)
 
-  isDuplicate(id: string): boolean {
-    this.evictExpired()
-    return this.processed.has(id)
-  }
-
-  markProcessed(id: string): void {
-    this.processed.set(id, { timestamp: Date.now() })
-  }
-
-  clear(): void {
-    this.processed.clear()
-  }
-
-  getProcessedCount(): number {
-    this.evictExpired()
-    return this.processed.size
-  }
-
-  private evictExpired(): void {
-    const now = Date.now()
-    for (const [id, entry] of this.processed.entries()) {
-      if (now - entry.timestamp > this.ttlMs) {
-        this.processed.delete(id)
+      if (result.isFail) {
+        return Result.fail<void, Error>(result.error)
       }
+
+      const isNew = result.value
+      if (!isNew) {
+        return Result.fail<void, Error>(
+          new Error('DUPLICATE_REQUEST: Requisição duplicada detectada pelo escudo de idempotência.')
+        )
+      }
+
+      return Result.ok<void, Error>(undefined)
+    } catch (error: any) {
+      return Result.fail<void, Error>(error)
+    }
+  }
+
+  async isDuplicate(id: string): Promise<boolean> {
+    try {
+      const key = `idempotency:${id}`
+      const result = await this.cacheRepo.exists(key)
+      if (result.isFail) {
+        return false
+      }
+      return result.value
+    } catch {
+      return false
+    }
+  }
+
+  async clear(): Promise<void> {
+    try {
+      await this.cacheRepo.clear()
+    } catch (error) {
+      console.error('Erro ao limpar cache de idempotência:', error)
     }
   }
 }
