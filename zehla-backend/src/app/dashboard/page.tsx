@@ -471,7 +471,7 @@ function DashboardContent() {
 
             {/* ===== TAB: CONFIGURAÇÕES ===== */}
             {activeTab === 'configuracoes' && (
-              <SettingsPanel />
+              <SettingsPanel propertyId={tenantData?.id} />
             )}
 
             {/* ===== TAB: VOICE STUDIO ===== */}
@@ -486,7 +486,9 @@ function DashboardContent() {
                   </p>
                 </div>
 
-                <VoiceStudioV2 />
+                {tenantData?.id && (
+                  <VoiceStudioV2 propertyId={tenantData.id} userPlan={tenantData.plan || 'PRO'} />
+                )}
               </div>
             )}
           </motion.div>

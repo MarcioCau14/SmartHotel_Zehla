@@ -1,39 +1,70 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mic, Lock, Zap, CheckCircle } from 'lucide-react';
 
-export const VoiceRecorder = ({ userPlan = 'LITE' }: { userPlan?: 'LITE' | 'PRO' | 'MAX' }) => {
+export interface VoiceRecorderProps {
+  userPlan?: 'LITE' | 'PRO' | 'MAX';
+  status: 'IDLE' | 'RECORDING' | 'UPLOADING' | 'TRAINING' | 'READY';
+  onStatusChange: (status: 'IDLE' | 'RECORDING' | 'UPLOADING' | 'TRAINING' | 'READY') => void;
+  onUpload: (mockedAudioBase64: string) => Promise<boolean>;
+}
+
+export const VoiceRecorder = ({
+  userPlan = 'PRO',
+  status,
+  onStatusChange,
+  onUpload
+}: VoiceRecorderProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordTime, setRecordTime] = useState(0);
-  const [status, setStatus] = useState<'IDLE' | 'RECORDING' | 'UPLOADING' | 'TRAINING' | 'READY'>('IDLE');
 
   const isLocked = userPlan === 'LITE';
 
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (status === 'RECORDING') {
+      setIsRecording(true);
+      interval = setInterval(() => {
+        setRecordTime((prev) => {
+          if (prev >= 90) { 
+            clearInterval(interval);
+            handleStopRecording();
+            return 90;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+    } else {
+      setIsRecording(false);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [status]);
+
   const handleStartRecording = () => {
-    setIsRecording(true);
-    setStatus('RECORDING');
-    const interval = setInterval(() => {
-      setRecordTime((prev) => {
-        if (prev >= 90) { 
-          clearInterval(interval);
-          handleStopRecording();
-          return 90;
-        }
-        return prev + 1;
-      });
-    }, 1000);
+    setRecordTime(0);
+    onStatusChange('RECORDING');
   };
 
-  const handleStopRecording = () => {
+  const handleStopRecording = async () => {
     setIsRecording(false);
-    setStatus('UPLOADING');
-    setTimeout(() => {
-      setStatus('TRAINING');
+    onStatusChange('UPLOADING');
+    
+    // Simula uma string Base64 curta para o upload
+    const mockAudioBase64 = "UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
+    
+    const success = await onUpload(mockAudioBase64);
+    if (success) {
+      onStatusChange('TRAINING');
       setTimeout(() => {
-        setStatus('READY');
-      }, 5000); 
-    }, 2000);
+        onStatusChange('READY');
+      }, 3000);
+    } else {
+      onStatusChange('IDLE');
+    }
   };
 
   const progress = (recordTime / 90) * 100;
@@ -129,7 +160,7 @@ export const VoiceRecorder = ({ userPlan = 'LITE' }: { userPlan?: 'LITE' | 'PRO'
           </div>
           <button 
             onClick={handleStopRecording}
-            className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-semibold py-3 px-4 rounded-xl transition-all border border-zinc-700"
+            className="w-full bg-zinc-800 hover:bg-rose-500 text-white font-semibold py-3 px-4 rounded-xl transition-all border border-zinc-700"
           >
             Finalizar Captação
           </button>
@@ -156,7 +187,7 @@ export const VoiceRecorder = ({ userPlan = 'LITE' }: { userPlan?: 'LITE' | 'PRO'
           <h3 className="text-xl font-bold text-white mb-2">Voice Print Ativa!</h3>
           <p className="text-sm text-zinc-400 mb-6">O ZEHLA agora pode responder os hóspedes usando a sua voz exata e os protocolos do DNA Wizard.</p>
           <button 
-            onClick={() => {setStatus('IDLE'); setRecordTime(0);}}
+            onClick={() => {onStatusChange('IDLE'); setRecordTime(0);}}
             className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-semibold py-3 px-4 rounded-xl transition-all border border-zinc-700"
           >
             Voltar ao Dashboard

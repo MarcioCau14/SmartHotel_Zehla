@@ -170,6 +170,8 @@ model Property {
   financeiroInvoices   FinanceiroInvoice[]
   financeiroPayments   FinanceiroPayment[]
   digitalGuides        DigitalGuide[]
+  taxProfile           TaxProfile?
+  voiceDNA             VoiceDNA?
 
   @@map("properties")
 }
@@ -1229,31 +1231,21 @@ model service_items {
   @@index([propertyId, isActive])
 }
 
-model tax_profiles {
-  id                 String   @id
-  propertyId         String   @unique
-  cnpj               String?
-  razaoSocial        String?
-  nomeFantasia       String?
-  inscricaoMunicipal String?
-  inscricaoEstadual  String?
-  regimeTributario   String   @default("SIMPLES_NACIONAL")
-  codigoAtividade    String?
-  certificadoDigital Json?
-  enderecoCompleto   Json?
-  emailNF            String?
-  telefoneNF         String?
-  autoEmissaoNF      Boolean  @default(false)
-  tipoNFS            String   @default("NFS_E")
-  provedorNF         String?
-  chaveAPIProvedor   String?
-  ambienteEmissao    String   @default("HOMOLOGACAO")
-  isActive           Boolean  @default(false)
-  metadata           Json?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime
+model TaxProfile {
+  id                 String   @id @default(uuid())
+  propertyId         String   @unique @map("property_id")
+  cnpj               String
+  razaoSocial        String   @map("razao_social")
+  inscricaoEstadual  String?  @map("inscricao_estadual")
+  inscricaoMunicipal String?  @map("inscricao_municipal")
+  taxRegime          String   @map("tax_regime")   // e.g., "Simples Nacional", "Lucro Presumido"
+  environment        String   // e.g., "Sandbox", "Production"
+  encryptedKeys      String?  @map("encrypted_keys") // AES-256 encrypted keys for Sefaz/Prefeitura
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
-  @@index([propertyId])
+  property           Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("tax_profiles")
 }
 
 model transaction_logs {
@@ -2894,4 +2886,19 @@ model MLInteractionLog {
   @@index([tenantId])
   @@index([createdAt])
   @@map("ml_interaction_logs")
+}
+
+// -----------------------------------------------------------------------------
+// FASE 3: VOICE STUDIO V2 (VOICE INTELLIGENCE HUB)
+// -----------------------------------------------------------------------------
+model VoiceDNA {
+  id               String   @id @default(uuid())
+  propertyId       String   @unique @map("property_id")
+  acousticWeights  Json     @map("acoustic_weights") // Stores the neural weights/sliders from DNAMapper
+  referenceHash    String   @map("reference_hash")   // Cryptographic hash of the original audio file
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  property         Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("voice_dna")
 }

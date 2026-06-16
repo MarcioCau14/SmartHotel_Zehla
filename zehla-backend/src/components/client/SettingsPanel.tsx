@@ -53,6 +53,7 @@ import {
   SelectValue } from
 '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { FiscalSettingsTab } from './settings/FiscalSettingsTab';
 
 /* ────────────────────────────────────────────
    DEMO DATA
@@ -260,7 +261,7 @@ const darkSelectTrigger = 'bg-[#242424] border border-[#363636] rounded-lg px-3 
    COMPONENT
    ──────────────────────────────────────────── */
 
-export function SettingsPanel() {
+export function SettingsPanel({ propertyId }: { propertyId?: string }) {
   const { toast } = useToast();
 
   // Section 1
@@ -1340,6 +1341,28 @@ export function SettingsPanel() {
             </div>
           </AccordionContent>
         </AccordionItem>
+
+        {/* ═══════════ SECTION 8: Configuração Fiscal ═══════════ */}
+        {propertyId && (
+          <AccordionItem value="section-8" className="glass-card border-[#2e2e2e] rounded-xl overflow-hidden">
+            <AccordionTrigger className="px-5 py-4 text-[#fafafa] hover:no-underline hover:text-[#FF5500] transition-colors [&>svg]:text-[#4d4d4d]">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-orange-400" />
+                </div>
+                <div className="text-left">
+                  <div className="text-sm font-semibold">Configuração Fiscal</div>
+                  <div className="text-xs text-[#4d4d4d]">Gerencie os regimes tributários e perfil fiscal (Tax Profile)</div>
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-5 pb-5">
+              <div className="mt-2">
+                <FiscalSettingsTab propertyId={propertyId} />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        )}
 
       </Accordion>
 
