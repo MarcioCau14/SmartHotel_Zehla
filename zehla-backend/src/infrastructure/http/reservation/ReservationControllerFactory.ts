@@ -3,6 +3,7 @@ import { CreateReservationUseCase } from '../../../application/reservation/use-c
 import { CancelReservationUseCase } from '../../../application/reservation/use-cases/CancelReservationUseCase'
 import { CheckInUseCase } from '../../../application/reservation/use-cases/CheckInUseCase'
 import { CheckOutUseCase } from '../../../application/reservation/use-cases/CheckOutUseCase'
+import { PrismaChecklistRepository } from '../../persistence/operacional/PrismaChecklistRepository'
 import { UpdateReservationUseCase } from '../../../application/reservation/use-cases/UpdateReservationUseCase'
 import { LinkPaymentUseCase } from '../../../application/reservation/use-cases/LinkPaymentUseCase'
 import { ListReservationsUseCase } from '../../../application/reservation/use-cases/ListReservationsUseCase'
@@ -99,7 +100,8 @@ export class ReservationControllerFactory {
     return new CheckOutUseCase(
       ReservationControllerFactory._reservationRepo,
       ReservationControllerFactory._roomRepo,
-      ReservationControllerFactory.eventBus
+      ReservationControllerFactory.eventBus,
+      new PrismaChecklistRepository(ReservationControllerFactory.db)
     )
   }
 

@@ -17,6 +17,7 @@ export const QUEUE_NAMES = {
   DEEP_SCRAPE: 'brain-deep-scrape',
   CAMPAIGN_OUTBOUND: 'campaign-outbound',
   BUDGET_RESET: 'budget-reset',
+  SLA_ALERTS: 'sla-alerts',
 } as const;
 
 // Configuração de Concorrência e Rate Limiting (Proteção de API Keys)
@@ -134,6 +135,7 @@ export const campaignOutboundQueue = new Queue(QUEUE_NAMES.CAMPAIGN_OUTBOUND, {
 });
 
 export const budgetResetQueue = new Queue(QUEUE_NAMES.BUDGET_RESET, queueOptions);
+export const slaAlertsQueue = new Queue(QUEUE_NAMES.SLA_ALERTS, queueOptions);
 
 export const trackingEventsQueue = new Queue('tracking-events', {
   ...queueOptions,

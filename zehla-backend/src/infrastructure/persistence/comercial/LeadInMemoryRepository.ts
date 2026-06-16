@@ -205,7 +205,7 @@ export class LeadInMemoryRepository implements ILeadPort {
         scoreObj !== undefined ? scoreObj : lead.score,
         dados.status !== undefined ? (dados.status as any) : lead.status,
         lead.origemUrl,
-        lead.tags,
+        dados.tags !== undefined ? dados.tags : lead.tags,
         new Date() // atualiza ultimaInteracao
       )
       

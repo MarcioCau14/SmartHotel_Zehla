@@ -1,5 +1,6 @@
 import { hasFeature } from '../feature-guard';
 import { WhatsappPersonaLearner } from '../whatsapp-persona-learner';
+import { memoryAdapter } from '../../memory';
 
 export class PromptBuilder {
   static async build(property: any, intent: string, message: string, classified: any, context: any) {
@@ -18,9 +19,24 @@ IMPORTANTE: Você DEVE adotar esse estilo de atendimento rigorosamente para pres
       learnedPersonaPrompt = `\n\n[ATENDIMENTO BÁSICO]: Utilize um tom de voz neutro, educado e profissional. Não utilize gírias ou expressões personalizadas.`;
     }
 
+    let guidebookContext = '';
+    try {
+      const searchResult = await memoryAdapter.getByTenant(property.id);
+      if (searchResult.isOk && searchResult.value.length > 0) {
+        guidebookContext = '\n\n[GUIA DIGITAL DA POUSADA (INFORMAÇÕES ADICIONAIS DE SUPORTE NO WHATSAPP)]:\n' +
+          searchResult.value.map((entry: any) => `- ${entry.content}`).join('\n') +
+          '\nUse as informações acima do guia digital para responder dúvidas dos hóspedes sobre regras, horários, localizações e recomendações.';
+      }
+    } catch (err) {
+      console.error('[PromptBuilder] Erro ao carregar guia digital do Vector DB:', err);
+    }
+
     let systemPrompt = this.buildSystemPrompt(property, intent);
     if (learnedPersonaPrompt) {
       systemPrompt += learnedPersonaPrompt;
+    }
+    if (guidebookContext) {
+      systemPrompt += guidebookContext;
     }
 
     const userPrompt = this.buildUserPrompt(message, classified, context);
