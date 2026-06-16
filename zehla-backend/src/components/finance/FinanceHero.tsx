@@ -1,87 +1,126 @@
 'use client';
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Bot, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
+import { Sparkles, AlertTriangle, TrendingUp, DollarSign, Percent, Users } from 'lucide-react';
 
-interface FinanceHeroProps {
+export interface FinanceHeroProps {
   summary: {
+    totalRevenue: number;
+    totalCosts: number;
     profit: number;
     profitMargin: number;
     avgOccupancy: number;
-    totalRevenue: number;
+    avgADR: number;
   };
   aiInsight: string;
   healthScore: number;
   alertCount: number;
-  agentName: string;
 }
 
-/**
- * FinanceHero: Componente estilo "Pierre Finance" focado em conversação e insights.
- */
-export function FinanceHero({ summary, aiInsight, healthScore, alertCount, agentName }: FinanceHeroProps) {
-  const healthColor = healthScore >= 70 ? 'border-emerald-500' : healthScore >= 40 ? 'border-yellow-500' : 'border-red-500';
-  const healthLabel = healthScore >= 70 ? 'Saudável' : healthScore >= 40 ? 'Atenção' : 'Crítico';
+export function FinanceHero({ summary, aiInsight, healthScore, alertCount }: FinanceHeroProps) {
+  const isHealthy = healthScore >= 70;
+  const isWarning = healthScore >= 40 && healthScore < 70;
+
+  const healthColor = isHealthy 
+    ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5' 
+    : isWarning 
+    ? 'text-amber-400 border-amber-500/20 bg-amber-500/5' 
+    : 'text-red-400 border-red-500/20 bg-red-500/5';
+
+  const healthBadgeColor = isHealthy 
+    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+    : isWarning 
+    ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
+    : 'bg-red-500/10 text-red-400 border-red-500/20';
+
+  const healthLabel = isHealthy ? 'Saudável' : isWarning ? 'Atenção' : 'Crítico';
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-      {/* Insight da IA (Conversacional) */}
-      <Card className={`lg:col-span-2 border-l-4 ${healthColor}`}>
-        <CardContent className="p-6">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Bot className="w-5 h-5 text-blue-500" />
-                <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                  ZEHLA Finance Agent: {agentName}
-                </span>
-              </div>
-              <p className="text-lg font-medium leading-relaxed italic text-foreground/90">
-                "{aiInsight}"
-              </p>
-            </div>
-            <Badge variant={healthScore >= 70 ? 'default' : 'destructive'} className="shrink-0">
-              {healthLabel} ({healthScore}/100)
-            </Badge>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* AI Insight Card */}
+      <div className={`lg:col-span-2 border rounded-2xl p-6 flex flex-col justify-between ${healthColor}`}>
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-5 h-5 text-orange-500" />
+            <span className="text-xs font-mono font-bold tracking-widest text-neutral-400 uppercase">ZEHLA Finance — Analistas Cognitivos</span>
           </div>
-        </CardContent>
-      </Card>
+          <p className="text-[#f3f3f3] text-lg font-medium leading-relaxed tracking-wide font-sans">
+            "{aiInsight}"
+          </p>
+        </div>
 
-      {/* KPI Card Rápido */}
-      <Card>
-        <CardContent className="p-6 space-y-4">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Receita do Período</span>
-            <span className="text-2xl font-bold text-emerald-500">
-              R$ {summary.totalRevenue.toLocaleString('pt-BR')}
-            </span>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Lucro</span>
-            <div className="text-right">
-              <div className={`text-lg font-semibold ${summary.profit >= 0 ? 'text-emerald-500' : 'text-red-500'} flex items-center gap-1`}>
-                {summary.profit >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                R$ {summary.profit.toLocaleString('pt-BR')}
-              </div>
-              <span className="text-xs text-muted-foreground">Margem: {summary.profitMargin.toFixed(1)}%</span>
-            </div>
-          </div>
+        <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/5">
+          <span className="text-xs text-neutral-500 font-mono">AGENTES INVOLVIDOS: JONY, MARIA & TEDD</span>
+          <span className={`text-xs px-2.5 py-1 rounded-full border font-mono font-bold tracking-wider ${healthBadgeColor}`}>
+            STATUS: {healthLabel.toUpperCase()} ({healthScore}/100)
+          </span>
+        </div>
+      </div>
 
-          <div className="flex justify-between items-center pt-2 border-t">
-            <span className="text-sm text-muted-foreground">Ocupação Média</span>
-            <span className="text-lg font-semibold">{summary.avgOccupancy.toFixed(1)}%</span>
-          </div>
-
+      {/* KPI Cards Grid */}
+      <div className="border border-neutral-800 bg-[#0c0c0c] rounded-2xl p-6 flex flex-col justify-between space-y-4 shadow-xl">
+        <div className="flex justify-between items-center pb-2 border-b border-white/5">
+          <span className="text-xs font-mono font-bold text-neutral-400 uppercase">Resumo de Performance</span>
           {alertCount > 0 && (
-            <div className="flex items-center gap-2 text-yellow-500 text-sm font-medium pt-2 border-t bg-yellow-500/5 p-2 rounded">
-              <AlertTriangle className="w-4 h-4" />
-              <span>{alertCount} alerta{alertCount > 1 ? 's' : ''} pendente{alertCount > 1 ? 's' : ''}</span>
+            <div className="flex items-center gap-1.5 text-amber-500 text-[10px] font-mono font-bold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 animate-pulse">
+              <AlertTriangle className="w-3.5 h-3.5" />
+              <span>{alertCount} ALERTA{alertCount > 1 ? 'S' : ''} PENDENTE{alertCount > 1 ? 'S' : ''}</span>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2 text-neutral-400 text-xs">
+              <DollarSign className="w-4 h-4 text-emerald-400" />
+              <span>Receita Líquida</span>
+            </div>
+            <span className="text-lg font-bold text-emerald-400 font-mono">
+              R$ {summary.totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2 text-neutral-400 text-xs">
+              <DollarSign className="w-4 h-4 text-red-400" />
+              <span>Custos Totais</span>
+            </div>
+            <span className="text-base font-bold text-red-400 font-mono">
+              R$ {summary.totalCosts.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2 text-neutral-400 text-xs">
+              <TrendingUp className="w-4 h-4 text-orange-400" />
+              <span>Lucro Projetado</span>
+            </div>
+            <span className={`text-base font-bold font-mono ${summary.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              R$ {summary.profit.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              <span className="text-[10px] ml-1 text-neutral-500 font-mono">({summary.profitMargin.toFixed(1)}%)</span>
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2 text-neutral-400 text-xs">
+              <Users className="w-4 h-4 text-sky-400" />
+              <span>Ocupação Média</span>
+            </div>
+            <span className="text-base font-bold text-neutral-200 font-mono">
+              {summary.avgOccupancy.toFixed(1)}%
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2 text-neutral-400 text-xs">
+              <Percent className="w-4 h-4 text-purple-400" />
+              <span>ADR Médio</span>
+            </div>
+            <span className="text-base font-bold text-neutral-200 font-mono">
+              R$ {summary.avgADR.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

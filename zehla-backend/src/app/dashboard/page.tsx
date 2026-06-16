@@ -28,6 +28,7 @@ const VisibilityDashboard = dynamic(() => import('@/components/dashboard/Visibil
 const FNRHCheckinProvider = dynamic(() => import('@/components/dashboard/FNRHCheckinProvider').then(m => m.FNRHCheckinProvider), { ssr: false, loading: () => <DashboardSkeleton /> });
 const VoiceStudioV2 = dynamic(() => import('@/components/VoiceStudio/VoiceStudioV2').then(m => m.VoiceStudioV2), { ssr: false, loading: () => <DashboardSkeleton /> });
 const BrainDashboard = dynamic(() => import('@/components/dashboard/BrainDashboard').then(m => m.BrainDashboard), { ssr: false, loading: () => <DashboardSkeleton /> });
+const FinanceDashboardView = dynamic(() => import('@/components/finance/FinanceDashboardView').then(m => m.FinanceDashboardView), { ssr: false, loading: () => <DashboardSkeleton /> });
 
 import {
   LayoutDashboard,
@@ -428,18 +429,8 @@ function DashboardContent() {
             )}
 
             {/* ===== TAB: FINANCEIRO ===== */}
-            {activeTab === 'financeiro' && (
-              <div className="space-y-4">
-                <div>
-                  <h1 className="text-xl font-bold text-neutral-100">Financeiro</h1>
-                  <p className="text-sm text-neutral-500 mt-1">Receitas, pagamentos e transações</p>
-                </div>
-                {isNewAccount ? (
-                  <FinancialReport />
-                ) : (
-                  <FinancialReport />
-                )}
-              </div>
+            {activeTab === 'financeiro' && tenantData?.id && (
+              <FinanceDashboardView propertyId={tenantData.id} />
             )}
 
             {/* ===== TAB: RELATÓRIOS ===== */}

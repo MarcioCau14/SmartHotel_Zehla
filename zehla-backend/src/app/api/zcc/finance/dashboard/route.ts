@@ -1,69 +1,44 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma'; // Assumindo que este é o caminho do prisma client
-import { getFinanceAgent } from '@/lib/intelligence/finance-agents-brain';
+import { PrismaPousadaFinanceRepository } from '@/infrastructure/persistence/financeiro/PrismaPousadaFinanceRepository';
+import { PrismaFinanceTransactionRepository } from '@/infrastructure/persistence/financeiro/PrismaFinanceTransactionRepository';
+import { PrismaFinanceAlertRepository } from '@/infrastructure/persistence/financeiro/PrismaFinanceAlertRepository';
+import { ObterDashboardFinanceiroUseCase } from '@/application/financeiro/use-cases/ObterDashboardFinanceiroUseCase';
 
-/**
- * API: Dashboard Financeiro ZCC (Jony, Maria & Tedd)
- */
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const propertyId = searchParams.get('propertyId') || 'default-smart-hotel';
-  const days = parseInt(searchParams.get('days') || '30');
-
   try {
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    const { searchParams } = new URL(request.url);
+    const propertyId = searchParams.get('propertyId');
+    const daysParam = searchParams.get('days');
+    const days = daysParam ? parseInt(daysParam, 10) : 30;
 
-    // 1. Busca dados agregados
-    const finances = await (prisma as any).pousadaFinance.findMany({
-      where: { propertyId, date: { gte: startDate } },
-      orderBy: { date: 'asc' },
-    });
+    if (!propertyId) {
+      return NextResponse.json({ error: 'propertyId é obrigatório' }, { status: 400 });
+    }
 
-    // 2. Busca alertas não lidos (Gerados pelo Jony/Maria/Tedd)
-    const alerts = await (prisma as any).financeAlert.findMany({
-      where: { propertyId, isRead: false },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-    });
+    const pousadaFinanceRepo = new PrismaPousadaFinanceRepository();
+    const transactionRepo = new PrismaFinanceTransactionRepository();
+    const alertRepo = new PrismaFinanceAlertRepository();
 
-    // 3. Calcula KPIs
-    const totalRevenue = finances.reduce((sum: number, f: any) => sum + f.netRevenue, 0);
-    const totalCosts = finances.reduce((sum: number, f: any) => sum + f.totalCosts, 0);
-    const avgOccupancy = finances.length > 0 
-      ? finances.reduce((sum: number, f: any) => sum + f.occupancyRate, 0) / finances.length 
-      : 0;
+    const useCase = new ObterDashboardFinanceiroUseCase(
+      pousadaFinanceRepo,
+      transactionRepo,
+      alertRepo
+    );
 
-    // 4. Seleciona Agente (Jony para dashboard diário)
-    const agent = getFinanceAgent('daily');
+    const result = await useCase.execute({ propertyId, days });
 
-    // Mock do Insight da IA (Em produção, aqui chamaria o ZAI / OpenAI)
-    const aiInsight = `Jony diz: Sua receita nos últimos ${days} dias foi de R$ ${totalRevenue.toLocaleString('pt-BR')}. ` +
-                      `A ocupação média está em ${avgOccupancy.toFixed(1)}%. ` +
-                      (alerts.length > 0 ? `Atenção: Existem ${alerts.length} alertas financeiros pendentes!` : "Tudo sob controle hoje.");
+    if (result.isFail) {
+      return NextResponse.json({ error: result.error.message }, { status: 400 });
+    }
 
     return NextResponse.json({
-      summary: {
-        totalRevenue,
-        totalCosts,
-        profit: totalRevenue - totalCosts,
-        profitMargin: totalRevenue > 0 ? ((totalRevenue - totalCosts) / totalRevenue) * 100 : 0,
-        avgOccupancy,
-      },
-      chartData: finances.map((f: any) => ({
-        date: f.date,
-        revenue: f.netRevenue,
-        costs: f.totalCosts,
-        occupancy: f.occupancyRate,
-      })),
-      alerts,
-      aiInsight,
-      healthScore: avgOccupancy > 70 ? 90 : 60, // Lógica simplificada
-      agentName: agent.name
+      success: true,
+      data: result.value,
     });
-
   } catch (error) {
-    console.error('Erro na API Financeira:', error);
-    return NextResponse.json({ error: 'Erro ao buscar dados financeiros' }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }
