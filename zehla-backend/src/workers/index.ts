@@ -5,6 +5,7 @@ import { enrichWorker } from './enrichWorker';
 import { subconsciousWorker } from '../lib/ml/subconscious-worker';
 import { validateWorker } from './validateWorker';
 import { campaignOutboundWorker } from './campaignOutboundWorker';
+import { budgetResetWorker } from './budgetResetWorker';
 
 
 // src/workers/index.ts — ZEHLA Brain v4: Worker Orchestrator
@@ -18,6 +19,7 @@ const workers = [
   { name: 'Act', worker: actWorker },
   { name: 'Subconscious', worker: subconsciousWorker },
   { name: 'CampaignOutbound', worker: campaignOutboundWorker },
+  { name: 'BudgetReset', worker: budgetResetWorker },
 ];
 
 async function startAllWorkers() {

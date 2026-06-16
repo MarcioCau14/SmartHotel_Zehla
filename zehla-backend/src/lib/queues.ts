@@ -16,6 +16,7 @@ export const QUEUE_NAMES = {
   SWIPE_MATCH: 'brain-swipe-match',
   DEEP_SCRAPE: 'brain-deep-scrape',
   CAMPAIGN_OUTBOUND: 'campaign-outbound',
+  BUDGET_RESET: 'budget-reset',
 } as const;
 
 // Configuração de Concorrência e Rate Limiting (Proteção de API Keys)
@@ -131,6 +132,8 @@ export const campaignOutboundQueue = new Queue(QUEUE_NAMES.CAMPAIGN_OUTBOUND, {
     removeOnFail: { count: 1000 },
   },
 });
+
+export const budgetResetQueue = new Queue(QUEUE_NAMES.BUDGET_RESET, queueOptions);
 
 export const trackingEventsQueue = new Queue('tracking-events', {
   ...queueOptions,
