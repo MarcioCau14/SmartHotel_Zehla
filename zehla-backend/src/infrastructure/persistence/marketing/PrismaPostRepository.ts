@@ -5,7 +5,7 @@ import { Post, StatusPost } from '../../../domain/marketing/entities/Post'
 import { CanalDistribuicao } from '../../../domain/marketing/value-objects/CanalDistribuicao'
 
 export class PrismaPostRepository implements IPostPort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(post: Post): any {
     return {

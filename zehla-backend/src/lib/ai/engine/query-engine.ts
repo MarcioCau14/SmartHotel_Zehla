@@ -20,6 +20,7 @@ export class QueryEngine {
    */
   static async execute(input: string, context: QueryContext) {
     console.log(`🧠 [Query Engine] Iniciando raciocínio para Session: ${context.sessionId}`);
+    const startTime = Date.now();
     
     let currentStep = 0;
     let messages = [
@@ -45,7 +46,7 @@ export class QueryEngine {
           response: response.content,
           steps: currentStep,
           tokens: response.tokensUsed,
-          duration: Date.now() - this.startTime
+          duration: Date.now() - startTime
         };
       }
 

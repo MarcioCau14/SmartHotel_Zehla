@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { scanAndMask } from '../security/pii-scanner';
+import { scanAndMaskPII } from '../security/pii-scanner';
 import { addEmailJob } from '../queue/client';
 
 export interface RawLeadData {
@@ -23,7 +23,7 @@ export class LeadService {
    */
   static async ingest(data: RawLeadData, propertyId: string) {
     // 1. PII Scan & Masking (Segurança)
-    const { maskedText: maskedName } = scanAndMask(data.name);
+    const { masked: maskedName } = scanAndMaskPII(data.name);
     
     // 2. Cálculo de Score Inicial (Zehla Brain Intelligence Layer)
     let initialScore = 50;

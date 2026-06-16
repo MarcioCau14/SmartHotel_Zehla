@@ -21,6 +21,8 @@ const PLAN_FEES: Record<Plan, { commission: number; monthly: number }> = {
   LITE: { commission: 0.05, monthly: 248 },
   PRO: { commission: 0.02, monthly: 448 },
   MAX: { commission: 0.00, monthly: 798 },
+  BETA_TESTER: { commission: 0.00, monthly: 0 },
+  EARLY_ADOPTER: { commission: 0.01, monthly: 197 },
 };
 
 export function calculateFees(finalTotalAmount: number, plan: Plan): FeeBreakdown {

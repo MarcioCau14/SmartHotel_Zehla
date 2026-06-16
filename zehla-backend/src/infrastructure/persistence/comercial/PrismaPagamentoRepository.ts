@@ -5,7 +5,7 @@ import { Result } from '../../../shared/Result'
 import { Money } from '../../../domain/comercial/value-objects/Money'
 
 export class PrismaPagamentoRepository implements IPagamentoPort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(pagamento: Pagamento): any {
     return {

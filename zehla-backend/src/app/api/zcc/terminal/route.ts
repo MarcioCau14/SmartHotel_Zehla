@@ -14,11 +14,11 @@ export async function GET(req: NextRequest) {
 
     const logs = await prisma.cognitiveTerminalLog.findMany({
       where: {
-        tenantId: tenantId || undefined,
-        timestamp: minTimestamp ? { gte: minTimestamp } : undefined,
+        propertyId: tenantId || undefined,
+        createdAt: minTimestamp ? { gte: minTimestamp } : undefined,
       },
       orderBy: {
-        timestamp: 'desc',
+        createdAt: 'desc',
       },
       take: limit,
     });
@@ -28,10 +28,10 @@ export async function GET(req: NextRequest) {
       logs: logs.map(l => ({
         id: l.id,
         level: l.level,
-        component: l.component,
+        component: l.source,
         message: l.message,
         metadata: l.metadata,
-        timestamp: l.timestamp,
+        timestamp: l.createdAt,
       }))
     });
   } catch (error) {

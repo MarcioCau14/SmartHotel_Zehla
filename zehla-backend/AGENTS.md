@@ -186,3 +186,7 @@ Para cada artefato:
 - Subagentes nunca operam fora de seu contexto definido
 - Nenhuma implementação é mergeada sem passar pelo Revisor
 - O Arquiteto é o guardião da integridade arquitetural — suas decisões soberanas
+
+---
+
+> **Navegação:** [[ZEHLA_INDEX]] | [[SPEC]] | [[SKILL]] | [[DESIGN]] | [[SPEC_COMERCIAL]] | [[Skill_Bot_Build_ZEHLA]]

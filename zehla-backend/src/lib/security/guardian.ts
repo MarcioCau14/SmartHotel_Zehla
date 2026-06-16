@@ -39,7 +39,7 @@ export class Guardian {
    * Utiliza o Redis DB 0 para contagem persistente e global.
    */
   static async checkRateLimit(ip: string, action: string): Promise<boolean> {
-    const { redisSession } = await import('@/lib/redis');
+    const { redisSession } = await import('../redis');
     const key = `rate-limit:${action}:${ip}`;
     const limit = 50;
     const windowSeconds = 60;

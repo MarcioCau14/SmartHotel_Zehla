@@ -99,3 +99,7 @@ Estamos no **VÉRTICE DA ESCALA**.
 **Veredito:** O ZEHLA não é mais um software, é uma entidade autônoma pronta para dominar o mercado de hospitalidade digital.
 
 ---
+
+---
+
+> **Navegação:** [[ZEHLA_INDEX]] | [[INTELLIGENCE/ZEHLA_PROJECT_AUDIT]] | [[INTELLIGENCE/SESSION_CHECKPOINT]] | [[SPEC]] | [[AGENTS]]

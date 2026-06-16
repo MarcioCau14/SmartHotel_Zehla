@@ -2722,3 +2722,176 @@ model ComercialConversao {
   @@map("comercial_conversoes")
 }
 
+
+model WeatherSignal {
+  id            String   @id @default(cuid())
+  propertyId    String?
+  city          String
+  state         String?
+  region        String?
+  dateRange     String?
+  temp          Float?
+  avgTemp       Float?
+  precipitation Float?
+  condition     String
+  impactScore   Float?
+  createdAt     DateTime @default(now())
+
+  @@index([propertyId, createdAt])
+  @@index([city])
+  @@map("weather_signals")
+}
+
+model HolidaySignal {
+  id         String   @id @default(cuid())
+  name       String
+  date       DateTime
+  type       String?
+  daysUntil  Int
+  isExtended Boolean  @default(false)
+  region     String?
+  national   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  @@index([daysUntil])
+  @@index([date])
+  @@map("holiday_signals")
+}
+
+model TrendDataPoint {
+  id            String   @id @default(cuid())
+  keywordId     String
+  interestScore Int      @default(0)
+  interestDelta Float?
+  date          DateTime @default(now())
+  source        String
+
+  @@index([keywordId, date])
+  @@map("trend_data_points")
+}
+
+// ─── ZMG — ZEHLA MESSAGING GATEWAY ─────────────────────────────────────
+model ZMGMessage {
+  id               String    @id @default(cuid())
+  propertyId       String
+  agentSource      String
+  messageType      String
+  objective        String?
+  recipientPhone   String?
+  recipientEmail   String?
+  recipientName    String?
+  status           String    @default("QUEUED")
+  primaryChannel   String    @default("whatsapp")
+  sentChannel      String?
+  content          String    @db.Text
+  renderedContent  String?   @db.Text
+  variables        Json?
+  trendSignalId    String?
+  swipeTemplateId  String?
+  reservationId    String?
+  channelCost      Float?
+  fallbackUsed     Boolean   @default(false)
+  fallbackChannel  String?
+  contactProfileId String?
+  externalMessageId String?
+  failureReason    String?
+  sentAt           DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  contact          ZMGContactProfile? @relation(fields: [recipientPhone], references: [phone])
+  activities       ZMGActivity[]
+
+  @@index([propertyId, status])
+  @@index([createdAt])
+  @@map("zmg_messages")
+}
+
+model ZMGActivity {
+  id        String   @id @default(cuid())
+  messageId String
+  event     String
+  channel   String?
+  provider  String?
+  response  String?
+  status    String?
+  createdAt DateTime @default(now())
+
+  message   ZMGMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@map("zmg_activities")
+}
+
+model ZMGContactProfile {
+  id                  String     @id @default(cuid())
+  propertyId          String
+  phone               String     @unique
+  name                String?
+  email               String?
+  whatsappAvailable   Boolean    @default(false)
+  smsAvailable        Boolean    @default(false)
+  instagramAvailable  Boolean    @default(false)
+  lineType            String?
+  carrierName         String?
+  city                String?
+  state               String?
+  region              String?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  messages ZMGMessage[]
+
+  @@index([propertyId])
+  @@map("zmg_contact_profiles")
+}
+
+// ─── ZCC-TRENDS ─────────────────────────────────────────────────────────
+model TrendKeyword {
+  id       String  @id @default(cuid())
+  keyword  String
+  category String
+  tier     String?
+  isActive Boolean @default(true)
+
+  @@map("trend_keywords")
+}
+
+model TrendSignal {
+  id             String   @id @default(cuid())
+  type           String
+  keyword        String
+  keywordId      String?
+  category       String?
+  interestScore  Int      @default(0)
+  deltaPercent   Float?
+  severity       String?
+  geo            String?
+  previousScore  Int?
+  agentsNotified String?
+  dateDetected   DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  @@index([dateDetected])
+  @@index([geo])
+  @@map("trend_signals")
+}
+
+// ─── ML BRAIN ────────────────────────────────────────────────────────────
+model MLInteractionLog {
+  id                 String   @id @default(cuid())
+  tenantId           String
+  leadId             String?
+  messageId          String?
+  modelUsed          String
+  toneAlignmentScore Float?
+  responseTimeMs     Int
+  tokensUsed         Int?
+  outcome            String?
+  threadHistory      Json?
+  createdAt          DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([createdAt])
+  @@map("ml_interaction_logs")
+}

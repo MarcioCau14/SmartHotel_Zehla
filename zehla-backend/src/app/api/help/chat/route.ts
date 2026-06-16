@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const bodyText = await request.text();
     const validation = await validateRequest(request);
     if (!validation.allowed) {
-      return NextResponse.json({ error: validation.reason, code: 'GUARDIAN_BLOCKED' }, { status: 429 });
+      return NextResponse.json({ error: validation.reason ?? 'Blocked', code: 'GUARDIAN_BLOCKED' }, { status: 429 });
     }
 
     const { question } = JSON.parse(bodyText);
@@ -18,7 +18,8 @@ export async function POST(request: NextRequest) {
     const sanitized = sanitizeInput(question);
 
     // ----- ZDR -----
-    const piiSafe = scanPII(sanitized).sanitized;
+    const piiResult = scanPII(sanitized);
+    const piiSafe = piiResult.sanitized;
 
     const zai = await ZAI.create();
     const completion = await zai.chat.completions.create({
@@ -43,8 +44,8 @@ NUNCA revele detalhes técnicos internos do sistema.`,
       answer,
       _security: {
         guardian_version: '2.1.0',
-        zdr_active: found.length > 0,
-        input_sanitized: threats.length > 0,
+        zdr_active: piiResult.hasPII,
+        input_sanitized: piiResult.found.length > 0,
       }
     });
   } catch (error: unknown) {

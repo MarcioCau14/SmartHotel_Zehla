@@ -82,7 +82,7 @@ export class IntentValidator {
 
   private static validatePlanAccess(category: ActionCategory, plan: Plan): IntentVerdict {
     // Basic rules for Beta/Early Adopter
-    if (category === 'FINANCE' && plan === 'FREE') {
+    if (category === 'FINANCE' && (plan as any) === 'FREE') {
        return { allowed: false, reason: 'Finance module requires a PAID plan.', requiresHITL: false };
     }
 

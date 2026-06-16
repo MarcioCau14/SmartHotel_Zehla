@@ -4,7 +4,7 @@ import { IMetricaPort } from '../../../application/marketing/ports/IMetricaPort'
 import { Metrica } from '../../../domain/marketing/entities/Metrica'
 
 export class PrismaMetricaRepository implements IMetricaPort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(metrica: Metrica): any {
     return {

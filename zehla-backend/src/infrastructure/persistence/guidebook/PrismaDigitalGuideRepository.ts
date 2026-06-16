@@ -31,7 +31,7 @@ interface DigitalGuidePrisma {
 }
 
 export class PrismaDigitalGuideRepository implements IDigitalGuideRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(guide: DigitalGuide): { 
     guide: { id: string; propertyId: string; status: string; version: number }

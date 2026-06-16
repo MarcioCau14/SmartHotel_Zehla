@@ -72,3 +72,7 @@ Para cadastrar as pousadas dos amigos e ver tudo funcionar:
 O ZEHLA não é mais um projeto, é um **produto**. A estrutura de segurança Fortress é o que nos permite colocar clientes reais amanhã com tranquilidade. A arquitetura está pronta para escala.
 
 **Deseja que eu gere uma versão PDF formatada deste documento para você baixar ou prefere que eu comece a atacar os pontos de UX/UI da lista acima?**
+
+---
+
+> **Navegação:** [[ZEHLA_INDEX]] | [[INTELLIGENCE/ZEHLA_EVOLUTION_MASTER]] | [[SPEC]] | [[AGENTS]]

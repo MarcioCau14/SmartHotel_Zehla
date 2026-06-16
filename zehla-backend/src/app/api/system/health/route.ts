@@ -71,7 +71,7 @@ async function _GET() {
     errorRate = await prisma.cognitiveTerminalLog.count({
       where: {
         level: 'error',
-        timestamp: { gte: fiveMinAgo },
+        createdAt: { gte: fiveMinAgo },
       },
     });
   } catch {

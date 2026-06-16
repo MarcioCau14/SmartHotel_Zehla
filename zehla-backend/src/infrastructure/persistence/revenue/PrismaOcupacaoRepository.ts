@@ -6,7 +6,7 @@ import { Percentual } from '../../../domain/revenue/value-objects/Percentual'
 import { IOcupacaoPort } from '../../../application/revenue/ports/IOcupacaoPort'
 
 export class PrismaOcupacaoRepository implements IOcupacaoPort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(ocupacao: Ocupacao): any {
     return {

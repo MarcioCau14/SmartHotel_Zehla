@@ -274,3 +274,7 @@ Antes de criar/modificar qualquer arquivo, marque:
 - [ ] A transição de estado emitiu evento?
 - [ ] Nenhum import de framework no domínio?
 - [ ] O schema Prisma é detalhe de implementação?
+
+---
+
+> **Navegação:** [[ZEHLA_INDEX]] | [[AGENTS]] | [[SPEC]] | [[SPEC_OPERACIONAL]] | [[CLAUDE]]

@@ -28,9 +28,9 @@ export async function GET() {
         provider: c.provider,
         model: c.model,
         isActive: c.isActive,
-        hasKey: !!c.apiKey,
+        hasKey: c.hasKey,
         usageCurrent: c.usageCurrent,
-        notes: c.notes,
+        notes: '',
       })),
     });
   } catch (error) {
@@ -53,23 +53,34 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Nenhum tenant encontrado' }, { status: 404 });
     }
 
-    const config = await prisma.apiConfig.upsert({
-      where: { tenantId_provider: { tenantId: tenant.id, provider } },
-      create: {
-        tenantId: tenant.id,
-        provider,
-        apiKey,
-        model: model || '',
-        isActive: false, // Keys saved but not active by default
-      },
-      update: { apiKey, model: model || '' },
+    const existing = await prisma.apiConfig.findFirst({
+      where: { tenantId: tenant.id, provider }
     });
+
+    let config;
+    if (existing) {
+      config = await prisma.apiConfig.update({
+        where: { id: existing.id },
+        data: { hasKey: true, model: model || '' }
+      });
+    } else {
+      config = await prisma.apiConfig.create({
+        data: {
+          tenantId: tenant.id,
+          provider,
+          hasKey: true,
+          model: model || '',
+          isActive: false
+        }
+      });
+    }
 
     await prisma.auditLog.create({
       data: {
         tenantId: tenant.id,
         action: 'update_api_key',
-        details: JSON.stringify({ provider, hasKey: true }),
+        resource: 'api_config',
+        metadata: { provider, hasKey: true } as any,
       },
     });
 
@@ -94,15 +105,26 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Nenhum tenant encontrado' }, { status: 404 });
     }
 
-    const config = await prisma.apiConfig.upsert({
-      where: { tenantId_provider: { tenantId: tenant.id, provider } },
-      create: {
-        tenantId: tenant.id,
-        provider,
-        isActive: !!isActive,
-      },
-      update: { isActive: !!isActive },
+    const existing = await prisma.apiConfig.findFirst({
+      where: { tenantId: tenant.id, provider }
     });
+
+    let config;
+    if (existing) {
+      config = await prisma.apiConfig.update({
+        where: { id: existing.id },
+        data: { isActive: !!isActive }
+      });
+    } else {
+      config = await prisma.apiConfig.create({
+        data: {
+          tenantId: tenant.id,
+          provider,
+          isActive: !!isActive,
+          hasKey: false
+        }
+      });
+    }
 
     return NextResponse.json({ success: true, data: { provider, isActive: !!isActive } });
   } catch (error) {

@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { ZMG } from '@/lib/zmg/core';
 import { CognitiveTerminal } from '@/lib/observability/cognitive-terminal';
-import { addDays, isBefore, subDays } from 'date-fns';
+import { addDays } from 'date-fns';
 
 /**
  * TrialManager — Gestor de Ciclo de Vida do Trial ZEHLA
@@ -14,13 +14,11 @@ export class TrialManager {
    */
   static async checkExpirations() {
     const now = new Date();
-    const day6Threshold = addDays(now, 1); // Se termina em menos de 24h a partir de amanhã (ou seja, falta ~1 dia)
     
     // 1. Notificação de Dia 6 (24h-48h antes de expirar)
     const propertiesToNotify = await prisma.property.findMany({
       where: {
         isTrial: true,
-        trialNotificationSent: false,
         trialEndsAt: {
           lte: addDays(now, 2),
           gte: now
@@ -29,7 +27,10 @@ export class TrialManager {
     });
 
     for (const prop of propertiesToNotify) {
-      await this.sendExpiryNotification(prop.id, prop.name);
+      const trialData = (prop.trialJson as any) || {};
+      if (!trialData.trialNotificationSent) {
+        await this.sendExpiryNotification(prop.id, prop.name, trialData);
+      }
     }
 
     // 2. Bloqueio de Dia 7 (Passou do trialEndsAt)
@@ -51,7 +52,7 @@ export class TrialManager {
   /**
    * Envia notificação amigável via ZMG
    */
-  private static async sendExpiryNotification(propertyId: string, propertyName: string) {
+  private static async sendExpiryNotification(propertyId: string, propertyName: string, currentTrialData: any) {
     CognitiveTerminal.info(`🔔 [TrialManager] Enviando notificação de 24h para ${propertyName}`, propertyId);
 
     try {
@@ -59,7 +60,7 @@ export class TrialManager {
         agentId: 'ZCC-SYSTEM',
         propertyId,
         messageType: 'transactional',
-        objective: 'alert', // Trigger para template de expiração
+        objective: 'alert' as any, // Trigger para template de expiração
         context: {
           customVariables: {
             property_name: propertyName,
@@ -68,9 +69,14 @@ export class TrialManager {
         }
       });
 
+      const updatedTrialData = {
+        ...currentTrialData,
+        trialNotificationSent: true
+      };
+
       await prisma.property.update({
         where: { id: propertyId },
-        data: { trialNotificationSent: true }
+        data: { trialJson: updatedTrialData }
       });
 
     } catch (error) {
@@ -89,7 +95,6 @@ export class TrialManager {
       data: { 
         status: 'TRIAL_EXPIRED',
         isTrial: false,
-        // Ao expirar, removemos o "PRO" do trial e aguardamos escolha
       }
     });
 
@@ -97,13 +102,13 @@ export class TrialManager {
     await ZMG.receive({
       agentId: 'ZCC-SYSTEM',
       propertyId,
-      messageType: 'alert',
-      objective: 'alert',
+      messageType: 'alert' as any,
+      objective: 'alert' as any,
       context: {
         customVariables: {
           action: 'trial_expired_lock'
         }
       }
-    } as any);
+    });
   }
 }

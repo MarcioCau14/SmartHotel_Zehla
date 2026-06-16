@@ -27,3 +27,7 @@ Para garantir uma leitura confortável e uma estética premium, suavizamos o tom
 - **Bordas:** Arredondamento suave (`0.5rem` / `8px`).
 - **Cards:** Fundo `#1E293B` (Slate 800) com bordas sutis.
 - **Sombra:** Efeitos suaves (Soft Shadows), evitando contrastes agressivos.
+
+---
+
+> **Navegação:** [[ZEHLA_INDEX]] | [[SPEC]] | [[AGENTS]] | [[SPEC_COMERCIAL]] | [[SPEC_FRONTEND]]

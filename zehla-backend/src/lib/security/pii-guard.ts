@@ -24,18 +24,18 @@ export const PiiGuard = {
    */
   protect<T extends Record<string, any>>(data: T): T {
     if (!data) return data;
-    const protectedData = { ...data };
+    const protectedData = { ...data } as any;
 
     for (const field of PII_FIELDS) {
       if (protectedData[field] && typeof protectedData[field] === 'string') {
         // Evita criptografia dupla se já estiver criptografado (checa formato iv:tag:hex)
         if (!protectedData[field].includes(':')) {
-          protectedData[field] = encrypt(protectedData[field]) as any;
+          protectedData[field] = encrypt(protectedData[field]);
         }
       }
     }
 
-    return protectedData;
+    return protectedData as T;
   },
 
   /**
@@ -43,15 +43,15 @@ export const PiiGuard = {
    */
   reveal<T extends Record<string, any>>(data: T): T {
     if (!data) return data;
-    const revealedData = { ...data };
+    const revealedData = { ...data } as any;
 
     for (const field of PII_FIELDS) {
       if (revealedData[field] && typeof revealedData[field] === 'string') {
-        revealedData[field] = decrypt(revealedData[field]) as any;
+        revealedData[field] = decrypt(revealedData[field]);
       }
     }
 
-    return revealedData;
+    return revealedData as T;
   },
 
   /**

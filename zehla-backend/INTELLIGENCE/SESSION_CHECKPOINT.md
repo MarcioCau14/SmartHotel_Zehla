@@ -24,3 +24,7 @@
 
 ---
 *Assinado: Antigravity AI*
+
+---
+
+> **Navegação:** [[ZEHLA_INDEX]] | [[INTELLIGENCE/ZEHLA_EVOLUTION_MASTER]] | [[Z_LAST_SESSION]] | [[SPEC]]

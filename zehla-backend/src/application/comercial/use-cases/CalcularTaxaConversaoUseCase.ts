@@ -48,7 +48,7 @@ export class CalcularTaxaConversaoUseCase {
         return Result.fail(pagamentosResult.error)
       }
       const pagamentos = pagamentosResult.value.filter(p => 
-        p.dataCriacao >= inicio && p.dataCriacao <= fim
+        p.dataCriacao && p.dataCriacao >= inicio && p.dataCriacao <= fim
       )
 
       // Buscar conversões no período

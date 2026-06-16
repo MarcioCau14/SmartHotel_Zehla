@@ -8,7 +8,7 @@ import { IReservaPort } from '../../../application/hospitalidade/ports/IReservaP
 
 export class PrismaReservaRepository implements IReservaPort {
   constructor(
-    private readonly prisma: PrismaClient,
+    private readonly prisma: any,
     private readonly propertyId: string
   ) {}
 
@@ -126,23 +126,23 @@ export class PrismaReservaRepository implements IReservaPort {
   }
 
   private hydrate(row: any): Reserva {
-    const periodo = DateRange.create(new Date(row.dataInicio), new Date(row.dataFim))
+    const periodo = DateRange.create(new (globalThis as any).Date(row.dataInicio), new (globalThis as any).Date(row.dataFim))
     const diariaBase = Money.create(row.diariaBase ?? 0)
     const reserva = Reserva.create({
       id: row.id,
       guestId: row.hospedeId,
       roomId: row.quartoId,
-      periodo: periodo.isOk ? periodo.value : DateRange.create(new Date(), new Date(Date.now() + 86400000)).value,
+      periodo: periodo.isOk ? periodo.value : DateRange.create(new (globalThis as any).Date(), new (globalThis as any).Date((globalThis as any).Date.now() + 86400000)).value,
       numeroHospedes: row.numeroHospedes ?? 1,
       capacidadeMaxima: 99,
       diariaBase: diariaBase.isOk ? diariaBase.value : Money.create(0).value,
     }).value;
 
     (reserva as any)['_status'] = row.status
-    if (row.checkInRealizado) (reserva as any)['_checkInRealizado'] = new Date(row.checkInRealizado)
-    if (row.checkOutRealizado) (reserva as any)['_checkOutRealizado'] = new Date(row.checkOutRealizado)
+    if (row.checkInRealizado) (reserva as any)['_checkInRealizado'] = new (globalThis as any).Date(row.checkInRealizado)
+    if (row.checkOutRealizado) (reserva as any)['_checkOutRealizado'] = new (globalThis as any).Date(row.checkOutRealizado)
     if (row.dataCancelamento) {
-      (reserva as any)['_dataCancelamento'] = new Date(row.dataCancelamento)
+      (reserva as any)['_dataCancelamento'] = new (globalThis as any).Date(row.dataCancelamento)
       (reserva as any)['_motivoCancelamento'] = row.motivoCancelamento
     }
     if (row.descontoAplicado) {
@@ -160,7 +160,7 @@ export class PrismaReservaRepository implements IReservaPort {
               nome: s.nome,
               quantidade: s.quantidade,
               precoUnitario: preco.value,
-              dataContratacao: new Date(s.dataContratacao),
+              dataContratacao: new globalThis.Date(s.dataContratacao),
             })
           }
         }

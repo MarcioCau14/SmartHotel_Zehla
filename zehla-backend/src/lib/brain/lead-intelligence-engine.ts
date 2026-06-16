@@ -3,7 +3,7 @@ import { LeadEventType, LeadStatus } from '@prisma/client';
 import { LeadScorer } from './lead-scorer';
 import { captureQueue, EVENT_SCORES } from '@/lib/queues';
 
-export type BehaviorProfile = 'conservador' | 'curioso' | 'urgente' | 'resistente';
+export type BehaviorProfile = 'conservador' | 'curioso' | 'urgente' | 'resistente' | 'analítico';
 
 export interface LeadEventData {
   leadId: string;
@@ -53,7 +53,7 @@ export class LeadIntelligenceEngine {
         scoreImpact: EVENT_SCORES[data.type] || 0,
         eventSource: 'sync_fallback',
         status: 'classified',
-        metadata: data.metadata ? JSON.stringify(data.metadata) : null,
+        metadata: data.metadata || null,
       },
       include: {
         lead: {
@@ -65,7 +65,7 @@ export class LeadIntelligenceEngine {
     });
 
     // Disparar atualização do Cérebro (Memory & Scoring)
-    await this.refreshBrain(event.lead);
+    await this.refreshBrain((event as any).lead);
   }
 
   /**
@@ -76,7 +76,7 @@ export class LeadIntelligenceEngine {
     const events = lead.events;
     
     // 1. Cálculo de Score Dinâmico (Baseado em Eventos)
-    const eventScore = LeadScorer.calculateEventScore(events);
+    const eventScore = events.reduce((acc: number, e: any) => acc + (EVENT_SCORES[e.type] || 0), 0);
     
     // 2. Score Qualitativo (IA) + Pesos Geográficos
     // Se o lead não tiver score qualitativo ainda, ou se for uma atualização periódica

@@ -396,7 +396,7 @@ export class PrismaPropertyRepository implements IPropertyRepository {
         if (subResult.isOk) subscription = subResult.value
       }
 
-      let cadasturInfo = undefined
+      let cadasturInfo: CadasturInfo | undefined = undefined
       if (row.cadasturJson) {
         const cj = row.cadasturJson as any
         const cadResult = CadasturInfo.create({

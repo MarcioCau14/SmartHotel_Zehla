@@ -15,7 +15,13 @@ async function _GET(req: NextRequest) {
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20')));
 
-    const where: any = {};
+    const property = await prisma.property.findFirst();
+    const propertyId = searchParams.get('propertyId') || property?.id;
+    if (!propertyId) {
+      return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+    }
+
+    const where: any = { propertyId };
 
     if (!deleted) {
       where.deletedAt = null;
@@ -83,6 +89,12 @@ async function _POST(req: NextRequest) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
+    const property = await prisma.property.findFirst();
+    const propertyId = body.propertyId || req.headers.get('x-property-id') || property?.id;
+    if (!propertyId) {
+      return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+    }
+
     const contact = await prisma.crmContact.create({
       data: {
         name,
@@ -96,6 +108,7 @@ async function _POST(req: NextRequest) {
         source: source || 'MANUAL',
         ownerId,
         assignedToId,
+        propertyId,
       },
     });
 

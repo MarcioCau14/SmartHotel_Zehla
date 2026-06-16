@@ -7,7 +7,7 @@ import { IHospedePort } from '../../../application/hospitalidade/ports/IHospedeP
 
 export class PrismaHospedeRepository implements IHospedePort {
   constructor(
-    private readonly prisma: PrismaClient,
+    private readonly prisma: any,
     private readonly propertyId: string
   ) {}
 

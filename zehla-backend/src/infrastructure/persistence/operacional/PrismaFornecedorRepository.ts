@@ -4,7 +4,7 @@ import { Fornecedor } from '../../../domain/operacional/entities/Fornecedor'
 import { Result } from '../../../shared/Result'
 
 export class PrismaFornecedorRepository implements IFornecedorPort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(f: Fornecedor): any {
     return {

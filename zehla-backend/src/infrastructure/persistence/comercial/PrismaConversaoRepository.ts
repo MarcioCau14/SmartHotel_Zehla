@@ -4,7 +4,7 @@ import { Conversao } from '../../../domain/comercial/entities/Conversao'
 import { Result } from '../../../shared/Result'
 
 export class PrismaConversaoRepository implements IConversaoPort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(conversao: Conversao): any {
     return {

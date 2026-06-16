@@ -17,7 +17,8 @@ export class SelfHealingEngine {
 
     try {
       // 1. Buscar erros críticos recorrentes nos últimos 10 minutos
-      const errorPatterns = await prisma.cognitiveTerminalLog.groupBy({
+      const db = prisma as any;
+      const errorPatterns = await db.cognitiveTerminalLog.groupBy({
         by: ['source', 'message'],
         where: {
           level: 'error',

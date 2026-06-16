@@ -7,7 +7,7 @@
  * 3. Generation Tokenization: Registro de auditoria imutável.
  */
 
-import { crypto } from 'crypto';
+import crypto from 'crypto';
 
 export class VoiceGuardian {
   /**

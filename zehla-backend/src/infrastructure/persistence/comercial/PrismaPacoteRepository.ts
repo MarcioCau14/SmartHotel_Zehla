@@ -6,7 +6,7 @@ import { RegraPrecificacao } from '../../../domain/comercial/value-objects/Regra
 import { Money } from '../../../domain/comercial/value-objects/Money'
 
 export class PrismaPacoteRepository implements IPacotePort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(pacote: Pacote): any {
     const regra = pacote.regraPrecificacao!;

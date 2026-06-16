@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
       email: lead.email || '',
       pousada: lead.property || '',
       score: lead.conversionScore || 0,
+      tier: lead.leadTier || 'COLD',
       cluster: (lead.cluster as any) || 'COLD',
       dor: (lead.painPoints as any) || 'desconhecida',
       funnelStage: (lead.funnelStage as any) || 'NEUTRAL',

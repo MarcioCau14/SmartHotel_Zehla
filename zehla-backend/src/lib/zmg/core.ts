@@ -167,13 +167,13 @@ export class ZMG {
     if (!message || !message.recipientPhone) return;
 
     // 1. Verificar se o ContactProfile existe, senão criar
-    let contact = await prisma.contactProfile.findUnique({
+    let contact = await prisma.zMGContactProfile.findUnique({
       where: { phone: message.recipientPhone }
     });
 
     if (!contact) {
       const detection = await detectChannels(message.recipientPhone);
-      contact = await prisma.contactProfile.create({
+      contact = await prisma.zMGContactProfile.create({
         data: {
           propertyId: message.propertyId,
           phone: message.recipientPhone,

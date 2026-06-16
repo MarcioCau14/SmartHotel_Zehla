@@ -86,7 +86,7 @@ export function LeadKanban() {
                       
                       {card.status !== 'convertido' && card.status !== 'perdido' && (
                         <select
-                          onChange={(e) => moverLead(card.id, e.target.value)}
+                          onChange={(e) => moverLead(card.id, e.target.value as any)}
                           defaultValue={card.status}
                           className="w-full bg-slate-900 border border-slate-700 rounded text-slate-300 px-1 py-0.5 outline-none cursor-pointer"
                         >

@@ -20,11 +20,11 @@ async function getOwnedLinkId(session: { user: { id: string } }, linkId: string)
 
 async function _PUT(
   req: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context?: { params: Promise<Record<string, string>> }
 ) {
   try {
-    const { id } = await context.params;
-    const session = await getServerSession(authOptions);
+    const { id } = await context!.params;
+    const session = (await getServerSession(authOptions)) as any;
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
@@ -60,11 +60,11 @@ async function _PUT(
 
 async function _DELETE(
   req: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context?: { params: Promise<Record<string, string>> }
 ) {
   try {
-    const { id } = await context.params;
-    const session = await getServerSession(authOptions);
+    const { id } = await context!.params;
+    const session = (await getServerSession(authOptions)) as any;
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }

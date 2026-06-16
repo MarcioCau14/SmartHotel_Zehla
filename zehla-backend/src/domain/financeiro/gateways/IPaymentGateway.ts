@@ -67,7 +67,7 @@ export interface WebhookPayload {
 
 export interface IPaymentGateway {
   // PIX
-  createPixPayment(invoice: Invoice): Promise<Result<PaymentResult, PaymentError>>;
+  createPixPayment(intent: PaymentIntent): Promise<Result<PaymentResult, PaymentError>>;
   
   // Cartão
   createCardPayment(intent: CardPaymentIntent): Promise<Result<PaymentResult, PaymentError>>;

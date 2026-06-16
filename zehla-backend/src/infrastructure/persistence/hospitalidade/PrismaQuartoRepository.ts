@@ -8,7 +8,7 @@ import { IQuartoPort } from '../../../application/hospitalidade/ports/IQuartoPor
 
 export class PrismaQuartoRepository implements IQuartoPort {
   constructor(
-    private readonly prisma: PrismaClient,
+    private readonly prisma: any,
     private readonly propertyId: string
   ) {}
 

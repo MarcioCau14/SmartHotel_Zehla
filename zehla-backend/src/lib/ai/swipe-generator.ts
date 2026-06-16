@@ -32,7 +32,7 @@ export class SwipeGenerator {
       });
 
       // 4. Construir Contexto de Tendências
-      const trendsContext = trends.map(t => `- ${t.keyword} (${t.category}): ${t.deltaPercent.toFixed(1)}% de aumento.`).join('\n');
+      const trendsContext = trends.map(t => `- ${t.keyword} (${t.category}): ${(t.deltaPercent ?? 0).toFixed(1)}% de aumento.`).join('\n');
       
       // 5. Prompt de Síntese
       const prompt = `
@@ -69,6 +69,7 @@ export class SwipeGenerator {
 
       // 6. Chamada ao Roteador de LLM (Prioridade Kimi 2.6 / Qwen)
       const response = await freeLLMRouter.generate({
+        model: 'fast',
         messages: [
           { role: 'system', content: 'Você é um assistente de vendas de elite focado em hospitalidade.' },
           { role: 'user', content: prompt }

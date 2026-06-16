@@ -7,7 +7,7 @@ import { IServicoPort } from '../../../application/hospitalidade/ports/IServicoP
 
 export class PrismaServicoRepository implements IServicoPort {
   constructor(
-    private readonly prisma: PrismaClient,
+    private readonly prisma: any,
     private readonly propertyId: string
   ) {}
 

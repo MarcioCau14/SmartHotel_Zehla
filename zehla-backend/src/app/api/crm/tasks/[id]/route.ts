@@ -6,10 +6,10 @@ import { withApiSecurity } from '@/lib/server/with-api-security';
 
 async function _PATCH(
   req: NextRequest,
-  context: { params: Promise<Record<string, string>> }
+  context?: { params: Promise<Record<string, string>> }
 ) {
   try {
-  const { id } = await context.params;
+  const { id } = await context!.params;
     const body = await req.json();
     const { title, description, dueDate, completed, priority, type, assignedToId } = body;
 
@@ -48,10 +48,10 @@ export const PATCH = withApiSecurity(_PATCH, { rateLimit: { limit: 60, windowSec
 
 async function _DELETE(
   _req: NextRequest,
-  context: { params: Promise<Record<string, string>> }
+  context?: { params: Promise<Record<string, string>> }
 ) {
   try {
-  const { id } = await context.params;
+  const { id } = await context!.params;
 
     const existing = await prisma.crmTask.findFirst({ where: { id } });
 

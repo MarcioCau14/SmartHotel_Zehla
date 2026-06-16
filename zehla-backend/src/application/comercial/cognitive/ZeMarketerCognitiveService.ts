@@ -4,7 +4,7 @@ import { IPacotePort } from '../ports/IPacotePort'
 import { IConversaoPort } from '../ports/IConversaoPort'
 import { CalcularTaxaConversaoUseCase } from '../use-cases/CalcularTaxaConversaoUseCase'
 import { ProcessarPropostasExpiradasUseCase } from '../use-cases/ProcessarPropostasExpiradasUseCase'
-import { RegraPrecificacao } from '../../../domain/comercial/value-objects/RegraPrecificacao'
+import { RegraPrecificacao, TipoRegra } from '../../../domain/comercial/value-objects/RegraPrecificacao'
 import { Money } from '../../../domain/comercial/value-objects/Money'
 import { ZeMarketerInput, ZeCognitiveOutput, ZcpHandoffPackage, createZcpHandoff, translateError } from './ZeCognitiveTypes'
 
@@ -210,7 +210,7 @@ export class ZeMarketerCognitiveService {
     const vPessoa = valorPorPessoa ? Money.deReais(valorPorPessoa as number) : Money.deReais(0)
     if (vPessoa.isFail) return this.output(false, 'Valor por pessoa inválido.', input.messageId, 0.3)
     const regraResult = RegraPrecificacao.criar({
-      tipo: (tipo as string) || 'por_noite',
+      tipo: (tipo as TipoRegra) || 'por_noite',
       valorBase: vBase.value,
       valorPorNoite: vNoite.value,
       valorPorPessoa: vPessoa.value,

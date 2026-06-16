@@ -30,7 +30,7 @@ export class AgentClosingEngine {
       
       // 3. DETECÇÃO DE HANDOVER (Segurança)
       if (this.detectHandoverNeed(lastMessages)) {
-        await this.triggerHandover(propertyId, lead.whatsapp, 'Solicitação de humano ou atrito detectado.');
+        await this.triggerHandover(propertyId, lead.whatsapp ?? lead.phone ?? '', 'Solicitação de humano ou atrito detectado.');
         return { 
           state: 'HANDOVER', 
           response: 'Entendo perfeitamente. Vou pedir para o nosso gerente de reservas te dar uma atenção especial agora mesmo. Um momento.' 
@@ -43,19 +43,19 @@ export class AgentClosingEngine {
       const response = await llmRouter.generate({
         model: 'reasoning', // DeepSeek-R1 para tática de vendas
         messages: [
-          { role: 'system', content: `Você é o hoteleiro da pousada ${property.nome}. Seu DNA: ${persona.tone}. REGRAS: ${persona.rules.join('. ')}` },
+          { role: 'system', content: `Você é o hoteleiro da pousada ${property.name ?? 'nossa pousada'}. Seu DNA: ${persona.tone}. REGRAS: ${persona.rules.join('. ')}` },
           { role: 'user', content: prompt }
         ],
         temperature: 0.3,
         maxTokens: 1000
-      });
+      }) as { content: string };
 
       await CognitiveTerminal.success('CLOSING-ENGINE', `Resposta de fechamento gerada para lead ${lead.name}`, { leadId });
 
       return { state: 'CLOSING', response: response.content };
 
     } catch (error) {
-      await CognitiveTerminal.error('CLOSING-ENGINE', `Falha no processamento da negociação: ${leadId}`, propertyId, error);
+      await CognitiveTerminal.error('CLOSING-ENGINE', `Falha no processamento da negociação: ${leadId}`, { error }, propertyId);
       throw error;
     }
   }

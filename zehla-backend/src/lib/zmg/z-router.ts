@@ -1,4 +1,4 @@
-import { Plan } from '@prisma/client';
+import { Plan } from '@/domain/property/enums';
 
 export type ModelHint = 'fast' | 'reasoning' | 'vision' | 'summarize' | 'code';
 

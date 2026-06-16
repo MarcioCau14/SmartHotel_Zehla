@@ -47,7 +47,7 @@ export interface ZeCognitiveOutput {
 export interface ZcpHandoffPackage {
   packageId: string
   timestamp: string
-  origem: 'ze-sales' | 'ze-marketer'
+  origem: 'ze-sales' | 'ze-marketer' | 'ze-ops' | 'ze-analyst'
   destino: 'ze-sales' | 'ze-marketer' | 'ze-host'
   leadId?: string
   propostaId?: string

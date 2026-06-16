@@ -33,10 +33,11 @@ export const trackingEventsWorker = new Worker(
   }
 );
 
-trackingEventsWorker.on('completed', (job) => {
+trackingEventsWorker.on('completed', (job: Job) => {
   console.log(`✅ [TRACKING-WORKER] Job ${job.id} concluído com sucesso.`);
 });
 
-trackingEventsWorker.on('failed', (job, err) => {
+trackingEventsWorker.on('failed', (job: Job | undefined, err: Error) => {
   console.error(`❌ [TRACKING-WORKER] Job ${job?.id} falhou:`, err.message);
 });
+

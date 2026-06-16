@@ -6,7 +6,7 @@ import { CanalDistribuicao } from '../../../domain/marketing/value-objects/Canal
 import { Sentimento } from '../../../domain/marketing/value-objects/Sentimento'
 
 export class PrismaReviewRepository implements IReviewPort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(review: Review): any {
     return {

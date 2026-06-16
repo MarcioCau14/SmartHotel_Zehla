@@ -3,12 +3,12 @@
  * Decides the best channel based on cost, delivery and availability
  */
 
-import { ContactProfile } from '@prisma/client';
+import { ZMGContactProfile } from '@prisma/client';
 import { RoutingDecision, ZMGChannel, ZMGMessageType } from './types';
 
 export class ZMGRouter {
   static route(
-    contact: ContactProfile,
+    contact: ZMGContactProfile,
     messageType: ZMGMessageType,
     objective: string
   ): RoutingDecision[] {
@@ -41,7 +41,7 @@ export class ZMGRouter {
     }
 
     // Regra 3: Email se disponível (Custo quase zero)
-    if (contact.emailAvailable && contact.email) {
+    if (contact.email) {
       decisions.push({
         channel: 'email',
         provider: 'amazon-ses',

@@ -6,10 +6,10 @@ import { withApiSecurity } from '@/lib/server/with-api-security';
 
 async function _GET(
   _req: NextRequest,
-  context: { params: Promise<Record<string, string>> }
+  context?: { params: Promise<Record<string, string>> }
 ) {
   try {
-  const { id } = await context.params;
+  const { id } = await context!.params;
 
     const contact = await prisma.crmContact.findFirst({
       where: { id, deletedAt: null },
@@ -54,10 +54,10 @@ export const GET = withApiSecurity(_GET, { rateLimit: { limit: 100, windowSecond
 
 async function _PUT(
   req: NextRequest,
-  context: { params: Promise<Record<string, string>> }
+  context?: { params: Promise<Record<string, string>> }
 ) {
   try {
-  const { id } = await context.params;
+  const { id } = await context!.params;
     const body = await req.json();
     const { name, email, phone, whatsapp, instagram, facebook, tags, customFields, source, ownerId, assignedToId } = body;
 
@@ -97,10 +97,10 @@ export const PUT = withApiSecurity(_PUT, { rateLimit: { limit: 50, windowSeconds
 
 async function _DELETE(
   _req: NextRequest,
-  context: { params: Promise<Record<string, string>> }
+  context?: { params: Promise<Record<string, string>> }
 ) {
   try {
-  const { id } = await context.params;
+  const { id } = await context!.params;
 
     const existing = await prisma.crmContact.findFirst({
       where: { id, deletedAt: null },

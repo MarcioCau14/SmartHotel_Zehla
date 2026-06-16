@@ -16,7 +16,7 @@ async function getProfileId(session: { user: { id: string } }): Promise<string |
 
 async function _GET() {
   try {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions) as any;
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
@@ -46,7 +46,7 @@ async function _GET() {
 
 async function _POST(req: NextRequest) {
   try {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions) as any;
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }

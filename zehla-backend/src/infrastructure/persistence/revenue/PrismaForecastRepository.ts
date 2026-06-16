@@ -4,7 +4,7 @@ import { Forecast } from '../../../domain/revenue/entities/Forecast'
 import { IForecastPort } from '../../../application/revenue/ports/IForecastPort'
 
 export class PrismaForecastRepository implements IForecastPort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(forecast: Forecast): any {
     return {

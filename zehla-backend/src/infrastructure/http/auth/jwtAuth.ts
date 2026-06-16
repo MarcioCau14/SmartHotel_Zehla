@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { Result } from '../../../shared/Result'
+import { Result } from '../../../domain/shared/Result'
 import { JwtGuard } from '../../hardening/JwtGuard'
 import { TenantSession } from '../../../domain/hardening/value-objects/TenantSession'
 

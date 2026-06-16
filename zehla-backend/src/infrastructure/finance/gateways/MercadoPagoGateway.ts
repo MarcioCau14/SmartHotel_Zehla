@@ -12,7 +12,6 @@ import {
   WebhookPayload,
   PaymentEvent
 } from '../../../domain/financeiro/gateways/IPaymentGateway';
-import { Invoice } from '../../../domain/financeiro/entities/Invoice';
 import { PaymentMethodType } from '../../../domain/financeiro/enums/PaymentMethodType';
 import { MercadoPagoMapper } from '../mappers/MercadoPagoMapper';
 import { createHmac } from 'crypto';
@@ -43,9 +42,9 @@ export class MercadoPagoGateway implements IPaymentGateway {
   // ═══════════════════════════════════════════════════════════════════════
   // PIX
   // ═══════════════════════════════════════════════════════════════════════
-  async createPixPayment(invoice: Invoice): Promise<Result<PaymentResult, PaymentError>> {
+  async createPixPayment(intent: PaymentIntent): Promise<Result<PaymentResult, PaymentError>> {
     try {
-      const idempotencyKey = this.generateIdempotencyKey(invoice.id, 'pix');
+      const idempotencyKey = this.generateIdempotencyKey(intent.metadata?.invoice_id || '', 'pix');
       
       if (await this.isDuplicate(idempotencyKey)) {
         return Result.fail({
@@ -57,26 +56,21 @@ export class MercadoPagoGateway implements IPaymentGateway {
 
       const response = await this.payment.create({
         body: {
-          transaction_amount: invoice.amount.toNumber(),
-          description: invoice.description,
+          transaction_amount: intent.amount,
+          description: intent.description,
           payment_method_id: 'pix',
           payer: {
-            email: invoice.customerEmail,
-            first_name: invoice.customerName?.split(' ')[0] || 'Cliente',
-            last_name: invoice.customerName?.split(' ').slice(1).join(' ') || 'ZEHLA',
-            identification: invoice.customerCpf ? {
+            email: intent.customerEmail,
+            first_name: intent.customerName?.split(' ')[0] || 'Cliente',
+            last_name: intent.customerName?.split(' ').slice(1).join(' ') || 'ZEHLA',
+            identification: intent.customerCpf ? {
               type: 'CPF',
-              number: invoice.customerCpf.replace(/\D/g, '')
+              number: intent.customerCpf.replace(/\D/g, '')
             } : undefined
           },
           notification_url: `${process.env.WEBHOOK_URL}/api/webhooks/mercado-pago`,
-          external_reference: invoice.id,
-          metadata: {
-            invoice_id: invoice.id,
-            property_id: invoice.propertyId,
-            tenant_id: invoice.tenantId,
-            plan: invoice.plan || 'none'
-          }
+          external_reference: intent.metadata?.invoice_id,
+          metadata: intent.metadata
         },
         requestOptions: {
           idempotencyKey
@@ -160,7 +154,7 @@ export class MercadoPagoGateway implements IPaymentGateway {
             address: {
               zip_code: intent.metadata?.cep || '00000000',
               street_name: intent.metadata?.street || 'Não informado',
-              street_number: parseInt(intent.metadata?.number || '0'),
+              street_number: String(parseInt(intent.metadata?.number || '0')),
               neighborhood: intent.metadata?.neighborhood || 'Não informado',
               city: intent.metadata?.city || 'São Paulo',
               federal_unit: intent.metadata?.state || 'SP'
@@ -198,14 +192,14 @@ export class MercadoPagoGateway implements IPaymentGateway {
             transaction_amount: plan.amount,
             currency_id: plan.currency,
             start_date: new Date().toISOString(),
-            end_date: null
+            end_date: undefined
           },
           payer_email: customer.email,
           back_url: plan.backUrl,
           notification_url: plan.notificationUrl,
           external_reference: plan.id,
           status: 'pending'
-        },
+        } as any,
         requestOptions: { idempotencyKey }
       });
 
@@ -214,7 +208,7 @@ export class MercadoPagoGateway implements IPaymentGateway {
         externalId: response.id || '',
         status: 'pending',
         initPoint: response.init_point || '',
-        sandboxInitPoint: response.sandbox_init_point || ''
+        sandboxInitPoint: (response as any).sandbox_init_point || ''
       });
     } catch (error: any) {
       return Result.fail(this.mapError(error));
@@ -259,11 +253,14 @@ export class MercadoPagoGateway implements IPaymentGateway {
 
   async refundPayment(externalId: string, amount?: number): Promise<Result<PaymentResult, PaymentError>> {
     try {
-      const response = await this.payment.refund({
-        id: externalId,
-        body: amount ? { amount } : undefined
+      const refundApi = new (await import('mercadopago')).PaymentRefund(this.client);
+      const response = await refundApi.create({
+        payment_id: Number(externalId),
+        body: amount ? { amount } : {}
       });
-      return Result.ok(MercadoPagoMapper.toPaymentResult(response));
+      // After refund, get updated payment for full result
+      const updatedPayment = await this.payment.get({ id: externalId });
+      return Result.ok(MercadoPagoMapper.toPaymentResult(updatedPayment));
     } catch (error: any) {
       return Result.fail(this.mapError(error));
     }

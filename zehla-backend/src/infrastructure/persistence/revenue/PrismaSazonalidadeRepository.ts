@@ -4,7 +4,7 @@ import { Sazonalidade } from '../../../domain/revenue/entities/Sazonalidade'
 import { ISazonalidadePort } from '../../../application/revenue/ports/ISazonalidadePort'
 
 export class PrismaSazonalidadeRepository implements ISazonalidadePort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(sazonalidade: Sazonalidade): any {
     return {

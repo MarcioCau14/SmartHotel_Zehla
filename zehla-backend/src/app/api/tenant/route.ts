@@ -26,9 +26,9 @@ export async function POST(request: NextRequest) {
     const cleanEmail = sanitizeInput(email);
 
     // ----- ZDR — Maskar dados sensíveis nos logs -----
-    const emailScan = scanPII(email);
+    const emailScan = scanPII(cleanEmail);
     const phoneScan = scanPII(whatsappProprietario);
-    if (emailScan.found.length > 0 || phoneScan.found.length > 0) {
+    if (emailScan.hasPII || phoneScan.hasPII) {
       console.log(`[ZDR] Tenant creation — PII detected: ${[...emailScan.found, ...phoneScan.found].join(', ')}. Data stored encrypted.`);
     }
 

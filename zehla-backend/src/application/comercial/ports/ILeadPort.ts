@@ -1,4 +1,4 @@
-import { Result } from '../../../../shared/Result'
+import { Result } from '../../../shared/Result'
 import { Lead } from '../../../domain/comercial/entities/Lead'
 import { Email } from '../../../domain/comercial/value-objects/Email'
 import { Documento } from '../../../domain/comercial/value-objects/Documento'

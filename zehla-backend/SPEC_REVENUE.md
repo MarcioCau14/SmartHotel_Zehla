@@ -474,3 +474,7 @@ Para a SB14, os seguintes casos de uso DEVEM ser implementados:
 > **Esta especificação entra em vigor imediatamente.**  
 > Nenhuma linha de TypeScript será escrita até que este documento seja homologado.  
 > Código é descartável. Regras de precificação mal especificadas quebram empresas.
+
+---
+
+> **Navegação:** [[ZEHLA_INDEX]] | [[SPEC_COMERCIAL]] | [[SPEC_MARKETING]] | [[SPEC]] | [[AGENTS]]

@@ -193,7 +193,7 @@ function getCommonQuestions(logs: any[]) {
 }
 
 function generateRecommendations(reservations: any[]) {
-  const recommendations = []
+  const recommendations: string[] = []
 
   if (reservations.length === 0) {
     recommendations.push('Ainda não há dados suficientes. Continue operando para gerar insights.')

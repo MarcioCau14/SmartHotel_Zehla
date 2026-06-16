@@ -15,7 +15,7 @@ import { GerarForecastDemandaUseCase } from '../../../../application/revenue/use
 import { CalcularMetricasRevenueUseCase } from '../../../../application/revenue/use-cases/CalcularMetricasRevenueUseCase'
 import { RebalancearTarifasPorCanalUseCase } from '../../../../application/revenue/use-cases/RebalancearTarifasPorCanalUseCase'
 import { ZeAnalystCognitiveService } from '../../../../application/revenue/cognitive/ZeAnalystCognitiveService'
-import { Result } from '../../../../domain/shared/Result'
+import { Result } from '../../../../shared/Result'
 
 export async function POST(request: NextRequest) {
   try {
@@ -48,34 +48,34 @@ export async function POST(request: NextRequest) {
 
     // Adaptadores ReadOnly reais integrados com banco
     const reservaRO = {
-      contarReservasConfirmadasPorPeriodo: async (inicio: Date, fim: Date) => {
+      contarReservasConfirmadasPorPeriodo: async (propriedadeId: string, inicio: Date, fim: Date) => {
         try {
-          const count = await basePrisma.reserva.count({
+          const count = await basePrisma.reservation.count({
             where: {
-              propertyId,
-              status: 'CONFIRMADA',
-              dataInicio: { gte: inicio },
-              dataFim: { lte: fim }
+              propertyId: propriedadeId,
+              status: 'CONFIRMED',
+              checkIn: { gte: inicio },
+              checkOut: { lte: fim }
             }
           })
-          return Result.ok(count)
+          return Result.ok<number, Error>(count)
         } catch (err) {
-          return Result.fail(err instanceof Error ? err : new Error('Failed to count reservations'))
+          return Result.fail<number, Error>(err instanceof Error ? err : new Error('Failed to count reservations'))
         }
       },
-      contarReservasAtivasPorData: async (data: Date) => {
+      contarReservasAtivasPorData: async (propriedadeId: string, data: Date) => {
         try {
-          const count = await basePrisma.reserva.count({
+          const count = await basePrisma.reservation.count({
             where: {
-              propertyId,
-              status: 'CONFIRMADA',
-              dataInicio: { lte: data },
-              dataFim: { gte: data }
+              propertyId: propriedadeId,
+              status: 'CONFIRMED',
+              checkIn: { lte: data },
+              checkOut: { gte: data }
             }
           })
-          return Result.ok(count)
+          return Result.ok<number, Error>(count)
         } catch (err) {
-          return Result.fail(err instanceof Error ? err : new Error('Failed to count active reservations'))
+          return Result.fail<number, Error>(err instanceof Error ? err : new Error('Failed to count active reservations'))
         }
       }
     }
@@ -83,7 +83,16 @@ export async function POST(request: NextRequest) {
     const pacoteRO = {
       listarPacotesAtivosPorPropriedade: async (propId: string) => {
         const result = await pacoteRepo.listarPacotesPorPropriedade(propId)
-        return result
+        if (result.isFail) {
+          return Result.fail<Array<{ id: string; nome: string; tipoQuarto: string; valor: number }>, Error>(result.error)
+        }
+        const mapped = result.value.map(p => ({
+          id: p.id,
+          nome: p.nome,
+          tipoQuarto: p.tipoQuarto ?? 'Standard',
+          valor: p.regraPrecificacao?.valorBase?.valor ?? 0
+        }))
+        return Result.ok<Array<{ id: string; nome: string; tipoQuarto: string; valor: number }>, Error>(mapped)
       }
     }
 
@@ -91,6 +100,21 @@ export async function POST(request: NextRequest) {
       buscarPropostaPorId: async (id: string, propId: string) => {
         const result = await propostaRepo.buscarPropostaPorId(id, propId)
         return result
+      },
+      contarPropostasPorLeadComMaisDe: async (propriedadeId: string, dias: number) => {
+        try {
+          const cutOffDate = new Date();
+          cutOffDate.setDate(cutOffDate.getDate() - dias);
+          const count = await basePrisma.comercialProposta.count({
+            where: {
+              propriedadeId,
+              dataCriacao: { gte: cutOffDate }
+            }
+          });
+          return Result.ok<number, Error>(count);
+        } catch (err) {
+          return Result.fail<number, Error>(err instanceof Error ? err : new Error('Failed to count proposals'));
+        }
       }
     }
 

@@ -6,7 +6,7 @@ import { BreakEvenPoint } from '../../../domain/revenue/value-objects/BreakEvenP
 import { ITarifaPort } from '../../../application/revenue/ports/ITarifaPort'
 
 export class PrismaTarifaRepository implements ITarifaPort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(regra: RegraTarifaria): any {
     return {

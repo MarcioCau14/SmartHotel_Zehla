@@ -41,8 +41,6 @@ export interface TarefaProps {
 }
 
 export class Tarefa {
-  private _eventos: Array<{ type: string; payload: Record<string, unknown> }> = []
-
   private _eventos: Array<{ type: string; payload: Record<string, unknown> }>
 
   private constructor(

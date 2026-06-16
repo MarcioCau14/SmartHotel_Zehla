@@ -4,7 +4,7 @@ import { IConteudoPort } from '../../../application/marketing/ports/IConteudoPor
 import { Conteudo } from '../../../domain/marketing/entities/Conteudo'
 
 export class PrismaConteudoRepository implements IConteudoPort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(conteudo: Conteudo): any {
     return {

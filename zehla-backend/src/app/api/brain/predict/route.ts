@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { WhatsappAgentService } from '@/lib/brain/whatsapp-agent-service'
+import { SwarmEngine } from '@/lib/brain/swarm-engine'
 import { authOptions } from '@/lib/auth'
 import { getServerSession } from 'next-auth'
 
@@ -21,10 +21,14 @@ export async function POST(req: Request) {
     }
 
     // 1. Gerar o Enxame e o Cenário
-    const scenario = await WhatsappAgentService.generateSwarm(propertyId, title, context)
+    const scenario = await SwarmEngine.createScenario({
+      tenantId: propertyId,
+      title,
+      context
+    })
 
     // 2. Disparar a Simulação em Background
-    await WhatsappAgentService.runOasisSimulation(scenario.id)
+    await SwarmEngine.runSimulation(scenario.id)
 
     return NextResponse.json({
       success: true,

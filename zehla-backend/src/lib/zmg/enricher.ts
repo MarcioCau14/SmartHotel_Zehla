@@ -4,7 +4,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
-import { ContactProfile } from '@prisma/client';
+import { ZMGContactProfile } from '@prisma/client';
 
 export interface TrendSignal {
   id: string;
@@ -19,10 +19,10 @@ export class ZMGEnricher {
   /**
    * Encontra sinais de tendência relevantes para um contato específico
    */
-  static async getRelevantTrends(contact: ContactProfile): Promise<TrendSignal[]> {
+  static async getRelevantTrends(contact: ZMGContactProfile): Promise<TrendSignal[]> {
     // 1. Identificar localização do contato (simplificado por enquanto)
     // Em produção, usaríamos o city/state do ContactProfile
-    const phone = contact.normalizedPhone || '';
+    const phone = contact.phone || '';
     let geoFilter = 'Geral';
     
     if (phone.includes('+5511') || phone.includes('+5512') || phone.includes('+5513')) geoFilter = 'SP';
@@ -49,7 +49,7 @@ export class ZMGEnricher {
           type: t.type as any,
           title: `Tendência: ${t.keyword}`,
           urgency: t.interestScore,
-          description: `${t.category}: Interesse subiu ${t.deltaPercent.toFixed(1)}% recentemente.`
+          description: `${t.category}: Interesse subiu ${(t.deltaPercent ?? 0).toFixed(1)}% recentemente.`
         });
       }
 
@@ -67,7 +67,7 @@ export class ZMGEnricher {
           location: w.city,
           type: 'WEATHER',
           title: `Clima: ${w.condition}`,
-          urgency: w.impactScore,
+          urgency: w.impactScore ?? 0,
           description: `Previsão de ${w.condition} em ${w.city} (${w.dateRange}). Impacto alto na demanda.`
         });
       }
@@ -101,7 +101,7 @@ export class ZMGEnricher {
   /**
    * Enriquece as variáveis de contexto com dados de tendência
    */
-  static async enrichContext(contact: ContactProfile, variables: Record<string, string>): Promise<Record<string, string>> {
+  static async enrichContext(contact: ZMGContactProfile, variables: Record<string, string>): Promise<Record<string, string>> {
     const trends = await this.getRelevantTrends(contact);
     
     let enriched: Record<string, string> = {

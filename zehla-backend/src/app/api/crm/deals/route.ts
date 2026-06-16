@@ -113,6 +113,7 @@ async function _POST(req: NextRequest) {
         expectedCloseDate: expectedCloseDate ? new Date(expectedCloseDate) : null,
         probability: probability || 0,
         notes,
+        propertyId: pipeline.propertyId,
       },
       include: {
         contact: { select: { id: true, name: true } },

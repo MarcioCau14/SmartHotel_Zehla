@@ -4,7 +4,7 @@ import { Staff, CargoStaff, TurnoStaff } from '../../../domain/operacional/entit
 import { Result } from '../../../shared/Result'
 
 export class PrismaStaffRepository implements IStaffPort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(staff: Staff): any {
     return {

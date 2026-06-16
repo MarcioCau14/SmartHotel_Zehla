@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from '../prisma';
 import { subconsciousQueue } from '../ml/subconscious-worker';
 import { assertSanitized } from '../security/pii-sanitizer';
 
@@ -27,7 +27,8 @@ export class CognitiveTerminal {
         : {};
 
       // 1. Persistir no banco para histórico
-      const entry = await prisma.cognitiveTerminalLog.create({
+      const db = prisma as any;
+      const entry = await db.cognitiveTerminalLog.create({
         data: {
           level,
           source: component,

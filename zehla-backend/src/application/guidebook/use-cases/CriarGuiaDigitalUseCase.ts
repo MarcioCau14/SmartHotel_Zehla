@@ -39,7 +39,7 @@ export class CriarGuiaDigitalUseCase {
     const sections: GuideSection[] = []
     for (const secInput of input.sections) {
       const sectionResult = GuideSection.create(secInput as GuideSectionProps)
-      if (sectionResult.isFail) return Result.fail(sectionResult.error)
+      if (sectionResult.isFail) return Result.fail(new Error(JSON.stringify(sectionResult.error)))
       sections.push(sectionResult.value)
     }
 
@@ -48,7 +48,7 @@ export class CriarGuiaDigitalUseCase {
       propertyId: input.propertyId,
       sections,
     })
-    if (guideResult.isFail) return Result.fail(guideResult.error)
+    if (guideResult.isFail) return Result.fail(new Error(JSON.stringify(guideResult.error)))
 
     const saveResult = await this.guideRepo.save(guideResult.value)
     if (saveResult.isFail) return Result.fail(saveResult.error)

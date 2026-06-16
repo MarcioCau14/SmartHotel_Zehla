@@ -41,7 +41,7 @@ async function _GET(request: NextRequest) {
       baixa: 0,
     };
     for (const s of signals) {
-      if (s.severity in severityBreakdown) {
+      if (s.severity && s.severity in severityBreakdown) {
         severityBreakdown[s.severity as keyof typeof severityBreakdown] += s._count.id;
       }
     }

@@ -8,7 +8,7 @@ import { Score } from '../../../domain/comercial/value-objects/Score'
 import { Canal } from '../../../domain/comercial/value-objects/Canal'
 
 export class PrismaLeadRepository implements ILeadPort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(lead: Lead): any {
     return {

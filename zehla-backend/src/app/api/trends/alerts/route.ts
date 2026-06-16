@@ -23,10 +23,10 @@ async function _GET(request: NextRequest) {
       limit: 100,
     });
 
-    const alerts = [];
+    const alerts: any[] = [];
 
     for (const signal of signals) {
-      const priority = getSignalPriority(signal);
+      const priority = getSignalPriority(signal as any);
 
       for (const { agent, label } of AGENTS_WITH_ALERTS) {
         if (agentFilter && agent !== agentFilter) continue;
@@ -41,7 +41,7 @@ async function _GET(request: NextRequest) {
           severity: signal.severity,
           priority,
           deltaPercent: signal.deltaPercent,
-          message: buildAlertMessage(signal, agent),
+          message: buildAlertMessage(signal as any, agent),
           detectedAt: signal.createdAt,
           read: false,
         });

@@ -790,3 +790,7 @@ acompanhamento → renovacao → acompanhamento
 qualquer → perdido → entrada (reativação)
 qualquer (30+ dias inativo) → sales_farming → primeira_interacao | perdido
 ```
+
+---
+
+> **Navegação:** [[ZEHLA_INDEX]] | [[SPEC]] | [[SPEC_MARKETING]] | [[SPEC_REVENUE]] | [[SPEC_OPERACIONAL]] | [[AGENTS]]

@@ -5,7 +5,7 @@ import { Prioridade } from '../../../domain/operacional/value-objects/Prioridade
 import { Result } from '../../../shared/Result'
 
 export class PrismaTarefaRepository implements ITarefaPort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(tarefa: Tarefa): any {
     return {

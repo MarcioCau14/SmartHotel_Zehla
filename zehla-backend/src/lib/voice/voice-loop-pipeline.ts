@@ -5,7 +5,7 @@
 import { orchestrator } from '../brain/agent-orchestrator';
 import { AgentResponse } from '../../types';
 import { redis } from '../redis';
-import { crypto } from 'crypto';
+import crypto from 'crypto';
 import { VoiceAnalyticsService } from './voice-analytics';
 
 export class VoiceLoopPipeline {

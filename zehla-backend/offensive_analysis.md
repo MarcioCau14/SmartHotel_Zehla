@@ -612,3 +612,7 @@ Compartilhe a estrutura real do projeto (pode ser um `tree` das pastas \+ `packa
 
 Se for muito extenso, comece pelo que considera mais crítico ou sensível. Com essa visão, eu escrevo código que você cola e funciona — não código genérico que você precisa adaptar depois.
 
+
+---
+
+> **Navegação:** [[ZEHLA_INDEX]] | [[SPEC_COMERCIAL]] | [[SPEC_MARKETING]] | [[SPEC]]

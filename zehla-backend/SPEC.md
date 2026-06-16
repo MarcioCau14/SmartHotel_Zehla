@@ -376,3 +376,7 @@ Estas perguntas devem ser respondidas pelo Arquiteto antes de qualquer linha de 
 ---
 
 *Esta SPEC é o contrato. O código é artefato descartável. A especificação é o ativo.*
+
+---
+
+> **Navegação:** [[ZEHLA_INDEX]] | [[AGENTS]] | [[DESIGN]] | [[SPEC_COMERCIAL]] | [[SPEC_MARKETING]] | [[SPEC_OPERACIONAL]] | [[SPEC_REVENUE]] | [[SKILL]]

@@ -4,7 +4,7 @@ import { ICampanhaPort } from '../../../application/marketing/ports/ICampanhaPor
 import { Campanha, StatusCampanha } from '../../../domain/marketing/entities/Campanha'
 
 export class PrismaCampanhaRepository implements ICampanhaPort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(campanha: Campanha): any {
     return {

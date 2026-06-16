@@ -22,7 +22,7 @@ export async function fetchWeatherForecast(lat: number, lon: number, cityName: s
     const daily = data.daily;
 
     // Detectar "Fim de Semana Perfeito" (Sáb/Dom com sol e temp > 22)
-    const signals = [];
+    const signals: any[] = [];
     const dates = daily.time;
     
     for (let i = 0; i < dates.length; i++) {

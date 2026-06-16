@@ -1,9 +1,9 @@
 import { Queue, Worker, Job } from 'bullmq';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '../prisma';
 import { MemoryIngestionService } from './memory-service';
 import { TrialService } from '../billing/trial-service';
 import { SelfHealingEngine } from './self-healing-engine';
-import { CognitiveTerminal } from '@/lib/observability/cognitive-terminal';
+import { CognitiveTerminal } from '../observability/cognitive-terminal';
 import { SecretariaBridge } from '../intelligence/secretaria-bridge';
 import IORedis from 'ioredis';
 
@@ -59,7 +59,7 @@ export const subconsciousWorker = new Worker(
           console.warn(`[SubconsciousWorker] Tipo de job desconhecido: ${type}`);
       }
     } catch (error) {
-      await CognitiveTerminal.error('ML-BRAIN', `Erro no ciclo subconsciente: ${job.id}`, { error, tenantId }, tenantId);
+      await CognitiveTerminal.error('ML-BRAIN', `Erro no ciclo subconsciente: ${job.id}`, { error, tenantId }, tenantId as string);
       throw error;
     }
   },
@@ -67,10 +67,11 @@ export const subconsciousWorker = new Worker(
 );
 
 // Monitoramento de eventos do worker
-subconsciousWorker.on('completed', (job) => {
+subconsciousWorker.on('completed', (job: Job) => {
   console.log(`[ML-BRAIN] Ciclo subconsciente ${job.id} concluído com sucesso.`);
 });
 
-subconsciousWorker.on('failed', (job, err) => {
+subconsciousWorker.on('failed', (job: Job | undefined, err: Error) => {
   console.error(`[ML-BRAIN] Ciclo subconsciente ${job?.id} falhou:`, err);
 });
+

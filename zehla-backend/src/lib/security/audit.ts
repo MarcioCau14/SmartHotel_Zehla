@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import { prisma } from '@/lib/prisma';
-import { scanPII } from './pii-sanitizer';
+import { scanPII } from './guardian';
 
 export type SecuritySeverity = 'INFO' | 'WARN' | 'ALERT' | 'CRITICAL';
 
@@ -18,7 +18,16 @@ interface AuditLogParams {
  * Grava eventos de segurança e auditoria seguindo o protocolo de imutabilidade.
  */
 export async function logSecurityEvent(params: AuditLogParams) {
-  const { sanitized: safeMetadata } = scanPII(params.metadata);
+  let safeMetadata: any = {};
+  if (params.metadata) {
+    try {
+      const serialized = typeof params.metadata === 'string' ? params.metadata : JSON.stringify(params.metadata);
+      const scanResult = scanPII(serialized);
+      safeMetadata = JSON.parse(scanResult.sanitized);
+    } catch {
+      safeMetadata = { raw: String(params.metadata) };
+    }
+  }
   
   try {
     await prisma.securityAlert.create({
@@ -27,7 +36,7 @@ export async function logSecurityEvent(params: AuditLogParams) {
         alertType: params.action,
         severity: params.severity,
         metadata: JSON.stringify({
-          ...safeMetadata,
+          ...(typeof safeMetadata === 'object' && safeMetadata !== null ? safeMetadata : { value: safeMetadata }),
           resource: params.resource,
           userId: params.userId,
           timestamp: new Date().toISOString()

@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import type { IWhatsAppMessageRepository, CreateMessageInput, MarkMessageReadInput, CreateSecurityAlertInput } from '@/application/communication/ports/IWhatsAppMessageRepository';
 
 export class PrismaWhatsAppMessageRepository implements IWhatsAppMessageRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   async createMessage(input: CreateMessageInput): Promise<{ id: string }> {
     return this.prisma.message.create({

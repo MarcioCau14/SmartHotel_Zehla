@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ProcessarWebhookMercadoPagoUseCase } from '../../../../application/financeiro/use-cases/ProcessarWebhookMercadoPagoUseCase';
 import { MercadoPagoGateway } from '../../../../infrastructure/finance/gateways/MercadoPagoGateway';
 import { FinanceiroControllerFactory } from '../../../../infrastructure/http/financeiro/FinanceiroControllerFactory';
-import { InMemorySubscriptionRepository } from '../../../../infrastructure/persistence/financeiro/InMemorySubscriptionRepository';
+import { PrismaSubscriptionRepository } from '../../../../infrastructure/persistence/financeiro/PrismaSubscriptionRepository';
 import { scanAndMaskPII } from '../../../../lib/security/pii-scanner';
 
-const subscriptionRepo = new InMemorySubscriptionRepository();
+const subscriptionRepo = new PrismaSubscriptionRepository();
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,8 +42,8 @@ export async function POST(request: NextRequest) {
 
     const result = await useCase.execute(payload, signature);
 
-    if (result.isFail()) {
-      const errorMsg = result.getError();
+    if (result.isFail) {
+      const errorMsg = String(result.error);
       console.error('[Webhook Error]', errorMsg);
       if (errorMsg.includes('ASSINATURA')) {
         return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ received: true, error: errorMsg }, { status: 200 });
     }
 
-    return NextResponse.json({ received: true, event: result.getValue() }, { status: 200 });
+    return NextResponse.json({ received: true, event: result.value }, { status: 200 });
   } catch (error: any) {
     console.error('[Webhook Exception]', error);
     return NextResponse.json({ received: true, error: 'Internal error logged' }, { status: 200 });

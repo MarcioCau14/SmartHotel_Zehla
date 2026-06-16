@@ -5,7 +5,7 @@ import { Gravidade } from '../../../domain/operacional/value-objects/Gravidade'
 import { Result } from '../../../shared/Result'
 
 export class PrismaManutencaoRepository implements IManutencaoPort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(m: Manutencao): any {
     return {

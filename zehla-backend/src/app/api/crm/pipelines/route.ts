@@ -42,11 +42,17 @@ async function _POST(req: NextRequest) {
       });
     }
 
+    const property = await prisma.property.findFirst();
+    if (!property) {
+      return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+    }
+
     const pipeline = await prisma.crmPipeline.create({
       data: {
         name,
         stages,
         isDefault: isDefault || false,
+        propertyId: property.id,
       },
     });
 

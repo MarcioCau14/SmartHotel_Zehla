@@ -65,6 +65,11 @@ async function _POST(req: NextRequest) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
     }
 
+    const property = await prisma.property.findFirst();
+    if (!property) {
+      return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+    }
+
     const task = await prisma.crmTask.create({
       data: {
         title,
@@ -75,6 +80,7 @@ async function _POST(req: NextRequest) {
         contactId,
         dealId,
         assignedToId,
+        propertyId: property.id,
       },
       include: {
         assignedTo: { select: { id: true, name: true } },

@@ -45,3 +45,7 @@ Caso o sistema seja reiniciado, execute os seguintes passos na raiz do projeto (
 ---
 **Última Atualização:** 29 de Abril de 2026 às 11:40 (Horário Local)  
 **Status:** Ambiente pronto e documentado.
+
+---
+
+> **Navegação:** [[ZEHLA_INDEX]] | [[INTELLIGENCE/ZEHLA_EVOLUTION_MASTER]] | [[INTELLIGENCE/ZEHLA_PROJECT_AUDIT]] | [[SPEC]]

@@ -4,7 +4,7 @@ import { Checklist, TipoTriggerChecklist, ItemChecklist } from '../../../domain/
 import { Result } from '../../../shared/Result'
 
 export class PrismaChecklistRepository implements IChecklistPort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(c: Checklist): any {
     return {

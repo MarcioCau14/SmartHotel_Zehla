@@ -77,12 +77,12 @@ export async function getRelevantSignalsForAgent(
 }
 
 export function getSignalPriority(signal: {
-  severity: string;
+  severity: string | null;
   createdAt: Date;
   deltaPercent?: number | null;
   interestScore?: number | null;
 }): number {
-  const severityScore = SEVERITY_PRIORITY[signal.severity] ?? 25;
+  const severityScore = SEVERITY_PRIORITY[signal.severity || "baixa"] ?? 25;
 
   const hoursOld =
     (Date.now() - new Date(signal.createdAt).getTime()) / (1000 * 60 * 60);

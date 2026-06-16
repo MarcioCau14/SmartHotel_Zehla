@@ -1,7 +1,7 @@
 import { prisma } from '../prisma';
 import { Plan } from '@prisma/client';
-import { ZRouter } from '@/lib/zmg/z-router';
-import { CognitiveTerminal } from '@/lib/observability/cognitive-terminal';
+import { ZRouter } from '../zmg/z-router';
+import { CognitiveTerminal } from '../observability/cognitive-terminal';
 
 export interface MemoryInput {
   tenantId: string;
@@ -34,8 +34,8 @@ export class MemoryIngestionService {
     await this.updateGuestProfile(input.tenantId, input.guestId, canonicalContent);
 
     // 3. Tiered Memory Logic
-    if (ZRouter.hasFeature(property.plan, 'memory_tree')) {
-      await this.buildMemoryTree(input.tenantId, input.guestId, canonicalContent, property.plan);
+    if (ZRouter.hasFeature(property.plan as any, 'memory_tree')) {
+      await this.buildMemoryTree(input.tenantId, input.guestId, canonicalContent, property.plan as any);
     } else {
       CognitiveTerminal.insight(`[ML-BRAIN] Memória LITE (Sem Árvore) para ${property.name}`, input.tenantId);
     }

@@ -7,6 +7,7 @@ export enum PropertyStatus {
 }
 
 export enum Plan {
+  FREE = 'FREE',
   LITE = 'LITE',
   PRO = 'PRO',
   MAX = 'MAX',
@@ -60,6 +61,7 @@ export function canTransitionPropertyStatus(
 }
 
 export const FEATURE_MAP: Record<Plan, Feature[]> = {
+  [Plan.FREE]: [],
   [Plan.LITE]: [Feature.COMMISSION_DISCOUNT],
   [Plan.PRO]: [
     Feature.COMMISSION_DISCOUNT,

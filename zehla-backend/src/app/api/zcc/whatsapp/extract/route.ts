@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
     console.log(`🧠 [Secretaria-IA] Iniciando extração ${type} para property ${propertyId}...`)
 
-    let rawContacts = []
+    let rawContacts: any[] = []
 
     if (type === 'GROUP' && groupJid) {
       rawContacts = await WhatsappExtractorService.fetchGroupParticipants(instanceName, groupJid)
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     const persona = await WhatsappPersonaLearner.getPersona(propertyId)
 
     // Salvar como Leads no banco de dados com Inteligência de Scoring
-    const savedLeads = []
+    const savedLeads: any[] = []
     for (const contact of rawContacts) {
       try {
         // Verifica se já existe

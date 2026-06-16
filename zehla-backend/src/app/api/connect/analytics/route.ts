@@ -9,12 +9,13 @@ import { withApiSecurity } from '@/lib/server/with-api-security';
 async function _GET(req: NextRequest) {
   try {
   const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const user = session?.user as any;
+    if (!user?.id) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
     const property = await prisma.property.findFirst({
-      where: { userId: session.user.id },
+      where: { userId: user.id },
       include: { connectProfile: true },
     });
 

@@ -7,6 +7,7 @@ export type ZeAnalystIntent =
   | 'SUGERIR_DESCONTO_ESTRATEGICO'
   | 'GERAR_FORECAST'
   | 'CALCULAR_METRICAS_REVENUE'
+  | 'CONSULTAR_METRICAS'
   | 'REBALANCEAR_TARIFAS_POR_CANAL'
 
 export interface ZeAnalystInput extends ZeCognitiveInput {

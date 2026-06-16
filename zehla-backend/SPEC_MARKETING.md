@@ -479,3 +479,7 @@ const TONS_VALIDOS: TomConteudo[] = ['profissional', 'acolhedor', 'entusiasta', 
 const CANAIS_SOCIAIS_VALIDOS: CanalSocial[] = ['instagram', 'facebook']
 const PALAVRAS_BLOQUEADAS: string[] = [] // Populado via config externa
 ```
+
+---
+
+> **Navegação:** [[ZEHLA_INDEX]] | [[SPEC_COMERCIAL]] | [[SPEC_REVENUE]] | [[SPEC]] | [[AGENTS]]

@@ -16,7 +16,7 @@ export async function GET(req: Request) {
     const simulations = await prisma.brainSimulationScenario.findMany({
       where: { tenantId: propertyId },
       include: {
-        simulationRounds: {
+        roundsRel: {
           orderBy: { createdAt: 'desc' },
           take: 10
         },

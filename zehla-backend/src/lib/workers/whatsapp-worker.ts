@@ -1,13 +1,13 @@
 import { Worker, Job } from 'bullmq';
-import { redisWorker } from '@/lib/redis';
-import { prisma } from '@/lib/prisma';
-import { orchestrator } from '@/lib/brain/agent-orchestrator';
-import { ProcessPaymentProofUseCase } from '@/lib/brain/use-cases/ProcessPaymentProofUseCase';
-import { ReceiptExtractor } from '@/lib/brain/receipt-extractor';
-import { EmailService } from '@/lib/email/email-service';
-import { getWhatsAppPort } from '@/infrastructure/external/evolution';
-import { PrismaWhatsAppMessageRepository } from '@/infrastructure/persistence/whatsapp/PrismaWhatsAppMessageRepository';
-import { ProcessInboundMessageUseCase } from '@/application/communication/use-cases/ProcessInboundMessageUseCase';
+import { redisWorker } from '../redis';
+import { prisma } from '../prisma';
+import { orchestrator } from '../brain/agent-orchestrator';
+import { ProcessPaymentProofUseCase } from '../brain/use-cases/ProcessPaymentProofUseCase';
+import { ReceiptExtractor } from '../brain/receipt-extractor';
+import { EmailService } from '../email/email-service';
+import { getWhatsAppPort } from '../../infrastructure/external/evolution';
+import { PrismaWhatsAppMessageRepository } from '../../infrastructure/persistence/whatsapp/PrismaWhatsAppMessageRepository';
+import { ProcessInboundMessageUseCase } from '../../application/communication/use-cases/ProcessInboundMessageUseCase';
 
 const useCase = new ProcessInboundMessageUseCase(
   getWhatsAppPort(),

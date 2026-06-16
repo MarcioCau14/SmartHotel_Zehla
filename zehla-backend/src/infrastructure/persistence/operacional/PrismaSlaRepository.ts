@@ -6,7 +6,7 @@ import { TipoTarefa } from '../../../domain/operacional/entities/Tarefa'
 import { Result } from '../../../shared/Result'
 
 export class PrismaSlaRepository implements ISlaPort {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: any, protected readonly propertyId?: string) {}
 
   private toData(sla: SLA): any {
     return {

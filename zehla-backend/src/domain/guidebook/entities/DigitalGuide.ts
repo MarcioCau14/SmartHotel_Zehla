@@ -128,7 +128,9 @@ export class DigitalGuide {
         ...section.props,
         order: i,
       })
-      if (reorderedResult.isFail) return Result.fail(reorderedResult.error)
+      if (reorderedResult.isFail) {
+        return Result.fail({ code: 'INVALID_ORDER', detail: reorderedResult.error.message })
+      }
       newSections.push(reorderedResult.value)
     }
     return Result.ok(new DigitalGuide({

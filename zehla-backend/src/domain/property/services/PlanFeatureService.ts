@@ -29,6 +29,7 @@ export class PlanFeatureService {
     }
 
     const planHierarchy: Record<Plan, number> = {
+      [Plan.FREE]: -2,
       [Plan.LITE]: 0,
       [Plan.PRO]: 1,
       [Plan.MAX]: 2,

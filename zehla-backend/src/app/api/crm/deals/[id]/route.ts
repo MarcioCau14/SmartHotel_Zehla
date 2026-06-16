@@ -6,10 +6,10 @@ import { withApiSecurity } from '@/lib/server/with-api-security';
 
 async function _PATCH(
   req: NextRequest,
-  context: { params: Promise<Record<string, string>> }
+  context?: { params: Promise<Record<string, string>> }
 ) {
   try {
-  const { id } = await context.params;
+  const { id } = await context!.params;
     const body = await req.json();
     const { title, value, stage, expectedCloseDate, probability, notes, contactId, ownerId } = body;
 

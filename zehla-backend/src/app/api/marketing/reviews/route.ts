@@ -14,7 +14,7 @@ import { AgendarPostUseCase } from '../../../../application/marketing/use-cases/
 import { CalcularMetricasMarketingUseCase } from '../../../../application/marketing/use-cases/CalcularMetricasMarketingUseCase'
 import { ProcessarWebhookReviewUseCase } from '../../../../application/marketing/use-cases/ProcessarWebhookReviewUseCase'
 import { ZeMarketerCognitiveService } from '../../../../application/marketing/cognitive/ZeMarketerCognitiveService'
-import { ZeMarketerIntent } from '../../../../application/marketing/cognitive/ZeMarketerIntent'
+import { ZeMarketerIntent } from '../../../../application/marketing/cognitive/ZeMarketerCognitiveTypes'
 import { Result } from '../../../../domain/shared/Result'
 
 export async function POST(request: NextRequest) {
@@ -45,9 +45,16 @@ export async function POST(request: NextRequest) {
     // Repositório de reserva real adaptado para a leitura cross-context
     const reservaRepo = new PrismaReservaRepository(basePrisma, propertyId)
     const readOnlyReservaPort = {
-      buscarReservaPorId: async (id: string) => {
+      buscarPorId: async (id: string) => {
         const result = await reservaRepo.getById(id)
-        return result
+        if (result.isFail || !result.value) return null
+        return {
+          id: result.value.id,
+          hospedeNome: result.value.guestId,
+          dataCheckIn: result.value.periodo.dataInicio,
+          dataCheckOut: result.value.periodo.dataFim,
+          quartoId: result.value.roomId
+        }
       }
     }
 

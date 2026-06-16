@@ -54,7 +54,7 @@ export class SugerirDescontoUseCase {
       }
       
       // 4. Calcular desconto sugerido baseado em regras de negócio de Yield
-      let descontoSugerido: Money = new Money(0)
+      let descontoSugerido: Money = Money.zero()
       let motivo = 'No discount applicable based on current rules'
       let percentualDesconto = 0
       

@@ -6,7 +6,7 @@ import { IFeedbackPort } from '../../../application/hospitalidade/ports/IFeedbac
 
 export class PrismaFeedbackRepository implements IFeedbackPort {
   constructor(
-    private readonly prisma: PrismaClient,
+    private readonly prisma: any,
     private readonly propertyId: string
   ) {}
 

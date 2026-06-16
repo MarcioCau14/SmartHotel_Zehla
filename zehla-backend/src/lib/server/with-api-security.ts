@@ -44,7 +44,7 @@ async function enforceRateLimit(req: NextRequest, limit: number, windowSeconds: 
     const method = req.method;
     const path = new URL(req.url).pathname;
     const key = `rl:${method}:${path}:${ip}`;
-    const { rateLimit } = await import('@/lib/security/rate-limit');
+    const { rateLimit } = await import('../security/rate-limit');
     const result = await rateLimit(key, limit, windowSeconds);
     if (!result.success) return false;
     return true;
