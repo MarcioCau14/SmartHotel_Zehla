@@ -51,7 +51,8 @@ describe('QualificarLeadUseCase', () => {
       dataCaptura: new Date(),
       nome: 'Maria Silva',
       score,
-      status: 'prospect'
+      status: 'prospect',
+      tags: ['hourlyRate:1', 'adr:0']
     }).value
 
     leadPort.addLeadDirectly(lead)
@@ -73,7 +74,8 @@ describe('QualificarLeadUseCase', () => {
       propriedadeId: 'prop_123',
       dataCaptura: new Date(),
       nome: 'Carlos Souza',
-      status: 'prospect'
+      status: 'prospect',
+      tags: ['hourlyRate:1', 'adr:0']
       // sem score
     }).value
 

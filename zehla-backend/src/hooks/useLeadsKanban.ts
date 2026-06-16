@@ -1,27 +1,29 @@
 import { useState, useCallback, useEffect } from 'react'
 import { Result } from '../shared/Result'
 import { SalesServiceAdapter } from '../services/adapters/SalesServiceAdapter'
-import { mapStatusToKanban, KanbanColumnStatus } from '../lib/crm/mappers/leadStatusMapper'
+
+export type LeadStatus = 'prospect' | 'qualified' | 'trial' | 'negotiation' | 'converted' | 'churned' | 'reactivated'
 
 export interface LeadCard {
   id: string
   nome: string
-  status: KanbanColumnStatus
+  status: LeadStatus
   score: number
   canal: string
   email?: string
   telefone?: string
 }
 
+const COLUMNS: LeadStatus[] = ['prospect', 'qualified', 'trial', 'negotiation', 'converted', 'churned', 'reactivated']
+
+function emptyColumns(): Record<string, LeadCard[]> {
+  const cols: Record<string, LeadCard[]> = {}
+  for (const c of COLUMNS) cols[c] = []
+  return cols
+}
+
 export function useLeadsKanban() {
-  const [leads, setLeads] = useState<Record<KanbanColumnStatus, LeadCard[]>>({
-    novo: [],
-    qualificado: [],
-    trial: [],
-    propostado: [],
-    convertido: [],
-    perdido: [],
-  })
+  const [leads, setLeads] = useState<Record<string, LeadCard[]>>(emptyColumns())
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -34,41 +36,25 @@ export function useLeadsKanban() {
 
     if (result.isFail) {
       setError(result.error.message)
-      // Fallback a dados padrão de UI estruturados se o banco estiver vazio
-      const fallback = [
-        { id: 'lead-1', nome: 'Renato Porto', status: 'prospect' as any, score: 30, canal: 'WhatsApp' },
-        { id: 'lead-2', nome: 'Alice Medeiros', status: 'qualified' as any, score: 85, canal: 'site' },
-        { id: 'lead-3', nome: 'Gabriela Lima', status: 'negotiation' as any, score: 55, canal: 'Booking' },
+      const fallback: LeadCard[] = [
+        { id: 'lead-1', nome: 'Renato Porto', status: 'prospect', score: 30, canal: 'WhatsApp' },
+        { id: 'lead-2', nome: 'Alice Medeiros', status: 'qualified', score: 85, canal: 'site' },
+        { id: 'lead-3', nome: 'Gabriela Lima', status: 'negotiation', score: 55, canal: 'Booking' },
       ]
       organizeLeads(fallback)
       return
     }
 
-    const fetchedLeads = (result.value.data?.leads || [])
+    const fetchedLeads = (result.value.data?.leads || []) as LeadCard[]
     organizeLeads(fetchedLeads)
   }, [])
 
-  const organizeLeads = (list: any[]) => {
-    const columns: Record<KanbanColumnStatus, LeadCard[]> = {
-      novo: [],
-      qualificado: [],
-      trial: [],
-      propostado: [],
-      convertido: [],
-      perdido: [],
-    }
+  const organizeLeads = (list: LeadCard[]) => {
+    const columns = emptyColumns()
     list.forEach((item) => {
-      const statusKey = mapStatusToKanban(item.status)
+      const statusKey = item.status || 'prospect'
       if (columns[statusKey]) {
-        columns[statusKey].push({
-          id: item.id,
-          nome: item.nome || item.nomeCompleto || 'Sem Nome',
-          status: statusKey,
-          score: item.score || 0,
-          canal: item.canal?.valor || item.canal || 'WhatsApp',
-          email: item.email?.valor || item.email,
-          telefone: item.telefone,
-        })
+        columns[statusKey].push(item)
       }
     })
     setLeads(columns)
@@ -79,23 +65,19 @@ export function useLeadsKanban() {
   }, [fetchLeads])
 
   const moverLead = useCallback(
-    async (leadId: string, novoStatus: KanbanColumnStatus): Promise<Result<void, Error>> => {
-      // Otimisticamente move na UI primeiro
+    async (leadId: string, novoStatus: LeadStatus): Promise<Result<void, Error>> => {
       setLeads((prev) => {
         let foundCard: LeadCard | undefined
         const nextState = { ...prev }
 
-        // Remove do status anterior
         Object.keys(nextState).forEach((key) => {
-          const statusKey = key as KanbanColumnStatus
-          const idx = nextState[statusKey].findIndex((card) => card.id === leadId)
+          const idx = nextState[key].findIndex((card) => card.id === leadId)
           if (idx !== -1) {
-            foundCard = nextState[statusKey][idx]
-            nextState[statusKey].splice(idx, 1)
+            foundCard = nextState[key][idx]
+            nextState[key].splice(idx, 1)
           }
         })
 
-        // Adiciona no novo status
         if (foundCard) {
           foundCard.status = novoStatus
           nextState[novoStatus] = [...nextState[novoStatus], foundCard]
@@ -116,14 +98,13 @@ export function useLeadsKanban() {
       if (result.isFail) {
         return Result.fail(result.error)
       }
-      
+
       const newScore = result.value.data?.score || 80
       setLeads((prev) => {
         const nextState = { ...prev }
         Object.keys(nextState).forEach((key) => {
-          const statusKey = key as KanbanColumnStatus
-          nextState[statusKey] = nextState[statusKey].map((card) =>
-            card.id === leadId ? { ...card, score: newScore, status: 'qualificado' } : card
+          nextState[key] = nextState[key].map((card) =>
+            card.id === leadId ? { ...card, score: newScore, status: 'qualified' } : card
           )
         })
         return nextState

@@ -92,13 +92,9 @@ export class CriarPropostaUseCase {
 
       const propostaCriada = propostaResult.value
 
-      // 6. Transitar status do Lead para negotiation se ele estiver qualificado
+      // 6. Transitar status do Lead para propostado se ele estiver qualificado
       if (lead.status === 'qualified') {
-        const trialResult = lead.iniciarTrial()
-        if (trialResult.isFail) {
-          return Result.fail(new Error('TRANSICAO_FSM_INVALIDA'))
-        }
-        const leadPropostadoResult = trialResult.value.negociar()
+        const leadPropostadoResult = lead.propostar()
         if (leadPropostadoResult.isOk) {
           const leadPropostado = leadPropostadoResult.value
           const leadUpdateResult = await this.leadPort.atualizarLead(
@@ -111,8 +107,6 @@ export class CriarPropostaUseCase {
           if (leadUpdateResult.isFail) {
             return Result.fail(leadUpdateResult.error)
           }
-        } else {
-          return Result.fail(new Error('TRANSICAO_FSM_INVALIDA'))
         }
       }
       

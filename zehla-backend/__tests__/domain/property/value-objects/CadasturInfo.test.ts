@@ -101,15 +101,16 @@ describe('CadasturInfo', () => {
   })
 
   it('should check equality', () => {
+    const date = futureDate(60)
     const a = CadasturInfo.create({
       number: '12345',
       status: CadasturStatus.VALID,
-      expiryDate: futureDate(60),
+      expiryDate: date,
     }).value
     const b = CadasturInfo.create({
       number: '12345',
       status: CadasturStatus.VALID,
-      expiryDate: futureDate(60),
+      expiryDate: date,
     }).value
     expect(a.equals(b)).toBe(true)
   })

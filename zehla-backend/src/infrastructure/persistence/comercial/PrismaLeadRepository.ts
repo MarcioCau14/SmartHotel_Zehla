@@ -64,9 +64,9 @@ export class PrismaLeadRepository implements ILeadPort {
         }
       }
 
-      const validStatuses = ['prospect', 'qualified', 'trial', 'negotiation', 'converted', 'churned', 'reactivated']
-      if (!row.status || !validStatuses.includes(row.status)) {
-        return Result.fail(new Error('STATUS_CORROMPIDO_NO_BANCO'))
+      const VALID_STATUSES = ['prospect', 'qualified', 'trial', 'negotiation', 'converted', 'churned', 'reactivated']
+      if (row.status && !VALID_STATUSES.includes(row.status)) {
+        return Result.fail(new Error(`STATUS_CORROMPIDO_NO_BANCO: '${row.status}' não é um status válido para Lead (propriedadeId: ${row.propriedadeId})`))
       }
 
       const leadProps = {
@@ -79,7 +79,7 @@ export class PrismaLeadRepository implements ILeadPort {
         telefone: row.telefone || undefined,
         documento: documentoObj,
         score: scoreObj,
-        status: row.status as any,
+        status: (row.status || 'prospect') as Lead['status'],
         origemUrl: row.origemUrl || undefined,
         tags: tagsArr,
         ultimaInteracao: row.ultimaInteracao || undefined

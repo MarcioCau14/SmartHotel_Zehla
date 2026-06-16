@@ -10,6 +10,14 @@ vi.mock('../../../src/infrastructure/external/evolution/EvolutionWhatsAppAdapter
   };
 });
 
+vi.mock('../../../src/lib/security/rate-limit-messaging', () => {
+  return {
+    checkMessagingRateLimit: vi.fn().mockResolvedValue({ allowed: true, retryAfterMs: 0 }),
+    registerBackoff: vi.fn().mockResolvedValue(undefined),
+    resetBackoff: vi.fn().mockResolvedValue(undefined),
+  };
+});
+
 describe('EvolutionWhatsAppGateway', () => {
   let gateway: EvolutionWhatsAppGateway;
 

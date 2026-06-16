@@ -66,7 +66,7 @@ export class ProcessarPropostasExpiradasUseCase {
           )
           
           if (outrasPropostasAtivas.length === 0 && lead.status === 'negotiation') {
-            const perderResult = lead.churn('Proposal expired without action')
+            const perderResult = lead.perder('Proposal expired without action')
             if (perderResult.isOk) {
               const leadPerdido = perderResult.value
               

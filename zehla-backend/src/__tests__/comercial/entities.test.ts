@@ -120,45 +120,37 @@ describe('Lead Entity', () => {
         let qualifiedLead = result.value
         expect(qualifiedLead.status).toBe('qualified')
         
-        // qualified -> trial
-        const trialResult = qualifiedLead.iniciarTrial()
-        expect(trialResult.isOk).toBe(true)
-        if (trialResult.isOk) {
-          let trialLead = trialResult.value
-          expect(trialLead.status).toBe('trial')
-
-          // trial -> negotiation
-          result = trialLead.negociar()
-          expect(result.isOk).toBe(true)
-          if (result.isOk) {
-            let proposedLead = result.value
-            expect(proposedLead.status).toBe('negotiation')
-            
-            // negotiation -> converted (com documento)
-            const leadWithDocResult = Lead.create({
-              id: proposedLead.id,
-              canal: proposedLead.canal,
-              propriedadeId: proposedLead.propriedadeId,
-              dataCaptura: proposedLead.dataCaptura,
-              nome: proposedLead.nome,
-              email: proposedLead.email,
-              telefone: proposedLead.telefone,
-              documento: obterValor(Documento.criar('123.456.789-09', 'CPF')),
-              score: proposedLead.score,
-              status: proposedLead.status,
-              origemUrl: proposedLead.origemUrl,
-              tags: proposedLead.tags,
-              ultimaInteracao: proposedLead.ultimaInteracao
-            })
-            
-            expect(leadWithDocResult.isOk).toBe(true)
-            if (leadWithDocResult.isOk) {
-              result = leadWithDocResult.value.converter()
-              expect(result.isOk).toBe(true)
-              if (result.isOk) {
-                let convertedLead = result.value
-                expect(convertedLead.status).toBe('converted')
-              }
+        // qualified -> negotiation
+        result = qualifiedLead.propostar()
+        expect(result.isOk).toBe(true)
+        if (result.isOk) {
+          let proposedLead = result.value
+          expect(proposedLead.status).toBe('negotiation')
+          
+          // negotiation -> converted (com documento)
+          const leadWithDocResult = Lead.create({
+            id: proposedLead.id,
+            canal: proposedLead.canal,
+            propriedadeId: proposedLead.propriedadeId,
+            dataCaptura: proposedLead.dataCaptura,
+            nome: proposedLead.nome,
+            email: proposedLead.email,
+            telefone: proposedLead.telefone,
+            documento: obterValor(Documento.criar('123.456.789-09', 'CPF')),
+            score: proposedLead.score,
+            status: proposedLead.status,
+            origemUrl: proposedLead.origemUrl,
+            tags: proposedLead.tags,
+            ultimaInteracao: proposedLead.ultimaInteracao
+          })
+          
+          expect(leadWithDocResult.isOk).toBe(true)
+          if (leadWithDocResult.isOk) {
+            result = leadWithDocResult.value.converter()
+            expect(result.isOk).toBe(true)
+            if (result.isOk) {
+              let convertedLead = result.value
+              expect(convertedLead.status).toBe('converted')
             }
           }
         }

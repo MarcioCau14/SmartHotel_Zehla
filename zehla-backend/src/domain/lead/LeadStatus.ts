@@ -11,7 +11,7 @@ export enum LeadStatus {
 
 const VALID_TRANSITIONS: Record<LeadStatus, LeadStatus[]> = {
   [LeadStatus.PROSPECT]: [LeadStatus.QUALIFIED, LeadStatus.BLACKLISTED],
-  [LeadStatus.QUALIFIED]: [LeadStatus.TRIAL, LeadStatus.NEGOTIATION, LeadStatus.BLACKLISTED],
+  [LeadStatus.QUALIFIED]: [LeadStatus.TRIAL, LeadStatus.NEGOTIATION, LeadStatus.CHURNED, LeadStatus.BLACKLISTED],
   [LeadStatus.TRIAL]: [LeadStatus.NEGOTIATION, LeadStatus.CONVERTED, LeadStatus.CHURNED, LeadStatus.BLACKLISTED],
   [LeadStatus.NEGOTIATION]: [LeadStatus.CONVERTED, LeadStatus.CHURNED, LeadStatus.BLACKLISTED],
   [LeadStatus.CONVERTED]: [LeadStatus.CHURNED],

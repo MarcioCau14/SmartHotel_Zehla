@@ -4,11 +4,11 @@ import React from 'react'
 import { useLeadsKanban, LeadCard } from '../../hooks/useLeadsKanban'
 
 const COLUMNS = [
-  { id: 'novo', title: 'Novos Leads', color: 'bg-blue-500' },
-  { id: 'qualificado', title: 'Qualificados', color: 'bg-orange-500' },
-  { id: 'propostado', title: 'Propostados', color: 'bg-amber-500' },
-  { id: 'convertido', title: 'Convertidos', color: 'bg-emerald-500' },
-  { id: 'perdido', title: 'Perdidos', color: 'bg-red-500' },
+  { id: 'prospect', title: 'Novos Leads', color: 'bg-blue-500' },
+  { id: 'qualified', title: 'Qualificados', color: 'bg-orange-500' },
+  { id: 'negotiation', title: 'Propostados', color: 'bg-amber-500' },
+  { id: 'converted', title: 'Convertidos', color: 'bg-emerald-500' },
+  { id: 'churned', title: 'Perdidos', color: 'bg-red-500' },
 ]
 
 export function LeadKanban() {
@@ -75,7 +75,7 @@ export function LeadKanban() {
 
                     {/* Quick CRM Actions */}
                     <div className="flex gap-1.5 mt-2 border-t border-slate-700/60 pt-2 text-[10px]">
-                      {card.status === 'novo' && (
+                      {card.status === 'prospect' && (
                         <button
                           onClick={() => qualificarLead(card.id)}
                           className="flex-1 py-1 bg-slate-700 hover:bg-orange-600 hover:text-white text-slate-300 font-bold rounded transition-colors"
@@ -84,17 +84,17 @@ export function LeadKanban() {
                         </button>
                       )}
                       
-                      {card.status !== 'convertido' && card.status !== 'perdido' && (
+                      {card.status !== 'converted' && card.status !== 'churned' && (
                         <select
                           onChange={(e) => moverLead(card.id, e.target.value as any)}
                           defaultValue={card.status}
                           className="w-full bg-slate-900 border border-slate-700 rounded text-slate-300 px-1 py-0.5 outline-none cursor-pointer"
                         >
-                          <option value="novo">Novo</option>
-                          <option value="qualificado">Qualificado</option>
-                          <option value="propostado">Propostado</option>
-                          <option value="convertido">Convertido</option>
-                          <option value="perdido">Perdido</option>
+                          <option value="prospect">Novo</option>
+                          <option value="qualified">Qualificado</option>
+                          <option value="negotiation">Propostado</option>
+                          <option value="converted">Convertido</option>
+                          <option value="churned">Perdido</option>
                         </select>
                       )}
                     </div>

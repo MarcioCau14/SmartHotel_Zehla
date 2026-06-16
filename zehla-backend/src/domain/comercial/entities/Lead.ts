@@ -85,7 +85,7 @@ export class Lead {
       return Result.fail(new Error('Invalid document format'))
     }
     
-    // Documento obrigatório para leads convertidos (LGPD)
+    // Documento obrigatório para leads converted (LGPD)
     if (props.status === 'converted' && !props.documento) {
       return Result.fail(new Error('Documento is required for converted lead (LGPD)'))
     }
@@ -153,6 +153,17 @@ export class Lead {
     return this.status === 'prospect' || this.status === 'qualified' || this.status === 'trial' || this.status === 'negotiation'
   }
 
+  propostar(): Result<Lead, Error> {
+    if (this.status !== 'qualified') {
+      return Result.fail(new Error('Only qualified leads can be proposed'))
+    }
+    return this._transition('negotiation')
+  }
+
+  perder(motivo?: string): Result<Lead, Error> {
+    return this.churn(motivo)
+  }
+
   qualificar(): Result<Lead, Error> {
     if (this.status !== 'prospect') {
       return Result.fail(new Error('Only prospect leads can be qualified'))
@@ -192,6 +203,9 @@ export class Lead {
   }
 
   churn(motivo?: string): Result<Lead, Error> {
+    if (this.status === 'qualified') {
+      return this._transition('churned')
+    }
     if (this.status === 'converted') {
       return this._transition('churned')
     }

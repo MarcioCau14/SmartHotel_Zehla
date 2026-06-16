@@ -68,7 +68,7 @@ describe('Comercial Bounded Context - Persistência Real & RLS & Fail-Fast (Pris
       expect(criarResult.isOk).toBe(true)
       const leadCriado = criarResult.value
       expect(leadCriado.id).toBeDefined()
-      expect(leadCriado.status).toBe('novo')
+      expect(leadCriado.status).toBe('prospect')
 
       // Buscar por ID no mesmo tenant
       const buscarResult = await leadRepo.buscarLeadPorId(leadCriado.id, propriedadeId)
