@@ -96,9 +96,42 @@ services:
     profiles:
       - monitoring
 
+  headroom:
+    image: ghcr.io/chopratejas/headroom:latest
+    container_name: zehla-headroom
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+      - "8789:8789"
+    environment:
+      OPENAI_BASE_URL: "https://openrouter.ai/api/v1"
+      OPENAI_API_KEY: "${OPENROUTER_API_KEY}"
+      HEADROOM_NO_OPTIMIZE: "false"
+      HEADROOM_NO_CACHE: "false"
+      HEADROOM_NO_INTELLIGENT_CONTEXT: "false"
+      HEADROOM_NO_COMPRESS_FIRST: "false"
+      HEADROOM_BUDGET: "${HEADROOM_DAILY_BUDGET:-50.0}"
+      HEADROOM_TELEMETRY: "off"
+      HEADROOM_LOG_FILE: "/var/log/headroom/headroom.jsonl"
+      HEADROOM_STORE_MAX_ENTRIES: "2000"
+      HEADROOM_STORE_TTL_SECONDS: "7200"
+      HEADROOM_LEARN_ENABLED: "true"
+    volumes:
+      - headroom_data:/root/.headroom
+      - headroom_logs:/var/log/headroom
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8787/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
 volumes:
   postgres_data:
   redis_data:
   evolution_data:
   prometheus_data:
   grafana_data:
+  headroom_data:
+  headroom_logs:
+

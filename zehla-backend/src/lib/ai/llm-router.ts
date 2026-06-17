@@ -10,8 +10,14 @@ export interface MLInteractionLog {
 }
 
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434'
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1'
 const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || ''
+
+const getOpenRouterUrl = () => {
+  const useHeadroom = process.env.HEADROOM_PROXY_ENABLED === 'true';
+  const headroomUrl = process.env.HEADROOM_PROXY_URL_V1 || 'http://localhost:8787/v1';
+  return useHeadroom ? headroomUrl : 'https://openrouter.ai/api/v1';
+};
+
 
 const LOCAL_MODELS = {
   general: 'qwen2.5-coder:14b',
@@ -111,7 +117,7 @@ export class LLMRouter {
     const cloudCfg = AGENT_CLOUD_MODELS[agentLabel] || DEFAULT_CLOUD
     const modelToUse = cloudCfg.model
 
-    const response = await fetch(`${OPENROUTER_URL}/chat/completions`, {
+    const response = await fetch(`${getOpenRouterUrl()}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
