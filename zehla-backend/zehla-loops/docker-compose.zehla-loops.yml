@@ -1,20 +1,19 @@
 # docker-compose.zehla-loops.yml
-# Stack de microsserviços do ZEHLA Loop Engineering + Headroom
+# Infraestrutura completa para Loop Engineering ZEHLA + Headroom
 # Uso: docker compose -f docker-compose.zehla-loops.yml up -d
-
-version: "3.9"
+# Versão corrigida — sem 'version' (deprecated), rede interna, healthchecks
 
 services:
   # ═══════════════════════════════════════════════════════════
-  # HEADROOM — Camada de Otimização e Compressão de Contexto
+  # HEADROOM — Camada de Compressão de Contexto (rede interna)
   # ═══════════════════════════════════════════════════════════
   headroom:
     image: ghcr.io/chopratejas/headroom:latest
-    container_name: zehla-loops-headroom
+    container_name: zehla-headroom
     restart: unless-stopped
-    ports:
-      - "8787:8787"
-      - "8789:8789"
+    expose:
+      - "8787"
+      - "8789"
     environment:
       OPENAI_BASE_URL: "${OPENROUTER_API_URL:-https://openrouter.ai/api/v1}"
       OPENAI_API_KEY: "${OPENROUTER_API_KEY}"
@@ -22,7 +21,7 @@ services:
       HEADROOM_NO_CACHE: "false"
       HEADROOM_NO_INTELLIGENT_CONTEXT: "false"
       HEADROOM_NO_COMPRESS_FIRST: "false"
-      HEADROOM_BUDGET: "${HEADROOM_DAILY_BUDGET:-50.0}"
+      HEADROOM_BUDGET: "${HEADROOM_DAILY_BUDGET:-20.0}"
       HEADROOM_TELEMETRY: "off"
       HEADROOM_LOG_FILE: "/var/log/headroom/headroom.jsonl"
       HEADROOM_STORE_MAX_ENTRIES: "5000"
@@ -32,19 +31,20 @@ services:
       - headroom_data:/root/.headroom
       - headroom_logs:/var/log/headroom
     networks:
-      - zehla-loops-net
+      - zehla-loops
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8787/health"]
-      interval: 15s
-      timeout: 5s
+      interval: 30s
+      timeout: 10s
       retries: 3
+      start_period: 15s
 
   # ═══════════════════════════════════════════════════════════
-  # LOOP ENGINE — Motor de Execução dos Loops em Python
+  # LOOP ENGINE — Motor de Execução (com healthcheck)
   # ═══════════════════════════════════════════════════════════
   loop-engine:
     build:
-      context: ./loops
+      context: ./loops/
       dockerfile: Dockerfile
     container_name: zehla-loop-engine
     restart: unless-stopped
@@ -58,11 +58,14 @@ services:
       HEADROOM_PROXY_ENABLED: "true"
       OPENROUTER_API_KEY: "${OPENROUTER_API_KEY}"
       OPENROUTER_API_URL: "https://openrouter.ai/api/v1"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
       MODEL_WRITER: "${MODEL_WRITER:-anthropic/claude-sonnet-4}"
       MODEL_REVIEWER: "${MODEL_REVIEWER:-anthropic/claude-haiku-3.5}"
       MODEL_DEEP: "${MODEL_DEEP:-anthropic/claude-3.5-sonnet}"
-      DEFAULT_MAX_ITERATIONS: "5"
-      DEFAULT_BUDGET_CAP_USD: "3.00"
+      DEFAULT_MAX_ITERATIONS: "10"
+      DEFAULT_BUDGET_CAP_USD: "5.00"
+      AKASHIC_API_URL: "http://zehla-backend:8000/api/v2/akashic"
+      AKASHIC_ENABLED: "${AKASHIC_ENABLED:-true}"
       REDIS_URL: "redis://redis:6379/1"
       LOG_LEVEL: "INFO"
       LOOP_LOG_PATH: "/var/log/zehla-loops"
@@ -70,41 +73,51 @@ services:
     volumes:
       - ./loops/specs:/app/specs
       - ./loops/output:/app/output
+      - ./loops/mock_data:/app/mock_data
       - loop_logs:/var/log/zehla-loops
     networks:
-      - zehla-loops-net
+      - zehla-loops
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; r = httpx.get('http://localhost:8080/health'); r.raise_for_status()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
   # ═══════════════════════════════════════════════════════════
-  # SCHEDULER — Agendador de Loops (CRON)
+  # SCHEDULER — Agendador (dependência corrigida: healthy)
   # ═══════════════════════════════════════════════════════════
   scheduler:
     build:
-      context: ./scheduler
+      context: ./scheduler/
       dockerfile: Dockerfile
-    container_name: zehla-loops-scheduler
+    container_name: zehla-scheduler
     restart: unless-stopped
     depends_on:
-      - loop-engine
+      loop-engine:
+        condition: service_healthy
     environment:
       LOOP_ENGINE_URL: "http://loop-engine:8080"
       TZ: "America/Sao_Paulo"
     volumes:
       - ./scheduler/schedules.yml:/app/schedules.yml
     networks:
-      - zehla-loops-net
+      - zehla-loops
 
   # ═══════════════════════════════════════════════════════════
-  # REDIS — Cache de Loops e Working Memory
+  # REDIS — Cache + Streams + Working Memory
   # ═══════════════════════════════════════════════════════════
   redis:
     image: redis:7-alpine
     container_name: zehla-loops-redis
     restart: unless-stopped
+    ports:
+      - "6380:6379"
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data
     networks:
-      - zehla-loops-net
+      - zehla-loops
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -112,7 +125,7 @@ services:
       retries: 3
 
   # ═══════════════════════════════════════════════════════════
-  # METRICS — Dashboard de Observabilidade
+  # METRICS — Painel com Nginx Proxy Pass (CORRIGIDO)
   # ═══════════════════════════════════════════════════════════
   metrics:
     image: nginx:alpine
@@ -121,9 +134,10 @@ services:
     ports:
       - "8090:80"
     volumes:
-      - ./metrics:/usr/share/nginx/html
+      - ./metrics/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./metrics/index.html:/usr/share/nginx/html/index.html
     networks:
-      - zehla-loops-net
+      - zehla-loops
 
 volumes:
   headroom_data:
@@ -136,5 +150,5 @@ volumes:
     driver: local
 
 networks:
-  zehla-loops-net:
+  zehla-loops:
     driver: bridge

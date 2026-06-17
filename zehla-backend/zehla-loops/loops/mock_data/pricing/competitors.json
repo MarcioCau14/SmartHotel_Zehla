@@ -1,0 +1,68 @@
+{
+  "date": "2026-06-17",
+  "region": "Paraty - Rio de Janeiro",
+  "competitors": [
+    {
+      "name": "Pousada do Ouro",
+      "source": "booking.com",
+      "rooms": {
+        "standard_double": 289.0,
+        "standard_double_breakfast": 339.0,
+        "superior_double": 419.0,
+        "suite_master": 589.0
+      },
+      "occupancy_estimate": 0.72,
+      "scraped_at": "2026-06-17T01:30:00-03:00"
+    },
+    {
+      "name": "Hotel Litoral",
+      "source": "direct_website",
+      "rooms": {
+        "quarto_standard": 245.0,
+        "quarto_standard_cafe": 295.0,
+        "quarto_superior": 380.0,
+        "suite_premium": 520.0
+      },
+      "occupancy_estimate": 0.65,
+      "scraped_at": "2026-06-17T01:30:00-03:00"
+    },
+    {
+      "name": "Pousada Mar e Sol",
+      "source": "airbnb",
+      "rooms": {
+        "quarto_casal": 199.0,
+        "quarto_casal_cafe": 249.0,
+        "suite_frente_mar": 398.0
+      },
+      "occupancy_estimate": 0.8,
+      "scraped_at": "2026-06-17T01:31:00-03:00"
+    },
+    {
+      "name": "Hostel Paraty Bay",
+      "source": "hostelworld",
+      "rooms": {
+        "dorm_6beds": 65.0,
+        "private_double": 180.0,
+        "private_double_cafe": 220.0
+      },
+      "occupancy_estimate": 0.9,
+      "scraped_at": "2026-06-17T01:32:00-03:00"
+    },
+    {
+      "name": "Eco Resort Serra Verde",
+      "source": "direct_website",
+      "rooms": {
+        "standard": 450.0,
+        "deluxe": 680.0,
+        "suite_campestre": 920.0
+      },
+      "occupancy_estimate": 0.55,
+      "scraped_at": "2026-06-17T01:33:00-03:00"
+    }
+  ],
+  "market_avg": {
+    "standard_double": 255.5,
+    "superior_double": 462.75,
+    "suite_master": 676.0
+  }
+}

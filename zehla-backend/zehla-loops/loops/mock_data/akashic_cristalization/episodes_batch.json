@@ -1,0 +1,59 @@
+{
+  "batch_id": "batch_20260617",
+  "total_episodes": 50,
+  "episodes": [
+    {
+      "id": "ep_001",
+      "timestamp": "2026-06-16T09:15:00-03:00",
+      "channel": "whatsapp",
+      "pousada_id": "zehla_smart_hotel_01",
+      "input": "Qual o horario do checkout?",
+      "response": "O checkout é às 12:00. Podemos estender até as 14:00 com custo adicional de R$50.",
+      "outcome": "resolved",
+      "tokens_used": 850,
+      "sentiment": "neutral"
+    },
+    {
+      "id": "ep_002",
+      "timestamp": "2026-06-16T09:30:00-03:00",
+      "channel": "whatsapp",
+      "pousada_id": "zehla_smart_hotel_01",
+      "input": "O café da manhã está incluso na diária da suíte master?",
+      "response": "Sim! A suíte master inclui café da manhã completo no restaurante com vista para o mar, das 7h às 10h.",
+      "outcome": "resolved",
+      "tokens_used": 920,
+      "sentiment": "positive"
+    },
+    {
+      "id": "ep_003",
+      "timestamp": "2026-06-16T10:45:00-03:00",
+      "channel": "whatsapp",
+      "pousada_id": "zehla_smart_hotel_02",
+      "input": "O ar condicionado do quarto 103 não está funcionando. Estamos com calor!",
+      "response": "Peço desculpas pelo inconveniente. Já encaminhei a equipe de manutenção. Enquanto isso, disponibilizei um ventilador extra. Vou acompanhar até a resolução.",
+      "outcome": "resolved",
+      "tokens_used": 1100,
+      "sentiment": "negative",
+      "category": "manutencao"
+    }
+  ],
+  "summary": {
+    "total_resolved": 42,
+    "total_escalated": 5,
+    "total_failed": 3,
+    "avg_tokens": 980,
+    "categories": {
+      "reservas": 18,
+      "checkin_checkout": 12,
+      "precos": 8,
+      "manutencao": 5,
+      "alimentacao": 4,
+      "localizacao": 3
+    },
+    "sentiment_distribution": {
+      "positive": 28,
+      "neutral": 15,
+      "negative": 7
+    }
+  }
+}

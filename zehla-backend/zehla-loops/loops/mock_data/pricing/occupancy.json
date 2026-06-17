@@ -1,0 +1,23 @@
+{
+  "date": "2026-06-17",
+  "pousada_id": "zehla_smart_hotel_01",
+  "current": {
+    "occupancy_percent": 0.68,
+    "rooms_total": 24,
+    "rooms_occupied": 16,
+    "rooms_available": 8,
+    "avg_daily_rate": 312.5,
+    "revpar": 212.5
+  },
+  "forecast_7d": [
+    {"date": "2026-06-17", "projected_occupancy": 0.72, "projected_adr": 320.0},
+    {"date": "2026-06-18", "projected_occupancy": 0.75, "projected_adr": 335.0},
+    {"date": "2026-06-19", "projected_occupancy": 0.68, "projected_adr": 310.0},
+    {"date": "2026-06-20", "projected_occupancy": 0.82, "projected_adr": 380.0},
+    {"date": "2026-06-21", "projected_occupancy": 0.9, "projected_adr": 420.0},
+    {"date": "2026-06-22", "projected_occupancy": 0.95, "projected_adr": 450.0},
+    {"date": "2026-06-23", "projected_occupancy": 0.85, "projected_adr": 400.0}
+  ],
+  "target_occupancy": 0.85,
+  "historical_max_revenue": 8540.0
+}

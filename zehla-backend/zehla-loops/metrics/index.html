@@ -1,52 +1,129 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-  <title>ZEHLA Loops Dashboard</title>
-  <meta http-equiv="refresh" content="60">
-  <style>
-    body { font-family: system-ui; margin: 2rem; background: #0a0a0a; color: #e0e0e0; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
-    .card { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 1.5rem; }
-    .card h3 { margin: 0 0 .5rem; color: #4ecdc4; }
-    .metric { font-size: 2rem; font-weight: 700; color: #ffe66d; }
-    .card pre { font-size: .75rem; overflow-x: auto; color: #aaa; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZEHLA Loops Dashboard</title>
+    <meta http-equiv="refresh" content="60">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',system-ui,-apple-system,sans-serif;margin:1.5rem;background:#0a0a0a;color:#e0e0e0}
+        h1{font-size:1.5rem;margin-bottom:1.5rem;color:#4ecdc4}
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.25rem}
+        .card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:1.25rem;transition:border-color .3s}
+        .card:hover{border-color:#4ecdc4}
+        .card h3{font-size:.85rem;color:#888;margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.05em}
+        .metric{font-size:2.25rem;font-weight:700;color:#ffe66d;margin-bottom:.5rem}
+        .metric.negative{color:#ff6b6b}
+        .metric.positive{color:#51cf66}
+        .detail{font-size:.8rem;color:#666;line-height:1.5;white-space:pre-wrap;font-family:'SF Mono',Monaco,monospace}
+        .loop-list{list-style:none;margin-top:.5rem}
+        .loop-item{padding:.4rem 0;border-bottom:1px solid #222;display:flex;justify-content:space-between;font-size:.85rem}
+        .loop-item:last-child{border:none}
+        .loop-name{color:#4ecdc4}
+        .loop-status{padding:2px 8px;border-radius:10px;font-size:.75rem;font-weight:600}
+        .status-completed{background:#1a3a1a;color:#51cf66}
+        .status-halted{background:#3a3a1a;color:#ffe66d}
+        .status-failed{background:#3a1a1a;color:#ff6b6b}
+        .status-running{background:#1a2a3a;color:#4dabf7}
+        .timestamp{font-size:.75rem;color:#444;margin-top:.75rem}
+    </style>
 </head>
 <body>
-  <h1>ZEHLA Loop Engineering + Headroom</h1>
-  <div class="grid">
-    <div class="card">
-      <h3>Headroom Status</h3>
-      <div class="metric" id="hr-savings">82.3%</div>
-      <pre id="hr-stats">
-{
-  "mode": "token",
-  "status": "healthy",
-  "compression_ratio_avg": 0.177,
-  "tokens_saved_total": 138900
-}
-      </pre>
+    <h1>ZEHLA Loop Engineering + Headroom</h1>
+    <div class="grid">
+        <!-- Card 1: Headroom Status -->
+        <div class="card">
+            <h3>Headroom — Compressão</h3>
+            <div class="metric positive" id="hr-savings">--</div>
+            <div class="detail" id="hr-stats">Aguardando Headroom...</div>
+        </div>
+        
+        <!-- Card 2: Loops Executados Hoje -->
+        <div class="card">
+            <h3>Loops — Execuções Hoje</h3>
+            <div class="metric" id="loop-count">--</div>
+            <ul class="loop-list" id="loop-list">
+                <li class="loop-item"><span>Carregando...</span></li>
+            </ul>
+        </div>
+        
+        <!-- Card 3: Tokens Economizados -->
+        <div class="card">
+            <h3>Tokens — Economia Total</h3>
+            <div class="metric positive" id="tokens-saved">--</div>
+            <div class="detail" id="tokens-detail">Aguardando dados...</div>
+        </div>
+        
+        <!-- Card 4: Custo -->
+        <div class="card">
+            <h3>Custo — Total Hoje</h3>
+            <div class="metric" id="total-cost">--</div>
+            <div class="detail" id="cost-detail">Aguardando dados...</div>
+        </div>
     </div>
-    <div class="card">
-      <h3>Loops Executados Hoje</h3>
-      <div class="metric" id="loop-count">6</div>
-      <pre id="loop-list">
-- pricing_optimization (PASS)
-- akashic_cristalization (PASS)
-- competitor_monitor (PASS)
-- review_analysis (PASS)
-- marketing_content (PASS)
-- auto_audit (PASS)
-      </pre>
-    </div>
-    <div class="card">
-      <h3>Economia Financeira</h3>
-      <div class="metric" id="tokens-saved">$137.25</div>
-      <pre id="tokens-detail">
-Economia estimada de $137.25/mês
-para os 6 loops agendados na madrugada.
-      </pre>
-    </div>
-  </div>
+    
+    <div class="timestamp" id="last-update">Última atualização: --</div>
+
+    <script>
+    async function refresh() {
+        const now = new Date().toLocaleTimeString('pt-BR');
+        
+        // Headroom stats (via nginx proxy /hr/)
+        try {
+            const hr = await fetch('/hr/stats').then(r => r.json());
+            const savingsPercent = hr.savings_percent || 0;
+            const savingsEl = document.getElementById('hr-savings');
+            savingsEl.textContent = savingsPercent.toFixed(1) + '%';
+            savingsEl.className = 'metric ' + (savingsPercent > 50 ? 'positive' : 'negative');
+            
+            document.getElementById('hr-stats').textContent = 
+                'Requests: ' + (hr.total_requests || 0) + '\n' +
+                'Budget: $' + (hr.budget_used || 0).toFixed(2) + ' / $' + (hr.budget_limit || 20).toFixed(2) + '\n' +
+                'Mode: ' + (hr.mode || 'proxy') + '\n' +
+                'Uptime: ' + (hr.uptime_seconds || 0) + 's';
+        } catch (e) {
+            document.getElementById('hr-stats').textContent = 'Headroom offline: ' + e.message;
+        }
+        
+        // Loop Engine status (via nginx proxy /api/)
+        try {
+            const loops = await fetch('/api/loops/status').then(r => r.json());
+            const loopsList = loops.loops || [];
+            document.getElementById('loop-count').textContent = loopsList.length;
+            
+            const listHtml = loopsList.map(l => {
+                const statusClass = 'status-' + (l.status || 'unknown');
+                return '<li class="loop-item">' +
+                    '<span class="loop-name">' + l.name + '</span>' +
+                    '<span class="loop-status ' + statusClass + '">' + l.status + '</span>' +
+                    '</li>';
+            }).join('');
+            document.getElementById('loop-list').innerHTML = listHtml || '<li>Sem loops hoje</li>';
+            
+            const totalSaved = loopsList.reduce((sum, l) => sum + (l.tokens_saved || 0), 0);
+            document.getElementById('tokens-saved').textContent = 
+                (totalSaved > 1000 ? (totalSaved / 1000).toFixed(1) + 'K' : totalSaved);
+            document.getElementById('tokens-detail').textContent = 
+                loopsList.map(l => l.name + ': ' + (l.tokens_saved || 0)).join('\n');
+            
+            const totalCost = loopsList.reduce((sum, l) => sum + (l.total_cost_usd || 0), 0);
+            const costEl = document.getElementById('total-cost');
+            costEl.textContent = '$' + totalCost.toFixed(2);
+            costEl.className = 'metric ' + (totalCost < 2 ? 'positive' : '');
+            document.getElementById('cost-detail').textContent = 
+                loopsList.map(l => l.name + ': $' + (l.total_cost_usd || 0).toFixed(4)).join('\n');
+                
+        } catch (e) {
+            document.getElementById('loop-list').innerHTML = 
+                '<li class="loop-item"><span>Loop Engine offline</span></li>';
+        }
+        
+        document.getElementById('last-update').textContent = 'Atualizado: ' + now;
+    }
+    
+    refresh();
+    setInterval(refresh, 60000);
+    </script>
 </body>
 </html>
