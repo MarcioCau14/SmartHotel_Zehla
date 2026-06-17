@@ -1,0 +1,33 @@
+# scheduler/schedules.yml
+# Definição de horários de execução de loops ZEHLA
+
+loops:
+  pricing_optimization:
+    name: "pricing_optimization"
+    spec: "pricing/spec.md"
+    schedule: "0 4 * * *"           # 04:00 AM
+    model_writer: "anthropic/claude-sonnet-4"
+    model_reviewer: "anthropic/claude-haiku-3.5"
+    max_iterations: 3
+    budget_cap_usd: 2.00
+    hardness: "hard"
+
+  akashic_cristalization:
+    name: "akashic_cristalization"
+    spec: "akashic_cristalization/spec.md"
+    schedule: "0 2 * * *"           # 02:00 AM
+    model_writer: "anthropic/claude-3.5-sonnet"
+    model_reviewer: "anthropic/claude-haiku-3.5"
+    max_iterations: 5
+    budget_cap_usd: 3.00
+    hardness: "hard"
+
+  competitor_monitor:
+    name: "competitor_monitor"
+    spec: "competitor_monitor/spec.md"
+    schedule: "30 1 * * *"          # 01:30 AM
+    model_writer: "anthropic/claude-sonnet-4"
+    model_reviewer: "anthropic/claude-haiku-3.5"
+    max_iterations: 3
+    budget_cap_usd: 1.50
+    hardness: "medium"

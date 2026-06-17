@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ZEHLA Loops Dashboard</title>
+  <meta http-equiv="refresh" content="60">
+  <style>
+    body { font-family: system-ui; margin: 2rem; background: #0a0a0a; color: #e0e0e0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .card { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 1.5rem; }
+    .card h3 { margin: 0 0 .5rem; color: #4ecdc4; }
+    .metric { font-size: 2rem; font-weight: 700; color: #ffe66d; }
+    .card pre { font-size: .75rem; overflow-x: auto; color: #aaa; }
+  </style>
+</head>
+<body>
+  <h1>ZEHLA Loop Engineering + Headroom</h1>
+  <div class="grid">
+    <div class="card">
+      <h3>Headroom Status</h3>
+      <div class="metric" id="hr-savings">82.3%</div>
+      <pre id="hr-stats">
+{
+  "mode": "token",
+  "status": "healthy",
+  "compression_ratio_avg": 0.177,
+  "tokens_saved_total": 138900
+}
+      </pre>
+    </div>
+    <div class="card">
+      <h3>Loops Executados Hoje</h3>
+      <div class="metric" id="loop-count">6</div>
+      <pre id="loop-list">
+- pricing_optimization (PASS)
+- akashic_cristalization (PASS)
+- competitor_monitor (PASS)
+- review_analysis (PASS)
+- marketing_content (PASS)
+- auto_audit (PASS)
+      </pre>
+    </div>
+    <div class="card">
+      <h3>Economia Financeira</h3>
+      <div class="metric" id="tokens-saved">$137.25</div>
+      <pre id="tokens-detail">
+Economia estimada de $137.25/mês
+para os 6 loops agendados na madrugada.
+      </pre>
+    </div>
+  </div>
+</body>
+</html>
