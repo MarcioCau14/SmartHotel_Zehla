@@ -8,14 +8,12 @@ const isProtectedRoute = createRouteMatcher([
   '/settings(.*)'
 ]);
 
-export default clerkMiddleware((auth, req) => {
+export default clerkMiddleware(async (auth, req) => {
   if (isProtectedRoute(req)) {
-    auth().protect();
+    await auth.protect();
   }
   
-  // Zélla: Multi-Tenant Authorization check (if authenticated)
-  // Ensures the user has an active organization (Tenant)
-  const { userId, orgId } = auth();
+  const { userId, orgId } = await auth();
   
   if (userId && !orgId && req.nextUrl.pathname.startsWith('/dashboard')) {
     const orgSelection = new URL('/organization-selection', req.url);

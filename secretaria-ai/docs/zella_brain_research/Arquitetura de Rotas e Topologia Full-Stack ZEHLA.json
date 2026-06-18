@@ -1,0 +1,301 @@
+{
+  "title": "Arquitetura de Rotas e Topologia Full-Stack ZEHLA",
+  "root": {
+    "id": "node-0",
+    "text": "ZEHLA: Full-Stack Topology & Routing, 4 filhos",
+    "level": 1,
+    "children": [
+      {
+        "id": "node-1",
+        "text": "Landing Page (Frontend Público), 3 filhos",
+        "level": 2,
+        "children": [
+          {
+            "id": "node-5",
+            "text": "Rota Principal: /",
+            "level": 3,
+            "children": [],
+            "expanded": false
+          },
+          {
+            "id": "node-6",
+            "text": "Seções, 5 filhos",
+            "level": 3,
+            "children": [
+              {
+                "id": "node-18",
+                "text": "HeroSection",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              },
+              {
+                "id": "node-19",
+                "text": "RaioXForm",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              },
+              {
+                "id": "node-20",
+                "text": "PainPoints",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              },
+              {
+                "id": "node-21",
+                "text": "FeaturesSection",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              },
+              {
+                "id": "node-22",
+                "text": "PricingSection",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              }
+            ],
+            "expanded": true
+          },
+          {
+            "id": "node-7",
+            "text": "Endpoints API, 2 filhos",
+            "level": 3,
+            "children": [
+              {
+                "id": "node-23",
+                "text": "POST /api/visibility/raiox",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              },
+              {
+                "id": "node-24",
+                "text": "POST /api/marketing/leads",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              }
+            ],
+            "expanded": true
+          }
+        ],
+        "expanded": true
+      },
+      {
+        "id": "node-2",
+        "text": "Client Dashboard (Autenticado), 3 filhos",
+        "level": 2,
+        "children": [
+          {
+            "id": "node-8",
+            "text": "Rota Principal: /dashboard",
+            "level": 3,
+            "children": [],
+            "expanded": false
+          },
+          {
+            "id": "node-9",
+            "text": "Navegação, 6 filhos",
+            "level": 3,
+            "children": [
+              {
+                "id": "node-25",
+                "text": "Painel (KPIs)",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              },
+              {
+                "id": "node-26",
+                "text": "Terminal (Real-time)",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              },
+              {
+                "id": "node-27",
+                "text": "Gestão de Quartos",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              },
+              {
+                "id": "node-28",
+                "text": "Reservas (Check-in/out)",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              },
+              {
+                "id": "node-29",
+                "text": "Financeiro (Pix)",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              },
+              {
+                "id": "node-30",
+                "text": "Planilhas (Dados)",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              }
+            ],
+            "expanded": true
+          },
+          {
+            "id": "node-10",
+            "text": "Segurança e Dados, 3 filhos",
+            "level": 3,
+            "children": [
+              {
+                "id": "node-31",
+                "text": "Auth JWT (Cookie/LocalStorage)",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              },
+              {
+                "id": "node-32",
+                "text": "GET /api/properties",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              },
+              {
+                "id": "node-33",
+                "text": "GET /api/agents",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              }
+            ],
+            "expanded": true
+          }
+        ],
+        "expanded": true
+      },
+      {
+        "id": "node-3",
+        "text": "ZCC - Zehla Control Center, 3 filhos",
+        "level": 2,
+        "children": [
+          {
+            "id": "node-11",
+            "text": "Rota Principal: /zcc (Admin)",
+            "level": 3,
+            "children": [],
+            "expanded": false
+          },
+          {
+            "id": "node-12",
+            "text": "Módulos de Gestão, 4 filhos",
+            "level": 3,
+            "children": [
+              {
+                "id": "node-34",
+                "text": "Marketing (Enriquecimento)",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              },
+              {
+                "id": "node-35",
+                "text": "Cognitivo (LLM Health)",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              },
+              {
+                "id": "node-36",
+                "text": "Segurança (Zehla Guardian)",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              },
+              {
+                "id": "node-37",
+                "text": "Auto-Healer (Recuperação)",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              }
+            ],
+            "expanded": true
+          },
+          {
+            "id": "node-13",
+            "text": "Governança, 3 filhos",
+            "level": 3,
+            "children": [
+              {
+                "id": "node-38",
+                "text": "Middleware SUPER_ADMIN",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              },
+              {
+                "id": "node-39",
+                "text": "GET /api/zcc/overview",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              },
+              {
+                "id": "node-40",
+                "text": "Circuit Breakers (Redis)",
+                "level": 4,
+                "children": [],
+                "expanded": false
+              }
+            ],
+            "expanded": true
+          }
+        ],
+        "expanded": true
+      },
+      {
+        "id": "node-4",
+        "text": "Infraestrutura & Segurança, 4 filhos",
+        "level": 2,
+        "children": [
+          {
+            "id": "node-14",
+            "text": "Middleware src/proxy.ts",
+            "level": 3,
+            "children": [],
+            "expanded": false
+          },
+          {
+            "id": "node-15",
+            "text": "RBAC Check",
+            "level": 3,
+            "children": [],
+            "expanded": false
+          },
+          {
+            "id": "node-16",
+            "text": "Guardian IP Block",
+            "level": 3,
+            "children": [],
+            "expanded": false
+          },
+          {
+            "id": "node-17",
+            "text": "Persistência Prisma DB",
+            "level": 3,
+            "children": [],
+            "expanded": false
+          }
+        ],
+        "expanded": true
+      }
+    ],
+    "expanded": true
+  }
+}

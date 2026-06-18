@@ -1,0 +1,57 @@
+{
+    "metadata": {
+        "generated_at": "2026-04-26T12:53:05.451033",
+        "target": "Cloudbeds",
+        "url": "https://cloudbeds.com"
+    },
+    "structural": {
+        "cnpj": null,
+        "founders": [],
+        "employee_count": "Large (Global)",
+        "estimated_revenue": "High (Unicorn)",
+        "headquarters": "San Diego, CA (EUA)"
+    },
+    "tech_stack": {
+        "crm": null,
+        "ai_tools": [
+            "Cloudbeds Signals (Revenue Management)"
+        ],
+        "marketing_automation": [],
+        "hosting_infrastructure": null,
+        "proprietary_tech": false
+    },
+    "product_analysis": {
+        "core_features": [
+            "PMS",
+            "Channel Manager",
+            "Booking Engine",
+            "Payments"
+        ],
+        "pricing_model": "Unknown",
+        "integrations": [],
+        "target_audience": [
+            "Independent Hotels",
+            "Boutiques",
+            "Hostels",
+            "Rentals"
+        ]
+    },
+    "market_footprint": {
+        "regions": [
+            "Global",
+            "Brazil"
+        ],
+        "client_clusters": [],
+        "social_proof": "Unknown"
+    },
+    "swot_war_room": {
+        "strengths": [],
+        "weaknesses": [
+            "Complexity for very small users",
+            "High pricing",
+            "Global support lag"
+        ],
+        "opportunities": [],
+        "threats_to_us": []
+    }
+}

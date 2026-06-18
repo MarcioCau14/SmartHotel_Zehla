@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battlecard Estratégico: ZEHLA vs BITZ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        :root {
+            --primary: #1A1A1A;
+            --accent: #D4AF37; /* Gold for Premium feel */
+            --zehla-blue: #0047AB;
+            --bg: #FFFFFF;
+            --text: #333333;
+            --light-gray: #F5F5F5;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            background: var(--light-gray);
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 10mm auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        header {
+            border-bottom: 2px solid var(--zehla-blue);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--zehla-blue);
+            letter-spacing: 2px;
+        }
+
+        .report-type {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #777;
+            letter-spacing: 1px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin: 0 0 10px 0;
+            color: var(--primary);
+        }
+
+        h2 {
+            font-size: 20px;
+            color: var(--zehla-blue);
+            border-left: 4px solid var(--zehla-blue);
+            padding-left: 15px;
+            margin-top: 30px;
+        }
+
+        .summary-box {
+            background: #E8F0FE;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-style: italic;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            text-align: left;
+            padding: 12px;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #EEE;
+            font-size: 14px;
+        }
+
+        .win-tag {
+            color: #2E7D32;
+            font-weight: bold;
+        }
+
+        .usp-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .usp-card {
+            border: 1px solid #DDD;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .usp-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: var(--zehla-blue);
+        }
+
+        footer {
+            margin-top: 50px;
+            font-size: 10px;
+            color: #AAA;
+            text-align: center;
+            border-top: 1px solid #EEE;
+            padding-top: 10px;
+        }
+
+        @media print {
+            body { background: white; }
+            .page { margin: 0; box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <header>
+        <div class="logo">ZEHLA SMART HOTEL</div>
+        <div class="report-type">Documento Confidencial | Inteligência Competitiva</div>
+    </header>
+
+    <h1>Battlecard Estratégico: ZEHLA vs BITZ</h1>
+    <p><strong>Alvo:</strong> Bitz Softwares (IA Otelia)</p>
+
+    <div class="summary-box">
+        "Enquanto a Bitz foca em vender o quarto, o Zehla foca em gerir a rentabilidade e a eficiência do hotel de forma autônoma. Somos o cérebro, eles são apenas a recepção."
+    </div>
+
+    <h2>1. O Pitch Matador (Elevator Pitch)</h2>
+    <p>
+        <strong>Problema do Concorrente:</strong> A Bitz exige a troca do sistema de gestão (PMS) para que a IA funcione, gerando custo de migração e trauma operacional. Além disso, a automação deles é limitada ao digital.<br><br>
+        <strong>Nossa Solução:</strong> O Zehla é agnóstico (funciona com qualquer sistema) e se paga sozinho através do <strong>Lucro Invisível</strong> — a economia real de energia e redução de desperdício operacional.
+    </p>
+
+    <h2>2. Comparativo Direto</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Recurso</th>
+                <th>ZEHLA SmartHotel</th>
+                <th>Bitz / IA Otelia</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Inteligência de Vendas</strong></td>
+                <td>Nativa e Preditiva (G-Luna)</td>
+                <td>Conversacional (Otelia)</td>
+            </tr>
+            <tr>
+                <td><strong>Automação Predial (IoT)</strong></td>
+                <td><span class="win-tag">Total e Nativa</span></td>
+                <td>Limitada a fechaduras (terceiros)</td>
+            </tr>
+            <tr>
+                <td><strong>Economia de Energia</strong></td>
+                <td><span class="win-tag">Sim (G-Solis)</span></td>
+                <td>Não possui</td>
+            </tr>
+            <tr>
+                <td><strong>Flexibilidade</strong></td>
+                <td>Funciona com qualquer PMS</td>
+                <td>Preso ao ecossistema Bitz</td>
+            </tr>
+            <tr>
+                <td><strong>Hardware</strong></td>
+                <td>MQTT (Baixo custo/Off-the-shelf)</td>
+                <td>Proprietário / Terceiros caros</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>3. USPs (Diferenciais Únicos)</h2>
+    <div class="usp-grid">
+        <div class="usp-card">
+            <h3>G-Solis: O Rei da Eficiência</h3>
+            <p>Monitoramento em tempo real e controle automático de AC e luzes. Redução de até 30% na conta de luz.</p>
+        </div>
+        <div class="usp-card">
+            <h3>Multi-Agentes Cognitivos</h3>
+            <p>Homer (Check-in), Solis (Energia) e Luna (Vendas) trabalhando em harmonia constante.</p>
+        </div>
+        <div class="usp-card">
+            <h3>Check-in 100% Digital</h3>
+            <p>Liberação automática de acesso via WhatsApp, sem fila e sem burocracia na recepção.</p>
+        </div>
+        <div class="usp-card">
+            <h3>Análise de Sinais de Intenção</h3>
+            <p>Identificamos quem quer comprar antes mesmo de eles mandarem a primeira mensagem.</p>
+        </div>
+    </div>
+
+    <footer>
+        ZEHLA SmartHotel © 2026 - Inteligência Estratégica Aplicada. Gerado por Antigravity AI.
+    </footer>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "skill_name": "lead-intelligence",
+  "evals": [
+    {
+      "id": 1,
+      "name": "high-performance-lead",
+      "prompt": "Analise a Pousada Village Praia do Rosa. Ela tem mais de 20 vilas e é muito ativa no Booking. Diga-me se é um lead quente e por quê.",
+      "expected_output": "Should categorize as HOT due to size (>20 units) and high digital activity.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "cold-lead-analysis",
+      "prompt": "Analise uma pousada fictícia chamada 'Pousada Esquecida' que tem apenas 5 quartos e não recebe avaliações desde 2021.",
+      "expected_output": "Should categorize as COLD due to small size and zero recency/activity.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "sales-opportunity-wi-fi",
+      "prompt": "Analise a Pousada Solar dos Lírios. As últimas 10 avaliações reclamam que o Wi-Fi não funciona nos quartos. Qual a oportunidade comercial?",
+      "expected_output": "Identify opportunity for selling Networking/Wi-Fi infrastructure solutions.",
+      "files": []
+    }
+  ]
+}

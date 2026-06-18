@@ -1,0 +1,470 @@
+// This is your Prisma schema file for Secretaria.ai
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  posts     Post[]
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  author    User     @relation(fields: [authorId], references: [id])
+}
+
+// ============================================================
+// SECRETARIA-AI — Lead Intelligence System
+// ============================================================
+
+model Lead {
+  id           String     @id @default(cuid())
+  name         String
+  email        String?    @unique
+  phone        String?    @unique
+  whatsapp     String?    @unique
+  property     String?
+  category     String?    @default("pousada")
+  city         String?
+  state        String?    @default("SC")
+  region       String?
+  googleRating Float?
+  score        Int?
+  painPoints   String?
+  source       String     @default("SECRETARIA_AI")
+  status       LeadStatus @default(PROSPECT)
+  metadata     String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // LIS (Lead Intelligence System)
+  latitude    Float?
+  longitude   Float?
+  scoreValid  Int     @default(0)
+  localPraia  String?
+  observacoes String?
+
+  // DB Mirror
+  isCanary          Boolean   @default(false)
+  estimatedValues   String?
+  intentSignals     String?
+  location          String?
+  phoneSecondary    String?
+  qualification     String?
+  socialMedia       String?
+  site              String?
+  validationScore   Int       @default(0)
+  validationStatus  String    @default("pendente")
+  conversionScore   Int       @default(0)
+  funnelStage       String    @default("NEUTRAL")
+  lastInteractionAt DateTime?
+  behavioralProfile String?
+  cluster           String    @default("COLD")
+  previousCluster   String?
+  lastSwipeAction   String?
+  lastSwipeUsedId   String?
+  tierConfidence    Float?
+  tierSugerido      String?
+  tierSugeridoEm    DateTime?
+
+  // ZEHLA FISH Extensions
+  roomsCount            Int     @default(0)
+  instagramFollowers    Int     @default(0)
+  googleReviewsCount    Int     @default(0)
+  otaCommissionLost     Float   @default(0.0)
+  hasWebsite            Boolean @default(false)
+  otaDependenceLevel    String  @default("MEDIUM")
+  buyingBehavior        String?
+  conversionProbability Float   @default(0.0)
+  objectKeywords        String?
+  recommendedPitch      String?
+  leadTier              String  @default("COLD")
+
+  emailTrackings EmailTracking[]
+  swipeUsages    SwipeUsage[]
+  funnelEvents   FunnelEvent[]
+  funnelScore    FunnelScore?
+
+  @@map("leads")
+}
+
+model EmailTracking {
+  id         String   @id @default(cuid())
+  leadId     String
+  campaignId String?
+  openedAt   DateTime @default(now())
+  ip         String?
+  userAgent  String?
+  lead       Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([campaignId])
+  @@map("email_tracking")
+}
+
+model AgentLog {
+  id         String   @id @default(cuid())
+  agentName  String
+  action     String
+  intent     String?
+  confidence Float?
+  input      String?
+  output     String?
+  tokensUsed Int      @default(0)
+  cost       Float    @default(0)
+  duration   Int      @default(0)
+  status     String   @default("SUCCESS")
+  createdAt  DateTime @default(now())
+
+  @@index([agentName, createdAt])
+  @@map("agent_logs")
+}
+
+model SecurityAlert {
+  id        String   @id @default(cuid())
+  tenantId  String
+  alertType String
+  severity  String
+  metadata  String?
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, createdAt])
+  @@index([severity, createdAt])
+  @@map("security_alerts")
+}
+
+// ============================================================
+// SWIPE INTELLIGENCE
+// ============================================================
+
+model SwipeTemplate {
+  id                 String       @id @default(cuid())
+  title              String
+  content            String
+  variables          String       @default("[]")
+  channel            String       @default("whatsapp")
+  category           String       @default("saudacao")
+  tone               String       @default("casual")
+  tier               String       @default("universal")
+  painType           String?
+  tags               String       @default("[]")
+  timesUsed          Int          @default(0)
+  conversions        Int          @default(0)
+  convRate           Float        @default(0)
+  lastUsedAt         DateTime?
+  isAiGenerated      Boolean      @default(false)
+  provenByConversion Boolean      @default(false)
+  createdBy          String?
+  isActive           Boolean      @default(true)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  usages             SwipeUsage[]
+
+  @@index([channel])
+  @@index([category])
+  @@index([tier])
+  @@index([painType])
+  @@index([convRate])
+  @@index([isActive])
+  @@map("swipe_templates")
+}
+
+model SwipeUsage {
+  id             String        @id @default(cuid())
+  swipeId        String
+  leadId         String
+  wasUsed        Boolean
+  converted      Boolean?
+  agentId        String?
+  responseTimeMs Int?
+  feedback       String?
+  createdAt      DateTime      @default(now())
+  swipe          SwipeTemplate @relation(fields: [swipeId], references: [id], onDelete: Cascade)
+  lead           Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@unique([swipeId, leadId])
+  @@index([swipeId])
+  @@index([leadId])
+  @@index([converted])
+  @@index([createdAt])
+  @@map("swipe_usages")
+}
+
+// ============================================================
+// TRENDS ENGINE
+// ============================================================
+
+model TrendKeyword {
+  id                  String           @id @default(cuid())
+  keyword             String           @unique
+  category            String
+  geo                 String?
+  isActive            Boolean          @default(true)
+  tier                String           @default("pro")
+  checkFrequencyHours Int              @default(6)
+  lastCheckedAt       DateTime?
+  createdAt           DateTime         @default(now())
+  dataPoints          TrendDataPoint[]
+
+  @@index([category])
+  @@index([tier])
+  @@map("trend_keywords")
+}
+
+model TrendDataPoint {
+  id            String       @id @default(cuid())
+  keywordId     String
+  interestScore Int
+  interestDelta Float?
+  volume        Int?
+  geo           String?
+  date          DateTime
+  source        String
+  keyword       TrendKeyword @relation(fields: [keywordId], references: [id])
+
+  @@unique([keywordId, date, source])
+  @@index([date])
+  @@index([keywordId])
+  @@map("trend_data_points")
+}
+
+model TrendSignal {
+  id             String    @id @default(cuid())
+  type           String
+  keyword        String
+  category       String
+  interestScore  Int
+  deltaPercent   Float
+  severity       String    @default("media")
+  geo            String?
+  dateDetected   DateTime
+  previousScore  Int?
+  agentsNotified String    @default("[]")
+  actionTaken    Boolean   @default(false)
+  actionDetails  String?
+  createdAt      DateTime  @default(now())
+  resolvedAt     DateTime?
+
+  @@index([type])
+  @@index([severity])
+  @@index([dateDetected])
+  @@index([category])
+  @@map("trend_signals")
+}
+
+// ============================================================
+// ADAPTIVE FUNNEL — Event-Driven State Machine
+// ============================================================
+
+model Campaign {
+  id             String        @id @default(cuid())
+  name           String
+  type           String // "email", "whatsapp", "ads", "ray-x"
+  variant        String? // "financeira", "operacional", "ocupacao"
+  status         String        @default("draft") // draft, active, paused, completed
+  totalSent      Int           @default(0)
+  totalOpened    Int           @default(0)
+  totalClicked   Int           @default(0)
+  totalConverted Int           @default(0)
+  openRate       Float         @default(0)
+  clickRate      Float         @default(0)
+  conversionRate Float         @default(0)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  events         FunnelEvent[]
+  webhookLogs    WebhookLog[]
+
+  @@index([type])
+  @@index([status])
+  @@map("funnel_campaigns")
+}
+
+model FunnelEvent {
+  id          String    @id @default(cuid())
+  leadId      String
+  campaignId  String?
+  type        String // email_opened, email_clicked, whatsapp_replied, lp_visited, ray-x_requested, trial_started, converted
+  painCluster String? // financeira, operacional, ocupacao
+  score       Int       @default(0)
+  metadata    String? // JSON: ip, userAgent, utm, etc
+  createdAt   DateTime  @default(now())
+  lead        Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  campaign    Campaign? @relation(fields: [campaignId], references: [id])
+
+  @@index([leadId])
+  @@index([campaignId])
+  @@index([type])
+  @@index([painCluster])
+  @@index([createdAt])
+  @@map("funnel_events")
+}
+
+model FunnelScore {
+  id                String    @id @default(cuid())
+  leadId            String    @unique
+  totalScore        Int       @default(0)
+  engagementScore   Int       @default(0)
+  intentScore       Int       @default(0)
+  fitScore          Int       @default(0)
+  cluster           String    @default("COLD") // HOT, WARM, COLD
+  painCluster       String? // financeira, operacional, ocupacao
+  lastEventAt       DateTime?
+  lastClusterChange DateTime?
+  previousCluster   String?
+  updatedAt         DateTime  @updatedAt
+  createdAt         DateTime  @default(now())
+  lead              Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([cluster])
+  @@index([painCluster])
+  @@index([totalScore])
+  @@map("funnel_scores")
+}
+
+model WebhookLog {
+  id          String    @id @default(cuid())
+  campaignId  String?
+  source      String // resend, sendgrid, zapi, evolution, stripe, asaas
+  eventType   String // opened, clicked, replied, delivered, bounced, paid, failed
+  payload     String // JSON raw
+  processed   Boolean   @default(false)
+  processedAt DateTime?
+  error       String?
+  retries     Int       @default(0)
+  createdAt   DateTime  @default(now())
+  campaign    Campaign? @relation(fields: [campaignId], references: [id])
+
+  @@index([source])
+  @@index([eventType])
+  @@index([processed])
+  @@index([createdAt])
+  @@map("webhook_logs")
+}
+
+enum LeadStatus {
+  PROSPECT
+  QUALIFIED
+  TRIAL_STARTED
+  CONVERTED
+  BLACKLISTED
+}
+
+enum Plan {
+  LITE
+  PRO
+  MAX
+}
+
+// ============================================================
+// ZÉLLA CORE - HOTEL MANAGEMENT (MULTI-TENANT)
+// ============================================================
+
+model Tenant {
+  id         String   @id @default(cuid())
+  name       String
+  domain     String?  @unique
+  clerkOrgId String?  @unique // Para integração com Clerk Organizations
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  rooms        Room[]
+  guests       Guest[]
+  reservations Reservation[]
+  transactions Transaction[]
+
+  @@map("tenants")
+}
+
+model Room {
+  id        String   @id @default(cuid())
+  tenantId  String
+  number    String
+  type      String // STANDARD, DELUXE, SUITE
+  capacity  Int      @default(2)
+  basePrice Float
+  status    String   @default("AVAILABLE") // AVAILABLE, OCCUPIED, MAINTENANCE
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  reservations Reservation[]
+
+  @@unique([tenantId, number])
+  @@index([tenantId])
+  @@map("rooms")
+}
+
+model Guest {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  email     String?
+  phone     String?
+  document  String? // CPF/Passaporte
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  reservations Reservation[]
+
+  @@index([tenantId])
+  @@map("guests")
+}
+
+model Reservation {
+  id         String   @id @default(cuid())
+  tenantId   String
+  guestId    String
+  roomId     String
+  checkIn    DateTime
+  checkOut   DateTime
+  status     String   @default("CONFIRMED") // PENDING, CONFIRMED, CHECKED_IN, CHECKED_OUT, CANCELLED
+  totalPrice Float
+  source     String   @default("DIRECT") // DIRECT, BOOKING, EXPEDIA
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  guest  Guest  @relation(fields: [guestId], references: [id])
+  room   Room   @relation(fields: [roomId], references: [id])
+
+  transactions Transaction[]
+
+  @@index([tenantId])
+  @@index([guestId])
+  @@index([roomId])
+  @@map("reservations")
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  tenantId      String
+  reservationId String?
+  type          String // PAYMENT, REFUND, CHARGE
+  amount        Float
+  method        String // PIX, CREDIT_CARD, CASH
+  status        String   @default("COMPLETED")
+  createdAt     DateTime @default(now())
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  reservation Reservation? @relation(fields: [reservationId], references: [id])
+
+  @@index([tenantId])
+  @@index([reservationId])
+  @@map("transactions")
+}

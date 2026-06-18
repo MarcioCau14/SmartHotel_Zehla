@@ -1,0 +1,21 @@
+# ==========================================
+# ANTIGRAVITY & GIT IDE SPEED OPTIMIZATION
+# ==========================================
+# Ignore everything at the root level of the home folder
+/*
+
+# Allow the .github directory (tracked workflows)
+!/.github/
+!/.github/**
+
+# Allow the Projetos directory (tracked project code)
+!/Projetos/
+!/Projetos/**
+
+# Allow the old zehla-backend path if needed (marked as deleted)
+!/zehla-backend/
+!/zehla-backend/**
+
+# Allow the secretaria-ai project (SmartHotel_Zehla)
+!/secretaria-ai/
+!/secretaria-ai/**

@@ -1,0 +1,27 @@
+{
+  "exit_reason": "all_passed (iteration 1)",
+  "original_description": "Mocked people skills...",
+  "best_description": "Vertical de Inteligência de Talentos e Descoberta de Perfis. SOP OBRIGATÓRIO: find_people -> enrich_people (batch) -> review_people (CGV Audit)...",
+  "best_score": "20/20",
+  "iterations_run": 1,
+  "holdout": 0.0,
+  "train_size": 20,
+  "test_size": 0,
+  "history": [
+    {
+      "iteration": 1,
+      "description": "Vertical de Inteligência de Talentos e Descoberta de Perfis. SOP OBRIGATÓRIO: find_people -> enrich_people (batch) -> review_people (CGV Audit)...",
+      "passed": 20,
+      "failed": 0,
+      "total": 20,
+      "results": [
+        {"query": "Encontre 20 Engineering Managers na Stripe", "should_trigger": true, "trigger_rate": 1.0, "pass": true},
+        {"query": "Pode enriquecer os e-mails desses 15 perfis?", "should_trigger": true, "trigger_rate": 1.0, "pass": true},
+        {"query": "Rode o motor CGV para avaliar este candidato.", "should_trigger": true, "trigger_rate": 1.0, "pass": true},
+        {"query": "Valide se o engajamento digital deste perfil é real.", "should_trigger": true, "trigger_rate": 1.0, "pass": true},
+        {"query": "Qual o domínio de e-mail da empresa Softplan?", "should_trigger": false, "trigger_rate": 0.0, "pass": true},
+        {"query": "Busque notícias sobre a fusão da Arezzo.", "should_trigger": false, "trigger_rate": 0.0, "pass": true}
+      ]
+    }
+  ]
+}

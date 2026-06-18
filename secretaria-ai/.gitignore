@@ -1,0 +1,73 @@
+# ============================================
+# SECRETARIA-AI — LOCAL ONLY (NEVER PUSH)
+# ============================================
+
+# Strategic documents — NEVER push to GitHub
+Base_Conhecimento/
+PLANO_DOMINIO_FASE1.md
+Z_LAST_SESSION.md
+
+# Database files
+db/
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.production
+
+# Node modules
+node_modules/
+.next/
+out/
+
+# Build artifacts
+dist/
+build/
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+dev.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Prisma migrations (keep local)
+prisma/migrations/
+
+# Scripts that handle local data
+scripts/import-leads.ts
+scripts/validate-leads.ts
+
+# Intelligence modules (local strategy)
+src/lib/intelligence/funnel/
+src/lib/intelligence/competitive/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Coverage
+coverage/
+
+# Turbo
+.turbo/
+
+# Cache
+.cache/

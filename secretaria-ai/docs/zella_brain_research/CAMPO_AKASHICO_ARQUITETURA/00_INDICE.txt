@@ -1,0 +1,56 @@
+CAMPO AKASHICO ZEHLA — Indice do Acervo
+==========================================
+Data: 11 de junho de 2026
+Autoria: Agente ZEHLA OS — Deep Architecture
+Classificacao: CONFIDENCIAL
+
+CONTEUDO (4 arquivos):
+======================
+
+01_CAMPO_AKASHICO_ARQUITETURA.md
+  → Documento arquitetural completo
+  → 4 camadas: Sutil, Episodica, Fluida, Raiz
+  → Whisper Stream (ingestao real-time)
+  → Ciclo de Cristalizacao (Observar > Perceber > Entender > Agir)
+  → Integracao com 7 Aneis de Consciencia
+  → Integracao com Claude Fable 5
+  → Seguranca: isolamento multi-tenant, encriptacao, audit trail
+  → Performance: latencias <10ms por operacao
+  → Roadmap de implementacao (4 fases, 8 sprints)
+
+02_campo_akashico_core.py
+  → Codigo Python completo e funcional (700+ linhas)
+  → AkashicEpisode, AkashicKnowledge, AkashicPrediction (dataclasses)
+  → CamadaSutil (Redis Streams — <0.5ms)
+  → CamadaEpisodica (SQLite WAL — <5ms, schema completo)
+  → CamadaFluida (Redis Hash — <2ms, working memory)
+  → CamadaRaiz (ChromaDB + NetworkX — <10ms, PPR fusion)
+  → CrystallizationEngine (patterns, anomalies, insights)
+  → CampoAkashico (orchestrador principal)
+  → FastAPI routes (ZCC integration)
+  → Demo standalone (funciona sem Redis real)
+
+03_GUIA_DEPLOY.md
+  → Requisitos e dependencias
+  → Configuracao rapida (.env + FastAPI)
+  → Integracao com Whisper Stream (WhatsApp, Booking, Reviews)
+  → Integracao com A-MEM (notas atomicas)
+  → Integracao com Thompson Sampling (priors reais)
+  → ZCC Dashboard (JavaScript frontend)
+  → Monitoramento (curl commands)
+  → Custos estimados (R$20-50/mes)
+
+NOTA TECNICA IMPORTANTE:
+========================
+O codigo em 02_campo_akashico_core.py foi projetado para integrar
+diretamente com a arquitetura existente do ZEHLA:
+- CADMAS-CTX: Usa os mesmos 32 buckets (0-31)
+- A-MEM: Gera notas atomicas no formato Zettelkasten
+- Thompson Sampling: Realimenta priors com dados reais
+- SQLite WAL: Mesma config (WAL mode, NORMAL sync)
+- Redis: Usa infraestrutura existente do Upstash
+- ChromaDB: Usa instancia local ja existente
+- NetworkX: Usa knowledge graph ja definido no Pilar 4
+
+Para executar o demo standalone:
+  python3 02_campo_akashico_core.py

@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation';
  * Retorna o tenantId do usuário atual ou redireciona se não autorizado.
  */
 export async function requireTenant() {
-  const { userId, orgId } = auth();
+  const { userId, orgId } = await auth();
 
   if (!userId) {
     redirect('/sign-in');

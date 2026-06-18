@@ -1,0 +1,22 @@
+[
+  {"query": "Encontre 20 Engineering Managers na Stripe e organize os perfis.", "should_trigger": true},
+  {"query": "Quero uma lista de desenvolvedores Python que trabalham na Google.", "should_trigger": true},
+  {"query": "Pode enriquecer os e-mails desses 15 perfis que acabamos de encontrar?", "should_trigger": true},
+  {"query": "Rode o motor CGV para avaliar se este candidato é realmente relevante para a vaga.", "should_trigger": true},
+  {"query": "Valide se o engajamento digital deste perfil é real ou se tem seguidores falsos.", "should_trigger": true},
+  {"query": "Busque links do GitHub e LinkedIn para os seguintes nomes.", "should_trigger": true},
+  {"query": "Quantos cargos de VP de Engenharia existem no domínio revolut.com?", "should_trigger": true},
+  {"query": "Execute uma auditoria de adequação comercial para os candidatos da lista.", "should_trigger": true},
+  {"query": "Procure por perfis de recrutadores seniores em São Paulo.", "should_trigger": true},
+  {"query": "Justifique por que o Candidato X é um bom match usando evidências da web.", "should_trigger": true},
+  {"query": "Qual o domínio de e-mail da empresa Softplan?", "should_trigger": false},
+  {"query": "Busque notícias sobre a fusão da Arezzo.", "should_trigger": false},
+  {"query": "Crie um script para fazer deploy na AWS.", "should_trigger": false},
+  {"query": "Quais são as vagas abertas na RD Station no momento?", "should_trigger": false},
+  {"query": "Como eu calculo o ROI de uma campanha?", "should_trigger": false},
+  {"query": "Quem é o CEO da Vale?", "should_trigger": false},
+  {"query": "Escreva um texto de e-mail personalizado para este contato.", "should_trigger": false},
+  {"query": "Valide se o site da Totvs é totvs.com.", "should_trigger": false},
+  {"query": "Me dê a ficha técnica do novo iPhone.", "should_trigger": false},
+  {"query": "Busque lookalikes da Stripe no setor de fintech.", "should_trigger": false}
+]
