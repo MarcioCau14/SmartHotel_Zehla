@@ -7,6 +7,8 @@ import {
   MessageSquare,
   BarChart3,
   ArrowRight,
+  Mail,
+  Building,
 } from 'lucide-react';
 
 const steps = [
@@ -14,8 +16,9 @@ const steps = [
     num: '01',
     icon: UserPlus,
     title: 'Cadastre sua pousada em 5 minutos',
-    desc: 'Informe nome, WhatsApp, endereço e quantidade de quartos. Pronto — o ZEHLA já começa a montar seu perfil inteligente e calibrar a IA com o tom da sua marca. Sem técnico, sem configuração complexa.',
+    desc: 'Informe nome, e-mail, CNPJ (opcional), WhatsApp, endereço e quantidade de quartos. Pronto — o ZÉLLA já começa a montar seu perfil inteligente e calibrar a IA com o tom da sua marca. Sem técnico, sem configuração complexa.',
     color: 'emerald',
+    fields: ['Nome da pousada', 'E-mail principal', 'CNPJ (opcional)', 'WhatsApp oficial', 'Endereço completo', 'Quantidade de quartos'],
   },
   {
     num: '02',
@@ -109,7 +112,24 @@ export function HowItWorksSection() {
                   </div>
 
                   <h3 className="text-white font-bold text-lg mb-3">{step.title}</h3>
-                  <p className="text-neutral-400 text-sm leading-relaxed">{step.desc}</p>
+                  <p className="text-neutral-400 text-sm leading-relaxed mb-5">{step.desc}</p>
+
+                  {/* Form fields for step 1 */}
+                  {step.fields && (
+                    <div className="space-y-2 pt-4 border-t border-white/[0.04]">
+                      {step.fields.map((field, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400/60" />
+                          <span className="text-neutral-500 text-[11px]">{field}</span>
+                        </div>
+                      ))}
+                      <div className="flex items-center gap-2 mt-3 text-emerald-400/80 text-[10px]">
+                        <Mail className="w-3 h-3" />
+                        <Building className="w-3 h-3" />
+                        <span>Cadastro simples e rápido</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             );

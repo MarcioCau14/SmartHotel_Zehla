@@ -51,15 +51,12 @@ export function HeroSection() {
 
             {/* Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold leading-[1.08] text-white mb-6">
-              O zelador da sua pousada que nunca dorme.
+              O zelador da sua <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">pousada 24/7</span>.
             </h1>
 
             {/* Sub */}
             <p className="text-lg text-neutral-400 leading-relaxed mb-8 max-w-xl">
-              O ZEHLA é o{' '}
-              <span className="text-white font-semibold">Sistema Operacional Cognitivo</span> que
-              transforma sua pousada com IA que responde WhatsApp, conquista reservas, ajusta preços
-              e faz seu negócio crescer enquanto você descansa. Comece grátis por 7 dias.
+              O ZÉLLA é um <span className="text-white font-semibold">Sistema Operacional Cognitivo inteligente</span>, capaz de cuidar do seus maiores ativos, seu tempo e seu negócio. Responde suas mensagens no WhatsApp, conquista reservas, ajusta preços e faz seu negócio crescer enquanto você descansa ou curte a família. Comece grátis por 7 dias. Ganhe tempo!
             </p>
 
             {/* CTAs */}
@@ -69,7 +66,7 @@ export function HeroSection() {
                   const el = document.querySelector('#precos');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-[#0a0a0a] font-bold rounded-xl hover:bg-neutral-100 transition-all duration-200 shadow-xl cursor-pointer text-base"
+                className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-xl hover:from-emerald-400 hover:to-emerald-500 transition-all duration-200 shadow-xl shadow-emerald-500/30 cursor-pointer text-base"
               >
                 Começar Grátis — 7 dias
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -114,7 +111,7 @@ export function HeroSection() {
                 <div className="w-3 h-3 rounded-full bg-red-500/80" />
                 <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
                 <div className="w-3 h-3 rounded-full bg-green-500/80" />
-                <span className="text-neutral-600 text-[11px] ml-3 font-mono">ZEHLA Console — Pousada Serenity</span>
+                <span className="text-neutral-600 text-[11px] ml-3 font-mono">ZÉLLA Console — Pousada Serenity</span>
               </div>
 
               {/* Dashboard content */}
@@ -140,6 +137,11 @@ export function HeroSection() {
                     <MessageSquare className="w-4 h-4 text-emerald-400" />
                     <span className="text-white text-xs font-medium">WhatsApp IA — Atendimento em Tempo Real</span>
                     <span className="ml-auto w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  </div>
+                  <div className="flex gap-2.5 justify-end">
+                    <div className="bg-emerald-500/10 rounded-xl rounded-tr-sm px-3 py-2 text-xs text-emerald-300 max-w-[80%]">
+                      Boa noite! Vocês tem disponibilidade para o fim de semana?
+                    </div>
                   </div>
                   <div className="flex gap-2.5">
                     <div className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">

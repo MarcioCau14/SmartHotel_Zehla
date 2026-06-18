@@ -8,7 +8,7 @@ const testimonials = [
   {
     name: 'Ana Claudia M.',
     role: 'Pousada Serenity — Búzios, RJ',
-    text: 'Em 3 semanas o ZEHLA já tinha gerado 47 reservas que eu teria perdido. A IA responde no WhatsApp mais rápido que eu e nunca erra o preço. Meu faturamento subiu 35% no primeiro mês.',
+    text: 'Em 3 semanas o ZÉLLA já tinha gerado 47 reservas que eu teria perdido. A IA responde no WhatsApp mais rápido que eu e nunca erra o preço. Meu faturamento subiu 35% no primeiro mês.',
     rating: 5,
     color: 'emerald',
   },
@@ -80,7 +80,7 @@ export function TestimonialsSection() {
             <span className="text-amber-400">estão dizendo</span>
           </h2>
           <p className="text-neutral-400 text-lg max-w-xl mx-auto">
-            Histórias reais de pousadeiros que transformaram seus negócios com o ZEHLA. Resultados que falam mais alto que qualquer copy.
+            Histórias reais de pousadeiros que transformaram seus negócios com o ZÉLLA. Resultados que falam mais alto que qualquer copy.
           </p>
         </motion.div>
 

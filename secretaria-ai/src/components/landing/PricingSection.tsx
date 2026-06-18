@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, useInView } from 'framer-motion';
 import {
   Check,
@@ -15,6 +16,7 @@ import {
   QrCode,
   Shield,
   Gift,
+  Loader2,
 } from 'lucide-react';
 
 type PaymentMode = 'pix' | 'cartao';
@@ -32,21 +34,19 @@ const plans = [
     pricePix: 0,
     priceCartao: 0,
     priceLabel: 'Grátis',
-    desc: 'Porta de entrada para conhecer o ZEHLA. Ideal para testar antes de assumir.',
+    desc: 'Porta de entrada para conhecer o ZÉLLA. Ideal para testar antes de assumir.',
     cta: 'Começar Trial Grátis',
     ctaStyle: 'border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.06]',
     popular: false,
     features: [
-      { text: '1 pousada cadastrada', included: true },
-      { text: 'Link-in-bio básico (estilo Linktree)', included: true },
-      { text: '5 reservas mensais via IA', included: true },
+      { text: '5 hóspedes atendidos por mês', included: true },
+      { text: 'Link-in-bio básico', included: true },
       { text: '100 mensagens mensais', included: true },
       { text: '7 dias de teste grátis', included: true },
       { text: 'Dashboard básico', included: true },
-      { text: 'Marca d\'água ZEHLA obrigatória', included: true },
+      { text: 'Marca d\'água ZÉLLA obrigatória', included: true },
       { text: 'WhatsApp IA 24/7', included: false },
       { text: 'Preços dinâmicos', included: false },
-      { text: 'Hunter de Leads', included: false },
       { text: 'Suporte prioritário', included: false },
     ],
   },
@@ -54,30 +54,28 @@ const plans = [
     id: 'lite',
     name: 'LITE',
     nameShort: 'Lite',
-    badge: 'Mais Popular',
-    badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+    badge: 'Profissional',
+    badgeColor: 'bg-neutral-500/20 text-neutral-300 border-neutral-500/30',
     icon: Rocket,
-    iconBg: 'from-emerald-500/20 to-emerald-900/10',
-    iconColor: 'text-emerald-400',
+    iconBg: 'from-neutral-500/20 to-neutral-600/10',
+    iconColor: 'text-neutral-400',
     pricePix: 197,
     priceCartao: 247,
     priceLabel: 'R$197',
     desc: 'O pacote ideal para pousadas que querem automatizar vendas e atendimento com IA.',
     cta: 'Assinar LITE via PIX',
-    ctaStyle: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-400 hover:to-emerald-500 shadow-lg shadow-emerald-500/25',
-    popular: true,
+    ctaStyle: 'border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.06]',
+    popular: false,
     features: [
-      { text: 'Até 3 pousadas cadastradas', included: true },
+      { text: '50 hóspedes atendidos por mês', included: true },
       { text: 'Link-in-bio profissional', included: true },
-      { text: '50 reservas mensais via IA', included: true },
       { text: '500 mensagens mensais', included: true },
       { text: 'WhatsApp IA 24/7 com tom personalizado', included: true },
       { text: 'Checkout PIX integrado (Mercado Pago)', included: true },
       { text: 'Dashboard de métricas completo', included: true },
       { text: 'Relatórios semanais por e-mail', included: true },
-      { text: 'Sem marca d\'água ZEHLA', included: true },
+      { text: 'Sem marca d\'água ZÉLLA', included: true },
       { text: 'Preços dinâmicos', included: false },
-      { text: 'Hunter de Leads', included: false },
       { text: 'Suporte prioritário', included: false },
     ],
   },
@@ -85,30 +83,27 @@ const plans = [
     id: 'pro',
     name: 'PRO',
     nameShort: 'Pro',
-    badge: 'Profissional',
-    badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+    badge: 'Mais Popular',
+    badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
     icon: Star,
-    iconBg: 'from-purple-500/20 to-purple-900/10',
-    iconColor: 'text-purple-400',
+    iconBg: 'from-emerald-500/20 to-emerald-900/10',
+    iconColor: 'text-emerald-400',
     pricePix: 397,
     priceCartao: 447,
     priceLabel: 'R$397',
-    desc: 'Para pousadas que querem crescer com prospecção automática e inteligência avançada.',
+    desc: 'Para pousadas que querem crescer com inteligência avançada e recursos premium.',
     cta: 'Assinar PRO via PIX',
-    ctaStyle: 'bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-400 hover:to-purple-500 shadow-lg shadow-purple-500/25',
-    popular: false,
+    ctaStyle: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-400 hover:to-emerald-500 shadow-lg shadow-emerald-500/25',
+    popular: true,
     features: [
-      { text: 'Pousadas ilimitadas', included: true },
+      { text: 'Hóspedes ilimitados', included: true },
       { text: 'Link-in-bio premium com galeria', included: true },
-      { text: 'Reservas IA ilimitadas', included: true },
       { text: 'Mensagens ilimitadas', included: true },
       { text: 'WhatsApp IA com tom 100% personalizado', included: true },
       { text: 'Checkout PIX + Cartão integrado', included: true },
       { text: 'Preços dinâmicos (Cérebro ZÉLLA)', included: true },
-      { text: 'Hunter de Leads automático', included: true },
       { text: 'Campanhas automatizadas', included: true },
       { text: 'Análise de sentimento', included: true },
-      { text: 'ZCC Console completo', included: true },
       { text: 'Suporte prioritário', included: true },
     ],
   },
@@ -130,8 +125,8 @@ const plans = [
     popular: false,
     features: [
       { text: 'Tudo do plano PRO', included: true },
-      { text: 'ZaosNeuroRouter avançado', included: true },
-      { text: 'White label completo (sem marca ZEHLA)', included: true },
+      { text: 'Cérebro ZÉLLA avançado', included: true },
+      { text: 'White label completo (sem marca ZÉLLA)', included: true },
       { text: 'Split de pagamentos automático', included: true },
       { text: 'API dedicada com documentação', included: true },
       { text: 'Integrações customizadas', included: true },
@@ -149,6 +144,56 @@ export function PricingSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const [paymentMode, setPaymentMode] = useState<PaymentMode>('pix');
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleSubscribe = async (planId: string) => {
+    setLoadingPlan(planId);
+
+    try {
+      // Get user info from a simple prompt (in production, this would be a modal form)
+      const email = prompt('Digite seu e-mail para continuar:');
+      const name = prompt('Digite seu nome completo:');
+
+      if (!email || !name) {
+        alert('Por favor, preencha todos os campos.');
+        setLoadingPlan(null);
+        return;
+      }
+
+      const response = await fetch('/api/checkout/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          name,
+          planType: planId,
+          paymentMethod: paymentMode,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        if (data.redirectUrl) {
+          // Redirect to checkout or dashboard
+          window.location.href = data.redirectUrl;
+        } else if (data.checkoutUrl) {
+          // In production, this would redirect to Mercado Pago/Stripe checkout
+          window.location.href = data.checkoutUrl;
+        }
+      } else {
+        alert('Erro ao criar checkout: ' + (data.error || 'Unknown error'));
+        setLoadingPlan(null);
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('Erro ao processar sua solicitação. Tente novamente.');
+      setLoadingPlan(null);
+    }
+  };
 
   return (
     <section ref={ref} id="precos" className="parallax-section parallax-dark py-24 sm:py-32">
@@ -277,9 +322,20 @@ export function PricingSection() {
 
                   {/* CTA */}
                   <button
-                    className={`w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 cursor-pointer ${plan.ctaStyle}`}
+                    onClick={() => handleSubscribe(plan.id)}
+                    disabled={loadingPlan === plan.id}
+                    className={`w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 ${plan.ctaStyle} ${loadingPlan === plan.id ? 'opacity-70 cursor-not-allowed' : ''}`}
                   >
-                    {price === 0 ? 'Começar Trial Grátis' : `Assinar ${plan.nameShort} via ${paymentMode === 'pix' ? 'PIX' : 'Cartão'}`}
+                    {loadingPlan === plan.id ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Processando...
+                      </>
+                    ) : price === 0 ? (
+                      'Começar Trial Grátis'
+                    ) : (
+                      `Assinar ${plan.nameShort} via ${paymentMode === 'pix' ? 'PIX' : 'Cartão'}`
+                    )}
                   </button>
 
                   {/* Divider */}

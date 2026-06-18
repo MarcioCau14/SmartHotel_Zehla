@@ -2,19 +2,10 @@
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Brain, ArrowRight, Monitor, LayoutDashboard, Zap } from 'lucide-react';
-
-const features = [
-  { icon: Brain, label: 'Cérebro ZÉLLA', desc: 'IA que pensa por você' },
-  { icon: Monitor, label: 'ZCC Console', desc: 'Centro de controle total' },
-  { icon: LayoutDashboard, label: 'Dashboard', desc: 'Métricas em tempo real' },
-  { icon: Zap, label: 'Automação', desc: 'Fluxos inteligentes' },
-];
+import { Brain, Zap } from 'lucide-react';
 
 const links = [
   { label: 'Página de Vendas', href: '/' },
-  { label: 'ZCC Console', href: '/zcc' },
-  { label: 'Dashboard', href: '/dashboard' },
   { label: 'Termos de Uso', href: '#' },
   { label: 'Política de Privacidade', href: '#' },
   { label: 'LGPD', href: '#' },
@@ -32,7 +23,7 @@ export function Footer() {
         transition={{ duration: 0.6 }}
         className="max-w-6xl mx-auto"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3 mb-4">
@@ -40,31 +31,13 @@ export function Footer() {
                 <Brain className="w-5 h-5 text-white" />
               </div>
               <div>
-                <span className="font-bold text-white text-lg block leading-none">ZEHLA</span>
+                <span className="font-bold text-white text-lg block leading-none">ZÉLLA</span>
                 <span className="text-[10px] text-neutral-600 font-mono">SmartHotel Cognitive OS</span>
               </div>
             </div>
             <p className="text-neutral-500 text-sm leading-relaxed max-w-xs">
-              Sistema Operacional Cognitivo para Pousadas. IA que transforma hotelaria brasileira com automação inteligente, WhatsApp e preços dinâmicos.
+              Sistema Operacional Cognitivo para Pousadas. IA que transforma hotelaria brasileira com automação inteligente e WhatsApp 24/7.
             </p>
-          </div>
-
-          {/* Features */}
-          <div>
-            <h4 className="text-white text-sm font-semibold mb-4">Módulos</h4>
-            <div className="space-y-3">
-              {features.map((f) => (
-                <div key={f.label} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
-                    <f.icon className="w-4 h-4 text-emerald-400" />
-                  </div>
-                  <div>
-                    <span className="text-neutral-300 text-xs font-medium block">{f.label}</span>
-                    <span className="text-neutral-600 text-[10px]">{f.desc}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* Links */}
@@ -91,7 +64,7 @@ export function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Brain className="w-4 h-4 text-emerald-500/50" />
-            <span className="text-neutral-600 text-xs">&copy; 2026 ZEHLA Technologies. Todos os direitos reservados.</span>
+            <span className="text-neutral-600 text-xs">&copy; 2026 ZÉLLA Technologies. Todos os direitos reservados.</span>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5 text-neutral-600 text-xs">

@@ -71,3 +71,10 @@ coverage/
 
 # Cache
 .cache/
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# Local MCP CLI
+notebooklm-mcp-cli/

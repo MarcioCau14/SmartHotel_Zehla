@@ -15,7 +15,7 @@ const pains = [
   {
     icon: MessageSquare,
     title: 'Perco reservas no WhatsApp',
-    desc: 'Hóspedes perguntam e você não responde a tempo. Cada mensagem sem resposta é dinheiro indo embora. A IA do ZEHLA responde em 2 segundos, 24 horas por dia, com o tom da sua pousada.',
+    desc: 'Hóspedes perguntam e você não responde a tempo. Cada mensagem sem resposta é dinheiro indo embora. A IA do ZÉLLA responde em 2 segundos, 24 horas por dia, com o tom da sua pousada.',
     color: 'emerald',
   },
   {
@@ -27,25 +27,25 @@ const pains = [
   {
     icon: Users,
     title: 'Superlotação ou quartos vazios',
-    desc: 'Uma semana lotada, outra deserta. O ZEHLA prevê demanda com IA, sugere promoções estratégicas e mantém sua ocupação sempre acima de 70%.',
+    desc: 'Uma semana lotada, outra deserta. O ZÉLLA prevê demanda com IA, sugere promoções estratégicas e mantém sua ocupação sempre acima de 70%.',
     color: 'blue',
   },
   {
     icon: BarChart3,
     title: 'Não sei quanto estou faturando',
-    desc: 'Fim de mês chegou e você não sabe se lucrou ou perdeu. O dashboard do ZEHLA mostra em tempo real: ocupação, receita, custo por hóspede e projeção do mês.',
+    desc: 'Fim de mês chegou e você não sabe se lucrou ou perdeu. O dashboard do ZÉLLA mostra em tempo real: ocupação, receita, custo por hóspede e projeção do mês.',
     color: 'amber',
   },
   {
     icon: Clock,
     title: 'Check-in manual e demorado',
-    desc: 'Fila na recepção, formulários em papel, dados errados. O ZEHLA automatiza check-in via WhatsApp e reduz o tempo de 10 minutos para 30 segundos.',
+    desc: 'Fila na recepção, formulários em papel, dados errados. O ZÉLLA automatiza check-in via WhatsApp e reduz o tempo de 10 minutos para 30 segundos.',
     color: 'pink',
   },
   {
     icon: AlertTriangle,
     title: 'Planilhas para tudo',
-    desc: 'Reservas no WhatsApp, contabilidade no caderno, check-in no papel. O ZEHLA centraliza tudo: reservas, pagamentos, check-in e métricas num único painel inteligente.',
+    desc: 'Reservas no WhatsApp, contabilidade no caderno, check-in no papel. O ZÉLLA centraliza tudo: reservas, pagamentos, check-in e métricas num único painel inteligente.',
     color: 'red',
   },
 ];
@@ -77,7 +77,7 @@ export function PainPointsSection() {
             Você se identifica com alguma dessas situações?
           </h2>
           <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
-            Se respondeu sim para pelo menos uma, o ZEHLA foi feito para resolver exatamente isso. Sem complicação, sem jargão técnico — só resultado.
+            Se respondeu sim para pelo menos uma, o ZÉLLA foi feito para resolver exatamente isso. Sem complicação, sem jargão técnico — só resultado.
           </p>
         </motion.div>
 

@@ -6,8 +6,8 @@ import { ChevronDown, HelpCircle } from 'lucide-react';
 
 const faqs = [
   {
-    q: 'Preciso de conhecimento técnico para usar o ZEHLA?',
-    a: 'Nenhum. O ZEHLA foi projetado para donos de pousada que não sabem programar nem configurar sistemas complexos. O cadastro leva 5 minutos, a IA já vem calibrada e tudo funciona pelo WhatsApp que você já usa. Se você sabe enviar mensagem no WhatsApp, sabe usar o ZEHLA.',
+    q: 'Preciso de conhecimento técnico para usar o ZÉLLA?',
+    a: 'Nenhum. O ZÉLLA foi projetado para donos de pousada que não sabem programar nem configurar sistemas complexos. O cadastro leva 5 minutos, a IA já vem calibrada e tudo funciona pelo WhatsApp que você já usa. Se você sabe enviar mensagem no WhatsApp, sabe usar o ZÉLLA.',
   },
   {
     q: 'Como funciona o período de teste grátis?',
@@ -23,14 +23,14 @@ const faqs = [
   },
   {
     q: 'O que é o Mercado Pago e por que usam esse gateway?',
-    a: 'Mercado Pago é o gateway de pagamento oficial do ZEHLA. Escolhemos por ter a menor taxa do mercado para PIX (0,99%) e suporte nativo a split de pagamentos. Isso significa que quando um hóspede paga, o dinheiro vai direto para sua conta, sem intermediários. Para cartões internacionais, mantemos o Stripe como alternativa futura.',
+    a: 'Mercado Pago é o gateway de pagamento oficial do ZÉLLA. Escolhemos por ter a menor taxa do mercado para PIX (0,99%) e suporte nativo a split de pagamentos. Isso significa que quando um hóspede paga, o dinheiro vai direto para sua conta, sem intermediários. Para cartões internacionais, mantemos o Stripe como alternativa futura.',
   },
   {
     q: 'O que é a Oferta Fundador e como posso participar?',
-    a: 'A Oferta Fundador é um programa exclusivo para as primeiras 5 a 10 pousadas parceiras. Você paga R$0 no primeiro mês, recebe onboarding personalizado e, após o período de validação, sua mensalidade congela em R$197/mês (plano LITE) com acesso a funcionalidades do plano PRO — para sempre. É a condição mais vantajosa que o ZEHLA vai oferecer.',
+    a: 'A Oferta Fundador é um programa exclusivo para as primeiras 5 a 10 pousadas parceiras. Você paga R$0 no primeiro mês, recebe onboarding personalizado e, após o período de validação, sua mensalidade congela em R$197/mês (plano LITE) com acesso a funcionalidades do plano PRO — para sempre. É a condição mais vantajosa que o ZÉLLA vai oferecer.',
   },
   {
-    q: 'Meus dados estão seguros com o ZEHLA?',
+    q: 'Meus dados estão seguros com o ZÉLLA?',
     a: 'Totalmente. Todos os dados são criptografados em trânsito e em repouso. Somos LGPD compliant, com políticas de privacidade transparentes. A infraestrutura inclui Circuit Breaker (proteção contra falhas), Budget Guard (controle de gastos) e monitoramento 24/7. Seus dados de clientes e reservas estão protegidos com padrão enterprise.',
   },
   {

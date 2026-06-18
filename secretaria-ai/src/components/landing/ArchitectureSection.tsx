@@ -5,7 +5,7 @@ import { Brain, Shield, Cpu, Database, MessageCircle, Globe, Lock, Zap } from 'l
 
 const archNodes = [
   { icon: MessageCircle, label: 'WhatsApp API', desc: 'Evolution API', color: 'text-green-400' },
-  { icon: Brain, label: 'ZEHLA Brain', desc: 'Orquestrador Cognitivo', color: 'text-emerald-400' },
+  { icon: Brain, label: 'ZÉLLA Brain', desc: 'Orquestrador Cognitivo', color: 'text-emerald-400' },
   { icon: Shield, label: 'Guardian', desc: 'Segurança & Compliance', color: 'text-purple-400' },
   { icon: Cpu, label: 'Agent Fleet', desc: '8 Agentes IA Especializados', color: 'text-cyan-400' },
   { icon: Database, label: 'ZDR', desc: 'Zero-Trust Data Router', color: 'text-amber-400' },

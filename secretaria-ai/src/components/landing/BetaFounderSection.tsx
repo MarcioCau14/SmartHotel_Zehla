@@ -18,7 +18,7 @@ export function BetaFounderSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} id="oferta-fundador" className="py-24 sm:py-32 relative overflow-hidden">
+    <section ref={ref} id="oferta-parceiro" className="py-24 sm:py-32 relative overflow-hidden">
       {/* Background glow */}
       <div className="absolute inset-0 bg-gradient-to-b from-amber-500/[0.03] via-amber-500/[0.06] to-transparent" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-10 blur-[100px] bg-gradient-to-br from-amber-500 to-orange-600" />
@@ -39,11 +39,11 @@ export function BetaFounderSection() {
             <div className="flex flex-wrap items-center gap-3 mb-8">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/30">
                 <Flame className="w-3.5 h-3.5 text-amber-400" />
-                <span className="text-amber-300 text-xs font-bold uppercase tracking-wider">Oferta Fundador</span>
+                <span className="text-amber-300 text-xs font-bold uppercase tracking-wider">Oferta Parceiro</span>
               </div>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/20 border border-red-500/30">
                 <Clock className="w-3.5 h-3.5 text-red-400" />
-                <span className="text-red-300 text-xs font-bold">Vagas Limitadas — 5 a 10 pousadas</span>
+                <span className="text-red-300 text-xs font-bold">Vagas Limitadas — 100 pousadas</span>
               </div>
             </div>
 
@@ -51,13 +51,11 @@ export function BetaFounderSection() {
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
               Programa Beta:
               <br />
-              <span className="text-amber-400">Seja um Fundador do ZEHLA</span>
+              <span className="text-amber-400">Seja um Parceiro do ZÉLLA</span>
             </h2>
 
             <p className="text-neutral-400 text-lg max-w-2xl mb-10 leading-relaxed">
-              Você foi selecionado para o grupo exclusivo de <strong className="text-white">5 a 10 pousadas amigas</strong> que
-              vão moldar o futuro do ZEHLA. Como agradecimento, oferecemos condições que nunca mais serão repetidas.
-              Esta é a sua chance de entrar no nível mais alto pagando o mínimo possível — e manter esse preço para sempre.
+              Você foi escolhido para o seleto grupo exclusivo de <strong className="text-white">100 pousadas parceiras</strong> em todo o Brasil. Como agradecimento, oferecemos condições que nunca mais serão repetidas. Esta é a sua chance de entrar no nível PRO pagando o mínimo possível — e manter esse preço para sempre com o pacote PRO. Assim que completarmos 100 parceiros vamos fechar esse grupo seleto!
             </p>
 
             {/* Benefits Grid */}
@@ -73,7 +71,7 @@ export function BetaFounderSection() {
                   </div>
                 </div>
                 <p className="text-neutral-500 text-xs leading-relaxed">
-                  Comece a usar o ZEHLA sem pagar nada no primeiro mês. Aproveite para configurar tudo, testar a IA e ver resultados reais antes de qualquer cobrança.
+                  Comece a usar o ZÉLLA sem pagar nada no primeiro mês. Aproveite para configurar tudo, testar a IA e ver resultados reais antes de qualquer cobrança.
                 </p>
               </div>
 
@@ -96,11 +94,11 @@ export function BetaFounderSection() {
             {/* Extra perks */}
             <div className="flex flex-wrap gap-3 mb-10">
               {[
-                'Status BETA_TESTER no sistema',
+                'Status PARCEIRO no sistema',
                 'Acesso antecipado a todos os recursos',
                 'Feedback direto com o fundador',
                 'Onboarding personalizado',
-                'Badge exclusivo de Fundador',
+                'Badge exclusivo de Parceiro',
                 'Suporte VIP desde o dia 1',
               ].map((perk) => (
                 <div key={perk} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06]">
@@ -114,7 +112,7 @@ export function BetaFounderSection() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <button className="group flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl hover:from-amber-400 hover:to-orange-400 transition-all duration-300 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 cursor-pointer">
                 <Sparkles className="w-5 h-5" />
-                Quero ser Fundador
+                Quero ser Parceiro
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
               <p className="text-neutral-600 text-xs">

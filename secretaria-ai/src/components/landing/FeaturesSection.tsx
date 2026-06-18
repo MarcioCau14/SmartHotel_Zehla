@@ -4,11 +4,7 @@ import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import {
   MessageSquare,
-  TrendingUp,
-  Bot,
-  CreditCard,
   Wifi,
-  Shield,
   Check,
 } from 'lucide-react';
 
@@ -17,54 +13,18 @@ const features = [
     icon: MessageSquare,
     title: 'WhatsApp Inteligente com IA',
     subtitle: 'Atendimento que vende 24/7',
-    desc: 'Respostas automáticas em português natural que vendem, reservam e encantam. A IA do ZEHLA entende contexto, negoceia preços e converte curiosos em hóspedes — tudo pelo WhatsApp que seu cliente já usa.',
-    highlights: ['Resposta em 2 segundos', '24/7 sem pausas', 'Tom personalizado', 'Gera PIX automaticamente'],
+    desc: 'Respostas automáticas em português natural que vendem, reservam e encantam. A IA do ZÉLLA entende contexto, negoceia preços e converte curiosos em hóspedes — tudo pelo WhatsApp que seu cliente já usa.',
+    highlights: ['Resposta em 2 segundos', '24/7 sem pausas', 'Tom personalizado', 'Gera PIX automaticamente', 'Notificações dos seus recebimentos', 'Notificações em tempo real de Check-in e Check-out'],
     mockup: 'whatsapp',
     reverse: false,
   },
   {
-    icon: TrendingUp,
-    title: 'Preços Dinâmicos Automáticos',
-    subtitle: 'Cérebro ZÉLLA',
-    desc: 'Analisa demanda, sazonalidade e concorrência para ajustar preços em tempo real. Sem mais deixar dinheiro na mesa: feriado lotado? Preço sobe. Terça vazia? Promoção estratégica.',
-    highlights: ['Thompson Sampling', 'Demand forecasting', '+35% receita média', 'Roteamento inteligente'],
-    mockup: 'pricing',
-    reverse: true,
-  },
-  {
-    icon: Bot,
-    title: 'Hunter de Leads Automático',
-    subtitle: 'Prospecte enquanto dorme',
-    desc: 'O ZEHLA encontra pousadas que precisam dos seus serviços e inicia conversas qualificadas automaticamente. IA que prospecta, qualifica e converte enquanto você foca no que importa.',
-    highlights: ['Prospecção automática', 'Qualificação IA', 'Swipe Templates', 'Campanhas automatizadas'],
-    mockup: 'hunter',
-    reverse: false,
-  },
-  {
-    icon: CreditCard,
-    title: 'PIX & Pagamentos Integrados',
-    subtitle: 'Mercado Pago Oficial',
-    desc: 'Checkout pelo WhatsApp com PIX gerado automaticamente. Receba em segundos com confirmação instantânea. Gateway Mercado Pago com taxa de apenas 0,99% no PIX e split automático.',
-    highlights: ['Taxa PIX 0,99%', 'Split automático', 'Confirmação instantânea', 'Checkout no chat'],
-    mockup: 'payment',
-    reverse: true,
-  },
-  {
     icon: Wifi,
     title: 'Link-in-Bio Profissional',
-    subtitle: 'Estilo Linktree para sua pousada',
-    desc: 'Galeria, reservas, avaliações e contato — tudo num link único. Coloque na bio do Instagram e transforme seguidores em hóspedes pagantes.',
-    highlights: ['Galeria integrada', 'SEO otimizado', 'Reservas diretas', 'Análise de tráfego'],
+    subtitle: 'Sua vitrine digital completa',
+    desc: 'Galeria, reservas, avaliações e contato — tudo num link único. Coloque na bio do Instagram e transforme seguidores em hóspedes pagantes. Um perfil profissional completo com visual premium.',
+    highlights: ['Galeria integrada', 'SEO otimizado', 'Reservas diretas', 'Análise de tráfego', 'Visual profissional', 'Perfil personalizado'],
     mockup: 'linkinbio',
-    reverse: false,
-  },
-  {
-    icon: Shield,
-    title: 'Segurança & Conformidade',
-    subtitle: 'Proteção enterprise',
-    desc: 'Dados criptografados, LGPD compliant, Circuit Breaker para proteção contra falhas e Budget Guard que controla gastos com IA.',
-    highlights: ['LGPD compliant', 'Circuit Breaker', 'Budget Guard', 'SLA 99.9%'],
-    mockup: 'security',
     reverse: true,
   },
 ];
@@ -80,8 +40,9 @@ function FeatureMockup({ type }: { type: string }) {
           <span className="text-white text-xs font-medium">Pousada Serenity — 3 conversas ativas</span>
         </div>
         {[
-          { from: 'bot', msg: 'Boa noite! Somos a Pousada Serenity. Temos suítes disponíveis para o final de semana. Posso verificar datas para você?' },
-          { from: 'guest', msg: 'Olá! Quero para 2 pessoas, sexta e sábado' },
+          { from: 'guest', msg: 'Boa noite! Vocês tem disponibilidade para o fim de semana?' },
+          { from: 'bot', msg: 'Olá! Seja bem-vindo à Pousada Serenity. Tenho suítes disponíveis de 15 a 18 de junho. Qual a melhor data para você?' },
+          { from: 'guest', msg: 'Para 2 pessoas, sexta e sábado' },
           { from: 'bot', msg: 'Perfeito! Temos o Chalé Vista Mar por R$520 (PIX) ou R$580 (cartão 3x). Inclui café da manhã. Deseja reservar?' },
           { from: 'guest', msg: 'Quero! Gera o PIX pra mim' },
           { from: 'bot', msg: 'PIX gerado: R$520,00. Você também pode pagar em 3x de R$193,33 no cartão. A reserva é confirmada automaticamente após o pagamento!' },
@@ -89,7 +50,7 @@ function FeatureMockup({ type }: { type: string }) {
           <div key={i} className={`flex gap-2 ${chat.from === 'guest' ? 'justify-end' : ''}`}>
             {chat.from === 'bot' && (
               <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                <Bot className="w-3 h-3 text-emerald-400" />
+                <MessageSquare className="w-3 h-3 text-emerald-400" />
               </div>
             )}
             <div className={`rounded-xl px-3 py-2 text-[11px] max-w-[85%] ${
@@ -105,115 +66,58 @@ function FeatureMockup({ type }: { type: string }) {
     );
   }
 
-  if (type === 'pricing') {
-    return (
-      <div className="bg-[#111] rounded-2xl border border-white/[0.06] p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-white text-xs font-medium">Preços Dinâmicos — Cérebro ZÉLLA</span>
-          <span className="text-emerald-400 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10">Ativo</span>
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { room: 'Chalé Premium', orig: 'R$350', new: 'R$480', up: '+37%', active: true },
-            { room: 'Suíte Standard', orig: 'R$200', new: 'R$200', up: '0%', active: false },
-            { room: 'Suíte Deluxe', orig: 'R$280', new: 'R$340', up: '+21%', active: true },
-          ].map((r) => (
-            <div key={r.room} className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.05]">
-              <div className="text-neutral-400 text-[10px] mb-1">{r.room}</div>
-              <div className={`text-sm font-bold ${r.active ? 'text-emerald-400' : 'text-neutral-400'}`}>{r.new}</div>
-              {r.active && (
-                <div className="flex items-center gap-1 mt-1">
-                  <span className="text-neutral-600 text-[9px] line-through">{r.orig}</span>
-                  <span className="text-emerald-400 text-[9px] font-medium">{r.up}</span>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-        <div className="text-[10px] text-neutral-500 text-center">Demanda prevista: Alta — Feriado prolongado</div>
-      </div>
-    );
-  }
-
-  if (type === 'hunter') {
-    return (
-      <div className="bg-[#111] rounded-2xl border border-white/[0.06] p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-white text-xs font-medium">Hunter de Leads — Executando</span>
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-        </div>
-        <div className="space-y-2">
-          {[
-            { name: 'Pousada Estrela do Mar', loc: 'Florianópolis, SC', status: 'Qualificado', statusColor: 'text-emerald-400' },
-            { name: 'Chalés Serra Gaúcha', loc: 'Canela, RS', status: 'Contatando...', statusColor: 'text-amber-400' },
-            { name: 'Eco Pousada Tiradentes', loc: 'Tiradentes, MG', status: 'Lead novo', statusColor: 'text-blue-400' },
-          ].map((lead) => (
-            <div key={lead.name} className="flex items-center justify-between p-2.5 bg-white/[0.02] rounded-lg border border-white/[0.04]">
-              <div>
-                <div className="text-white text-[11px] font-medium">{lead.name}</div>
-                <div className="text-neutral-600 text-[9px]">{lead.loc}</div>
-              </div>
-              <span className={`text-[10px] font-medium ${lead.statusColor}`}>{lead.status}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (type === 'payment') {
-    return (
-      <div className="bg-[#111] rounded-2xl border border-white/[0.06] p-4 space-y-3">
-        <div className="text-white text-xs font-medium mb-2">Checkout — Mercado Pago</div>
-        <div className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.05] text-center">
-          <div className="text-neutral-500 text-[10px]">Reserva #4821 — Chalé Premium</div>
-          <div className="text-2xl font-bold text-white my-1">R$480,00</div>
-          <div className="text-emerald-400 text-[10px] font-medium">PIX — Confirmação instantânea</div>
-        </div>
-        <div className="bg-emerald-500/5 rounded-lg p-2 border border-emerald-500/15 text-center">
-          <div className="text-emerald-400 text-[10px] font-bold">Pagamento Confirmado</div>
-          <div className="text-neutral-500 text-[9px]">em 1.2s via Mercado Pago</div>
-        </div>
-      </div>
-    );
-  }
-
   if (type === 'linkinbio') {
     return (
       <div className="bg-[#111] rounded-2xl border border-white/[0.06] p-4 space-y-3">
-        <div className="text-white text-xs font-medium mb-2">Link-in-Bio — @pousadaserenity</div>
+        {/* Profile header */}
+        <div className="flex items-center gap-3 pb-3 border-b border-white/[0.04]">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
+            <Wifi className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex-1">
+            <div className="text-white text-sm font-bold">Pousada Serenity</div>
+            <div className="text-neutral-500 text-[10px]">✨ Sua casa na natureza</div>
+            <div className="text-emerald-400 text-[10px] mt-0.5">@pousadaserenity</div>
+          </div>
+        </div>
+
+        {/* Links */}
         <div className="space-y-2">
-          {['Reservar Agora', 'Galeria de Fotos', 'Avaliações', 'Como Chegar', 'WhatsApp'].map((link, i) => (
-            <div key={link} className={`p-2.5 rounded-lg text-[11px] text-white font-medium text-center cursor-default ${
-              i === 0 ? 'bg-emerald-500/20 border border-emerald-500/30' : 'bg-white/[0.04] border border-white/[0.06]'
+          {[
+            { label: 'Reservar Agora', highlight: true, icon: '🏡' },
+            { label: 'Galeria de Fotos', highlight: false, icon: '📸' },
+            { label: 'Avaliações', highlight: false, icon: '⭐' },
+            { label: 'Como Chegar', highlight: false, icon: '📍' },
+            { label: 'WhatsApp', highlight: false, icon: '💬' },
+          ].map((link, i) => (
+            <div key={link.label} className={`p-3 rounded-xl text-[11px] text-white font-medium text-center cursor-default flex items-center justify-center gap-2 ${
+              link.highlight
+                ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 border border-emerald-500/30 shadow-lg shadow-emerald-500/20'
+                : 'bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] transition-colors'
             }`}>
-              {link}
+              <span>{link.icon}</span>
+              {link.label}
+              {link.highlight && <Check className="w-3.5 h-3.5 ml-1" />}
+            </div>
+          ))}
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/[0.04]">
+          {[
+            { label: '4.9', sub: 'Avaliação' },
+            { label: '500+', sub: 'Hóspedes' },
+            { label: '100%', sub: 'Satisfação' },
+          ].map((stat) => (
+            <div key={stat.label} className="text-center">
+              <div className="text-emerald-400 text-xs font-bold">{stat.label}</div>
+              <div className="text-neutral-600 text-[9px]">{stat.sub}</div>
             </div>
           ))}
         </div>
       </div>
     );
   }
-
-  // security
-  return (
-    <div className="bg-[#111] rounded-2xl border border-white/[0.06] p-4 space-y-3">
-      <div className="text-white text-xs font-medium mb-2">Segurança & Monitoramento</div>
-      <div className="grid grid-cols-2 gap-2">
-        {[
-          { label: 'Circuit Breaker', val: 'CLOSED', color: 'text-emerald-400' },
-          { label: 'Budget Guard', val: 'R$47/mês', color: 'text-blue-400' },
-          { label: 'Uptime', val: '99.97%', color: 'text-emerald-400' },
-          { label: 'LGPD', val: 'Compliant', color: 'text-purple-400' },
-        ].map((s) => (
-          <div key={s.label} className="bg-white/[0.03] rounded-lg p-2.5 border border-white/[0.05]">
-            <div className="text-neutral-500 text-[9px]">{s.label}</div>
-            <div className={`text-xs font-bold ${s.color}`}>{s.val}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 export function FeaturesSection() {
@@ -231,10 +135,10 @@ export function FeaturesSection() {
           className="text-center mb-20"
         >
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4">
-            Core features
+            Funcionalidades que transformam
           </h2>
           <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
-            O ZEHLA é cheio de funcionalidades inovadoras. Estas são as mais importantes para sua pousada decolar.
+            O ZÉLLA é cheio de funcionalidades inovadoras. Estas são as mais importantes para sua pousada decolar.
           </p>
         </motion.div>
 

@@ -38,11 +38,11 @@ export function FinalCTASection() {
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight">
             Sua pousada merece
             <br />
-            <span className="gradient-text">inteligência artificial</span>
+            <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">um Zelador 24 por 7</span>
           </h2>
 
           <p className="text-neutral-400 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            Enquanto você lê isso, concorrentes estão perdendo reservas no WhatsApp. O ZEHLA coloca sua pousada no piloto automático — IA que vende, atende e otimiza 24 horas por dia. Comece grátis e veja resultados em 48 horas.
+            Enquanto você lê isso, sua concorrência está somando reservas no WhatsApp. O ZÉLLA coloca sua pousada no piloto automático — Ele vende, atende e otimiza 24 horas por dia. Comece grátis e veja resultados em 48 horas.
           </p>
 
           {/* CTAs */}
@@ -61,12 +61,12 @@ export function FinalCTASection() {
             </button>
             <button
               onClick={() => {
-                const el = document.querySelector('#oferta-fundador');
+                const el = document.querySelector('#como-funciona');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="px-8 py-4 rounded-xl border border-amber-500/20 bg-amber-500/5 text-amber-300 font-semibold hover:bg-amber-500/10 hover:border-amber-500/30 transition-all duration-300 cursor-pointer"
+              className="px-8 py-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-emerald-300 font-semibold hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-all duration-300 cursor-pointer"
             >
-              Quero ser Fundador
+              Quero ser Parceiro
             </button>
           </div>
 
