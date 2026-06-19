@@ -25,10 +25,9 @@ export default function HomePage() {
       <PainPointsSection />
       <FeaturesSection />
       <HowItWorksSection />
+      <BookingPlatformsMarquee />
       <SavingsCalculator />
       <TestimonialsSection />
-
-      <BookingPlatformsMarquee />
       <SecuritySection />
 
       <BetaFounderSection />
