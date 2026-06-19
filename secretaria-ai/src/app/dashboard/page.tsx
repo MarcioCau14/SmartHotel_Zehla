@@ -550,9 +550,9 @@ export default function DashboardPage() {
   const activeCapabilities = Object.values(caps).filter(Boolean).length;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* ─── Header ─── */}
-      <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/20 border border-emerald-500/30">
