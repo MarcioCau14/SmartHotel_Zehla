@@ -303,3 +303,31 @@ npx tsc --noEmit
 1. **Simulação de Custo Limite (BudgetGuard):** Forçar o orçamento simulado a 96% e validar no terminal se a IA redireciona todas as chamadas para a regra de negócio local (Tier 1).
 2. **Dry-run do Cron:** Rodar manualmente o script de auto-atualização de contexto e inspecionar a formatação markdown do arquivo gerado `/docs/ZEHLA_CORE_COMPRESSED_CONTEXT.md`.
 3. **Inspeção de Logs de Thompson Sampling:** Validar se os updates de sucesso/falha do roteador estão incrementando corretamente os parâmetros $\alpha$ e $\beta$ na base de dados SQLite/Postgres.
+
+---
+
+## 7. CRONOGRAMA DE TRABALHO IMUTÁVEL (3 SEMANAS)
+
+Este cronograma foi acordado diretamente com o usuário e estabelece a sequência cronológica obrigatória para a finalização, validação e ativação da plataforma ZEHLA.
+
+### SEMANA 1 - FINALIZAÇÃO
+- **Dia 1-2:** Baixar arquivos DDC, integrar no projeto local
+- **Dia 2-3:** Usuário cria o seed script do banco (dados iniciais)
+- **Dia 3-4:** Usuário gera o GitHub Actions YAML
+- **Dia 4-5:** Agente configura ambiente, roda localmente
+- **Dia 5:** Revisão visual completa do DDC e ZCC
+
+### SEMANA 2 - VALIDAÇÃO
+- **Dia 1-2:** Testes manuais de todos os fluxos
+- **Dia 2-3:** Ajustes finos (usuário faz localmente/repositório, agente baixa)
+- **Dia 3-4:** Configuração da API do WhatsApp Cloud (agente)
+- **Dia 4-5:** Deploy em ambiente de staging na Vercel/Railway (agente)
+- **Dia 5:** Testes em staging
+
+### SEMANA 3 - ATIVAÇÃO
+- **Dia 1:** Deploy em ambiente de produção
+- **Dia 2:** Configuração de DNS + ativação de SSL
+- **Dia 3:** Integração e onboarding dos primeiros clientes reais (beta testers)
+- **Dia 4-5:** Monitoramento e pequenos ajustes pós-launch
+- **Dia 5:** 🟢 ZEHLA OFICIALMENTE AO VIVO E EM PRODUÇÃO (LIVE)
+
