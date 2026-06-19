@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Define pricing
-    const pricing = {
+    const pricing: Record<string, number> = {
       gratuito: 0,
       lite: paymentMethod === 'pix' ? 197 : 247,
       pro: paymentMethod === 'pix' ? 397 : 447,
@@ -43,7 +43,6 @@ export async function POST(request: NextRequest) {
         data: {
           email,
           name,
-          role: 'client'
         }
       });
     }
@@ -59,50 +58,28 @@ export async function POST(request: NextRequest) {
           name,
           email,
           passwordHash: '', // Will be set after registration
-          plan: 'trial',
-          status: 'active',
+          plan: planType === 'gratuito' ? 'trial' : planType,
+          status: 'pending',
           trialStart: new Date(),
           trialEnd: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-          userId: user.id
         }
       });
     }
 
-    // Create subscription
-    const subscription = await db.subscription.create({
-      data: {
-        tenantId: tenant.id,
-        planType,
-        status: 'pending',
-        paymentMethod,
-        amount,
-        paymentStatus: 'pending',
-        trialStart: planType === 'gratuito' ? new Date() : null,
-        trialEnd: planType === 'gratuito' ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) : null,
-      }
-    });
-
     // For free plan, activate immediately and redirect to dashboard
     if (planType === 'gratuito') {
-      await db.subscription.update({
-        where: { id: subscription.id },
-        data: {
-          status: 'active',
-          paymentStatus: 'approved'
-        }
-      });
-
       await db.tenant.update({
         where: { id: tenant.id },
         data: {
           plan: 'trial',
+          status: 'active',
           subscriptionAt: new Date()
         }
       });
 
       return NextResponse.json({
         success: true,
-        subscriptionId: subscription.id,
+        tenantId: tenant.id,
         redirectUrl: '/dashboard',
         message: 'Trial iniciado com sucesso!'
       });
@@ -110,11 +87,11 @@ export async function POST(request: NextRequest) {
 
     // For paid plans, return checkout details
     // In production, this would integrate with Mercado Pago/Stripe APIs
-    const mockCheckoutUrl = `/checkout/success?subscription_id=${subscription.id}`;
+    const mockCheckoutUrl = `/checkout/success?tenant_id=${tenant.id}`;
 
     return NextResponse.json({
       success: true,
-      subscriptionId: subscription.id,
+      tenantId: tenant.id,
       checkoutUrl: mockCheckoutUrl,
       amount,
       paymentMethod,

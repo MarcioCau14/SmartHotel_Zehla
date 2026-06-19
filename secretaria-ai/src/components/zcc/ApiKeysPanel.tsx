@@ -33,7 +33,7 @@ interface ProviderConfig {
   notes: string;
 }
 
-const PROVIDER_INFO: Record<string, { name: string; icon: string; color: string; tier: string; url: string; docsUrl: string; defaultModel: string }> = {
+const PROVIDER_INFO: Record<string, { name: string; icon: string; color: string; tier: string; url: string; docsUrl: string; defaultModel: string; notes?: string }> = {
   zai_sdk: {
     name: 'Z.ai Web SDK',
     icon: '⚡',
