@@ -10,7 +10,7 @@ import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
 
 import BookingPlatformsMarquee from '@/components/landing/BookingPlatformsMarquee';
 import { SecuritySection } from '@/components/landing/SecuritySection';
-import { IntegrationsSection } from '@/components/landing/IntegrationsSection';
+
 import { BetaFounderSection } from '@/components/landing/BetaFounderSection';
 import { PricingSection } from '@/components/landing/PricingSection';
 import { FAQSection } from '@/components/landing/FAQSection';
@@ -30,7 +30,7 @@ export default function HomePage() {
 
       <BookingPlatformsMarquee />
       <SecuritySection />
-      <IntegrationsSection />
+
       <BetaFounderSection />
       <PricingSection />
       <FAQSection />
