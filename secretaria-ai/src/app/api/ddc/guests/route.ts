@@ -1,113 +1,92 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { Guest, GuestFilters } from '@/types/ddc';
-import { mockGuests } from '@/lib/ddc/mock-data';
+import { db } from '@/lib/db';
+import { resolveTenantId } from '@/lib/ddc/auth-utils';
+
+function mapGuest(g: any) {
+  return {
+    id: g.id,
+    name: g.name,
+    phoneNumber: g.phone,
+    email: g.email,
+    status: g.status === 'new' || g.status === 'inactive' ? 'cold' as const
+      : g.status === 'booked' || g.status === 'staying' || g.status === 'checked_out' ? 'closed' as const
+      : (g.status as 'hot' | 'warm' | 'cold' | 'closed' | 'lost'),
+    score: g.aiScore,
+    propertyId: g.tenantId,
+    lastMessage: g.notes || undefined,
+    messageCount: g.conversationCount,
+    value: g.value,
+    createdAt: g.createdAt,
+    updatedAt: g.updatedAt,
+  };
+}
 
 export async function GET(request: NextRequest) {
   try {
+    const tenantId = await resolveTenantId();
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status');
     const scoreMin = searchParams.get('scoreMin');
     const scoreMax = searchParams.get('scoreMax');
     const search = searchParams.get('search');
 
-    // Filter guests based on query params
-    let filteredGuests = [...mockGuests];
-
-    if (status) {
-      filteredGuests = filteredGuests.filter(g => g.status === status);
-    }
-
-    if (scoreMin) {
-      filteredGuests = filteredGuests.filter(g => (g.score ?? 0) >= parseInt(scoreMin));
-    }
-
-    if (scoreMax) {
-      filteredGuests = filteredGuests.filter(g => (g.score ?? 0) <= parseInt(scoreMax));
-    }
-
+    const where: any = { tenantId };
+    if (status) where.status = status;
+    if (scoreMin) where.aiScore = { ...where.aiScore, gte: parseInt(scoreMin) };
+    if (scoreMax) where.aiScore = { ...where.aiScore, lte: parseInt(scoreMax) };
     if (search) {
-      const searchLower = search.toLowerCase();
-      filteredGuests = filteredGuests.filter(g =>
-        g.name.toLowerCase().includes(searchLower) ||
-        (g.phoneNumber || g.phone || '').includes(search) ||
-        g.email?.toLowerCase().includes(searchLower)
-      );
+      where.OR = [
+        { name: { contains: search } },
+        { phone: { contains: search } },
+        { email: { contains: search } },
+      ];
     }
 
+    const guests = await db.guest.findMany({ where, orderBy: { lastContact: 'desc' } });
     return NextResponse.json({
       success: true,
       data: {
-        items: filteredGuests,
-        total: filteredGuests.length,
+        items: guests.map(mapGuest),
+        total: guests.length,
         page: 1,
-        limit: filteredGuests.length,
-        totalPages: 1
+        limit: guests.length,
+        totalPages: 1,
       }
     });
   } catch (error) {
-    console.error('Error fetching guests:', error);
+    console.error('[DDC guests] Prisma error:', error);
     return NextResponse.json({
-      success: false,
-      error: {
-        code: '500',
-        message: 'Failed to fetch guests',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      }
-    }, { status: 500 });
+      success: true,
+      data: { items: [], total: 0, page: 1, limit: 0, totalPages: 0 }
+    });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const tenantId = await resolveTenantId();
     const body = await request.json();
-
-    // Validate required fields
     if (!body.name || !body.phoneNumber) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: '400',
-          message: 'Missing required fields: name and phoneNumber'
-        }
-      }, { status: 400 });
+      return NextResponse.json({ success: false, error: { code: '400', message: 'Missing required fields: name and phoneNumber' } }, { status: 400 });
     }
-
-    // Create new guest
-    const newGuest: Guest = {
-      id: `guest-${Date.now()}`,
-      name: body.name,
-      phoneNumber: body.phoneNumber,
-      email: body.email,
-      status: body.status || 'new',
-      score: body.score || 50,
-      propertyId: body.propertyId || 'prop-001',
-      lastMessage: body.lastMessage,
-      messageCount: body.messageCount || 0,
-      value: body.value || 0,
-      source: body.source || 'WhatsApp',
-      notes: body.notes,
-      checkIn: body.checkIn ? new Date(body.checkIn) : undefined,
-      checkOut: body.checkOut ? new Date(body.checkOut) : undefined,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-
-    // In a real implementation, this would save to database
-    mockGuests.unshift(newGuest);
-
-    return NextResponse.json({
-      success: true,
-      data: newGuest
-    }, { status: 201 });
-  } catch (error) {
-    console.error('Error creating guest:', error);
-    return NextResponse.json({
-      success: false,
-      error: {
-        code: '500',
-        message: 'Failed to create guest',
-        details: error instanceof Error ? error.message : 'Unknown error'
+    const guest = await db.guest.create({
+      data: {
+        tenantId,
+        name: body.name,
+        phone: body.phoneNumber,
+        email: body.email,
+        status: body.status === 'hot' || body.status === 'warm' ? body.status : 'new',
+        aiScore: body.score || 50,
+        source: body.source || 'whatsapp',
+        value: body.value || 0,
+        notes: body.notes,
+        checkIn: body.checkIn ? new Date(body.checkIn) : null,
+        checkOut: body.checkOut ? new Date(body.checkOut) : null,
       }
-    }, { status: 500 });
+    });
+    return NextResponse.json({ success: true, data: mapGuest(guest) }, { status: 201 });
+  } catch (error) {
+    console.error('[DDC guests POST] Error:', error);
+    return NextResponse.json({ success: false, error: { code: '500', message: 'Failed to create guest', details: error instanceof Error ? error.message : 'Unknown error' } }, { status: 500 });
   }
 }

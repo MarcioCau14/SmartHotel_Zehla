@@ -1,98 +1,87 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { ConversationLog, ConversationFilters } from '@/types/ddc';
-import { mockConversationLogs } from '@/lib/ddc/mock-data';
+import { db } from '@/lib/db';
+import { resolveTenantId } from '@/lib/ddc/auth-utils';
+
+function mapStatus(s: string): 'in_progress' | 'escalated' | 'closed' {
+  if (s === 'active') return 'in_progress';
+  if (s === 'escalated') return 'escalated';
+  return 'closed';
+}
+
+function mapMessage(m: any) {
+  return {
+    id: m.id,
+    conversationId: m.conversationId,
+    role: m.from === 'guest' ? 'user' as const : m.from === 'ai' ? 'assistant' as const : 'system' as const,
+    content: m.content,
+    confidence: m.from === 'ai' ? undefined : undefined,
+    metadata: {},
+    createdAt: m.timestamp,
+  };
+}
+
+function mapConversation(c: any) {
+  return {
+    id: c.id,
+    guestId: c.guestId,
+    guestName: c.guestName,
+    phoneNumber: c.guestPhone,
+    status: mapStatus(c.status),
+    aiScore: c.aiConfidence,
+    needsEscalation: c.status === 'escalated',
+    metadata: {},
+    messages: (c.messages || []).map(mapMessage),
+    propertyId: c.tenantId,
+    createdAt: c.createdAt,
+    updatedAt: c.lastUpdate,
+  };
+}
 
 export async function GET(request: NextRequest) {
   try {
+    const tenantId = await resolveTenantId();
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status');
     const escalated = searchParams.get('escalated');
     const search = searchParams.get('search');
 
-    // Filter conversations based on query params
-    let filteredConversations = [...mockConversationLogs];
-
+    const where: any = { tenantId };
     if (status) {
-      filteredConversations = filteredConversations.filter(c => c.status === status);
+      if (status === 'in_progress') where.status = 'active';
+      else if (status === 'closed') where.status = { in: ['resolved', 'abandoned'] };
+      else where.status = status;
     }
-
-    if (escalated === 'true') {
-      filteredConversations = filteredConversations.filter(c => c.needsEscalation);
-    }
-
+    if (escalated === 'true') where.status = 'escalated';
     if (search) {
-      const searchLower = search.toLowerCase();
-      filteredConversations = filteredConversations.filter(c =>
-        c.guestName.toLowerCase().includes(searchLower) ||
-        (c.phoneNumber || '').includes(search)
-      );
+      where.OR = [
+        { guestName: { contains: search } },
+        { guestPhone: { contains: search } },
+      ];
     }
+
+    const conversations = await db.conversationLog.findMany({
+      where,
+      include: { messages: { orderBy: { timestamp: 'asc' } } },
+      orderBy: { lastUpdate: 'desc' },
+    });
 
     return NextResponse.json({
       success: true,
-      data: {
-        items: filteredConversations,
-        total: filteredConversations.length,
-        page: 1,
-        limit: filteredConversations.length,
-        totalPages: 1
-      }
+      data: { items: conversations.map(mapConversation), total: conversations.length, page: 1, limit: conversations.length, totalPages: 1 }
     });
   } catch (error) {
-    console.error('Error fetching conversations:', error);
-    return NextResponse.json({
-      success: false,
-      error: {
-        code: '500',
-        message: 'Failed to fetch conversations',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      }
-    }, { status: 500 });
+    console.error('[DDC conversations] Prisma error:', error);
+    return NextResponse.json({ success: true, data: { items: [], total: 0, page: 1, limit: 0, totalPages: 0 } });
   }
 }
 
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
-    const { conversationId } = body;
-
-    if (!conversationId) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: '400',
-          message: 'Missing conversationId'
-        }
-      }, { status: 400 });
-    }
-
-    const index = mockConversationLogs.findIndex(c => c.id === conversationId);
-
-    if (index === -1) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: '404',
-          message: 'Conversation not found'
-        }
-      }, { status: 404 });
-    }
-
-    mockConversationLogs.splice(index, 1);
-
-    return NextResponse.json({
-      success: true,
-      data: null
-    });
+    if (!body.conversationId) return NextResponse.json({ success: false, error: { code: '400', message: 'Missing conversationId' } }, { status: 400 });
+    await db.conversationLog.delete({ where: { id: body.conversationId } });
+    return NextResponse.json({ success: true, data: null });
   } catch (error) {
-    console.error('Error deleting conversation:', error);
-    return NextResponse.json({
-      success: false,
-      error: {
-        code: '500',
-        message: 'Failed to delete conversation',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      }
-    }, { status: 500 });
+    return NextResponse.json({ success: false, error: { code: '500', message: 'Failed to delete conversation' } }, { status: 500 });
   }
 }

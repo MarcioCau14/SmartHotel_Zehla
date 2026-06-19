@@ -1,78 +1,107 @@
 import { NextRequest } from 'next/server';
-import { mockConversationLogs } from '@/lib/ddc/mock-data';
+import { db } from '@/lib/db';
+import { resolveTenantId } from '@/lib/ddc/auth-utils';
+
+function mapStatus(s: string): 'in_progress' | 'escalated' | 'closed' {
+  if (s === 'active') return 'in_progress';
+  if (s === 'escalated') return 'escalated';
+  return 'closed';
+}
+
+function mapMessage(m: any) {
+  return {
+    id: m.id,
+    conversationId: m.conversationId,
+    role: m.from === 'guest' ? 'user' as const : m.from === 'ai' ? 'assistant' as const : 'system' as const,
+    content: m.content,
+    confidence: undefined,
+    metadata: {},
+    createdAt: m.timestamp,
+  };
+}
+
+function mapConversation(c: any) {
+  return {
+    id: c.id,
+    guestId: c.guestId,
+    guestName: c.guestName,
+    phoneNumber: c.guestPhone,
+    status: mapStatus(c.status),
+    aiScore: c.aiConfidence,
+    needsEscalation: c.status === 'escalated',
+    metadata: {},
+    messages: (c.messages || []).map(mapMessage),
+    propertyId: c.tenantId,
+    createdAt: c.createdAt,
+    updatedAt: c.lastUpdate,
+  };
+}
 
 export async function GET(request: NextRequest) {
   const encoder = new TextEncoder();
 
-  // Create a readable stream for SSE
   const stream = new ReadableStream({
     async start(controller) {
-      let index = 0;
+      let tenantId = 'client-001';
+      let lastCheck = new Date();
 
-      // Send initial data
-      const initialData = {
-        type: 'initial',
-        data: mockConversationLogs
-      };
-      controller.enqueue(
-        encoder.encode(`data: ${JSON.stringify(initialData)}\n\n`)
-      );
+      try {
+        tenantId = await resolveTenantId();
+      } catch {
+        // use fallback
+      }
 
-      // Simulate live updates
-      const interval = setInterval(() => {
-        // Simulate a new conversation or message
-        if (Math.random() > 0.7) {
-          const randomConversation = mockConversationLogs[Math.floor(Math.random() * mockConversationLogs.length)];
+      // Initial load
+      try {
+        const conversations = await db.conversationLog.findMany({
+          where: { tenantId, status: 'active' },
+          include: { messages: { orderBy: { timestamp: 'asc' } } },
+          orderBy: { lastUpdate: 'desc' },
+        });
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'initial', data: conversations.map(mapConversation) })}\n\n`));
+      } catch (error) {
+        console.error('[live-feed] Initial load error:', error);
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'initial', data: [] })}\n\n`));
+      }
 
-          // Create a new message
-          const newMessage = {
-            id: `msg-${Date.now()}`,
-            conversationId: randomConversation.id,
-            role: Math.random() > 0.5 ? 'user' : 'assistant',
-            content: Math.random() > 0.5
-              ? 'Qual o horário do check-in?'
-              : `O check-in é às 14:00 e o check-out às 12:00.`,
-            confidence: Math.floor(Math.random() * 20) + 80,
-            metadata: {},
-            createdAt: new Date()
-          };
+      // Polling loop
+      const interval = setInterval(async () => {
+        try {
+          const newMessages = await db.conversationMessage.findMany({
+            where: { createdAt: { gt: lastCheck } },
+            include: { conversation: true },
+            orderBy: { createdAt: 'desc' },
+          });
 
-          // Update the conversation
-          const updatedConversation = {
-            ...randomConversation,
-            messages: [...randomConversation.messages, newMessage],
-            updatedAt: new Date(),
-            aiScore: Math.floor(Math.random() * 15) + 85
-          };
+          if (newMessages.length > 0) {
+            // Get unique conversation IDs
+            const convIds = [...new Set(newMessages.map(m => m.conversationId))];
+            const updatedConvs = await db.conversationLog.findMany({
+              where: { id: { in: convIds } },
+              include: { messages: { orderBy: { timestamp: 'asc' } } },
+            });
 
-          const data = {
-            type: 'update',
-            data: updatedConversation
-          };
-
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify(data)}\n\n`)
-          );
-
-          // Dispatch custom event for client-side updates
-          // Note: This won't work server-side, but shows the intent
-          console.log('New message dispatched:', newMessage.content);
+            for (const conv of updatedConvs) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'update', data: mapConversation(conv) })}\n\n`));
+            }
+          }
+          lastCheck = new Date();
+        } catch (error) {
+          // Silently continue polling
         }
+      }, 5000);
 
-        index++;
-
-        // Stop after 5 minutes for demo purposes
-        if (index > 300) {
-          clearInterval(interval);
-          controller.close();
-        }
-      }, 3000); // Check every 3 seconds
-
-      // Cleanup on client disconnect
+      // Cleanup on disconnect
       request.signal.addEventListener('abort', () => {
         clearInterval(interval);
         controller.close();
       });
+
+      // Auto-close after 10 minutes
+      setTimeout(() => {
+        clearInterval(interval);
+        controller.close();
+      }, 10 * 60 * 1000);
     }
   });
 
@@ -82,7 +111,6 @@ export async function GET(request: NextRequest) {
       'Cache-Control': 'no-cache',
       'Connection': 'keep-alive',
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Cache-Control'
     }
   });
 }

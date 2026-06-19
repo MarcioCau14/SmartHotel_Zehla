@@ -1,145 +1,85 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { TrainingPrompt } from '@/types/ddc';
-import { mockTrainingPrompts } from '@/lib/ddc/mock-data';
+import { db } from '@/lib/db';
 
-interface RouteContext {
-  params: Promise<{
-    id: string;
-  }>;
+function mapTraining(t: any) {
+  return {
+    id: t.id,
+    title: t.name,
+    content: t.content,
+    category: t.type,
+    version: 1,
+    isActive: t.isActive,
+    testResult: t.successRate > 0 ? { status: t.successRate >= 85 ? 'passed' as const : 'failed' as const, score: t.successRate } : undefined,
+    propertyId: t.tenantId,
+    createdAt: t.createdAt,
+    updatedAt: t.updatedAt,
+  };
 }
 
-export async function PUT(
-  request: NextRequest,
-  context: RouteContext
-) {
+interface RouteContext { params: Promise<{ id: string }> }
+
+export async function PUT(request: NextRequest, context: RouteContext) {
   try {
-    const { id: trainingId } = await context.params;
+    const { id } = await context.params;
     const body = await request.json();
+    const existing = await db.trainingPrompt.findUnique({ where: { id } });
+    if (!existing) return NextResponse.json({ success: false, error: { code: '404', message: 'Training not found' } }, { status: 404 });
 
-    const trainingIndex = mockTrainingPrompts.findIndex(t => t.id === trainingId);
+    const updateData: any = {};
+    if (body.title) updateData.name = body.title;
+    if (body.content) updateData.content = body.content;
+    if (body.category) updateData.type = body.category;
+    if (body.isActive !== undefined) updateData.isActive = body.isActive;
 
-    if (trainingIndex === -1) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: '404',
-          message: 'Training not found'
-        }
-      }, { status: 404 });
-    }
-
-    // Update training
-    const updatedTraining: TrainingPrompt = {
-      ...mockTrainingPrompts[trainingIndex],
-      ...body,
-      updatedAt: new Date()
-    };
-
-    mockTrainingPrompts[trainingIndex] = updatedTraining;
-
-    return NextResponse.json({
-      success: true,
-      data: updatedTraining
-    });
+    const updated = await db.trainingPrompt.update({ where: { id }, data: updateData });
+    return NextResponse.json({ success: true, data: mapTraining(updated) });
   } catch (error) {
-    console.error('Error updating training:', error);
-    return NextResponse.json({
-      success: false,
-      error: {
-        code: '500',
-        message: 'Failed to update training',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      }
-    }, { status: 500 });
+    return NextResponse.json({ success: false, error: { code: '500', message: 'Failed to update training' } }, { status: 500 });
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  context: RouteContext
-) {
+export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
-    const { id: trainingId } = await context.params;
-    const trainingIndex = mockTrainingPrompts.findIndex(t => t.id === trainingId);
-
-    if (trainingIndex === -1) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: '404',
-          message: 'Training not found'
-        }
-      }, { status: 404 });
-    }
-
-    mockTrainingPrompts.splice(trainingIndex, 1);
-
-    return NextResponse.json({
-      success: true,
-      data: null
-    });
+    const { id } = await context.params;
+    await db.trainingPrompt.delete({ where: { id } });
+    return NextResponse.json({ success: true, data: null });
   } catch (error) {
-    console.error('Error deleting training:', error);
-    return NextResponse.json({
-      success: false,
-      error: {
-        code: '500',
-        message: 'Failed to delete training',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      }
-    }, { status: 500 });
+    return NextResponse.json({ success: false, error: { code: '500', message: 'Failed to delete training' } }, { status: 500 });
   }
 }
 
-export async function POST(
-  request: NextRequest,
-  context: RouteContext
-) {
+export async function POST(request: NextRequest, context: RouteContext) {
   try {
-    const { id: trainingId } = await context.params;
-    const training = mockTrainingPrompts.find(t => t.id === trainingId);
+    const { id } = await context.params;
+    const training = await db.trainingPrompt.findUnique({ where: { id } });
+    if (!training) return NextResponse.json({ success: false, error: { code: '404', message: 'Training not found' } }, { status: 404 });
 
-    if (!training) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: '404',
-          message: 'Training not found'
-        }
-      }, { status: 404 });
-    }
-
-    // Simulate test
+    // Simulate AI test
     await new Promise(resolve => setTimeout(resolve, 1500));
-
     const score = Math.floor(Math.random() * 20) + 80;
     const passed = score >= 85;
 
-    const testResult = {
-      status: passed ? 'passed' : 'failed' as 'passed' | 'failed',
-      score,
-      feedback: passed
-        ? 'A IA respondeu corretamente e com alta confiança. O prompt está bem estruturado.'
-        : 'A IA não conseguiu responder adequadamente. Considere revisar o conteúdo do prompt.'
-    };
-
-    // Update training with test result
-    training.testResult = testResult;
-    training.updatedAt = new Date();
+    // Update in DB
+    await db.trainingPrompt.update({
+      where: { id },
+      data: {
+        successRate: score,
+        usageCount: { increment: 1 },
+        lastUsed: new Date(),
+      }
+    });
 
     return NextResponse.json({
       success: true,
-      data: testResult
+      data: {
+        status: passed ? 'passed' as const : 'failed' as const,
+        score,
+        feedback: passed
+          ? 'A IA respondeu corretamente e com alta confiança. O prompt está bem estruturado.'
+          : 'A IA não conseguiu responder adequadamente. Considere revisar o conteúdo do prompt.'
+      }
     });
   } catch (error) {
-    console.error('Error testing training:', error);
-    return NextResponse.json({
-      success: false,
-      error: {
-        code: '500',
-        message: 'Failed to test training',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      }
-    }, { status: 500 });
+    return NextResponse.json({ success: false, error: { code: '500', message: 'Failed to test training' } }, { status: 500 });
   }
 }

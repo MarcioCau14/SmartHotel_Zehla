@@ -1,96 +1,81 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { Booking } from '@/types/ddc';
-import { mockBookings } from '@/lib/ddc/mock-data';
+import { db } from '@/lib/db';
+import { resolveTenantId } from '@/lib/ddc/auth-utils';
+
+function mapBooking(b: any) {
+  return {
+    id: b.id,
+    guestId: b.guestId,
+    roomId: b.roomName,
+    checkIn: b.checkIn,
+    checkOut: b.checkOut,
+    total: b.totalValue,
+    status: b.status === 'checked_in' || b.status === 'checked_out' ? 'completed' as const : b.status as 'pending' | 'confirmed' | 'cancelled' | 'completed',
+    paymentStatus: b.paymentStatus === 'paid' ? 'paid' as const : b.paymentStatus === 'refunded' ? 'refunded' as const : 'pending' as const,
+    propertyId: b.tenantId,
+    guest: b.guest ? { id: b.guest.id, name: b.guest.name, phone: b.guest.phone } : undefined,
+    createdAt: b.createdAt,
+    updatedAt: b.updatedAt,
+  };
+}
 
 export async function GET(request: NextRequest) {
   try {
+    const tenantId = await resolveTenantId();
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status');
     const guestId = searchParams.get('guestId');
 
-    // Filter bookings based on query params
-    let filteredBookings = [...mockBookings];
+    const where: any = { tenantId };
+    if (status) where.status = status === 'completed' ? { in: ['checked_in', 'checked_out'] } : status;
+    if (guestId) where.guestId = guestId;
 
-    if (status) {
-      filteredBookings = filteredBookings.filter(b => b.status === status);
-    }
-
-    if (guestId) {
-      filteredBookings = filteredBookings.filter(b => b.guestId === guestId);
-    }
+    const bookings = await db.booking.findMany({
+      where,
+      include: { guest: { select: { id: true, name: true, phone: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
 
     return NextResponse.json({
       success: true,
-      data: {
-        items: filteredBookings,
-        total: filteredBookings.length,
-        page: 1,
-        limit: filteredBookings.length,
-        totalPages: 1
-      }
+      data: { items: bookings.map(mapBooking), total: bookings.length, page: 1, limit: bookings.length, totalPages: 1 }
     });
   } catch (error) {
-    console.error('Error fetching bookings:', error);
-    return NextResponse.json({
-      success: false,
-      error: {
-        code: '500',
-        message: 'Failed to fetch bookings',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      }
-    }, { status: 500 });
+    console.error('[DDC bookings] Prisma error:', error);
+    return NextResponse.json({ success: true, data: { items: [], total: 0, page: 1, limit: 0, totalPages: 0 } });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const tenantId = await resolveTenantId();
     const body = await request.json();
-
-    // Validate required fields
     if (!body.guestId || !body.checkIn || !body.checkOut || !body.total) {
-      return NextResponse.json({
-        success: false,
-        error: {
-          code: '400',
-          message: 'Missing required fields: guestId, checkIn, checkOut, total'
-        }
-      }, { status: 400 });
+      return NextResponse.json({ success: false, error: { code: '400', message: 'Missing required fields' } }, { status: 400 });
     }
-
-    // Create new booking
-    const newBooking: Booking = {
-      id: `booking-${Date.now()}`,
-      guestId: body.guestId,
-      roomId: body.roomId,
-      checkIn: new Date(body.checkIn),
-      checkOut: new Date(body.checkOut),
-      total: body.total,
-      status: body.status || 'pending',
-      paymentStatus: body.paymentStatus || 'pending',
-      propertyId: body.propertyId || 'prop-001',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-
-    // In a real implementation, this would save to database
-    mockBookings.unshift(newBooking);
-
-    // Dispatch notification for new booking
-    console.log('New booking created:', newBooking.id);
-
-    return NextResponse.json({
-      success: true,
-      data: newBooking
-    }, { status: 201 });
-  } catch (error) {
-    console.error('Error creating booking:', error);
-    return NextResponse.json({
-      success: false,
-      error: {
-        code: '500',
-        message: 'Failed to create booking',
-        details: error instanceof Error ? error.message : 'Unknown error'
+    const checkIn = new Date(body.checkIn);
+    const checkOut = new Date(body.checkOut);
+    const nights = Math.max(1, Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)));
+    const booking = await db.booking.create({
+      data: {
+        tenantId,
+        guestId: body.guestId,
+        guestName: body.guestName || '',
+        roomName: body.roomId || body.roomName || '',
+        checkIn,
+        checkOut,
+        nights,
+        guests: body.guests || 1,
+        totalValue: body.total,
+        status: body.status || 'pending',
+        paymentMethod: body.paymentMethod || 'pix',
+        paymentStatus: body.paymentStatus || 'pending',
+        source: body.source || 'whatsapp_ai',
       }
-    }, { status: 500 });
+    });
+    return NextResponse.json({ success: true, data: mapBooking(booking) }, { status: 201 });
+  } catch (error) {
+    console.error('[DDC bookings POST] Error:', error);
+    return NextResponse.json({ success: false, error: { code: '500', message: 'Failed to create booking' } }, { status: 500 });
   }
 }
