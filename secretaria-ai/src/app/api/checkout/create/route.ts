@@ -66,6 +66,25 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Create Subscription record
+    const subscription = await db.subscription.create({
+      data: {
+        tenantId: tenant.id,
+        planType: planType === 'gratuito' ? 'trial' : planType,
+        status: planType === 'gratuito' ? 'active' : 'pending',
+        amount: amount,
+        paymentMethod: paymentMethod,
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      }
+    });
+
+    // Update tenant with the active subscription id
+    await db.tenant.update({
+      where: { id: tenant.id },
+      data: { subscriptionId: subscription.id }
+    });
+
     // For free plan, activate immediately and redirect to dashboard
     if (planType === 'gratuito') {
       await db.tenant.update({

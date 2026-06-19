@@ -1,0 +1,645 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ===== USER (Authentication) =====
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  passwordHash  String?
+  role          String    @default("client") // client | admin
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  tenant        Tenant?
+}
+
+// ===== TENANT (Pousada/Hotel) =====
+model Tenant {
+  id             String    @id @default(cuid())
+  name           String
+  email          String    @unique
+  passwordHash   String
+  phone          String?
+  phoneAlt       String?                // WhatsApp atendimento ao hóspede
+  role           String    @default("owner") // owner | admin | staff
+  plan           String    @default("trial") // trial | starter | pro | business
+  status         String    @default("active") // active | suspended | churned
+  trialStart     DateTime?
+  trialEnd       DateTime?
+  subscriptionAt DateTime?
+
+  property       Property?
+  apiConfigs     ApiConfig[]
+  agentConfigs   AgentConfig[]
+  auditLogs      AuditLog[]
+  userId         String?   @unique
+  user           User?     @relation(fields: [userId], references: [id])
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@map("tenants")
+}
+
+// ===== PROPERTY =====
+model Property {
+  id          String  @id @default(cuid())
+  tenantId    String  @unique
+  name        String
+  document    String? // CNPJ/CPF — MOCK: "12.345.678/0001-90"
+  street      String  @default("")
+  number      String  @default("")
+  neighborhood String @default("")
+  city        String  @default("")
+  state       String  @default("")
+  zipCode     String  @default("")
+  type        String  @default("pousada") // pousada | hotel | hostel | chalé | resort
+  website     String?
+  description String  @default("")
+  services    String  @default("[]") // JSON array of service IDs
+  paymentMethods String @default("[]") // JSON array of payment method IDs
+  pixKey      String?
+  pixKeyType  String  @default("cpf") // cpf | email | phone | random
+  bankName    String?
+  bankAgency  String?
+  bankAccount String?
+  bankAccountType String? // cc | cp
+  bankCpf     String?
+
+  tenant      Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rooms       Room[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("properties")
+}
+
+// ===== ROOM =====
+model Room {
+  id         String  @id @default(cuid())
+  propertyId String
+  name       String
+  type       String  @default("standard") // standard | luxo | suite | chale
+  capacity   Int     @default(2)
+  price      Float   @default(150)
+  status     String  @default("disponivel") // disponivel | ocupado | sujo | manutencao | reservado
+
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("rooms")
+}
+
+// ===== API CONFIG (AI Provider Keys) =====
+model ApiConfig {
+  id        String   @id @default(cuid())
+  tenantId  String
+  provider  String   // gemini | openai | groq | huggingface | anthropic | zai_sdk
+  apiKey    String   @default("")    // Encrypted key storage placeholder
+  apiSecret String   @default("")    // For providers with separate secrets
+  model     String   @default("")    // Default model name
+  baseUrl   String   @default("")    // Custom base URL (optional)
+  isActive  Boolean  @default(false)
+  usageLimit Int     @default(0)     // 0 = unlimited
+  usageCurrent Int   @default(0)
+  notes     String   @default("")
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, provider])
+  @@map("api_configs")
+}
+
+// ===== AGENT CONFIG (Per-tenant agent customization) =====
+model AgentConfig {
+  id          String  @id @default(cuid())
+  tenantId    String
+  agentId     String  // agent-1 through agent-8
+  agentName   String  // Recepcionista, Concierge, etc.
+  systemPrompt String @default("")
+  isActive    Boolean @default(true)
+  temperature Float   @default(0.7)
+  maxTokens   Int     @default(2048)
+  customKnowledge String @default("[]")
+  learnedPatterns Int  @default(0)
+  confidenceScore Float @default(0)
+
+  tenant      Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([tenantId, agentId])
+  @@map("agent_configs")
+}
+
+// ===== AUDIT LOG =====
+model AuditLog {
+  id        String   @id @default(cuid())
+  tenantId  String
+  action    String
+  details   String   @default("{}") // JSON
+  ipAddress String?
+  userAgent String?
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+// ===== LEADS (Prospecção Lessie AI) =====
+model Lead {
+  id              String   @id @default(cuid())
+  empresa         String
+  decisor         String   @default("")
+  cargo           String   @default("")
+  email           String   @unique
+  whatsapp        String   @default("")
+  setor           String   @default("hospitalidade")
+  socialMedia     String   @default("{}") // JSON
+  porte           String   @default("pequeno") // pequeno | medio | grande
+  status          String   @default("pending") // pending | verified | contacted | converted | lost
+  hook            String   @default("") // Script de e-mail/WhatsApp personalizado
+  validationScore Float    @default(0)
+  socialFootprint String   @default("{}") // JSON
+  metadata        String   @default("{}") // JSON com dados extras do scraping
+  targetId        String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("leads")
+}
+
+// ===== TARGETS (Pousadas sob mira) =====
+model Target {
+  id        String  @id @default(cuid())
+  name      String
+  domain    String  @unique
+  website   String?
+  city      String  @default("")
+  state     String  @default("")
+  status    String  @default("active") // active | pending | inactive | prospected
+  priority  Int     @default(5) // 1-10
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("targets")
+}
+
+// ===== AGENT LOG (Ações da IA) =====
+model AgentLog {
+  id          String   @id @default(cuid())
+  agentId     String   @default("lessie")
+  action      String
+  inputTokens Int      @default(0)
+  outputTokens Int    @default(0)
+  latencyMs   Int      @default(0)
+  costUsd     Float    @default(0)
+  status      String   @default("success") // success | error | timeout
+  errorMsg    String   @default("")
+  metadata    String   @default("{}") // JSON
+
+  createdAt   DateTime @default(now())
+
+  @@map("agent_logs")
+}
+
+// ===== SECURITY ALERT =====
+model SecurityAlert {
+  id          String   @id @default(cuid())
+  type        String   // injection | rls_violation | rate_limit | suspicious
+  severity    String   @default("medium") // low | medium | high | critical
+  description String
+  source      String   @default("") // IP, user agent, etc
+  resolved    Boolean  @default(false)
+  resolvedAt  DateTime?
+
+  createdAt   DateTime @default(now())
+
+  @@map("security_alerts")
+}
+
+// ===== SWIPE TEMPLATE (Mensagens WhatsApp) =====
+model SwipeTemplate {
+  id          String  @id @default(cuid())
+  name        String
+  category    String  @default("prospecção") // prospecção | follow-up | conversão | reativação
+  content     String  // Texto do template
+  variables   String  @default("[]") // JSON array de variáveis
+  successRate Float   @default(0) // % de conversão histórica
+  usageCount  Int     @default(0)
+  isActive    Boolean @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("swipe_templates")
+}
+
+// ===== CAMPAIGN (Orquestração multicanal) =====
+model Campaign {
+  id          String  @id @default(cuid())
+  name        String
+  type        String  @default("whatsapp") // whatsapp | email | ads | multi
+  status      String  @default("draft") // draft | active | paused | completed | cancelled
+  targetAudience String @default("all") // all | leads | verified | converted
+  messageTemplate String @default("")
+  scheduledAt DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
+  totalSent   Int     @default(0)
+  totalDelivered Int  @default(0)
+  totalRead   Int     @default(0)
+  totalReplied Int   @default(0)
+  metadata    String  @default("{}") // JSON
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("campaigns")
+}
+
+// ===== TREND KEYWORD =====
+model TrendKeyword {
+  id        String  @id @default(cuid())
+  keyword   String
+  category  String  @default("hotelaria")
+  source    String  @default("google_trends") // google_trends | social | booking | tripadvisor
+  score     Float   @default(0) //热度 0-100
+  trend     String  @default("stable") // rising | falling | stable | breakout
+
+  dataPoints TrendDataPoint[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("trend_keywords")
+}
+
+// ===== TREND DATA POINT =====
+model TrendDataPoint {
+  id          String  @id @default(cuid())
+  keywordId   String
+  date        DateTime
+  value       Float
+  source      String  @default("")
+
+  keyword     TrendKeyword @relation(fields: [keywordId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+
+  @@map("trend_data_points")
+}
+
+// ===== ZAOS ROUTER STATE (Cérebro ZÉLLA - NeuroRouter) =====
+model RouterProvider {
+  id          String   @id @default(cuid())
+  provider    String   @unique // openrouter | anthropic | ollama | groq | gemini
+  modelName   String
+  tier        String   @default("3") // 1=budget, 2=mid, 3=premium
+  alpha       Float    @default(1.0) // Thompson Sampling Beta posterior
+  beta        Float    @default(1.0)
+  circuitStatus String @default("closed") // closed | half_open | open
+  lastFailureAt DateTime?
+  failureCount Int    @default(0)
+  successCount Int    @default(0)
+  avgLatencyMs Int    @default(0)
+  costPer1kInput Float @default(0)
+  costPer1kOutput Float @default(0)
+  isActive    Boolean  @default(true)
+  supportsJson Boolean @default(false)
+  supportsTools Boolean @default(false)
+  maxContextTokens Int @default(8192)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("router_providers")
+}
+
+// ===== BUDGET GUARD STATE =====
+model BudgetGuardState {
+  id           String  @id @default(cuid())
+  date         String  @unique // YYYY-MM-DD
+  dailySpendUsd Float  @default(0)
+  dailyBudgetUsd Float @default(50)
+  monthlySpendUsd Float @default(0)
+  monthlyBudgetUsd Float @default(1500)
+  criticalLevel String @default("nominal") // nominal | warning | critical
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("budget_guard_state")
+}
+
+// ===== SUBSCRIPTION (Payment & Plan Management) =====
+model Subscription {
+  id              String   @id @default(cuid())
+  tenantId        String   @unique
+  planType        String   // gratuito | lite | pro | max
+  status          String   @default("pending") // pending | active | canceled | expired
+  paymentMethod   String   // pix | cartao
+  amount          Float
+  paymentId       String?  // Mercado Pago/Stripe payment ID
+  paymentStatus   String?  // pending | approved | rejected | refunded
+  checkoutUrl     String?  // URL for payment checkout
+  trialStart      DateTime?
+  trialEnd        DateTime?
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd Boolean @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("subscriptions")
+}
+
+// ===== PAYMENT TRANSACTION =====
+model PaymentTransaction {
+  id              String   @id @default(cuid())
+  subscriptionId  String
+  amount          Float
+  status          String   // pending | approved | rejected | refunded
+  paymentMethod   String   // pix | cartao
+  externalId      String?  // Mercado Pago/Stripe transaction ID
+  metadata        String   @default("{}") // JSON
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("payment_transactions")
+}
+
+// ============================================================================
+// DDC COMMAND CENTER MODELS
+// ============================================================================
+
+// ===== GUEST (Hóspedes CRM) =====
+model Guest {
+  id               String   @id @default(cuid())
+  tenantId         String
+  name             String
+  phone            String
+  email            String?
+  status           String   @default("new") // new | warm | hot | booked | staying | checked_out | lost | inactive
+  avatar           String?
+  source           String   @default("whatsapp") // whatsapp | instagram | booking | airbnb | direct | referral
+  value            Float    @default(0)
+  lastContact      DateTime @default(now())
+  checkIn          DateTime?
+  checkOut         DateTime?
+  room             String?
+  aiScore          Int      @default(50) // 0-100, lead quality score
+  notes            String?
+  conversationCount Int    @default(0)
+  metadata         String   @default("{}") // JSON
+
+  bookings         Booking[]
+  messages         GuestMessage[]
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([tenantId, status])
+  @@index([tenantId, source])
+  @@map("guests")
+}
+
+// ===== GUEST MESSAGE =====
+model GuestMessage {
+  id          String   @id @default(cuid())
+  guestId     String
+  from        String   // guest | ai | human
+  content     String
+  timestamp   DateTime @default(now())
+  type        String   @default("text") // text | image | audio | document
+  sentiment   String?  // positive | neutral | negative
+  intent      String?  // booking | pricing | amenities | complaint
+  metadata    String   @default("{}") // JSON
+
+  guest       Guest    @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+
+  @@index([guestId])
+  @@index([timestamp])
+  @@map("guest_messages")
+}
+
+// ===== BOOKING (Reservas) =====
+model Booking {
+  id           String   @id @default(cuid())
+  tenantId     String
+  guestId      String
+  guestName    String
+  roomName     String
+  checkIn      DateTime
+  checkOut     DateTime
+  nights       Int
+  guests       Int
+  totalValue   Float
+  status       String   @default("pending") // pending | confirmed | checked_in | checked_out | cancelled | no_show
+  paymentMethod String  // pix | credit_card | debit_card | cash | bank_transfer
+  paymentStatus String  @default("pending") // pending | paid | partial | overdue
+  source       String   // whatsapp_ai | whatsapp_human | booking | airbnb | direct
+  aiGenerated  Boolean  @default(false)
+  metadata     String   @default("{}") // JSON
+
+  guest        Guest    @relation(fields: [guestId], references: [id])
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([tenantId, status])
+  @@index([tenantId, checkIn])
+  @@index([guestId])
+  @@map("bookings")
+}
+
+// ===== AI ACTIVITY LOG =====
+model AIActivityLog {
+  id          String   @id @default(cuid())
+  tenantId    String
+  type        String   // message | booking | escalation | learning | alert
+  guestName   String?
+  roomName    String?
+  message     String
+  timestamp   DateTime @default(now())
+  status      String   @default("success") // success | warning | error | info
+  duration    Int?     // milliseconds
+  metadata    String   @default("{}") // JSON
+
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId, timestamp])
+  @@index([type])
+  @@map("ai_activity_logs")
+}
+
+// ===== CONVERSATION LOG =====
+model ConversationLog {
+  id          String   @id @default(cuid())
+  tenantId    String
+  guestId     String
+  guestName   String
+  guestPhone  String
+  status      String   @default("active") // active | resolved | escalated | abandoned
+  lastUpdate  DateTime @default(now())
+  aiConfidence Float   @default(0) // 0-100
+  metadata    String   @default("{}") // JSON
+
+  messages    ConversationMessage[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId, status])
+  @@index([guestId])
+  @@map("conversation_logs")
+}
+
+// ===== CONVERSATION MESSAGE =====
+model ConversationMessage {
+  id              String   @id @default(cuid())
+  conversationId  String
+  from            String   // guest | ai | human
+  content         String
+  timestamp       DateTime @default(now())
+  read            Boolean  @default(false)
+  metadata        String   @default("{}") // JSON
+
+  conversation    ConversationLog @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+
+  @@index([conversationId])
+  @@index([timestamp])
+  @@map("conversation_messages")
+}
+
+// ===== KNOWLEDGE ENTRY =====
+model KnowledgeEntry {
+  id           String   @id @default(cuid())
+  tenantId     String
+  category     String   // pricing | rooms | amenities | policies | location | activities | food | custom
+  question     String
+  answer       String
+  priority     String   @default("medium") // low | medium | high | critical
+  usage        Int      @default(0)
+  effectiveness Float   @default(0) // 0-100
+  createdFor   String   @default("both") // ai | human | both
+  lastUsed     DateTime?
+  metadata     String   @default("{}") // JSON
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([tenantId, category])
+  @@index([priority])
+  @@map("knowledge_entries")
+}
+
+// ===== TRAINING PROMPT =====
+model TrainingPrompt {
+  id          String   @id @default(cuid())
+  tenantId    String
+  name        String
+  type        String   // persona | response | escalation | proactive
+  content     String
+  variables   String   @default("[]") // JSON array
+  isActive    Boolean  @default(true)
+  successRate Float   @default(0) // 0-100
+  usageCount  Int      @default(0)
+  lastUsed    DateTime?
+  metadata    String   @default("{}") // JSON
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId, type])
+  @@index([isActive])
+  @@map("training_prompts")
+}
+
+// ===== NOTIFICATION =====
+model Notification {
+  id          String   @id @default(cuid())
+  tenantId    String
+  type        String   // booking | payment | escalation | system | alert | achievement
+  priority    String   @default("medium") // low | medium | high | urgent
+  title       String
+  message     String
+  actionUrl   String?
+  actionLabel String?
+  read        Boolean  @default(false)
+  metadata    String   @default("{}") // JSON
+
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId, read])
+  @@index([priority])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ===== PERFORMANCE METRICS SNAPSHOT =====
+model PerformanceSnapshot {
+  id              String   @id @default(cuid())
+  tenantId        String
+  date            String   @unique // YYYY-MM-DD
+  aiResponseTime  Float    // avg seconds
+  conversionRate  Float    // percentage
+  guestSatisfaction Float  // 0-5
+  occupancyRate   Float    // percentage
+  revenueGrowth   Float    // percentage
+  aiAutonomy      Float    // percentage
+  totalRevenue    Float
+  totalBookings   Int
+  aiConversations Int
+  metadata        String   @default("{}") // JSON
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId, date])
+  @@map("performance_snapshots")
+}
+
+// ===== QUICK ACTION (Custom actions per tenant) =====
+model QuickAction {
+  id                 String   @id @default(cuid())
+  tenantId           String
+  category           String   // booking | communication | analytics | settings | emergency
+  label              String
+  icon               String
+  action             String
+  shortcut           String?
+  requiresConfirmation Boolean @default(false)
+  isActive           Boolean  @default(true)
+  order              Int      @default(0)
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([tenantId, category])
+  @@index([isActive])
+  @@map("quick_actions")
+}

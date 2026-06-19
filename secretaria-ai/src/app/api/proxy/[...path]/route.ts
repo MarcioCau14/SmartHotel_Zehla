@@ -8,7 +8,7 @@ export async function GET(
   const urlPath = path.join('/');
   const searchParams = request.nextUrl.searchParams.toString();
   const queryString = searchParams ? `?${searchParams}` : '';
-  const targetUrl = `http://localhost:8000/${urlPath}${queryString}`;
+  const targetUrl = `http://127.0.0.1:8000/${urlPath}${queryString}`;
 
   try {
     const response = await fetch(targetUrl, {
@@ -42,7 +42,7 @@ export async function POST(
   const urlPath = path.join('/');
   const searchParams = request.nextUrl.searchParams.toString();
   const queryString = searchParams ? `?${searchParams}` : '';
-  const targetUrl = `http://localhost:8000/${urlPath}${queryString}`;
+  const targetUrl = `http://127.0.0.1:8000/${urlPath}${queryString}`;
 
   try {
     let body: string | undefined;
