@@ -99,20 +99,32 @@ export function ApiKeysPanel() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
-    loadConfigs();
-  }, []);
-
-  const loadConfigs = async () => {
-    try {
-      const token = localStorage.getItem('zehla-token');
-      const res = await fetch('/api/config/keys', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      const data = await res.json();
-      if (data.success) {
-        setConfigs(data.data || []);
-      } else {
-        // Use defaults if no tenant yet
+    const loadConfigs = async () => {
+      try {
+        const token = localStorage.getItem('zehla-token');
+        const res = await fetch('/api/config/keys', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        const data = await res.json();
+        if (data.success) {
+          setConfigs(data.data || []);
+        } else {
+          setConfigs(
+            Object.keys(PROVIDER_INFO).map((provider) => ({
+              id: '',
+              provider,
+              model: PROVIDER_INFO[provider].defaultModel,
+              apiKey: '',
+              apiSecret: '',
+              baseUrl: '',
+              isActive: provider === 'zai_sdk',
+              hasKey: false,
+              usageCurrent: 0,
+              notes: PROVIDER_INFO[provider].notes || '',
+            }))
+          );
+        }
+      } catch {
         setConfigs(
           Object.keys(PROVIDER_INFO).map((provider) => ({
             id: '',
@@ -124,28 +136,14 @@ export function ApiKeysPanel() {
             isActive: provider === 'zai_sdk',
             hasKey: false,
             usageCurrent: 0,
-            notes: PROVIDER_INFO[provider].notes || '',
+            notes: '',
           }))
         );
       }
-    } catch {
-      setConfigs(
-        Object.keys(PROVIDER_INFO).map((provider) => ({
-          id: '',
-          provider,
-          model: PROVIDER_INFO[provider].defaultModel,
-          apiKey: '',
-          apiSecret: '',
-          baseUrl: '',
-          isActive: provider === 'zai_sdk',
-          hasKey: false,
-          usageCurrent: 0,
-          notes: '',
-        }))
-      );
-    }
-    setLoading(false);
-  };
+      setLoading(false);
+    };
+    loadConfigs();
+  }, []);
 
   const toggleKeyVisibility = (provider: string) => {
     setVisibleKeys((prev) => {

@@ -178,11 +178,9 @@ export function PricingSection() {
 
       if (data.success) {
         if (data.redirectUrl) {
-          // Redirect to checkout or dashboard
-          window.location.href = data.redirectUrl;
+          window.location.assign(data.redirectUrl);
         } else if (data.checkoutUrl) {
-          // In production, this would redirect to Mercado Pago/Stripe checkout
-          window.location.href = data.checkoutUrl;
+          window.location.assign(data.checkoutUrl);
         }
       } else {
         alert('Erro ao criar checkout: ' + (data.error || 'Unknown error'));

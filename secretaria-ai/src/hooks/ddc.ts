@@ -223,7 +223,12 @@ export function usePrevious<T>(value: T): T | undefined {
 // ============================================================================
 
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(false);
+  const [matches, setMatches] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia(query).matches;
+    }
+    return false;
+  });
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(query);
@@ -231,7 +236,6 @@ export function useMediaQuery(query: string): boolean {
       setMatches(e.matches);
     };
 
-    setMatches(mediaQuery.matches);
     mediaQuery.addEventListener('change', handleChange);
 
     return () => {

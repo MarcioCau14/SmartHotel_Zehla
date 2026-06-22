@@ -25,14 +25,7 @@ export default function DDCDashboardPage() {
   // Local state
   const [activeTab, setActiveTab] = useState('overview');
   const [propertyName, setPropertyName] = useState('Pousada Serenity');
-  const [aiStatusLocal, setAIStatusLocal] = useState<AIStatus>('online');
-
-  // Update AI status from hook
-  useEffect(() => {
-    if (aiStatus) {
-      setAIStatusLocal(aiStatus.status);
-    }
-  }, [aiStatus]);
+  const aiStatusLocal: AIStatus = aiStatus?.status || 'online';
 
   const handleActionClick = (action: string) => {
     console.log('Action clicked:', action);

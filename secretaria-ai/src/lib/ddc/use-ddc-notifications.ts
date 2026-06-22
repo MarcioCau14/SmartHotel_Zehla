@@ -1,6 +1,6 @@
 // ZEHLA DDC - Cognitive OS Command Center
 // Hook: use-ddc-notifications
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Notification } from '@/types/ddc';
 import { fetchNotifications, markNotificationAsRead, markAllNotificationsAsRead } from './api';
@@ -17,7 +17,6 @@ interface UseDDCNotificationsReturn {
 
 export function useDDCNotifications(autoRefresh: boolean = true): UseDDCNotificationsReturn {
   const queryClient = useQueryClient();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   // Fetch notifications
   const {
@@ -28,15 +27,16 @@ export function useDDCNotifications(autoRefresh: boolean = true): UseDDCNotifica
   } = useQuery({
     queryKey: ['ddc-notifications'],
     queryFn: () => fetchNotifications(),
-    refetchInterval: autoRefresh ? 30000 : false, // Refresh every 30s
+    refetchInterval: autoRefresh ? 30000 : false,
     staleTime: 15000
   });
 
-  // Update notifications when data changes
-  useEffect(() => {
+  // Derive notifications from query data
+  const notifications = useMemo(() => {
     if (notificationsData?.success && notificationsData.data) {
-      setNotifications(notificationsData.data);
+      return notificationsData.data;
     }
+    return [];
   }, [notificationsData]);
 
   // Calculate unread count
@@ -46,13 +46,18 @@ export function useDDCNotifications(autoRefresh: boolean = true): UseDDCNotifica
   const markAsReadMutation = useMutation({
     mutationFn: markNotificationAsRead,
     onSuccess: (_, notificationId) => {
-      // Update local state
-      setNotifications(prev =>
-        prev.map(n =>
-          n.id === notificationId ? { ...n, status: 'read' as const, readAt: new Date() } : n
-        )
+      queryClient.setQueryData<{ success: boolean; data: Notification[] }>(
+        ['ddc-notifications'],
+        (old) => {
+          if (!old?.data) return old;
+          return {
+            ...old,
+            data: old.data.map(n =>
+              n.id === notificationId ? { ...n, status: 'read' as const, readAt: new Date() } : n
+            )
+          };
+        }
       );
-
       queryClient.invalidateQueries({ queryKey: ['ddc-notifications'] });
     }
   });
@@ -61,11 +66,16 @@ export function useDDCNotifications(autoRefresh: boolean = true): UseDDCNotifica
   const markAllAsReadMutation = useMutation({
     mutationFn: markAllNotificationsAsRead,
     onSuccess: () => {
-      // Update local state
-      setNotifications(prev =>
-        prev.map(n => ({ ...n, status: 'read' as const, readAt: new Date() }))
+      queryClient.setQueryData<{ success: boolean; data: Notification[] }>(
+        ['ddc-notifications'],
+        (old) => {
+          if (!old?.data) return old;
+          return {
+            ...old,
+            data: old.data.map(n => ({ ...n, status: 'read' as const, readAt: new Date() }))
+          };
+        }
       );
-
       queryClient.invalidateQueries({ queryKey: ['ddc-notifications'] });
     }
   });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Brain,
@@ -51,13 +51,11 @@ export function DDCHeader({
   notificationCount,
   onOpenNotifications
 }: DDCHeaderProps) {
-  const [mounted, setMounted] = useState(false);
-  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  const mountedRef = useRef(true);
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [pulseActive, setPulseActive] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
-    setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
@@ -350,7 +348,7 @@ export function DDCHeader({
           </span>
         </div>
         <div className="flex items-center gap-4">
-          {mounted && currentTime ? (
+          {currentTime ? (
             <>
               <span className="text-[10px] text-white/50 font-mono">
                 {formatDate(currentTime)}

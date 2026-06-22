@@ -100,9 +100,11 @@ export function useAILiveFeed(): UseAILiveFeedReturn {
       }
     };
 
-    refreshConversations().then(() => {
+    const init = async () => {
+      await refreshConversations();
       connect();
-    });
+    };
+    init();
 
     return () => {
       if (eventSourceRef.current) {

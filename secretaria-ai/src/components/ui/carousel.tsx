@@ -89,12 +89,10 @@ function Carousel({
   )
 
   React.useEffect(() => {
-    if (!api || !setApi) return
-    setApi(api)
-  }, [api, setApi])
-
-  React.useEffect(() => {
     if (!api) return
+
+    if (setApi) setApi(api)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     onSelect(api)
     api.on("reInit", onSelect)
     api.on("select", onSelect)
@@ -102,7 +100,7 @@ function Carousel({
     return () => {
       api?.off("select", onSelect)
     }
-  }, [api, onSelect])
+  }, [api, onSelect, setApi])
 
   return (
     <CarouselContext.Provider
