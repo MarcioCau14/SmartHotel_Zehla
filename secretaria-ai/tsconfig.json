@@ -10,7 +10,7 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
-    "noImplicitAny": false,
+    "noImplicitAny": false, // TODO: Corrigir erros de tipo pré-existentes e reativar noImplicitAny
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
