@@ -1,6 +1,6 @@
 // ZEHLA DDC - Cognitive OS Command Center
 // Hook: use-ddc-notifications
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Notification } from '@/types/ddc';
 import { fetchNotifications, markNotificationAsRead, markAllNotificationsAsRead } from './api';

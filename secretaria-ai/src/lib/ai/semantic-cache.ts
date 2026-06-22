@@ -73,11 +73,23 @@ function fnv1aHash(str: string): string {
 }
 
 /**
+ * Normalize text by lowercasing, removing punctuation, collapsing whitespace, and trimming.
+ */
+export function normalizeText(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"'’]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
  * Generate a cache key from provider, prompt, and optional parameters.
  */
 export function buildCacheKey(provider: string, prompt: string, params?: Record<string, unknown>): string {
+  const normalizedPrompt = normalizeText(prompt);
   const paramStr = params ? JSON.stringify(params) : '';
-  const raw = `${provider}::${prompt}::${paramStr}`;
+  const raw = `${provider}::${normalizedPrompt}::${paramStr}`;
   return fnv1aHash(raw);
 }
 

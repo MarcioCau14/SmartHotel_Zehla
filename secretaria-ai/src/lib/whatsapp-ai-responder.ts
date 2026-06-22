@@ -36,6 +36,14 @@ export async function respondToWhatsAppMessage(
       where: { tenantId: TENANT_ID }
     });
 
+    // 3.5. Carregar prompts de treinamento ativos (TrainingPrompts)
+    const trainingPrompts = await db.trainingPrompt.findMany({
+      where: {
+        tenantId: TENANT_ID,
+        isActive: true
+      }
+    });
+
     // 4. Carregar histórico da conversa (últimas 10 mensagens)
     const recentMessages = await db.conversationMessage.findMany({
       where: { conversationId },
@@ -44,7 +52,7 @@ export async function respondToWhatsAppMessage(
     });
 
     // 5. Estruturar os dados no System Prompt da IA
-    const hotelContext = `
+    let hotelContext = `
 Você é a ZÉLLA, uma assistente virtual de inteligência artificial ultra-atenciosa e hospitaleira da pousada "${property?.name || 'Pousada Serenity'}".
 Seu objetivo é sanar dúvidas, encantar o hóspede, sugerir acomodações e incentivar a reserva direta de forma natural, educada e calorosa.
 
@@ -67,10 +75,17 @@ ${knowledge.length > 0
 1. Responda de forma concisa e objetiva (máximo de 3 parágrafos curtos). Mensagens de WhatsApp muito longas cansam o hóspede.
 2. Seja hospitaleira, use emojis de forma moderada e profissional.
 3. Se o hóspede perguntar preços, apresente as opções de quartos disponíveis e pergunte a data desejada e quantidade de pessoas para refinar a cotação.
-4. Responda SEMPRE em português do Brasil de forma natural.
+4. Responda SEMPRE in português do Brasil de forma natural.
 5. Se for perguntado algo sobre o qual você não tem contexto ou informação no prompt, seja honesta e diga que vai verificar com o atendente humano, deixando a conversa em aberto.
 6. Nunca invente informações que não estejam listadas nos quartos ou no FAQ acima.
 `;
+
+    if (trainingPrompts.length > 0) {
+      hotelContext += `\n=== DIRETRIZES ADICIONAIS DE TREINAMENTO ===\n`;
+      for (const prompt of trainingPrompts) {
+        hotelContext += `[${prompt.type.toUpperCase()}] ${prompt.content}\n`;
+      }
+    }
 
     // 6. Estruturar o histórico para a IA
     let historyPrompt = 'Abaixo está o histórico recente de interações com este hóspede:\n';
@@ -83,7 +98,7 @@ ${knowledge.length > 0
     historyPrompt += `\n\n[Hóspede] (última mensagem recebida): ${lastMessageContent}\n\nZÉLLA (IA):`;
 
     // 7. Invocar a IA do ZaosNeuroRouter
-    const router = getNeuroRouter();
+    const router = await getNeuroRouter();
     const aiResponse = await router.generate({
       message: historyPrompt,
       systemPrompt: hotelContext,

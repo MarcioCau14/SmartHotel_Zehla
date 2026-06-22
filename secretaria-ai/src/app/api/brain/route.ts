@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const router = getNeuroRouter();
+    const router = await getNeuroRouter();
 
     // Force a specific provider if requested
     if (provider) {
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
-  const router = getNeuroRouter();
+  const router = await getNeuroRouter();
   const budget = router.getBudgetSnapshot();
   const cacheStats = router.getCacheStats();
   const circuitStates = router.getCircuitBreakerStates();

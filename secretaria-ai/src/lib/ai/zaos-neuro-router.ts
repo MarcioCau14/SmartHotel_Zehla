@@ -22,6 +22,13 @@ import { BudgetGuard, BudgetLevel, ProviderTier } from './budget-guard';
 import { ContextDiscretizer, CONTEXT_BUCKETS } from './context-discretizer';
 import { SemanticCache, buildCacheKey } from './semantic-cache';
 import { HeadroomClient } from './headroom-client';
+import ZAI from 'z-ai-web-dev-sdk';
+import {
+  persistBudgetGuard,
+  loadBudgetGuard,
+  persistRouterState,
+  loadRouterState
+} from './brain-persistence';
 
 /* ================================================================== */
 /* Type Definitions                                                     */
@@ -241,6 +248,7 @@ export class ZaosNeuroRouter {
   private semanticCache: SemanticCache;
   private headroomClient: HeadroomClient;
   private sessionStickiness: Map<string, string>;
+  private zai: any = null;
 
   /** Cost-weight for Thompson Sampling utility (default: 50) */
   private costWeight: number;
@@ -290,6 +298,18 @@ export class ZaosNeuroRouter {
     this.sessionStickiness = new Map();
     this.costWeight = config?.costWeight ?? 50;
     this.requestCounter = 0;
+  }
+
+  async initialize(): Promise<void> {
+    if (!this.zai) {
+      try {
+        this.zai = await ZAI.create();
+      } catch (err) {
+        console.error('[ZaosNeuroRouter] Failed to create ZAI client:', err);
+      }
+    }
+    await loadBudgetGuard(this.budgetGuard);
+    await loadRouterState(this);
   }
 
   /* -------------------------------------------------------------- */
@@ -800,34 +820,68 @@ export class ZaosNeuroRouter {
       compressionRatio = result.compressionRatio;
     }
 
-    // --- Mock LLM Dispatch ---
-    // In production, this would make an actual API call to the provider.
-    // For the demo, we simulate a response based on the context bucket.
-    const mockLatency = this.simulateProviderLatency(provider);
-    const mockResponse = this.generateMockResponse(
-      request.message,
-      classification.bucket,
-      providerName,
-    );
+    // --- Real LLM Dispatch ---
+    let responseText = '';
+    let isSuccess = true;
+    let dispatchLatency = 0;
+    let calculatedInputTokens = 0;
+    let calculatedOutputTokens = 0;
+
+    const dispatchStart = Date.now();
+    try {
+      if (!this.zai) {
+        this.zai = await ZAI.create();
+      }
+
+      const messages: any[] = [];
+      if (request.systemPrompt) {
+        messages.push({ role: 'system', content: request.systemPrompt });
+      }
+      messages.push({ role: 'user', content: finalPrompt });
+
+      const completion = await this.zai.chat.completions.create({
+        model: providerId,
+        messages,
+        thinking: { type: 'disabled' }
+      });
+
+      responseText = completion.choices[0]?.message?.content || '';
+      dispatchLatency = Date.now() - dispatchStart;
+
+      calculatedInputTokens = Math.ceil(finalPrompt.length / 4);
+      calculatedOutputTokens = Math.ceil(responseText.length / 4);
+    } catch (error) {
+      console.error(`[ZaosNeuroRouter] Error dispatching to provider ${providerId}:`, error);
+      isSuccess = false;
+      dispatchLatency = Date.now() - dispatchStart;
+
+      // Fallback response in case the SDK fails (so the guest still gets a response)
+      responseText = this.generateMockResponse(
+        request.message,
+        classification.bucket,
+        providerName,
+      );
+      calculatedInputTokens = Math.ceil(finalPrompt.length / 4);
+      calculatedOutputTokens = Math.ceil(responseText.length / 4);
+    }
 
     const totalLatencyMs = Date.now() - startTime;
 
-    // Calculate cost
-    const effectiveInputTokens = Math.ceil(finalPrompt.length / 4);
+    // Calculate cost based on actual tokens
     const costUsd = this.calculateCost(
       provider.registration,
-      effectiveInputTokens,
-      outputTokens,
+      calculatedInputTokens,
+      calculatedOutputTokens,
     );
 
     // --- Record in cache ---
-    if (!request.noCache) {
+    if (!request.noCache && isSuccess) {
       const cacheKey = buildCacheKey(providerId, request.message, request.params);
       this.semanticCache.set(
         cacheKey,
-        mockResponse,
-        effectiveInputTokens,
-        outputTokens,
+        responseText,
+        calculatedInputTokens,
+        calculatedOutputTokens,
         providerId,
       );
     }
@@ -835,15 +889,22 @@ export class ZaosNeuroRouter {
     // --- Record budget spend ---
     this.budgetGuard.addSpend(costUsd);
 
-    // --- Record feedback (mock: 98% success rate) ---
-    const success = Math.random() > 0.02;
-    this.recordFeedback(providerId, success, mockLatency);
+    // --- Record feedback ---
+    this.recordFeedback(providerId, isSuccess, dispatchLatency);
+
+    // --- Persist state asynchronously (fire-and-forget) ---
+    persistBudgetGuard(this.budgetGuard).catch(err =>
+      console.error('[ZaosNeuroRouter] Failed to persist budget guard state:', err)
+    );
+    persistRouterState(this.getProviders()).catch(err =>
+      console.error('[ZaosNeuroRouter] Failed to persist router state:', err)
+    );
 
     // Compute Thompson thetas for observability (if not already computed)
     const thetas = this._lastThetas;
 
     return {
-      response: mockResponse,
+      response: responseText,
       providerId,
       providerName,
       tier: provider.registration.tier,
@@ -851,8 +912,8 @@ export class ZaosNeuroRouter {
       confidence: classification.confidence,
       latencyMs: totalLatencyMs,
       costUsd: Math.round(costUsd * 1_000_000) / 1_000_000,
-      inputTokens: effectiveInputTokens,
-      outputTokens,
+      inputTokens: calculatedInputTokens,
+      outputTokens: calculatedOutputTokens,
       cacheHit: false,
       compressionRatio,
       circuitState: provider.circuitBreaker.getState(),
@@ -937,9 +998,10 @@ let _routerInstance: ZaosNeuroRouter | null = null;
  * Get or create the global ZaosNeuroRouter singleton.
  * Safe for server-side use in Next.js API routes.
  */
-export function getNeuroRouter(): ZaosNeuroRouter {
+export async function getNeuroRouter(): Promise<ZaosNeuroRouter> {
   if (!_routerInstance) {
     _routerInstance = new ZaosNeuroRouter();
+    await _routerInstance.initialize();
   }
   return _routerInstance;
 }
