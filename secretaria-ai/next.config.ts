@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   },
   reactStrictMode: false,
   allowedDevOrigins: ["*"],
+  output: "standalone",
 };
 
 export default nextConfig;
