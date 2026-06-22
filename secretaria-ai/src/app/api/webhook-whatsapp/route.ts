@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { respondToWhatsAppMessage } from '@/lib/whatsapp-ai-responder';
 
 const TENANT_ID = 'client-001';
 
@@ -195,6 +196,12 @@ export async function POST(request: NextRequest) {
           conversationId: conversation.id
         })
       }
+    });
+
+    // 7. [BACKGROUND - fire-and-forget] Disparar resposta automática da IA de forma assíncrona
+    // Não usamos await para responder imediatamente HTTP 200 à Meta e evitar timeout
+    respondToWhatsAppMessage(conversation.id, guest.id, messageText).catch((err) => {
+      console.error('[whatsapp-webhook] Erro ao disparar resposta assíncrona da IA:', err);
     });
 
     return NextResponse.json({ status: 'ok', processed: 1 });
