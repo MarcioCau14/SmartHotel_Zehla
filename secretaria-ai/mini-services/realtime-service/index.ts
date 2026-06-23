@@ -2,9 +2,13 @@ import { Server } from 'socket.io';
 
 const PORT = 3005;
 
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:3000', 'https://smart-hotel-zehla.vercel.app'];
+
 const io = new Server(PORT, {
   cors: {
-    origin: ['http://localhost:3000'],
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
   },
   connectionStateRecovery: {

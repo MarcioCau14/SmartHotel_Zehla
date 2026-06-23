@@ -19,3 +19,4 @@
 # Allow the secretaria-ai project (SmartHotel_Zehla)
 !/secretaria-ai/
 !/secretaria-ai/**
+.vercel
