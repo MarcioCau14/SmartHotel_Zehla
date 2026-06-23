@@ -32,6 +32,11 @@ env:
   RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}  
   RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID_REALTIME }}
 
+
+defaults:
+  run:
+    working-directory: ./secretaria-ai
+
 jobs:  
   # ===========================================================================  
   # PRE-DEPLOY: Run CI checks first (unless skipped)  

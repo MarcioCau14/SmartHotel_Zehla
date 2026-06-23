@@ -67,3 +67,7 @@ db/*.db
 /ddc_extracted/  
 /landing_extracted/  
 /extract-ddc/
+
+# python
+**/__pycache__/
+*.pyc

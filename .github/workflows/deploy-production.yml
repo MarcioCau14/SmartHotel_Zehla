@@ -37,6 +37,11 @@ env:
   RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}  
   RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID_REALTIME_PROD }}
 
+
+defaults:
+  run:
+    working-directory: ./secretaria-ai
+
 jobs:  
   # ===========================================================================  
   # CONFIRM: Require manual confirmation for dispatch  
