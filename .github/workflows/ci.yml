@@ -277,6 +277,9 @@ jobs:
             "/api/dashboard/activity"  
             "/api/config/keys"  
             "/api/zcc/dashboard-stats"  
+            "/api/monitoring"  
+            "/api/cron/budget-reset"  
+            "/api/cron/metrics-snapshot"  
           )
 
           PASSED=0  
