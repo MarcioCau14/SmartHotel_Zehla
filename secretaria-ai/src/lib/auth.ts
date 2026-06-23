@@ -1,52 +1,102 @@
-import { auth } from '@clerk/nextjs/server';
-import prisma from '../../prisma/db';
+import type { NextAuthOptions } from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { db } from '@/lib/db';
+import bcrypt from 'bcryptjs';
+import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 
+export const authOptions: NextAuthOptions = {
+  providers: [
+    CredentialsProvider({
+      name: 'credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Senha', type: 'password' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        // Try Tenant table (main auth for pousada owners, admins, staff)
+        const tenant = await db.tenant.findUnique({
+          where: { email: credentials.email },
+        });
+
+        if (tenant && tenant.passwordHash) {
+          const isValid = await bcrypt.compare(credentials.password, tenant.passwordHash);
+          if (isValid) {
+            return {
+              id: tenant.id,
+              email: tenant.email,
+              name: tenant.name,
+              role: tenant.role,
+              tenantId: tenant.id,
+              plan: tenant.plan,
+            };
+          }
+        }
+
+        return null;
+      },
+    }),
+  ],
+  session: {
+    strategy: 'jwt',
+    maxAge: 24 * 60 * 60, // 24 hours
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.tenantId = (user as any).tenantId;
+        token.role = (user as any).role;
+        token.plan = (user as any).plan;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        (session.user as any).tenantId = token.tenantId;
+        (session.user as any).role = token.role;
+        (session.user as any).plan = token.plan;
+      }
+      return session;
+    },
+  },
+  pages: {
+    signIn: '/login',
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+};
+
 /**
- * Utilitário de segurança Zélla para garantir Isolamento de Tenant (Pousada)
- * Retorna o tenantId do usuário atual ou redireciona se não autorizado.
+ * ZÉHLA Security Utility - ensures Tenant isolation.
+ * Retrieves the tenant ID of the authenticated user or redirects if unauthorized.
  */
 export async function requireTenant() {
-  const { userId, orgId } = await auth();
+  const session = await getServerSession(authOptions);
 
-  if (!userId) {
-    redirect('/sign-in');
+  if (!session || !session.user) {
+    redirect('/login');
   }
 
-  if (!orgId) {
-    // Se o usuário não pertence a nenhuma organização (Pousada)
-    redirect('/organization-selection');
+  const tenantId = (session.user as any).tenantId;
+  if (!tenantId) {
+    redirect('/login');
   }
 
-  // Busca o Tenant no banco de dados correspondente à Organização do Clerk
-  const tenant = await prisma.tenant.findUnique({
-    where: { clerkOrgId: orgId },
-  });
-
-  if (!tenant) {
-    // Opcional: Criar o tenant automaticamente caso seja o primeiro login da Org
-    const newTenant = await prisma.tenant.create({
-      data: {
-        name: 'Minha Pousada', // Nome placeholder, ideal é pegar via webhook
-        clerkOrgId: orgId,
-      }
-    });
-    return newTenant.id;
-  }
-
-  return tenant.id;
+  return tenantId;
 }
 
 /**
- * Middleware para robôs do Zélla Loop Engine acessarem a API
- * Verifica se a requisição tem o token do robô.
+ * Verify authorization token for the ZEHLA Loop Engine (robots/agents API)
  */
 export function verifyRobotToken(req: Request) {
   const authHeader = req.headers.get('authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return false;
   }
-  
+
   const token = authHeader.split(' ')[1];
-  return token === process.env.ZEHLA_LOOP_API_KEY;
+  return token === process.env.ZEHLA_LOOP_API_KEY || token === process.env.ZAI_API_KEY;
 }

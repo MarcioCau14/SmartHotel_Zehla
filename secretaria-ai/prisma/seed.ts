@@ -7,6 +7,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -289,8 +290,22 @@ function generateSnapshots() {
 async function main() {
   console.log('🌱 ZEHLA Seed — Populando banco de dados...\n');
 
+  console.log('🧹 Limpando dados de semente antigos...');
+  await prisma.performanceSnapshot.deleteMany({});
+  await prisma.quickAction.deleteMany({});
+  await prisma.notification.deleteMany({});
+  await prisma.trainingPrompt.deleteMany({});
+  await prisma.knowledgeEntry.deleteMany({});
+  await prisma.conversationMessage.deleteMany({});
+  await prisma.conversationLog.deleteMany({});
+  await prisma.booking.deleteMany({});
+  await prisma.guest.deleteMany({});
+  await prisma.room.deleteMany({});
+  await prisma.property.deleteMany({});
+  
   // 1. Criar Tenant
   console.log('1. Criando Tenant (Pousada Serenity)...');
+  const ownerPassword = await bcrypt.hash('zehla2024', 12);
   const tenant = await prisma.tenant.upsert({
     where: { id: TENANT_ID },
     update: {},
@@ -298,7 +313,7 @@ async function main() {
       id: TENANT_ID,
       name: PROPERTY_NAME,
       email: 'contato@pousadaserenity.com.br',
-      passwordHash: '$2b$10$MOCK_HASH_FOR_SEED',
+      passwordHash: ownerPassword,
       phone: '11999887766',
       role: 'owner',
       plan: 'professional',
@@ -575,7 +590,100 @@ async function main() {
     });
   }
 
-  console.log('\n✅ Seed completo! Banco populado com dados da Pousada Serenity.');
+  // Seeding credentials requested by user
+  console.log('\n🔐 Criando contas de demonstração NextAuth...');
+
+  const admin1Email = 'admin@zehla.ai';
+  const admin1Password = await bcrypt.hash('zehla2024', 12);
+  const admin1 = await prisma.tenant.upsert({
+    where: { email: admin1Email },
+    update: { passwordHash: admin1Password },
+    create: {
+      id: 'admin-ai-id',
+      email: admin1Email,
+      name: 'ZEHLA Admin AI',
+      passwordHash: admin1Password,
+      role: 'admin',
+      plan: 'business',
+      status: 'active',
+    },
+  });
+  console.log(`   Admin (AI) Tenant criado: ${admin1.email} (senha: zehla2024)`);
+
+  await prisma.property.upsert({
+    where: { tenantId: admin1.id },
+    update: {},
+    create: {
+      tenantId: admin1.id,
+      name: 'ZEHLA Admin AI - Propriedade',
+      type: 'pousada',
+    },
+  });
+
+  const admin2Email = 'admin@zehla.com.br';
+  const admin2Password = await bcrypt.hash('Admin@123', 12);
+  const admin2 = await prisma.tenant.upsert({
+    where: { email: admin2Email },
+    update: { passwordHash: admin2Password },
+    create: {
+      id: 'admin-br-id',
+      email: admin2Email,
+      name: 'ZEHLA Admin BR',
+      passwordHash: admin2Password,
+      role: 'admin',
+      plan: 'business',
+      status: 'active',
+    },
+  });
+  console.log(`   Admin (BR) Tenant criado: ${admin2.email} (senha: Admin@123)`);
+
+  await prisma.property.upsert({
+    where: { tenantId: admin2.id },
+    update: {},
+    create: {
+      tenantId: admin2.id,
+      name: 'ZEHLA Admin BR - Propriedade',
+      type: 'pousada',
+    },
+  });
+
+  const demoEmail = 'demo@pousada.com.br';
+  const demoPassword = await bcrypt.hash('Demo@123', 12);
+  const demoTenant = await prisma.tenant.upsert({
+    where: { email: demoEmail },
+    update: { passwordHash: demoPassword },
+    create: {
+      id: 'demo-tenant-id',
+      name: 'Pousada Paraíso Demo',
+      email: demoEmail,
+      passwordHash: demoPassword,
+      phone: '11999999999',
+      plan: 'pro',
+      status: 'active',
+      trialStart: new Date(),
+      trialEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      property: {
+        create: {
+          name: 'Pousada Paraíso Demo',
+          type: 'pousada',
+          city: 'Paraty',
+          state: 'RJ',
+          pixKey: '12345678901',
+          pixKeyType: 'cpf',
+          rooms: {
+            create: [
+              { name: 'Suíte Master', type: 'suite', capacity: 2, price: 350, status: 'disponivel' },
+              { name: 'Quarto Standard', type: 'standard', capacity: 2, price: 200, status: 'disponivel' },
+              { name: 'Chalé Luxo', type: 'chale', capacity: 4, price: 500, status: 'disponivel' },
+            ],
+          },
+        },
+      },
+    },
+  });
+  console.log(`   Demo Tenant criado: ${demoTenant.email} (senha: Demo@123)`);
+
+  console.log('\n✅ Seed completo! Banco populado com dados da Pousada Serenity e contas de demonstração.');
   console.log(`   Tenant: ${tenant.id}`);
   console.log(`   Hóspedes: ${guestRecords.length}`);
   console.log(`   Conversas: ${conversations.length}`);

@@ -7,10 +7,10 @@ import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { SavingsCalculator } from '@/components/landing/SavingsCalculator';
 import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
-
+import { ArchitectureSection } from '@/components/landing/ArchitectureSection';
 import BookingPlatformsMarquee from '@/components/landing/BookingPlatformsMarquee';
 import { SecuritySection } from '@/components/landing/SecuritySection';
-
+import { IntegrationsSection } from '@/components/landing/IntegrationsSection';
 import { BetaFounderSection } from '@/components/landing/BetaFounderSection';
 import { PricingSection } from '@/components/landing/PricingSection';
 import { FAQSection } from '@/components/landing/FAQSection';
@@ -25,11 +25,12 @@ export default function HomePage() {
       <PainPointsSection />
       <FeaturesSection />
       <HowItWorksSection />
-      <BookingPlatformsMarquee />
       <SavingsCalculator />
       <TestimonialsSection />
+      <ArchitectureSection />
+      <BookingPlatformsMarquee />
       <SecuritySection />
-
+      <IntegrationsSection />
       <BetaFounderSection />
       <PricingSection />
       <FAQSection />

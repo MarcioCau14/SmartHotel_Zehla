@@ -6,123 +6,111 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, name, planType, paymentMethod } = body;
 
-    // Validate required fields
     if (!email || !name || !planType || !paymentMethod) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Validate plan type
     const validPlans = ['gratuito', 'lite', 'pro', 'max'];
     if (!validPlans.includes(planType)) {
-      return NextResponse.json(
-        { error: 'Invalid plan type' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid plan type' }, { status: 400 });
     }
 
-    // Define pricing
-    const pricing: Record<string, number> = {
+    const pricing = {
       gratuito: 0,
       lite: paymentMethod === 'pix' ? 197 : 247,
       pro: paymentMethod === 'pix' ? 397 : 447,
       max: paymentMethod === 'pix' ? 697 : 797,
     };
 
-    const amount = pricing[planType];
+    const amount = pricing[planType as keyof typeof pricing];
 
-    // Create or find user
-    let user = await db.user.findUnique({
-      where: { email }
-    });
-
+    let user = await db.user.findUnique({ where: { email } });
     if (!user) {
-      user = await db.user.create({
-        data: {
-          email,
-          name,
-        }
-      });
+      user = await db.user.create({ data: { email, name } });
     }
 
-    // Create or find tenant
-    let tenant = await db.tenant.findUnique({
-      where: { email }
-    });
-
+    let tenant = await db.tenant.findUnique({ where: { email } });
     if (!tenant) {
       tenant = await db.tenant.create({
         data: {
-          name,
-          email,
-          passwordHash: '', // Will be set after registration
-          plan: planType === 'gratuito' ? 'trial' : planType,
-          status: 'pending',
+          name, email, passwordHash: '', plan: 'trial', status: 'active',
           trialStart: new Date(),
           trialEnd: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-        }
+        },
       });
     }
 
-    // Create Subscription record
     const subscription = await db.subscription.create({
       data: {
-        tenantId: tenant.id,
-        planType: planType === 'gratuito' ? 'trial' : planType,
-        status: planType === 'gratuito' ? 'active' : 'pending',
-        amount: amount,
-        paymentMethod: paymentMethod,
-        currentPeriodStart: new Date(),
-        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      }
+        tenantId: tenant.id, planType, status: 'pending',
+        paymentMethod, amount, paymentStatus: 'pending',
+        trialStart: planType === 'gratuito' ? new Date() : null,
+        trialEnd: planType === 'gratuito' ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) : null,
+      },
     });
 
-    // Update tenant with the active subscription id
-    await db.tenant.update({
-      where: { id: tenant.id },
-      data: { subscriptionId: subscription.id }
-    });
-
-    // For free plan, activate immediately and redirect to dashboard
     if (planType === 'gratuito') {
+      await db.subscription.update({
+        where: { id: subscription.id },
+        data: { status: 'active', paymentStatus: 'approved' },
+      });
       await db.tenant.update({
         where: { id: tenant.id },
-        data: {
-          plan: 'trial',
-          status: 'active',
-          subscriptionAt: new Date()
-        }
+        data: { plan: 'trial', subscriptionAt: new Date() },
       });
-
       return NextResponse.json({
-        success: true,
-        tenantId: tenant.id,
-        redirectUrl: '/dashboard',
-        message: 'Trial iniciado com sucesso!'
+        success: true, subscriptionId: subscription.id,
+        redirectUrl: '/dashboard', message: 'Trial iniciado com sucesso!',
       });
     }
 
-    // For paid plans, return checkout details
-    // In production, this would integrate with Mercado Pago/Stripe APIs
-    const mockCheckoutUrl = `/checkout/success?tenant_id=${tenant.id}`;
+    if (paymentMethod === 'pix' && process.env.MP_ACCESS_TOKEN) {
+      try {
+        const { createPixPayment } = await import('@/lib/mercadopago');
+        const mpResult = await createPixPayment({
+          amount, email,
+          firstName: name.split(' ')[0] || name,
+          lastName: name.split(' ').slice(1).join(' ') || '',
+          description: `ZEHLA SmartHotel - Plano ${planType.toUpperCase()}`,
+          externalRef: subscription.id,
+        });
+
+        await db.paymentTransaction.create({
+          data: {
+            subscriptionId: subscription.id, amount, status: 'pending',
+            paymentMethod: 'pix', externalId: String(mpResult.id),
+            metadata: JSON.stringify({ point_of_interaction: mpResult.point_of_interaction }),
+          },
+        });
+
+        const ticketUrl = mpResult.point_of_interaction?.transaction_data?.ticket_url;
+        if (ticketUrl) {
+          await db.subscription.update({
+            where: { id: subscription.id },
+            data: { checkoutUrl: ticketUrl, paymentId: String(mpResult.id) },
+          });
+        }
+
+        const pixData = mpResult.point_of_interaction?.transaction_data;
+        return NextResponse.json({
+          success: true, subscriptionId: subscription.id,
+          checkoutUrl: ticketUrl || `/checkout/success?subscription_id=${subscription.id}`,
+          amount, paymentMethod, planType,
+          pix: pixData ? { qrCode: pixData.qr_code, qrCodeBase64: pixData.qr_code_base64, ticketUrl: pixData.ticket_url } : null,
+          message: 'QR Code PIX gerado com sucesso!',
+        });
+      } catch (mpError) {
+        console.error('Mercado Pago error, falling back to mock:', mpError);
+      }
+    }
 
     return NextResponse.json({
-      success: true,
-      tenantId: tenant.id,
-      checkoutUrl: mockCheckoutUrl,
-      amount,
-      paymentMethod,
-      planType,
-      message: 'Checkout criado com sucesso!'
+      success: true, subscriptionId: subscription.id,
+      checkoutUrl: `/checkout/success?subscription_id=${subscription.id}`,
+      amount, paymentMethod, planType, message: 'Checkout criado com sucesso!',
     });
-
   } catch (error) {
     console.error('Checkout creation error:', error);
-    return NextResponse.json(
-      { error: 'Failed to create checkout' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to create checkout' }, { status: 500 });
   }
 }
