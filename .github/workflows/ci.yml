@@ -1,201 +1,47 @@
-name: ZEHLA PRIME SB29 — Zero-Trust CI Barrier
+name: ZEHLA CI
 
 on:
   push:
-    branches: [main]
-    paths:
-      - 'Projetos/zehla-backend/**'
+    branches: [ main ]
   pull_request:
-    branches: [main]
-    paths:
-      - 'Projetos/zehla-backend/**'
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
-
-env:
-  NODE_VERSION: '20'
-  PNPM_VERSION: '9'
-
-defaults:
-  run:
-    working-directory: ./Projetos/zehla-backend
+    branches: [ main ]
 
 jobs:
-  lint-and-typecheck:
-    name: 🔍 Lint & TypeScript
+  validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+
+    strategy:
+      matrix:
+        node-version: [20.x]
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: secretaria-ai/package-lock.json
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: ${{ env.PNPM_VERSION }}
-          run_install: false
+    - name: Install dependencies
+      run: |
+        cd secretaria-ai
+        npm ci
 
-      - name: Get pnpm store path
-        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+    - name: Generate Prisma Client
+      run: |
+        cd secretaria-ai
+        npx prisma generate
+      env:
+        DATABASE_URL: "file:./db/test.db"
 
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('Projetos/zehla-backend/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: ESLint
-        run: pnpm lint || true
-
-      - name: TypeScript check
-        run: npx tsc --noEmit
-
-  unit-tests:
-    name: 🧪 Unit & Integration Tests
-    needs: lint-and-typecheck
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: zehla_test
-          POSTGRES_PASSWORD: zehla_password
-          POSTGRES_DB: smarthotel_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: ${{ env.PNPM_VERSION }}
-          run_install: false
-
-      - name: Get pnpm store path
-        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('Projetos/zehla-backend/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Prisma Generate & Push (Ephemeral DB)
-        env:
-          DATABASE_URL: postgresql://zehla_test:zehla_password@localhost:5432/smarthotel_test
-        run: |
-          npx prisma generate
-          npx prisma db push --accept-data-loss
-
-      - name: Run Vitest (SB21 Integration + Unit)
-        env:
-          DATABASE_URL: postgresql://zehla_test:zehla_password@localhost:5432/smarthotel_test
-          JWT_SECRET: "ci_dummy_secret_for_testing"
-          META_APP_SECRET: "ci_dummy_meta_secret"
-          META_VERIFY_TOKEN: "ci_dummy_verify_token"
-        run: pnpm test:ci
-
-  e2e-tests:
-    name: 🎭 E2E (Playwright)
-    needs: unit-tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: ${{ env.PNPM_VERSION }}
-          run_install: false
-
-      - name: Get pnpm store path
-        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('Projetos/zehla-backend/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: Run E2E tests
-        env:
-          CI: 'true'
-        run: pnpm test:e2e
-
-      - name: Upload Playwright artifacts on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-artifacts-${{ github.run_id }}
-          path: |
-            playwright-report/
-            test-results/
-          retention-days: 7
-
-  deploy-staging:
-    name: 🚀 Deploy Staging (Fly.io)
-    if: github.ref == 'refs/heads/main'
-    needs: e2e-tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Flyctl
-        uses: superfly/flyctl-actions/setup-flyctl@v1
-
-      - name: Deploy para Fly.io
-        run: flyctl deploy --remote-only
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    - name: Run CI check (Lint, Typecheck, Test)
+      run: |
+        cd secretaria-ai
+        npm run ci
+      env:
+        DATABASE_URL: "file:./db/test.db"
+        NEXTAUTH_SECRET: "ci-secret-safe-and-secure"
+        NEXTAUTH_URL: "http://localhost:3000"
