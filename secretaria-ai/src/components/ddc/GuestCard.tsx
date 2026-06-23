@@ -125,74 +125,70 @@ export function GuestCard({
                     onClick={(e) => {
                       e.stopPropagation();
                       onMoveToStage?.(stage.id);
-                    }}
-                    disabled={guest.status === stage.id}
-                  >
-                    Mover para <span className={`ml-1 font-medium bg-gradient-to-r ${stage.color} bg-clip-text text-transparent`}>{stage.label}</span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                                         }}  
+                   disabled={guest.status === stage.id}  
+                 >  
+                   Mover para <span className={`ml-1 font-medium bg-gradient-to-r ${stage.color} bg-clip-text text-transparent`}>{stage.label}</span>  
+                 </DropdownMenuItem>  
+               ))}  
+             </DropdownMenuContent>  
+           </DropdownMenu>  
+         </div>
 
-          {/* Status & Score */}
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant="outline" className={`text-[8px] h-4 ${getGuestStatusColor(guest.status)}`}>
-              {guest.status === 'hot' ? 'Quente' :
-               guest.status === 'warm' ? 'Morno' :
-               guest.status === 'cold' ? 'Frio' :
-               guest.status === 'closed' ? 'Fechado' :
-               guest.status === 'lost' ? 'Perdido' : 'Novo'}
-            </Badge>
-            <div className="flex items-center gap-1">
-              <Star className="w-3 h-3 text-amber-400" />
-              <span className={`text-[9px] font-medium ${
-                (guest.score ?? 0) >= 80 ? 'text-emerald-400' :
-                (guest.score ?? 0) >= 60 ? 'text-yellow-400' :
-                'text-red-400'
-              }`}>
-                Score: {guest.score ?? 0}%
-              </span>
-            </div>
-            <TrendingUp className="w-3 h-3 text-emerald-400" />
-          </div>
+         <div className="flex items-center gap-2 mb-2">  
+           <Badge variant="outline" className={`text-[8px] h-4 ${getGuestStatusColor(guest.status)}`}>  
+             {guest.status === 'hot' ? 'Quente' :  
+              guest.status === 'warm' ? 'Morno' :  
+              guest.status === 'cold' ? 'Frio' :  
+              guest.status === 'closed' ? 'Fechado' :  
+              guest.status === 'lost' ? 'Perdido' : 'Novo'}  
+           </Badge>  
+           <div className="flex items-center gap-1">  
+             <Star className="w-3 h-3 text-amber-400" />  
+             <span className={`text-[9px] font-medium ${  
+               (guest.score ?? 0) >= 80 ? 'text-emerald-400' :  
+               (guest.score ?? 0) >= 60 ? 'text-yellow-400' :  
+               'text-red-400'  
+             }`}>  
+               Score: {guest.score ?? 0}%  
+             </span>  
+           </div>  
+           <TrendingUp className="w-3 h-3 text-emerald-400" />  
+         </div>
 
-          {/* Value */}
-          {guest.value > 0 && (
-            <div className="mb-2">
-              <span className="text-lg font-bold text-white">
-                {formatCurrency(guest.value)}
-              </span>
-            </div>
-          )}
+         {guest.value > 0 && (  
+           <div className="mb-2">  
+             <span className="text-lg font-bold text-white">  
+               {formatCurrency(guest.value)}  
+             </span>  
+           </div>  
+         )}
 
-          {/* AI Insight */}
-          {guest.lastMessage && (
-            <div className="bg-white/[0.02] border border-white/[0.04] rounded-lg p-2">
-              <div className="flex items-start gap-1.5">
-                <Star className="w-3 h-3 text-violet-400 mt-0.5 flex-shrink-0" />
-                <p className="text-[9px] text-white/60 line-clamp-2">
-                  {guest.lastMessage}
-                </p>
-              </div>
-            </div>
-          )}
+         {guest.lastMessage && (  
+           <div className="bg-white/[0.02] border border-white/[0.04] rounded-lg p-2">  
+             <div className="flex items-start gap-1.5">  
+               <Star className="w-3 h-3 text-violet-400 mt-0.5 flex-shrink-0" />  
+               <p className="text-[9px] text-white/60 line-clamp-2">  
+                 {guest.lastMessage}  
+               </p>  
+             </div>  
+           </div>  
+         )}
 
-          {/* Score Progress Bar */}
-          <div className="mt-2 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
-            <motion.div
-              className={`h-full ${
-                (guest.score ?? 0) >= 80 ? 'bg-gradient-to-r from-emerald-500 to-green-500' :
-                (guest.score ?? 0) >= 60 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :
-                'bg-gradient-to-r from-red-500 to-pink-500'
-              }`}
-              initial={{ width: 0 }}
-              animate={{ width: `${guest.score ?? 0}%` }}
-              transition={{ duration: 0.5 }}
-            />
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
+         <div className="mt-2 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">  
+           <motion.div  
+             className={`h-full ${  
+               (guest.score ?? 0) >= 80 ? 'bg-gradient-to-r from-emerald-500 to-green-500' :  
+               (guest.score ?? 0) >= 60 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :  
+               'bg-gradient-to-r from-red-500 to-pink-500'  
+             }`}  
+             initial={{ width: 0 }}  
+             animate={{ width: `${guest.score ?? 0}%` }}  
+             transition={{ duration: 0.5 }}  
+           />  
+         </div>  
+       </CardContent>  
+     </Card>  
+   </motion.div>  
+ );  
 }

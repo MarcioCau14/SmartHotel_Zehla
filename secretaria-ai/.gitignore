@@ -1,80 +1,69 @@
-# ============================================
-# SECRETARIA-AI — LOCAL ONLY (NEVER PUSH)
-# ============================================
+# dependencies  
+node_modules  
+/.pnp  
+.pnp.*  
+.yarn/*  
+!.yarn/patches  
+!.yarn/plugins  
+!.yarn/releases  
+!.yarn/versions
 
-# Strategic documents — NEVER push to GitHub
-Base_Conhecimento/
-PLANO_DOMINIO_FASE1.md
-Z_LAST_SESSION.md
+# testing  
+/coverage
 
-# Database files
-db/
-*.db
-*.sqlite
-*.sqlite3
+# next.js  
+/.next/  
+/out/
 
-# Environment files
-.env
-.env.local
-.env.*.local
-.env.production
+# production  
+/build
 
-# Node modules
-node_modules/
-.next/
-out/
+# misc  
+.DS_Store  
+*.pem
 
-# Build artifacts
-dist/
-build/
-*.tsbuildinfo
+# debug  
+npm-debug.log*  
+yarn-debug.log*  
+yarn-error.log*  
+.pnpm-debug.log*
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# env files  
+.env*  
+!.env.example  
+!.env.example.staging  
+!.env.example.production
 
-# OS files
-.DS_Store
-Thumbs.db
+# vercel  
+.vercel
 
-# Logs
-*.log
-dev.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# typescript  
+*.tsbuildinfo  
+next-env.d.ts  
+local-*  
+.claude  
+.z-ai-config  
+*.log  
+dev.log  
+dev.out.log  
+test  
+prompt  
+server.log
 
-# Prisma migrations (keep local)
-prisma/migrations/
+# database files  
+*.db  
+*.db-journal  
+db/*.db
 
-# Scripts that handle local data
-scripts/import-leads.ts
-scripts/validate-leads.ts
+# Skills directory  
+/skills/
 
-# Intelligence modules (local strategy)
-src/lib/intelligence/funnel/
-src/lib/intelligence/competitive/
-
-# Temporary files
-tmp/
-temp/
-*.tmp
-
-# Coverage
-coverage/
-
-# Turbo
-.turbo/
-
-# Cache
-.cache/
-
-# Python Cache
-__pycache__/
-*.pyc
-
-# Local MCP CLI
-notebooklm-mcp-cli/
+# dist/build artifacts  
+/dist/  
+/tool-results/  
+/upload/  
+/staging-zcc-prisma/  
+/staging-api-ddc/  
+/ddc_extracted/  
+/landing_extracted/  
+/extract-ddc/

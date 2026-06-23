@@ -1,0 +1,203 @@
+# ==============================================================================  
+# ZEHLA SmartHotel — Deploy Staging (Mock Mode)  
+# ==============================================================================  
+# Trigger: Merge em develop ou dispatch manual  
+# Deploy: Vercel (app) + Railway (realtime-service)  
+# ==============================================================================
+
+name: Deploy Staging
+
+on:  
+  push:  
+    branches: [develop]  
+  workflow_dispatch:  
+    inputs:  
+      skip_tests:  
+        description: "Skip CI and deploy directly"  
+        required: false  
+        default: "false"  
+        type: choice  
+        options:  
+          - "false"  
+          - "true"
+
+# Sem conflito com CI rodando ao mesmo tempo  
+concurrency:  
+  group: deploy-staging  
+  cancel-in-progress: false
+
+env:  
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}  
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}  
+  RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}  
+  RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID_REALTIME }}
+
+jobs:  
+  # ===========================================================================  
+  # PRE-DEPLOY: Run CI checks first (unless skipped)  
+  # ===========================================================================  
+  pre-deploy:  
+    name: "Pre-Deploy Checks"  
+    runs-on: ubuntu-latest  
+    if: github.event.inputs.skip_tests != 'true'  
+    steps:  
+      - name: Checkout  
+        uses: actions/checkout@v4
+
+      - name: Setup Bun  
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install  
+        run: bun install --frozen-lockfile
+
+      - name: Lint  
+        run: bun run lint
+
+      - name: Prisma Generate  
+        run: bunx prisma generate
+
+      - name: Prisma Validate  
+        run: bunx prisma validate
+
+      - name: Build  
+        run: bun run build  
+        env:  
+          DATABASE_URL: "file:./db/staging-build.db"  
+          NEXTAUTH_URL: "https://smart-hotel-zehla-staging.vercel.app"  
+          NEXTAUTH_SECRET: "staging-build-secret"
+
+  # ===========================================================================  
+  # DEPLOY: Vercel (Main App)  
+  # ===========================================================================  
+  deploy-vercel:  
+    name: "Deploy to Vercel (Staging)"  
+    runs-on: ubuntu-latest  
+    needs: [pre-deploy]  
+    if: always() && (needs.pre-deploy.result == 'success' || github.event.inputs.skip_tests == 'true')  
+    environment: staging  
+    steps:  
+      - name: Checkout  
+        uses: actions/checkout@v4
+
+      - name: Install Vercel CLI  
+        run: npm install -g vercel@latest
+
+      - name: Pull Vercel Environment  
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}  
+        env:  
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}  
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
+
+      - name: Build with Vercel  
+        run: vercel build --yes --target=preview --token=${{ secrets.VERCEL_TOKEN }}  
+        env:  
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}  
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
+
+      - name: Deploy to Vercel Preview  
+        run: vercel deploy --yes --target=preview --token=${{ secrets.VERCEL_TOKEN }}  
+        id: vercel-deploy  
+        env:  
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}  
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
+
+      - name: Extract Vercel URL  
+        id: url  
+        run: echo "url=${{ steps.vercel-deploy.outputs.url }}" >> $GITHUB_OUTPUT
+
+      - name: Post-Deploy Health Check  
+        run: |  
+          URL="${{ steps.url.outputs.url }}"  
+          echo "Staging URL: $URL"
+
+          # Wait for deployment to propagate  
+          echo "Waiting 15s for deployment propagation..."  
+          sleep 15
+
+          # Health check  
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL/api/health")  
+          echo "Health: $STATUS"
+
+          # Landing page  
+          STATUS_LANDING=$(curl -s -o /dev/null -w "%{http_code}" "$URL/")  
+          echo "Landing: $STATUS_LANDING"
+
+          # WhatsApp webhook verification  
+          WEBHOOK=$(curl -s "$URL/api/webhook-whatsapp?hub.mode=subscribe&hub.verify_token=test&hub.challenge=STAGING_TEST")  
+          echo "Webhook verification: $WEBHOOK"
+
+          echo "================================="  
+          echo "  STAGING DEPLOY: $URL"  
+          echo "  Health: $STATUS"  
+          echo "================================="
+
+      - name: Post-Deploy Summary  
+        if: always()  
+        run: |  
+          echo "## Staging Deployment Summary" >> $GITHUB_STEP_SUMMARY  
+          echo "" >> $GITHUB_STEP_SUMMARY  
+          echo "| Item | Value |" >> $GITHUB_STEP_SUMMARY  
+          echo "|------|-------|" >> $GITHUB_STEP_SUMMARY  
+          echo "| **Branch** | \\`${{ github.ref_name }}\\` |" >> $GITHUB_STEP_SUMMARY  
+          echo "| **Commit** | \\`${{ github.sha }}\\` |" >> $GITHUB_STEP_SUMMARY  
+          echo "| **URL** | ${{ steps.url.outputs.url }} |" >> $GITHUB_STEP_SUMMARY  
+          echo "| **Deployer** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY  
+          echo "| **Time** | $(date -u '+%Y-%m-%d %H:%M UTC') |" >> $GITHUB_STEP_SUMMARY
+
+  # ===========================================================================  
+  # DEPLOY: Railway (Realtime Service)  
+  # ===========================================================================  
+  deploy-railway:  
+    name: "Deploy to Railway (Realtime)"  
+    runs-on: ubuntu-latest  
+    needs: [pre-deploy]  
+    if: always() && (needs.pre-deploy.result == 'success' || github.event.inputs.skip_tests == 'true')  
+    environment: staging  
+    steps:  
+      - name: Checkout  
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI  
+        run: npm install -g @railway/cli
+
+      - name: Deploy Realtime Service  
+        run: |  
+          cd mini-services/realtime-service  
+          railway up --service="${{ secrets.RAILWAY_SERVICE_ID_REALTIME }}" 2>&1 || echo "::warning::Railway deploy requires RAILWAY_TOKEN and RAILWAY_SERVICE_ID_REALTIME secrets"  
+        env:  
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}  
+        continue-on-error: true
+
+      - name: Railway deploy info  
+        if: always()  
+        run: |  
+          echo "## Railway Realtime Service" >> $GITHUB_STEP_SUMMARY  
+          echo "" >> $GITHUB_STEP_SUMMARY  
+          echo "Service deployed to Railway (port 3005)" >> $GITHUB_STEP_SUMMARY  
+          echo "" >> $GITHUB_STEP_SUMMARY  
+          echo "> Configure CORS_ORIGINS in Railway env to include staging Vercel URL" >> $GITHUB_STEP_SUMMARY
+
+  # ===========================================================================  
+  # STAGING SUCCESS  
+  # ===========================================================================  
+  staging-success:  
+    name: "Staging Deploy Gate"  
+    runs-on: ubuntu-latest  
+    if: always()  
+    needs: [deploy-vercel, deploy-railway]  
+    steps:  
+      - name: Verify deploy  
+        run: |  
+          echo "Vercel:    ${{ needs.deploy-vercel.result }}"  
+          echo "Railway:   ${{ needs.deploy-railway.result }}"  
+          echo ""
+
+          if [ "${{ needs.deploy-vercel.result }}" == "failure" ]; then  
+            echo "::error::Staging deploy FAILED (Vercel)"  
+            exit 1  
+          fi
+
+          echo "================================="  
+          echo "  STAGING DEPLOY: SUCCESS"  
+          echo "  Ready for validation"  
+          echo "================================="

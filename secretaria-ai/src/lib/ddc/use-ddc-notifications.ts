@@ -66,106 +66,94 @@ export function useDDCNotifications(autoRefresh: boolean = true): UseDDCNotifica
   const markAllAsReadMutation = useMutation({
     mutationFn: markAllNotificationsAsRead,
     onSuccess: () => {
-      queryClient.setQueryData<{ success: boolean; data: Notification[] }>(
+      queryClient.setQueryData(
         ['ddc-notifications'],
-        (old) => {
-          if (!old?.data) return old;
-          return {
-            ...old,
-            data: old.data.map(n => ({ ...n, status: 'read' as const, readAt: new Date() }))
-          };
-        }
-      );
-      queryClient.invalidateQueries({ queryKey: ['ddc-notifications'] });
-    }
-  });
+        (prev: any) =>        prev.map(n => ({ ...n, read: true }))  
+     );  
+     queryClient.invalidateQueries({ queryKey: ['ddc-notifications'] });  
+   }  
+ });
 
-  // Mark notification as read
-  const markAsRead = useCallback(async (notificationId: string) => {
-    try {
-      await markAsReadMutation.mutateAsync(notificationId);
-    } catch (err) {
-      console.error('Error marking notification as read:', err);
-      throw err;
-    }
-  }, [markAsReadMutation]);
+ const markAsRead = useCallback(async (notificationId: string) => {  
+   try {  
+     await markAsReadMutation.mutateAsync(notificationId);  
+   } catch (err) {  
+     console.error('Error marking notification as read:', err);  
+     throw err;  
+   }  
+ }, [markAsReadMutation]);
 
-  // Mark all notifications as read
-  const markAllAsRead = useCallback(async () => {
-    try {
-      await markAllAsReadMutation.mutateAsync();
-    } catch (err) {
-      console.error('Error marking all notifications as read:', err);
-      throw err;
-    }
-  }, [markAllAsReadMutation]);
+ const markAllAsRead = useCallback(async () => {  
+   try {  
+     await markAllAsReadMutation.mutateAsync();  
+   } catch (err) {  
+     console.error('Error marking all notifications as read:', err);  
+     throw err;  
+   }  
+ }, [markAllAsReadMutation]);
 
-  return {
-    notifications,
-    unreadCount,
-    isLoading,
-    error: error as Error | null,
-    markAsRead,
-    markAllAsRead,
-    refreshNotifications: () => refetch()
-  };
+ return {  
+   notifications,  
+   unreadCount,  
+   isLoading,  
+   error: error as Error | null,  
+   markAsRead,  
+   markAllAsRead,  
+   refreshNotifications: () => refetch()  
+ };  
 }
 
-// Hook for listening to new notifications
-export function useNotificationListener() {
-  const [lastNotification, setLastNotification] = useState<Notification | null>(null);
+export function useNotificationListener() {  
+ const [lastNotification, setLastNotification] = useState<Notification | null>(null);
 
-  useEffect(() => {
-    const handleNewNotification = (event: CustomEvent<Notification>) => {
-      setLastNotification(event.detail);
+ useEffect(() => {  
+   const handleNewNotification = (event: CustomEvent<Notification>) => {  
+     setLastNotification(event.detail);
 
-      // Play notification sound (if available)
-      const audio = new Audio('/sounds/notification.mp3');
-      audio.play().catch(() => {
-        // Ignore autoplay errors
-      });
+     try {  
+       const audio = new Audio('/sounds/notification.mp3');  
+       audio.play().catch(() => {});  
+     } catch {}
 
-      // Request browser notification permission and show notification
-      if (Notification.permission === 'granted') {
-        new Notification(event.detail.title, {
-          body: event.detail.message,
-          icon: '/logo.svg'
-        });
-      }
-    };
+     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {  
+       new Notification(event.detail.title, {  
+         body: event.detail.message,  
+         icon: '/logo.svg'  
+       });  
+     }  
+   };
 
-    window.addEventListener('ddc:new-notification', handleNewNotification as EventListener);
+   window.addEventListener('ddc:new-notification', handleNewNotification as EventListener);
 
-    // Request notification permission
-    if (Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
+   if (typeof Notification !== 'undefined' && Notification.permission === 'default') {  
+     Notification.requestPermission();  
+   }
 
-    return () => {
-      window.removeEventListener('ddc:new-notification', handleNewNotification as EventListener);
-    };
-  }, []);
+   return () => {  
+     window.removeEventListener('ddc:new-notification', handleNewNotification as EventListener);  
+   };  
+ }, []);
 
-  return lastNotification;
+ return lastNotification;  
 }
 
-// Hook for notification categories
-export function useNotificationCategories(notifications: Notification[]) {
-  const categories = {
-    new_guest: notifications.filter(n => n.type === 'new_guest'),
-    booking_created: notifications.filter(n => n.type === 'booking_created'),
-    payment_received: notifications.filter(n => n.type === 'payment_received'),
-    ai_offline: notifications.filter(n => n.type === 'ai_offline'),
-    escalation_needed: notifications.filter(n => n.type === 'escalation_needed')
-  };
+export function useNotificationCategories(notifications: Notification[]) {  
+ const categories = {  
+   new_guest: notifications.filter(n => n.type === 'new_guest'),  
+   booking_created: notifications.filter(n => n.type === 'booking_created'),  
+   payment_received: notifications.filter(n => n.type === 'payment_received'),  
+   ai_offline: notifications.filter(n => n.type === 'ai_offline'),  
+   escalation_needed: notifications.filter(n => n.type === 'escalation_needed')  
+ };
 
-  const getNotificationsByPriority = (priority: Notification['priority']) => {
-    return notifications.filter(n => n.priority === priority);
-  };
+ const getNotificationsByPriority = (priority: Notification['priority']) => {  
+   return notifications.filter(n => n.priority === priority);  
+ };
 
-  return {
-    categories,
-    getNotificationsByPriority,
-    urgentNotifications: categories.ai_offline.concat(categories.escalation_needed)
-  };
-}
+ return {  
+   categories,  
+   getNotificationsByPriority,  
+   urgentNotifications: categories.ai_offline.concat(categories.escalation_needed)  
+ };  
+}  
+

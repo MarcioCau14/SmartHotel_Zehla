@@ -1,0 +1,48 @@
+{  
+  "$schema": "https://openapi.vercel.sh/vercel.json",  
+  "framework": "nextjs",  
+  "buildCommand": "bun run build",  
+  "installCommand": "bun install --frozen-lockfile",  
+  "outputDirectory": ".next/standalone",  
+  "regions": ["gru1"],  
+  "headers": [  
+    {  
+      "source": "/api/(.*)",  
+      "headers": [  
+        {  
+          "key": "Cache-Control",  
+          "value": "no-store, max-age=0, must-revalidate"  
+        }  
+      ]  
+    },  
+    {  
+      "source": "/(.*)\\.(ico|png|jpg|jpeg|svg|webp|woff2)",  
+      "headers": [  
+        {  
+          "key": "Cache-Control",  
+          "value": "public, max-age=31536000, immutable"  
+        }  
+      ]  
+    }  
+  ],  
+  "rewrites": [  
+    {  
+      "source": "/api/webhook-whatsapp",  
+      "destination": "/api/webhook-whatsapp"  
+    },  
+    {  
+      "source": "/api/checkout/webhook",  
+      "destination": "/api/checkout/webhook"  
+    }  
+  ],  
+  "crons": [  
+    {  
+      "path": "/api/cron/budget-reset",  
+      "schedule": "0 0 * * *"  
+    },  
+    {  
+      "path": "/api/cron/metrics-snapshot",  
+      "schedule": "0 */6 * * *"  
+    }  
+  ]  
+}

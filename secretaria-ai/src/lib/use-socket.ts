@@ -1,98 +1,110 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';  
 import { io, Socket } from 'socket.io-client';
 
 const REALTIME_PORT = 3005;
 
-interface UseSocketOptions {
-  tenantId: string | null;
-  autoConnect?: boolean;
+interface UseSocketOptions {  
+  tenantId: string | null;  
+  autoConnect?: boolean;  
 }
 
-export function useSocket({ tenantId, autoConnect = true }: UseSocketOptions) {
-  const socketRef = useRef<Socket | null>(null);
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const reconnectAttemptsRef = useRef(0);
+export function useSocket({ tenantId, autoConnect = true }: UseSocketOptions) {  
+  const [socket, setSocket] = useState<Socket | null>(null);  
+  const [isConnected, setIsConnected] = useState(false);  
+  const reconnectAttemptsRef = useRef(0);  
   const maxReconnectDelay = 30000;
 
-  const getReconnectDelay = useCallback(() => {
-    const attempt = reconnectAttemptsRef.current;
-    const delay = Math.min(1000 * Math.pow(2, attempt), maxReconnectDelay);
-    return delay;
+  const getReconnectDelay = useCallback(() => {  
+    const attempt = reconnectAttemptsRef.current;  
+    const delay = Math.min(1000 * Math.pow(2, attempt), maxReconnectDelay);  
+    return delay;  
   }, []);
 
-  useEffect(() => {
+  useEffect(() => {  
     if (!autoConnect || !tenantId) return;
 
-    const connect = () => {
-      if (socketRef.current?.connected) return;
+    let activeSocket: Socket | null = null;  
+    let destroyed = false;
 
-      const socketInstance = io('/?XTransformPort=' + REALTIME_PORT, {
-        transports: ['websocket', 'polling'],
-        reconnection: false,
+    const connect = () => {  
+      if (activeSocket?.connected || destroyed) return;
+
+      const newSocket = io('/?XTransformPort=' + REALTIME_PORT, {  
+        transports: ['websocket', 'polling'],  
+        reconnection: false,  
       });
 
-      socketInstance.on('connect', () => {
-        console.log('[Socket] Connected:', socketInstance.id);
-        setIsConnected(true);
-        reconnectAttemptsRef.current = 0;
-        socketInstance.emit('tenant:join', tenantId);
+      newSocket.on('connect', () => {  
+        if (destroyed) return;  
+        console.log('[Socket] Connected:', newSocket.id);  
+        setIsConnected(true);  
+        reconnectAttemptsRef.current = 0;  
+        newSocket.emit('tenant:join', tenantId);  
       });
 
-      socketInstance.on('disconnect', (reason) => {
-        console.log('[Socket] Disconnected:', reason);
-        setIsConnected(false);
-        socketRef.current = null;
-        setSocket(null);
+      newSocket.on('disconnect', (reason) => {  
+        if (destroyed) return;  
+        console.log('[Socket] Disconnected:', reason);  
+        setIsConnected(false);  
+        activeSocket = null;
 
-        if (reason !== 'io server disconnect') {
-          const delay = getReconnectDelay();
-          reconnectAttemptsRef.current += 1;
-          console.log(`[Socket] Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current})`);
-          setTimeout(connect, delay);
-        }
+        if (reason !== 'io server disconnect') {  
+          const delay = getReconnectDelay();  
+          reconnectAttemptsRef.current += 1;  
+          console.log(`[Socket] Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current})`);  
+          setTimeout(connect, delay);  
+        }  
       });
 
-      socketInstance.on('connect_error', () => {
-        setIsConnected(false);
-        socketRef.current = null;
-        setSocket(null);
-        const delay = getReconnectDelay();
-        reconnectAttemptsRef.current += 1;
-        setTimeout(connect, delay);
+      newSocket.on('connect_error', () => {  
+        if (destroyed) return;  
+        setIsConnected(false);  
+        activeSocket = null;  
+        const delay = getReconnectDelay();  
+        reconnectAttemptsRef.current += 1;  
+        setTimeout(connect, delay);  
       });
 
-      socketRef.current = socketInstance;
-      setSocket(socketInstance);
+      activeSocket = newSocket;  
+      setSocket(newSocket);  
     };
 
     connect();
 
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.emit('tenant:leave', tenantId);
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
-      setSocket(null);
-      setIsConnected(false);
-    };
+    return () => {  
+      destroyed = true;  
+      if (activeSocket) {  
+        activeSocket.emit('tenant:leave', tenantId);  
+        activeSocket.disconnect();  
+        activeSocket = null;  
+      }  
+      setSocket(null);  
+      setIsConnected(false);  
+    };  
   }, [tenantId, autoConnect, getReconnectDelay]);
 
-  const emit = useCallback((event: string, data: unknown) => {
-    if (socketRef.current?.connected) {
-      socketRef.current.emit(event, data);
-    }
+  const emit = useCallback((event: string, data: unknown) => {  
+    setSocket((currentSocket) => {  
+      if (currentSocket?.connected) {  
+        currentSocket.emit(event, data);  
+      }  
+      return currentSocket;  
+    });  
   }, []);
 
-  const on = useCallback((event: string, handler: (...args: unknown[]) => void) => {
-    socketRef.current?.on(event, handler);
-    return () => {
-      socketRef.current?.off(event, handler);
-    };
+  const on = useCallback((event: string, handler: (...args: unknown[]) => void) => {  
+    let removeFn: (() => void) | undefined;  
+    setSocket((currentSocket) => {  
+      if (currentSocket) {  
+        currentSocket.on(event, handler);  
+        removeFn = () => currentSocket.off(event, handler);  
+      }  
+      return currentSocket;  
+    });  
+    return () => removeFn?.();  
   }, []);
 
-  return { socket, isConnected, emit, on };
+  return { socket, isConnected, emit, on };  
 }
