@@ -1,31 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { auth } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    const { userId, orgId } = session;
-
-    if (!userId) {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
-    const { planType, tenantId } = body; 
+    const { planType, tenantId: bodyTenantId } = body; 
 
     if (!planType) {
       return NextResponse.json({ error: 'Missing planType' }, { status: 400 });
     }
 
-    let tenant;
-    if (tenantId) {
-       tenant = await db.tenant.findUnique({ where: { id: tenantId }, include: { subscriptions: true } });
-    } else if (orgId) {
-       tenant = await db.tenant.findUnique({ where: { clerkOrgId: orgId }, include: { subscriptions: true } });
-    } else {
-       tenant = await db.tenant.findFirst({ where: { clerkOrgId: null }, include: { subscriptions: true } });
+    const tenantId = bodyTenantId || (session.user as any).tenantId;
+
+    if (!tenantId) {
+      return NextResponse.json({ error: 'Tenant ID required' }, { status: 400 });
     }
+
+    const tenant = await db.tenant.findUnique({
+      where: { id: tenantId },
+      include: { subscriptions: true }
+    });
 
     if (!tenant) {
       return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
