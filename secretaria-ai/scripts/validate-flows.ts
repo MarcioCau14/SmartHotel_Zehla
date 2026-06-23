@@ -171,24 +171,24 @@ async function main() {
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     const guest = await db.guest.findFirst({
-      where: { phone: '5511988887777' },
-      include: {
-        conversations: {
-          include: { messages: true }
-        }
-      }
+      where: { phone: '5511988887777' }
     });
 
-    if (guest && guest.conversations.length > 0) {
+    const conversation = await db.conversationLog.findFirst({
+      where: { guestPhone: '5511988887777' },
+      include: { messages: true }
+    });
+
+    if (guest && conversation) {
       console.log('   ✅ Registro do Hóspede e Conversa salvos no DB.');
-      const messages = guest.conversations[0].messages;
+      const messages = conversation.messages;
       console.log(`      Mensagens na timeline: ${messages.length}`);
       
       const lastMessage = messages[messages.length - 1];
       console.log(`      Último remetente: ${lastMessage.from}`);
       console.log(`      Conteúdo: "${lastMessage.content}"`);
     } else {
-      console.log('   ⚠️ Webhook processado, mas dados do hóspede não persistiram no DB.');
+      console.log('   ⚠️ Webhook processado, mas dados do hóspede ou conversa não persistiram no DB.');
     }
   } catch (error: any) {
     console.error(`   ❌ Falha no webhook do WhatsApp: ${error.message}`);
