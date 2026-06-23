@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import type { Guest } from '@/types/ddc';
-import { formatCurrency, getGuestStatusColor } from '@/lib/ddc/mock-data';
+import { formatCurrency, getGuestStatusColor } from '@/lib/ddc/ddc-utils';
 
 interface GuestCardProps {
   guest: Guest;

@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { DollarSign, Calendar, MessageSquare, TrendingUp, Sparkles, ArrowUpRight, Zap } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/ddc/mock-data';
+import { formatCurrency } from '@/lib/ddc/ddc-utils';
 
 interface RevenueMetricsProps {
   metrics: {

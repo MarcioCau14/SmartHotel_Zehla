@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Flame, CheckCircle2, XCircle, Clock, Filter, Search, Plus, MoreVertical } from 'lucide-react';
+import { Users, Flame, CheckCircle2, XCircle, Filter, Search, Plus, MoreVertical } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,45 +13,76 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { mockGuests, getGuestStatusColor, formatCurrency } from '@/lib/ddc/mock-data';
+import { getGuestStatusColor, formatCurrency } from '@/lib/ddc/ddc-utils';
 import type { Guest, GuestStatus } from '@/types/ddc';
 
-type PipelineStatus = 'new' | 'warm' | 'hot' | 'booked' | 'staying' | 'lost';
+type PipelineStatus = 'cold' | 'warm' | 'hot' | 'closed' | 'lost';
 
-export function GuestCRMPipeline({ pipeline, onStatusChange, onFilterChange }: any = {}) {
+interface GuestCRMPipelineProps {
+  pipeline?: {
+    hot: Guest[];
+    warm: Guest[];
+    cold: Guest[];
+    closed: Guest[];
+    lost: Guest[];
+  };
+  onStatusChange?: (guestId: string, newStatus: GuestStatus) => void;
+  onFilterChange?: (filters: any) => void;
+  allGuests?: Guest[];
+}
+
+export function GuestCRMPipeline({
+  pipeline = { hot: [], warm: [], cold: [], closed: [], lost: [] },
+  onStatusChange,
+  onFilterChange,
+  allGuests = []
+}: GuestCRMPipelineProps) {
   const [filterStatus, setFilterStatus] = useState<PipelineStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const pipelineStages: { status: PipelineStatus; label: string; color: string; count: number }[] = [
-    { status: 'new', label: 'Novos', color: 'from-blue-500 to-cyan-500', count: mockGuests.filter(g => g.status === 'new').length },
-    { status: 'warm', label: 'Mornos', color: 'from-yellow-500 to-orange-500', count: mockGuests.filter(g => g.status === 'warm').length },
-    { status: 'hot', label: 'Quentes 🔥', color: 'from-orange-500 to-red-500', count: mockGuests.filter(g => g.status === 'hot').length },
-    { status: 'booked', label: 'Reservados', color: 'from-emerald-500 to-green-500', count: mockGuests.filter(g => g.status === 'booked').length },
-    { status: 'staying', label: 'Hospedados', color: 'from-purple-500 to-violet-500', count: mockGuests.filter(g => g.status === 'staying').length },
-    { status: 'lost', label: 'Perdidos', color: 'from-gray-500 to-slate-500', count: mockGuests.filter(g => g.status === 'lost').length },
+    { status: 'cold', label: 'Novos / Frios', color: 'from-blue-500 to-cyan-500', count: pipeline.cold?.length || 0 },
+    { status: 'warm', label: 'Mornos', color: 'from-yellow-500 to-orange-500', count: pipeline.warm?.length || 0 },
+    { status: 'hot', label: 'Quentes 🔥', color: 'from-orange-500 to-red-500', count: pipeline.hot?.length || 0 },
+    { status: 'closed', label: 'Reservados', color: 'from-emerald-500 to-green-500', count: pipeline.closed?.length || 0 },
+    { status: 'lost', label: 'Perdidos', color: 'from-gray-500 to-slate-500', count: pipeline.lost?.length || 0 },
   ];
 
-  const filteredGuests = mockGuests.filter(guest => {
-    const matchesStatus = filterStatus === 'all' || guest.status === filterStatus;
-    const matchesSearch = guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         (guest.phone || '').includes(searchQuery);
-    return matchesStatus && matchesSearch;
-  });
+  // Resolve which list of guests to display
+  const guestsToDisplay = useMemo(() => {
+    if (filterStatus === 'all') {
+      return allGuests;
+    }
+    return pipeline[filterStatus] || [];
+  }, [filterStatus, pipeline, allGuests]);
+
+  const filteredGuests = useMemo(() => {
+    return guestsToDisplay.filter(guest => {
+      const matchesSearch =
+        guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (guest.phoneNumber || guest.phone || '').includes(searchQuery);
+      return matchesSearch;
+    });
+  }, [guestsToDisplay, searchQuery]);
 
   const getStatusLabel = (status: Guest['status']) => {
-    const labels = {
+    const labels: Record<string, string> = {
       new: 'Novo',
       warm: 'Morno',
       hot: 'Quente',
+      cold: 'Frio',
       booked: 'Reservado',
       staying: 'Hospedado',
       checked_out: 'Checkout',
+      closed: 'Fechado',
       lost: 'Perdido',
       inactive: 'Inativo'
     };
-    return labels[status];
+    return labels[status] || status;
   };
 
   const slideIn = {
@@ -67,6 +98,8 @@ export function GuestCRMPipeline({ pipeline, onStatusChange, onFilterChange }: a
     })
   };
 
+  const totalGuestsCount = allGuests.length || 1; // avoid division by zero
+
   return (
     <Card className="bg-white/[0.02] border border-white/[0.06] h-full flex flex-col">
       <CardHeader className="pb-3 border-b border-white/[0.06]">
@@ -78,7 +111,7 @@ export function GuestCRMPipeline({ pipeline, onStatusChange, onFilterChange }: a
             <div>
               <CardTitle className="text-base font-bold text-white">Pipeline de Hóspedes</CardTitle>
               <p className="text-[10px] text-white/40 font-mono">
-                {mockGuests.length} leads na esteira • CRM Automático
+                {allGuests.length} leads na esteira • CRM Automático
               </p>
             </div>
           </div>
@@ -117,7 +150,7 @@ export function GuestCRMPipeline({ pipeline, onStatusChange, onFilterChange }: a
                 <motion.div
                   className={`h-full bg-gradient-to-r ${stage.color}`}
                   initial={{ width: 0 }}
-                  animate={{ width: `${(stage.count / mockGuests.length) * 100}%` }}
+                  animate={{ width: `${(stage.count / totalGuestsCount) * 100}%` }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 />
               </div>
@@ -194,7 +227,7 @@ export function GuestCRMPipeline({ pipeline, onStatusChange, onFilterChange }: a
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           {/* Avatar */}
                           <Avatar className="w-10 h-10 flex-shrink-0">
-                            <AvatarFallback className={`bg-gradient-to-br ${guest.status === 'hot' ? 'from-orange-500 to-red-500' : guest.status === 'booked' ? 'from-emerald-500 to-green-500' : 'from-violet-500 to-purple-600'} text-white text-xs font-bold`}>
+                            <AvatarFallback className={`bg-gradient-to-br ${guest.status === 'hot' ? 'from-orange-500 to-red-500' : guest.status === 'booked' || guest.status === 'closed' ? 'from-emerald-500 to-green-500' : 'from-violet-500 to-purple-600'} text-white text-xs font-bold`}>
                               {guest.avatar || guest.name.split(' ').map(n => n[0]).join('')}
                             </AvatarFallback>
                           </Avatar>
@@ -206,11 +239,11 @@ export function GuestCRMPipeline({ pipeline, onStatusChange, onFilterChange }: a
                                 {guest.name}
                               </span>
                               {guest.status === 'hot' && <Flame className="w-3 h-3 text-orange-400 flex-shrink-0" />}
-                              {guest.status === 'booked' && <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />}
+                              {(guest.status === 'booked' || guest.status === 'closed') && <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />}
                               {guest.status === 'lost' && <XCircle className="w-3 h-3 text-gray-400 flex-shrink-0" />}
                             </div>
-                            <div className="flex items-center gap-3 text-[10px] text-white/50">
-                              <span>{guest.phone}</span>
+                            <div className="flex items-center gap-3 text-[10px] text-white/50 font-mono">
+                              <span>{guest.phone || guest.phoneNumber}</span>
                               {guest.email && <span>•</span>}
                               {guest.email && <span className="truncate">{guest.email}</span>}
                             </div>
@@ -219,14 +252,14 @@ export function GuestCRMPipeline({ pipeline, onStatusChange, onFilterChange }: a
                                 {getStatusLabel(guest.status)}
                               </Badge>
                               <Badge variant="outline" className="text-[8px] h-4 bg-white/[0.04] text-white/60 border-white/[0.08]">
-                                {guest.source}
+                                {guest.source || 'WhatsApp'}
                               </Badge>
                               <span className={`text-[9px] font-medium ${
-                                guest.aiScore >= 80 ? 'text-emerald-400' :
-                                guest.aiScore >= 60 ? 'text-yellow-400' :
+                                (guest.aiScore || guest.score || 0) >= 80 ? 'text-emerald-400' :
+                                (guest.aiScore || guest.score || 0) >= 60 ? 'text-yellow-400' :
                                 'text-red-400'
                               }`}>
-                                Score IA: {guest.aiScore}%
+                                Score IA: {guest.aiScore || guest.score || 50}%
                               </span>
                             </div>
                           </div>
@@ -236,7 +269,7 @@ export function GuestCRMPipeline({ pipeline, onStatusChange, onFilterChange }: a
                         <div className="flex flex-col items-end gap-2 ml-4">
                           <div className="text-right">
                             <div className="text-sm font-bold text-white">
-                              {guest.value > 0 ? formatCurrency(guest.value) : '-'}
+                              {guest.value && guest.value > 0 ? formatCurrency(guest.value) : '-'}
                             </div>
                             {guest.checkIn && guest.checkOut && (
                               <div className="text-[9px] text-white/40">
@@ -253,16 +286,41 @@ export function GuestCRMPipeline({ pipeline, onStatusChange, onFilterChange }: a
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="bg-[#0a0a0f] border-white/[0.06]">
-                              <DropdownMenuItem className="text-white/70 hover:text-white">
-                                Ver conversa
+                              <DropdownMenuLabel className="text-xs text-white/40 font-semibold px-2 py-1">
+                                Mover Estágio
+                              </DropdownMenuLabel>
+                              <DropdownMenuItem
+                                onClick={() => onStatusChange?.(guest.id, 'cold')}
+                                className="text-xs text-white/70 hover:text-white"
+                              >
+                                Frio / Novo
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-white/70 hover:text-white">
-                                Editar lead
+                              <DropdownMenuItem
+                                onClick={() => onStatusChange?.(guest.id, 'warm')}
+                                className="text-xs text-white/70 hover:text-white"
+                              >
+                                Morno
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-white/70 hover:text-white">
-                                Mover estágio
+                              <DropdownMenuItem
+                                onClick={() => onStatusChange?.(guest.id, 'hot')}
+                                className="text-xs text-white/70 hover:text-white"
+                              >
+                                Quente 🔥
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-emerald-400 hover:text-emerald-300">
+                              <DropdownMenuItem
+                                onClick={() => onStatusChange?.(guest.id, 'closed')}
+                                className="text-xs text-white/70 hover:text-white"
+                              >
+                                Ganho (Reservado)
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => onStatusChange?.(guest.id, 'lost')}
+                                className="text-xs text-white/70 hover:text-white"
+                              >
+                                Perdido
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator className="bg-white/[0.06]" />
+                              <DropdownMenuItem className="text-xs text-emerald-400 hover:text-emerald-300">
                                 Contatar agora
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -271,10 +329,10 @@ export function GuestCRMPipeline({ pipeline, onStatusChange, onFilterChange }: a
                       </div>
 
                       {/* Notes Preview */}
-                      {guest.notes && (
+                      {(guest.notes || guest.lastMessage) && (
                         <div className="mt-2 pt-2 border-t border-white/[0.04]">
                           <p className="text-[10px] text-white/40 line-clamp-1">
-                            📝 {guest.notes}
+                            📝 {guest.notes || guest.lastMessage}
                           </p>
                         </div>
                       )}

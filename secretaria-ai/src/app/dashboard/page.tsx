@@ -19,7 +19,7 @@ export default function DDCDashboardPage() {
   // Custom hooks
   const { metrics, aiStatus, isLoading } = useDDCMetrics('today', true);
   const { conversations, selectedConversation, selectConversation, sendMessage, escalateConversation } = useAILiveFeed();
-  const { pipeline, allGuests } = useGuestPipeline();
+  const { pipeline, allGuests, updateGuestStatus, setFilters } = useGuestPipeline();
   const { notifications, unreadCount, markAsRead } = useDDCNotifications(true);
 
   // Local state
@@ -189,12 +189,9 @@ export default function DDCDashboardPage() {
               {/* Guest CRM Pipeline */}
               <GuestCRMPipeline
                 pipeline={pipeline}
-                onStatusChange={(guestId, newStatus) => {
-                  console.log('Move guest:', guestId, 'to:', newStatus);
-                }}
-                onFilterChange={(filters) => {
-                  console.log('Filter changed:', filters);
-                }}
+                allGuests={allGuests}
+                onStatusChange={updateGuestStatus}
+                onFilterChange={setFilters}
               />
             </div>
           </motion.div>

@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { ConversationLog } from '@/types/ddc';
-import { formatTimeAgo } from '@/lib/ddc/mock-data';
+import { formatTimeAgo } from '@/lib/ddc/ddc-utils';
 
 interface ConversationCardProps {
   conversation: ConversationLog;
