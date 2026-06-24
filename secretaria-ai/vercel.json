@@ -3,7 +3,7 @@
   "framework": "nextjs",  
   "buildCommand": "npm run build",  
   "installCommand": "npm ci",  
-  "outputDirectory": ".next/standalone",  
+
   "regions": ["gru1"],  
   "headers": [  
     {  
