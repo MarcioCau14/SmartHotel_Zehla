@@ -748,6 +748,7 @@ model Subscription {
   cancelAtPeriodEnd  Boolean              @default(false)
   lastProrateAmount  Float?
   lastProrateDate    DateTime?
+  metadata           String               @default("{}")
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 

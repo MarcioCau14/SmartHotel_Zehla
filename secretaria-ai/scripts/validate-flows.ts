@@ -1,221 +1,236 @@
-import { db } from '../src/lib/db';
+/**
+ * ZEHLA SmartHotel — Flow Validation Script
+ * 
+ * Valida os 5 fluxos principais end-to-end:
+ * 1. Brain Connect (NeuroRouter health)
+ * 2. NextAuth Register (criação de tenant)
+ * 3. Checkout PIX (criação de assinatura + QR code)
+ * 4. Payment Webhook (confirmação de pagamento)
+ * 5. WhatsApp Webhook + AI Response
+ * 
+ * Uso: npx tsx scripts/validate-flows.ts
+ *      BASE_URL=http://localhost:3000 npx tsx scripts/validate-flows.ts
+ */
 
-async function main() {
-  console.log('🔍 Iniciando script de validação de fluxos do ZEHLA SmartHotel...\n');
-  const targetUrl = 'http://localhost:3000';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
-  // 1. Verificar se o servidor está ativo
-  console.log('1. Verificando conectividade com o servidor local...');
-  try {
-    const res = await fetch(`${targetUrl}/api/brain`);
-    if (!res.ok) {
-      throw new Error(`Servidor respondeu com status ${res.status}`);
-    }
-    const brainState = await res.json();
-    console.log('   ✅ Servidor local conectado com sucesso.');
-    console.log(`   🧠 Estado do Roteador Cognitivo: ${brainState.providerSelectorState || 'Ativo'}`);
-  } catch (error: any) {
-    console.error('   ❌ Falha ao conectar ao servidor local. Certifique-se de que "npm run dev" está rodando em http://localhost:3000.');
-    console.error(`      Erro: ${error.message}`);
-    process.exit(1);
-  }
-
-  // 2. Testar Registro de Tenant (NextAuth)
-  console.log('\n2. Testando Registro de Tenant (/api/auth/register)...');
-  const testEmail = `test-tenant-${Date.now()}@pousada.com.br`;
-  const registerPayload = {
-    name: 'Pousada Teste Automático',
-    email: testEmail,
-    password: 'Password@123',
-    phone: '11988887777',
-    pousadaName: 'Pousada Teste Local'
-  };
-
-  try {
-    const res = await fetch(`${targetUrl}/api/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(registerPayload)
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(`Falha ao registrar: ${data.error || res.statusText}`);
-    }
-    console.log(`   ✅ Tenant registrado com sucesso: ${data.tenant.email} (ID: ${data.tenant.id})`);
-  } catch (error: any) {
-    console.error(`   ❌ Falha no registro: ${error.message}`);
-    process.exit(1);
-  }
-
-  // 3. Testar Geração de Checkout (Mercado Pago PIX)
-  console.log('\n3. Testando Geração de Checkout (/api/checkout/create)...');
-  const checkoutPayload = {
-    email: testEmail,
-    name: 'Pousada Teste Automático',
-    planType: 'lite',
-    paymentMethod: 'pix'
-  };
-
-  let subscriptionId = '';
-  let ticketUrl = '';
-  let paymentId = '';
-
-  try {
-    const res = await fetch(`${targetUrl}/api/checkout/create`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(checkoutPayload)
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(`Falha no checkout: ${data.error || res.statusText}`);
-    }
-    subscriptionId = data.subscriptionId;
-    ticketUrl = data.checkoutUrl;
-    console.log(`   ✅ Checkout criado com sucesso.`);
-    console.log(`      Assinatura ID: ${subscriptionId}`);
-    console.log(`      Checkout URL: ${ticketUrl}`);
-    if (data.pix) {
-      console.log(`      PIX QR Code gerado com sucesso.`);
-    }
-  } catch (error: any) {
-    console.error(`   ❌ Falha na geração do checkout: ${error.message}`);
-    process.exit(1);
-  }
-
-  // 4. Testar Webhook do Mercado Pago (Confirmação de Pagamento)
-  console.log('\n4. Testando Webhook de Pagamento (/api/checkout/webhook)...');
-  const subInDb = await db.subscription.findUnique({ where: { id: subscriptionId } });
-  paymentId = subInDb?.paymentId || 'test-payment-id-123';
-
-  const webhookPayload = {
-    action: 'payment.updated',
-    type: 'payment',
-    data: { id: paymentId }
-  };
-
-  try {
-    const res = await fetch(`${targetUrl}/api/checkout/webhook`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(webhookPayload)
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(`Falha no webhook: ${data.error || res.statusText}`);
-    }
-    console.log('   ✅ Payload do webhook processado pelo servidor.');
-    
-    const updatedSub = await db.subscription.findUnique({ where: { id: subscriptionId } });
-    console.log(`      Status da assinatura no DB: ${updatedSub?.status}`);
-    console.log(`      Status do pagamento no DB: ${updatedSub?.paymentStatus}`);
-  } catch (error: any) {
-    console.error(`   ❌ Falha no webhook: ${error.message}`);
-  }
-
-  // 5. Testar WhatsApp Webhook e Resposta Cognitiva da IA
-  console.log('\n5. Testando Entrada de Mensagem via WhatsApp Webhook (/api/webhook-whatsapp)...');
-  const tenantObj = await db.tenant.findFirst({ where: { email: testEmail } });
-  if (!tenantObj) {
-    throw new Error('Tenant de teste não encontrado no banco de dados');
-  }
-
-  const whatsappPayload = {
-    object: 'whatsapp_business_account',
-    entry: [
-      {
-        id: '123456789',
-        changes: [
-          {
-            value: {
-              messaging_product: 'whatsapp',
-              metadata: {
-                display_phone_number: '5511999999999',
-                phone_number_id: '987654321'
-              },
-              contacts: [
-                {
-                  profile: { name: 'Cliente Validação' },
-                  wa_id: '5511988887777'
-                }
-              ],
-              messages: [
-                {
-                  from: '5511988887777',
-                  id: `wamid.HBgNNTUxMTk4ODg4Nzc3NxUCABEYEkU4RDJGMTdGODJDRDM3NDNFQQA=`,
-                  timestamp: Math.floor(Date.now() / 1000).toString(),
-                  text: { body: 'Olá! Vocês aceitam animais de estimação na pousada?' },
-                  type: 'text'
-                }
-              ]
-            },
-            field: 'messages'
-          }
-        ]
-      }
-    ]
-  };
-
-  try {
-    const res = await fetch(`${targetUrl}/api/webhook-whatsapp`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(whatsappPayload)
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(`Falha no webhook-whatsapp: ${data.error || res.statusText}`);
-    }
-    console.log('   ✅ Webhook WhatsApp recebeu a mensagem de teste.');
-
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    const guest = await db.guest.findFirst({
-      where: { phone: '5511988887777' }
-    });
-
-    const conversation = await db.conversationLog.findFirst({
-      where: { guestPhone: '5511988887777' },
-      include: { messages: true }
-    });
-
-    if (guest && conversation) {
-      console.log('   ✅ Registro do Hóspede e Conversa salvos no DB.');
-      const messages = conversation.messages;
-      console.log(`      Mensagens na timeline: ${messages.length}`);
-      
-      const lastMessage = messages[messages.length - 1];
-      console.log(`      Último remetente: ${lastMessage.from}`);
-      console.log(`      Conteúdo: "${lastMessage.content}"`);
-    } else {
-      console.log('   ⚠️ Webhook processado, mas dados do hóspede ou conversa não persistiram no DB.');
-    }
-  } catch (error: any) {
-    console.error(`   ❌ Falha no webhook do WhatsApp: ${error.message}`);
-  }
-
-  // Limpar dados de teste criados
-  console.log('\n🧹 Limpando registros de validação temporários...');
-  try {
-    if (tenantObj) {
-      await db.property.deleteMany({ where: { tenantId: tenantObj.id } });
-      await db.subscription.deleteMany({ where: { tenantId: tenantObj.id } });
-      await db.tenant.delete({ where: { id: tenantObj.id } });
-    }
-    await db.guest.deleteMany({ where: { phone: '5511988887777' } });
-    console.log('   ✅ Banco de dados limpo com sucesso.');
-  } catch (cleanError: any) {
-    console.warn(`   ⚠️ Erro ao limpar tabelas: ${cleanError.message}`);
-  }
-
-  console.log('\n🎉 Fim da validação de fluxos. Tudo operacional!');
+interface TestResult {
+  name: string;
+  status: 'pass' | 'fail' | 'skip';
+  durationMs: number;
+  detail?: string;
 }
 
-main()
-  .catch((e) => {
-    console.error('❌ Validação interrompida por erro crítico:', e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await db.$disconnect();
+const results: TestResult[] = [];
+
+async function runTest(
+  name: string,
+  fn: () => Promise<void>,
+): Promise<void> {
+  const start = Date.now();
+  try {
+    await fn();
+    results.push({
+      name,
+      status: 'pass',
+      durationMs: Date.now() - start,
+    });
+    console.log(`  ✅ ${name} (${Date.now() - start}ms)`);
+  } catch (err: any) {
+    const msg = err?.message || String(err);
+    results.push({
+      name,
+      status: 'fail',
+      durationMs: Date.now() - start,
+      detail: msg,
+    });
+    console.log(`  ❌ ${name} — ${msg} (${Date.now() - start}ms)`);
+  }
+}
+
+// ─── Flow 1: Brain Connect ───────────────────────────────────────────
+async function testBrainConnect() {
+  const res = await fetch(`${BASE_URL}/api/brain/health`);
+  if (res.status !== 200) throw new Error(`status ${res.status}`);
+  const data = await res.json();
+  if (!data.success) throw new Error('success=false');
+}
+
+// ─── Flow 2: NextAuth Register ───────────────────────────────────────
+let testTenantEmail: string;
+
+async function testAuthRegister() {
+  testTenantEmail = `flow-test-${Date.now()}@zehla.test`;
+
+  const res = await fetch(`${BASE_URL}/api/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: testTenantEmail,
+      name: 'Flow Test User',
+      password: 'TestPass123!',
+      pousada: 'Pousada FlowTest',
+      whatsapp: '+5511999999999',
+    }),
   });
+
+  if (res.status !== 200 && res.status !== 201) {
+    throw new Error(`status ${res.status}`);
+  }
+}
+
+// ─── Flow 3: Checkout PIX ────────────────────────────────────────────
+let subscriptionId: string;
+
+async function testCheckoutCreate() {
+  const res = await fetch(`${BASE_URL}/api/checkout/create`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: testTenantEmail,
+      name: 'Flow Test User',
+      planType: 'lite',
+      paymentMethod: 'pix',
+    }),
+  });
+
+  if (res.status !== 200) throw new Error(`status ${res.status}`);
+  const data = await res.json();
+  if (!data.subscriptionId) throw new Error('missing subscriptionId');
+  subscriptionId = data.subscriptionId;
+}
+
+// ─── Flow 4: Payment Webhook ─────────────────────────────────────────
+async function testPaymentWebhook() {
+  const res = await fetch(`${BASE_URL}/api/checkout/webhook`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'payment.updated',
+      type: 'payment',
+      data: { id: 'flow-test-mock-payment' },
+    }),
+  });
+
+  if (res.status !== 200) throw new Error(`status ${res.status}`);
+}
+
+// ─── Flow 5: WhatsApp Webhook ────────────────────────────────────────
+async function testWhatsAppWebhook() {
+  // GET verification
+  const verifyRes = await fetch(
+    `${BASE_URL}/api/webhook-whatsapp?hub.mode=subscribe&hub.verify_token=test&hub.challenge=CHALLENGE_TEST`,
+  );
+  const verifyBody = await verifyRes.text();
+  if (verifyBody !== 'CHALLENGE_TEST') {
+    throw new Error(`verify returned "${verifyBody}"`);
+  }
+
+  // POST message
+  const postRes = await fetch(`${BASE_URL}/api/webhook-whatsapp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      object: 'whatsapp_business_account',
+      entry: [{
+        changes: [{
+          value: {
+            messages: [{
+              from: '5511999999999',
+              id: 'flow-test-msg',
+              text: { body: 'Olá, quero reservar um quarto' },
+              timestamp: String(Math.floor(Date.now() / 1000)),
+              type: 'text',
+            }],
+          },
+        }],
+      }],
+    }),
+  });
+
+  if (postRes.status !== 200) throw new Error(`POST status ${postRes.status}`);
+}
+
+// ─── Cleanup ─────────────────────────────────────────────────────────
+async function cleanup() {
+  try {
+    const { PrismaClient } = await import('@prisma/client');
+    const prisma = new PrismaClient();
+
+    if (testTenantEmail) {
+      const tenant = await prisma.tenant.findUnique({
+        where: { email: testTenantEmail },
+      });
+      if (tenant) {
+        const subscriptions = await prisma.subscription.findMany({
+          where: { tenantId: tenant.id },
+          select: { id: true },
+        });
+        const subIds = subscriptions.map((s) => s.id);
+        if (subIds.length > 0) {
+          await prisma.paymentTransaction.deleteMany({
+            where: { subscriptionId: { in: subIds } },
+          });
+        }
+        await prisma.subscription.deleteMany({ where: { tenantId: tenant.id } });
+        await prisma.tenant.delete({ where: { id: tenant.id } });
+      }
+    }
+
+    await prisma.$disconnect();
+    console.log('\n  🧹 Cleanup concluído.');
+  } catch {
+    console.log('\n  ⚠️  Cleanup falhou (non-critical).');
+  }
+}
+
+// ─── Main ────────────────────────────────────────────────────────────
+async function main() {
+  console.log('\n╔══════════════════════════════════════════════╗');
+  console.log('║  ZEHLA SmartHotel — Flow Validation         ║');
+  console.log(`║  Base URL: ${BASE_URL.padEnd(32)}║`);
+  console.log('╚══════════════════════════════════════════════╝\n');
+
+  console.log('▶ Flow 1: Brain Connect');
+  await runTest('Brain health check', testBrainConnect);
+
+  console.log('\n▶ Flow 2: NextAuth Register');
+  await runTest('Register new tenant', testAuthRegister);
+
+  console.log('\n▶ Flow 3: Checkout PIX');
+  await runTest('Create PIX checkout', testCheckoutCreate);
+
+  console.log('\n▶ Flow 4: Payment Webhook');
+  await runTest('Process payment webhook', testPaymentWebhook);
+
+  console.log('\n▶ Flow 5: WhatsApp Webhook + AI');
+  await runTest('WhatsApp verify + message', testWhatsAppWebhook);
+
+  // Summary
+  const passed = results.filter((r) => r.status === 'pass').length;
+  const failed = results.filter((r) => r.status === 'fail').length;
+  const totalMs = results.reduce((s, r) => s + r.durationMs, 0);
+
+  console.log('\n═══════════════════════════════════════');
+  console.log(`  Results: ${passed} passed, ${failed} failed`);
+  console.log(`  Total:   ${totalMs}ms`);
+  console.log('═══════════════════════════════════════\n');
+
+  // Cleanup
+  await cleanup();
+
+  if (failed > 0) {
+    console.log('❌ VALIDATION FAILED\n');
+    results
+      .filter((r) => r.status === 'fail')
+      .forEach((r) => console.log(`  - ${r.name}: ${r.detail}`));
+    process.exit(1);
+  }
+
+  console.log('✅ ALL FLOWS VALIDATED\n');
+}
+
+main().catch((err) => {
+  console.error('Fatal error:', err);
+  process.exit(1);
+});

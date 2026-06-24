@@ -1,82 +1,173 @@
-# Guia de Deploy de Staging — ZEHLA SmartHotel
+# ZEHLA SmartHotel — Staging Deployment Guide
 
-Este documento detalha o procedimento operacional para realizar o deploy do ZEHLA SmartHotel em ambiente de staging (homologação), abrangendo a hospedagem do painel Next.js e o relay Socket.IO.
+## Visão Geral
+
+O ambiente de staging usa duas plataformas:
+- **Vercel** — Aplicação Next.js (frontend + API routes)
+- **Railway** — Mini-serviço Socket.IO (realtime-service)
+
+Ambos são configurados automaticamente pelo workflow `.github/workflows/deploy-staging.yml` ao fazer push na branch `develop`.
 
 ---
 
-## 🏗️ Arquitetura de Staging
+## 1. Vercel (App Principal)
 
-O deploy de staging é dividido em duas partes fundamentais:
+### 1.1 Criar projeto
 
-```mermaid
-graph TD
-    Client[Browser Hóspede / Atendente] -->|HTTP/NextAuth| Vercel[Vercel: Next.js Frontend]
-    Client -->|WebSocket| Railway[Railway: Socket.IO Relay]
-    Vercel -->|Prisma Query| DB[(SQLite / PostgreSQL)]
-    Railway -->|Join Room| Client
+1. Acesse [vercel.com/new](https://vercel.com/new)
+2. Importe o repositório `MarcioCau14/SmartHotel_Zehla`
+3. Framework: **Next.js** (detectado automaticamente)
+4. Root directory: `secretaria-ai/` (se o app estiver nesta subpasta) ou raiz
+5. Build command: `bun run build`
+6. Install command: `bun install --frozen-lockfile`
+
+### 1.2 Variáveis de ambiente
+
+Vá em **Settings → Environment Variables** e configure:
+
+```env
+# Database
+DATABASE_URL="file:./db/staging.db"
+
+# NextAuth
+NEXTAUTH_URL="https://zehla-staging.vercel.app"
+NEXTAUTH_SECRET="<gerar com: openssl rand -base64 32>"
+
+# Mercado Pago (MOCK — sem token real)
+MP_ACCESS_TOKEN=""
+MP_WEBHOOK_URL="https://zehla-staging.vercel.app/api/checkout/webhook"
+
+# WhatsApp Cloud API (MOCK)
+WHATSAPP_VERIFY_TOKEN="zehla-staging-verify"
+WHATSAPP_ACCESS_TOKEN=""
+WHATSAPP_PHONE_NUMBER_ID=""
+
+# ZAI SDK (Cérebro)
+ZAI_API_KEY=""
+ZAI_BASE_URL=""
+
+# Socket.IO (conectar ao Railway)
+NEXT_PUBLIC_SOCKET_URL="https://zehla-realtime.up.railway.app"
+
+# Node
+NODE_ENV="staging"
 ```
 
-1. **Vercel**: Hospeda a aplicação Next.js (Frontend, Command Center DDC/ZCC, e as rotas de API do roteador cognitivo).
-2. **Railway**: Hospeda o mini-serviço standalone de Socket.IO Relay (`mini-services/realtime-service`).
+### 1.3 Domínio
+
+O Vercel atribui um domínio automático (ex: zehla-staging.vercel.app). Use este URL no NEXTAUTH_URL e no NEXT_PUBLIC_SOCKET_URL.
 
 ---
 
-## 📦 Parte 1: Deploy do Frontend (Vercel)
+## 2. Railway (Realtime Service)
 
-### 1. Conectar Repositório
-Hospede o código no GitHub e conecte o repositório `SmartHotel_Zehla` em uma nova aplicação na dashboard da Vercel.
+### 2.1 Criar projeto
 
-### 2. Configurar Variáveis de Ambiente (Environment Variables)
-Adicione as seguintes variáveis nas configurações do projeto da Vercel:
+1. Acesse [railway.app](https://railway.app) → New Project
+2. Selecione **Deploy from GitHub repo**
+3. Escolha o repositório e configure:
+   - Root directory: `mini-services/realtime-service`
+   - Build command: `bun install`
+   - Start command: `npx tsx index.ts`
 
-| Variável | Valor Recomendado (Staging) | Descrição |
-|----------|-----------------------------|-----------|
-| `DATABASE_URL` | `file:./db/secretaria.db` | Caminho do SQLite. *Nota: Para persistência permanente entre builds na Vercel, recomenda-se conectar a um Postgres externo na nuvem (ex: Railway/Supabase).* |
-| `NEXTAUTH_URL` | `https://zehla-staging.vercel.app` | URL pública da sua aplicação na Vercel. |
-| `NEXTAUTH_SECRET` | `gerar-segredo-com-openssl-rand-32` | Segredo usado pelo NextAuth para assinar cookies. |
-| `MP_ACCESS_TOKEN` | `TEST-xxxxx-seu-token` | Token de credencial do Mercado Pago (modo Sandbox/Teste). |
-| `MP_WEBHOOK_URL` | `https://zehla-staging.vercel.app/api/checkout/webhook` | URL pública de callback do webhook de pagamento. |
-| `WHATSAPP_WEBHOOK_VERIFY_TOKEN` | `zehla_whatsapp_verify_2024` | Token de verificação configurado no painel da Meta Developers. |
+### 2.2 Variáveis de ambiente
 
----
+No Railway → Settings → Variables:
 
-## ⚡ Parte 2: Deploy do Relay Realtime (Railway)
+```env
+PORT=3001
+ALLOWED_ORIGINS=https://zehla-staging.vercel.app,http://localhost:3000
+```
 
-O microsserviço de Socket.IO localiza-se na pasta `mini-services/realtime-service`.
+### 2.3 Publicar porta
 
-### 1. Deploy Standalone
-No painel do Railway, selecione **New Project** -> **Deploy from GitHub repository** e aponte para o repositório ZEHLA.
+O Railway detecta a porta automaticamente pela variável PORT. Certifique-se de que:
 
-### 2. Configurar a Raiz do Serviço (Root Directory)
-Nas configurações de build do Railway, altere o **Root Directory** para:
-`mini-services/realtime-service`
+- A variável `PORT=3001` está definida
+- O `mini-services/realtime-service/index.ts` usa `process.env.PORT || 3001`
 
-### 3. Variáveis de Ambiente
-O mini-serviço lê a porta `3005` por padrão. Configure as seguintes variáveis no painel da Railway:
+### 2.4 Obter a URL pública
 
-- `PORT`: `3005` (A porta onde o serviço escuta as conexões WebSocket).
-- `NODE_ENV`: `production`
+Após o deploy, o Railway gera uma URL como:
+```
+https://zehla-realtime-production.up.railway.app
+```
 
-O Railway gerará um domínio público (ex: `zehla-realtime.up.railway.app`). Mapeie essa URL no hook cliente `src/lib/use-socket.ts` ou configure regras de Proxy no Next.js.
+Copie esta URL e configure no Vercel como `NEXT_PUBLIC_SOCKET_URL`.
 
 ---
 
-## 💬 Parte 3: Configurando o Webhook do WhatsApp
+## 3. WhatsApp Cloud API (Staging)
 
-Para testar o fluxo de mensagens cognitivas de ponta a ponta no staging:
+### 3.1 Configurar webhook no Meta
 
-1. Acesse o console [Meta for Developers](https://developers.facebook.com/).
-2. Vá em **WhatsApp** -> **Configuration**.
-3. Em **Callback URL**, insira:
-   `https://zehla-staging.vercel.app/api/webhook-whatsapp`
-4. Em **Verify Token**, digite o valor de `WHATSAPP_WEBHOOK_VERIFY_TOKEN` (definido no `.env`).
-5. Subscreva nos campos de webhook: **messages**.
+1. Acesse [developers.facebook.com](https://developers.facebook.com/)
+2. Vá em **WhatsApp → Configuration → Webhook**
+3. Callback URL: `https://zehla-staging.vercel.app/api/webhook-whatsapp`
+4. Verify Token: `zehla-staging-verify` (mesmo valor da env var)
+5. Subscribe to: `messages`
+
+### 3.2 Testar
+
+```bash
+# Verificação do webhook
+curl "https://zehla-staging.vercel.app/api/webhook-whatsapp?hub.mode=subscribe&hub.verify_token=zehla-staging-verify&hub.challenge=TESTE123"
+# Esperado: TESTE123
+
+# Simular mensagem
+curl -X POST "https://zehla-staging.vercel.app/api/webhook-whatsapp" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "object": "whatsapp_business_account",
+    "entry": [{
+      "changes": [{
+        "value": {
+          "messages": [{
+            "from": "5511999999999",
+            "id": "test-msg-1",
+            "text": { "body": "Olá" },
+            "timestamp": "1700000000",
+            "type": "text"
+          }]
+        }
+      }]
+    }]
+  }'
+```
 
 ---
 
-## 🔍 Validação Pós-Deploy
+## 4. Testar Fluxo Completo
 
-Uma vez que ambos os serviços estejam no ar:
-1. Acesse a Landing Page no endereço da Vercel.
-2. Navegue até a tela de login (`/login`) e entre com o tenant demo: `demo@pousada.com.br` / `Demo@123`.
-3. Abra a aba de Realtime no ZCC (`/zcc/realtime`) e verifique se o status do Socket.IO indica "Conectado" apontando para o servidor do Railway.
+### 4.1 Health checks
+
+```bash
+curl https://zehla-staging.vercel.app/api/health
+curl -X POST https://zehla-staging.vercel.app/api/readiness
+curl https://zehla-staging.vercel.app/api/brain/health
+```
+
+### 4.2 DDC Dashboard
+
+1. Acesse `https://zehla-staging.vercel.app/login`
+2. Faça login com o tenant do seed
+3. Navegue para `/ddc` — deve carregar dados do seed
+4. Verifique o live-feed SSE em `/api/ddc/live-feed`
+
+### 4.3 Checkout
+
+1. Acesse a página de pricing
+2. Selecione um plano e tente o checkout PIX
+3. Sem `MP_ACCESS_TOKEN`, deve cair no fallback mock
+
+---
+
+## 5. Troubleshooting
+
+| Problema | Causa provável | Solução |
+|----------|---------------|---------|
+| 500 em DDC APIs | DB não inicializado | Rodar `npx prisma db push` + `npx prisma db seed` |
+| WebSocket desconecta | CORS no Railway | Verificar `ALLOWED_ORIGINS` |
+| NextAuth loop infinito | `NEXTAUTH_URL` errado | Confirmar URL exata sem barra final |
+| Build falha no Vercel | Deps faltando | Verificar `bun.lock` no repo |
+| Landing page branca | Componentes desligados | Confirmar `page.tsx` importa os landing components |

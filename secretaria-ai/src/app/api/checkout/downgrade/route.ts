@@ -1,74 +1,114 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+
+/**
+ * POST /api/checkout/downgrade
+ *
+ * Faz downgrade de plano. Sem cobrança — o novo plano entra
+ * na próxima renovação (currentPeriodEnd).
+ *
+ * Body: { tenantId, newPlanType }
+ *
+ * Planos: max → pro → lite → gratuito (só permite descer)
+ */
+
+const PLAN_ORDER = ['gratuito', 'lite', 'pro', 'max'] as const;
+type PlanType = (typeof PLAN_ORDER)[number];
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
-    const { planType, tenantId: bodyTenantId } = body; 
+    const { tenantId, newPlanType } = body as {
+      tenantId?: string;
+      newPlanType?: string;
+    };
 
-    if (!planType) {
-      return NextResponse.json({ error: 'Missing planType' }, { status: 400 });
+    if (!tenantId || !newPlanType) {
+      return NextResponse.json(
+        { success: false, error: 'Missing tenantId or newPlanType' },
+        { status: 400 },
+      );
     }
 
-    const tenantId = bodyTenantId || (session.user as any).tenantId;
-
-    if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant ID required' }, { status: 400 });
+    if (!PLAN_ORDER.includes(newPlanType as PlanType)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Invalid plan: ${newPlanType}. Valid: ${PLAN_ORDER.join(', ')}`,
+        },
+        { status: 400 },
+      );
     }
 
-    const tenant = await db.tenant.findUnique({
-      where: { id: tenantId },
-      include: { subscriptions: true }
+    const subscription = await db.subscription.findFirst({
+      where: { tenantId },
     });
 
-    if (!tenant) {
-      return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
+    if (!subscription) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'No active subscription found for this tenant',
+        },
+        { status: 404 },
+      );
     }
 
-    if (!tenant.subscriptionId) {
-       return NextResponse.json({ error: 'No active subscription found for tenant' }, { status: 400 });
+    const currentPlan = subscription.planType as PlanType;
+    const currentIdx = PLAN_ORDER.indexOf(currentPlan);
+    const newIdx = PLAN_ORDER.indexOf(newPlanType as PlanType);
+
+    if (newIdx >= currentIdx) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Cannot upgrade via downgrade endpoint. Current: ${currentPlan}, Requested: ${newPlanType}. Use /api/checkout/upgrade instead.`,
+        },
+        { status: 400 },
+      );
     }
 
-    const currentSubscription = await db.subscription.findUnique({
-       where: { id: tenant.subscriptionId }
-    });
+    const effectiveDate =
+      subscription.currentPeriodEnd ||
+      new Date(Date.now() + 30 * 86400000);
 
-    if (!currentSubscription) {
-       return NextResponse.json({ error: 'Subscription data not found' }, { status: 404 });
-    }
-
-    // Em downgrade, não tem pró-rata. Agendamos para o fim do ciclo (cancelAtPeriodEnd) ou trocamos mock
-    // MOCK: Troca imediata e flag de cancelAtPeriodEnd para simular
-    const updatedSub = await db.subscription.update({
-      where: { id: currentSubscription.id },
+    await db.subscription.update({
+      where: { id: subscription.id },
       data: {
-        cancelAtPeriodEnd: true, 
-        planType: planType // Mocked imediato
-      }
-    });
-
-    // Atualiza cache
-    await db.tenant.update({
-      where: { id: tenant.id },
-      data: { plan: planType }
+        cancelAtPeriodEnd: true,
+        metadata: JSON.stringify({
+          ...JSON.parse(subscription.metadata || '{}'),
+          pendingDowngrade: {
+            toPlan: newPlanType,
+            effectiveDate: effectiveDate.toISOString(),
+            requestedAt: new Date().toISOString(),
+          },
+        }),
+      },
     });
 
     return NextResponse.json({
       success: true,
-      newPlan: planType,
-      effectiveDate: currentSubscription.currentPeriodEnd || new Date(),
-      message: 'Downgrade agendado/efetuado com sucesso (Mock)'
+      message: `Downgrade agendado: ${currentPlan} → ${newPlanType}`,
+      currentPlan,
+      newPlanType,
+      effectiveDate: effectiveDate.toISOString(),
+      details: {
+        currentPlan,
+        newPlanType,
+        effectiveDate,
+        reason: `O novo plano entra na próxima renovação. Você mantém todos os benefícios atuais até ${effectiveDate.toLocaleDateString('pt-BR')}`,
+      },
     });
-
   } catch (error) {
-    console.error('Downgrade error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('[Checkout Downgrade] Error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to process downgrade',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 },
+    );
   }
 }

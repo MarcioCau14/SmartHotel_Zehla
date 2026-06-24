@@ -1,41 +1,43 @@
 'use client';
 
 import { HeroSection } from '@/components/landing/HeroSection';
-import { TrustBadgesSection } from '@/components/landing/TrustBadgesSection';
 import { PainPointsSection } from '@/components/landing/PainPointsSection';
-import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
+import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { SavingsCalculator } from '@/components/landing/SavingsCalculator';
 import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
-import { ArchitectureSection } from '@/components/landing/ArchitectureSection';
+import { TrustBadgesSection } from '@/components/landing/TrustBadgesSection';
 import BookingPlatformsMarquee from '@/components/landing/BookingPlatformsMarquee';
-import { SecuritySection } from '@/components/landing/SecuritySection';
+import { ArchitectureSection } from '@/components/landing/ArchitectureSection';
 import { IntegrationsSection } from '@/components/landing/IntegrationsSection';
-import { BetaFounderSection } from '@/components/landing/BetaFounderSection';
+import { SecuritySection } from '@/components/landing/SecuritySection';
 import { PricingSection } from '@/components/landing/PricingSection';
 import { FAQSection } from '@/components/landing/FAQSection';
+import { BetaFounderSection } from '@/components/landing/BetaFounderSection';
+import { CTASection } from '@/components/landing/CTASection';
 import { FinalCTASection } from '@/components/landing/FinalCTASection';
 import { Footer } from '@/components/landing/Footer';
 
-export default function HomePage() {
+export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <main className="min-h-screen bg-white text-gray-900">
       <HeroSection />
-      <TrustBadgesSection />
       <PainPointsSection />
-      <FeaturesSection />
       <HowItWorksSection />
+      <FeaturesSection />
       <SavingsCalculator />
-      <TestimonialsSection />
-      <ArchitectureSection />
       <BookingPlatformsMarquee />
-      <SecuritySection />
+      <TestimonialsSection />
+      <TrustBadgesSection />
+      <ArchitectureSection />
       <IntegrationsSection />
-      <BetaFounderSection />
+      <SecuritySection />
       <PricingSection />
       <FAQSection />
+      <BetaFounderSection />
+      <CTASection />
       <FinalCTASection />
       <Footer />
-    </div>
+    </main>
   );
 }
