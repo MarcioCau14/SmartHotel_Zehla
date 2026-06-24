@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { resolveTenantId } from '@/lib/ddc/ddc-mapper';
 
 export async function PUT(request: NextRequest) {
   try {
-    // Mark all notifications as read
-    // In a real implementation, this would update the database
+    const tenantId = await resolveTenantId();
+    await db.notification.updateMany({
+      where: { tenantId, read: false },
+      data: { read: true },
+    });
 
     return NextResponse.json({
       success: true,

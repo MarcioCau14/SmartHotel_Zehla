@@ -1,24 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-
-function mapGuest(g: any) {
-  return {
-    id: g.id,
-    name: g.name,
-    phoneNumber: g.phone,
-    email: g.email,
-    status: g.status === 'new' || g.status === 'inactive' ? 'cold' as const
-      : g.status === 'booked' || g.status === 'staying' || g.status === 'checked_out' ? 'closed' as const
-      : (g.status as 'hot' | 'warm' | 'cold' | 'closed' | 'lost'),
-    score: g.aiScore,
-    propertyId: g.tenantId,
-    lastMessage: g.notes || undefined,
-    messageCount: g.conversationCount,
-    value: g.value,
-    createdAt: g.createdAt,
-    updatedAt: g.updatedAt,
-  };
-}
+import { mapGuest } from '@/lib/ddc/ddc-mapper';
 
 interface RouteContext { params: Promise<{ id: string }> }
 

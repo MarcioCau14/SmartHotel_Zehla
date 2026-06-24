@@ -1,23 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { resolveTenantId } from '@/lib/ddc/auth-utils';
-
-function mapNotification(n: any) {
-  return {
-    id: n.id,
-    type: n.type,
-    title: n.title,
-    message: n.message,
-    status: n.read ? 'read' as const : 'unread' as const,
-    priority: n.priority as 'low' | 'normal' | 'high' | 'urgent',
-    userId: n.tenantId,
-    propertyId: n.tenantId,
-    readAt: n.read ? n.createdAt : undefined,
-    actionUrl: n.actionUrl,
-    actionLabel: n.actionLabel,
-    createdAt: n.createdAt,
-  };
-}
+import { resolveTenantId, mapNotification } from '@/lib/ddc/ddc-mapper';
 
 export async function GET(request: NextRequest) {
   try {

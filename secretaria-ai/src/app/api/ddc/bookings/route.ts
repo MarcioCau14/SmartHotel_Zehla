@@ -1,23 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { resolveTenantId } from '@/lib/ddc/auth-utils';
-
-function mapBooking(b: any) {
-  return {
-    id: b.id,
-    guestId: b.guestId,
-    roomId: b.roomName,
-    checkIn: b.checkIn,
-    checkOut: b.checkOut,
-    total: b.totalValue,
-    status: b.status === 'checked_in' || b.status === 'checked_out' ? 'completed' as const : b.status as 'pending' | 'confirmed' | 'cancelled' | 'completed',
-    paymentStatus: b.paymentStatus === 'paid' ? 'paid' as const : b.paymentStatus === 'refunded' ? 'refunded' as const : 'pending' as const,
-    propertyId: b.tenantId,
-    guest: b.guest ? { id: b.guest.id, name: b.guest.name, phone: b.guest.phone } : undefined,
-    createdAt: b.createdAt,
-    updatedAt: b.updatedAt,
-  };
-}
+import { resolveTenantId, mapBooking } from '@/lib/ddc/ddc-mapper';
 
 export async function GET(request: NextRequest) {
   try {

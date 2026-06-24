@@ -1,21 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { resolveTenantId } from '@/lib/ddc/auth-utils';
-
-function mapTraining(t: any) {
-  return {
-    id: t.id,
-    title: t.name,
-    content: t.content,
-    category: t.type,
-    version: 1,
-    isActive: t.isActive,
-    testResult: t.successRate > 0 ? { status: t.successRate >= 85 ? 'passed' as const : 'failed' as const, score: t.successRate } : undefined,
-    propertyId: t.tenantId,
-    createdAt: t.createdAt,
-    updatedAt: t.updatedAt,
-  };
-}
+import { resolveTenantId, mapTraining } from '@/lib/ddc/ddc-mapper';
 
 export async function GET(request: NextRequest) {
   try {

@@ -1,41 +1,6 @@
 import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
-import { resolveTenantId } from '@/lib/ddc/auth-utils';
-
-function mapStatus(s: string): 'in_progress' | 'escalated' | 'closed' {
-  if (s === 'active') return 'in_progress';
-  if (s === 'escalated') return 'escalated';
-  return 'closed';
-}
-
-function mapMessage(m: any) {
-  return {
-    id: m.id,
-    conversationId: m.conversationId,
-    role: m.from === 'guest' ? 'user' as const : m.from === 'ai' ? 'assistant' as const : 'system' as const,
-    content: m.content,
-    confidence: undefined,
-    metadata: {},
-    createdAt: m.timestamp,
-  };
-}
-
-function mapConversation(c: any) {
-  return {
-    id: c.id,
-    guestId: c.guestId,
-    guestName: c.guestName,
-    phoneNumber: c.guestPhone,
-    status: mapStatus(c.status),
-    aiScore: c.aiConfidence,
-    needsEscalation: c.status === 'escalated',
-    metadata: {},
-    messages: (c.messages || []).map(mapMessage),
-    propertyId: c.tenantId,
-    createdAt: c.createdAt,
-    updatedAt: c.lastUpdate,
-  };
-}
+import { resolveTenantId, mapConversation } from '@/lib/ddc/ddc-mapper';
 
 export async function GET(request: NextRequest) {
   const encoder = new TextEncoder();
