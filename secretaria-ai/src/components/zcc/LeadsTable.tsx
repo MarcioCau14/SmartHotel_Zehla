@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { type Lead, type LeadStatus } from '@/lib/zcc-mock-data';
+import { type Lead, type LeadStatus } from '@/lib/types';
 import { useQuery } from '@tanstack/react-query';
 
 interface LeadsTableProps {

@@ -24,7 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import type { Lead } from '@/lib/zcc-mock-data';
+import type { Lead } from '@/lib/types';
 
 interface RevenueReportEliteProps {
   lead: Lead | null;

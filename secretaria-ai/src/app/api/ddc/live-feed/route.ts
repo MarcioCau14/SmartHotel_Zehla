@@ -1,6 +1,42 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { resolveTenantId, mapConversation } from '@/lib/ddc/ddc-mapper';
+import { z } from 'zod';
+
+const messageSchema = z.object({
+  conversationId: z.string(),
+  content: z.string().min(1),
+  from: z.enum(['guest', 'ai', 'human']),
+});
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const data = messageSchema.parse(body);
+
+    const message = await db.conversationMessage.create({
+      data: {
+        conversationId: data.conversationId,
+        content: data.content,
+        from: data.from,
+        timestamp: new Date(),
+      },
+    });
+
+    await db.conversationLog.update({
+      where: { id: data.conversationId },
+      data: { lastUpdate: new Date() },
+    });
+
+    return NextResponse.json({ success: true, message });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Invalid data', details: error.issues }, { status: 400 });
+    }
+    console.error('[live-feed POST] Error:', error);
+    return NextResponse.json({ error: 'Failed to create message' }, { status: 500 });
+  }
+}
 
 export async function GET(request: NextRequest) {
   const encoder = new TextEncoder();

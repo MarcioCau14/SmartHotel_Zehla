@@ -28,7 +28,7 @@ import { DispararEliteButton } from '@/components/zcc/DispararEliteButton';
 import { RevenueReportElite } from '@/components/zcc/RevenueReportElite';
 import { CerebroZella } from '@/components/zcc/CerebroZella';
 import { ClientOverview } from '@/components/zcc/ClientOverview';
-import type { Lead } from '@/lib/zcc-mock-data';
+import type { Lead } from '@/lib/types';
 
 type ZCCTab = 'overview' | 'cerebro' | 'prospection' | 'settings';
 

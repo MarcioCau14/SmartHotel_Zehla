@@ -50,6 +50,9 @@ test
 prompt  
 server.log
 
+# backup files  
+*.backup
+
 # database files  
 *.db  
 *.db-journal  
