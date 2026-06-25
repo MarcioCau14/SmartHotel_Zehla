@@ -21,20 +21,14 @@ jobs:
         run: bunx prisma generate
       - name: Lint
         run: bun run lint
-      - name: Run tests (152 tests)
+      - name: Run tests (162 tests)
         run: bun run test
-      - name: Type check API routes (hard gate)
+      - name: Type check (zero errors required)
         run: |
-          ERRORS=$(npx tsc --noEmit 2>&1 | grep "^src/app/api/" | grep -c "error TS" || true)
-          echo "API route type errors: $ERRORS"
+          ERRORS=$(npx tsc --noEmit 2>&1 | grep -c "error TS" || true)
+          echo "Total TypeScript errors: $ERRORS"
           if [ "$ERRORS" -gt 0 ]; then
-            echo "::error::API routes have $ERRORS type errors"
+            echo "::error::TypeScript has $ERRORS errors"
+            npx tsc --noEmit 2>&1 | grep "error TS" | head -20
             exit 1
           fi
-      - name: Type check full (informational)
-        if: always()
-        continue-on-error: true
-        run: |
-          TOTAL=$(npx tsc --noEmit 2>&1 | grep -c "error TS" || true)
-          echo "::notice title=TypeScript Check::$TOTAL total type errors (component debt tracked in Phase 9)"
-          npx tsc --noEmit 2>&1 | grep "^src/" | head -20 || true

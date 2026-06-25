@@ -68,7 +68,7 @@ export function useDDCNotifications(autoRefresh: boolean = true): UseDDCNotifica
     onSuccess: () => {
       queryClient.setQueryData(
         ['ddc-notifications'],
-        (prev: any) =>        prev.map(n => ({ ...n, read: true }))  
+        (prev: any) =>        prev.map((n: Record<string, unknown>) => ({ ...n, read: true }))  
      );  
      queryClient.invalidateQueries({ queryKey: ['ddc-notifications'] });  
    }  

@@ -57,8 +57,8 @@ export function useGuestPipeline(): UseGuestPipelineReturn {
 
   // Update guest status mutation
   const updateStatusMutation = useMutation({
-    mutationFn: ({ guestId, status }: { guestId: string; status: GuestStatus }) =>
-      updateGuestStatus(guestId, status),
+    mutationFn: async ({ guestId, status }: { guestId: string; status: GuestStatus }) =>
+      updateGuestStatusApi(guestId, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ddc-guests'] });
 
@@ -138,8 +138,8 @@ export function useGuestFilters() {
   };
 }
 
-// Helper function for updateGuestStatus (imported from api.ts)
-async function updateGuestStatus(guestId: string, status: Guest['status']) {
+// Helper function called by mutationFn
+async function updateGuestStatusApi(guestId: string, status: Guest['status']) {
   const response = await fetch(`/api/ddc/guests/${guestId}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },

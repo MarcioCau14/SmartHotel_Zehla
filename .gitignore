@@ -21,3 +21,5 @@
 !/secretaria-ai/**
 .vercel
 .env*
+!.env.example
+!.env.example.staging

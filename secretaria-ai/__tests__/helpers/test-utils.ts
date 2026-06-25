@@ -85,7 +85,7 @@ export function createMockDb() {
     $connect: vi.fn().mockResolvedValue(undefined),
     $disconnect: vi.fn().mockResolvedValue(undefined),
     $queryRaw: vi.fn().mockResolvedValue([{ 1: 1 }]),
-    $transaction: vi.fn().mockImplementation(async (fn: Function) => {
+    $transaction: vi.fn().mockImplementation(async (fn: (db: unknown) => unknown) => {
       if (typeof fn === 'function') return fn(createMockDb());
       return fn;
     }),

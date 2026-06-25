@@ -18,6 +18,27 @@ import {
 import { type Lead, type LeadStatus } from '@/lib/types';
 import { useQuery } from '@tanstack/react-query';
 
+interface DisplayLead {
+  id: string;
+  empresa: string;
+  decisor: string;
+  cargo: string;
+  email: string;
+  whatsapp: string;
+  porte: 'pequeno' | 'médio' | 'grande' | 'luxo';
+  score: number;
+  status: LeadStatus;
+  targetId?: string;
+  idpScore: number;
+  receitaAtual: number;
+  receitaPotencial: number;
+  diariaMedia: number;
+  ocupacaoMedia: number;
+  gapPercent: number;
+  auditText: string;
+  whatsappScript: string;
+}
+
 interface LeadsTableProps {
   filterTargetId: string | null;
   selectedLeadIds: Set<string>;
@@ -102,8 +123,8 @@ export function LeadsTable({ filterTargetId, selectedLeadIds, onSelectionChange,
   });
 
   // Map database leads to component types safely
-  const leads = useMemo(() => {
-    return rawLeads.map((l: any) => {
+  const leads: DisplayLead[] = useMemo(() => {
+    return rawLeads.map((l: any): DisplayLead => {
       // Parse metadata if present
       let meta: any = {};
       try {
@@ -148,7 +169,7 @@ export function LeadsTable({ filterTargetId, selectedLeadIds, onSelectionChange,
   }, [rawLeads]);
 
 
-  const filteredLeads = useMemo(() => {
+  const filteredLeads: DisplayLead[] = useMemo(() => {
     let result = [...leads];
 
 
@@ -321,7 +342,7 @@ export function LeadsTable({ filterTargetId, selectedLeadIds, onSelectionChange,
                 </TableCell>
               </TableRow>
             ) : (
-              filteredLeads.map((lead, idx) => {
+              filteredLeads.map((lead: DisplayLead, idx) => {
 
                 const status = statusConfig[lead.status];
                 return (
@@ -331,7 +352,7 @@ export function LeadsTable({ filterTargetId, selectedLeadIds, onSelectionChange,
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.03 }}
                     className="border-white/5 hover:bg-white/5 cursor-pointer transition-colors"
-                    onClick={() => onDiagnoseLead(lead)}
+                    onClick={() => onDiagnoseLead(lead as unknown as Lead)}
                   >
                     <TableCell className="px-3 py-2.5" onClick={e => e.stopPropagation()}>
                       <Checkbox

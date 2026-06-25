@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { jwt } from 'next-auth/jwt';
+import { getToken } from 'next-auth/jwt';
 
 export interface AuthSession {
   tenantId: string;
@@ -11,7 +11,7 @@ export async function getAuthSession(
   request: NextRequest
 ): Promise<{ session: AuthSession | null; errorResponse: NextResponse | null }> {
   try {
-    const token = await jwt({
+    const token = await getToken({
       req: request as any,
       secret: process.env.NEXTAUTH_SECRET,
     });

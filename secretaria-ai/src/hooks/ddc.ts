@@ -182,7 +182,7 @@ export function useGuestStatusColor(status: GuestStatus): string {
     inactive: 'from-gray-400 to-slate-400'
   };
 
-  return colors[status] || colors.new;
+  return colors[status as keyof typeof colors] || colors.new;
 }
 
 // ============================================================================
