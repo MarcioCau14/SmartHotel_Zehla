@@ -20,3 +20,4 @@
 !/secretaria-ai/
 !/secretaria-ai/**
 .vercel
+.env*

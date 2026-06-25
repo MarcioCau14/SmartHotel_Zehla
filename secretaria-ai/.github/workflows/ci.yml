@@ -1,0 +1,40 @@
+name: ZEHLA CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Generate Prisma Client
+        run: bunx prisma generate
+      - name: Lint
+        run: bun run lint
+      - name: Run tests (152 tests)
+        run: bun run test
+      - name: Type check API routes (hard gate)
+        run: |
+          ERRORS=$(npx tsc --noEmit 2>&1 | grep "^src/app/api/" | grep -c "error TS" || true)
+          echo "API route type errors: $ERRORS"
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "::error::API routes have $ERRORS type errors"
+            exit 1
+          fi
+      - name: Type check full (informational)
+        if: always()
+        continue-on-error: true
+        run: |
+          TOTAL=$(npx tsc --noEmit 2>&1 | grep -c "error TS" || true)
+          echo "::notice title=TypeScript Check::$TOTAL total type errors (component debt tracked in Phase 9)"
+          npx tsc --noEmit 2>&1 | grep "^src/" | head -20 || true
