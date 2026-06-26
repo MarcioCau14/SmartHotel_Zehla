@@ -37,10 +37,10 @@ export function RevenueMetrics({ metrics }: RevenueMetricsProps) {
       transition: {
         delay: i * 0.1,
         duration: 0.5,
-        ease: 'easeOut' as any
+        ease: 'easeOut' as const
       }
     })
-  };
+  } as const;
 
   const mainCards = [
     {

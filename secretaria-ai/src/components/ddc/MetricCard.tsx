@@ -44,17 +44,17 @@ export function MetricCard({
       transition: {
         delay,
         duration: 0.5,
-        ease: 'easeOut' as any
+        ease: 'easeOut' as const
       }
     }
-  };
+  } as const;
 
   const pulseAnimation = {
     scale: [1, 1.02, 1],
     transition: {
       duration: 2,
       repeat: Infinity,
-      ease: 'easeInOut' as any
+      ease: 'easeInOut' as const
     }
   };
 

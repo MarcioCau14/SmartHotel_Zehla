@@ -20,8 +20,6 @@ import {
 import { getGuestStatusColor, formatCurrency } from '@/lib/ddc/ddc-utils';
 import type { Guest, GuestStatus } from '@/types/ddc';
 
-type PipelineStatus = 'cold' | 'warm' | 'hot' | 'closed' | 'lost';
-
 interface GuestCRMPipelineProps {
   pipeline?: {
     hot: Guest[];
@@ -41,10 +39,10 @@ export function GuestCRMPipeline({
   onFilterChange,
   allGuests = []
 }: GuestCRMPipelineProps) {
-  const [filterStatus, setFilterStatus] = useState<PipelineStatus | 'all'>('all');
+  const [filterStatus, setFilterStatus] = useState<GuestStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const pipelineStages: { status: PipelineStatus; label: string; color: string; count: number }[] = [
+  const pipelineStages: { status: GuestStatus; label: string; color: string; count: number }[] = [
     { status: 'cold', label: 'Novos / Frios', color: 'from-blue-500 to-cyan-500', count: pipeline.cold?.length || 0 },
     { status: 'warm', label: 'Mornos', color: 'from-yellow-500 to-orange-500', count: pipeline.warm?.length || 0 },
     { status: 'hot', label: 'Quentes 🔥', color: 'from-orange-500 to-red-500', count: pipeline.hot?.length || 0 },
@@ -57,11 +55,11 @@ export function GuestCRMPipeline({
     if (filterStatus === 'all') {
       return allGuests;
     }
-    return pipeline[filterStatus] || [];
+    return (pipeline as any)[filterStatus] || [];
   }, [filterStatus, pipeline, allGuests]);
 
   const filteredGuests = useMemo(() => {
-    return guestsToDisplay.filter(guest => {
+    return (guestsToDisplay || []).filter((guest: Guest) => {
       const matchesSearch =
         guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (guest.phoneNumber || guest.phone || '').includes(searchQuery);
@@ -71,16 +69,11 @@ export function GuestCRMPipeline({
 
   const getStatusLabel = (status: Guest['status']) => {
     const labels: Record<string, string> = {
-      new: 'Novo',
+      cold: 'Frio',
       warm: 'Morno',
       hot: 'Quente',
-      cold: 'Frio',
-      booked: 'Reservado',
-      staying: 'Hospedado',
-      checked_out: 'Checkout',
       closed: 'Fechado',
-      lost: 'Perdido',
-      inactive: 'Inativo'
+      lost: 'Perdido'
     };
     return labels[status] || status;
   };
@@ -93,10 +86,10 @@ export function GuestCRMPipeline({
       transition: {
         delay: i * 0.05,
         duration: 0.3,
-        ease: 'easeOut' as any
+        ease: 'easeOut' as const
       }
     })
-  };
+  } as const;
 
   const totalGuestsCount = allGuests.length || 1; // avoid division by zero
 
@@ -214,7 +207,7 @@ export function GuestCRMPipeline({
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {filteredGuests.map((guest, index) => (
+                  {filteredGuests.map((guest: Guest, index: number) => (
                     <motion.div
                       key={guest.id}
                       custom={index}
@@ -227,8 +220,8 @@ export function GuestCRMPipeline({
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           {/* Avatar */}
                           <Avatar className="w-10 h-10 flex-shrink-0">
-                            <AvatarFallback className={`bg-gradient-to-br ${guest.status === 'hot' ? 'from-orange-500 to-red-500' : guest.status === 'booked' || guest.status === 'closed' ? 'from-emerald-500 to-green-500' : 'from-violet-500 to-purple-600'} text-white text-xs font-bold`}>
-                              {guest.avatar || guest.name.split(' ').map(n => n[0]).join('')}
+                            <AvatarFallback className={`bg-gradient-to-br ${guest.status === 'hot' ? 'from-orange-500 to-red-500' : guest.status === 'closed' ? 'from-emerald-500 to-green-500' : 'from-violet-500 to-purple-600'} text-white text-xs font-bold`}>
+                              {guest.avatar || guest.name.split(' ').map((n: string) => n[0]).join('')}
                             </AvatarFallback>
                           </Avatar>
 
@@ -239,7 +232,7 @@ export function GuestCRMPipeline({
                                 {guest.name}
                               </span>
                               {guest.status === 'hot' && <Flame className="w-3 h-3 text-orange-400 flex-shrink-0" />}
-                              {(guest.status === 'booked' || guest.status === 'closed') && <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />}
+                              {(guest.status === 'closed') && <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />}
                               {guest.status === 'lost' && <XCircle className="w-3 h-3 text-gray-400 flex-shrink-0" />}
                             </div>
                             <div className="flex items-center gap-3 text-[10px] text-white/50 font-mono">
@@ -269,7 +262,7 @@ export function GuestCRMPipeline({
                         <div className="flex flex-col items-end gap-2 ml-4">
                           <div className="text-right">
                             <div className="text-sm font-bold text-white">
-                              {guest.value && guest.value > 0 ? formatCurrency(guest.value) : '-'}
+                              {guest.score && guest.score > 0 ? formatCurrency(guest.score) : '-'}
                             </div>
                             {guest.checkIn && guest.checkOut && (
                               <div className="text-[9px] text-white/40">

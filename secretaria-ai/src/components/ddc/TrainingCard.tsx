@@ -35,9 +35,9 @@ export function TrainingCard({
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.3, ease: 'easeOut' as any }
+      transition: { duration: 0.3, ease: 'easeOut' as const }
     }
-  };
+  } as const;
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {

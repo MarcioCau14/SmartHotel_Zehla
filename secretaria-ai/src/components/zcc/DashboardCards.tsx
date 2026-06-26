@@ -76,7 +76,7 @@ const cardVariants = {
     scale: 1,
     transition: { type: 'spring' as const, stiffness: 300, damping: 24 },
   },
-};
+} as const;
 
 export function DashboardCards({ stats }: DashboardCardsProps) {
   const data = stats ?? mockDashboardStats;

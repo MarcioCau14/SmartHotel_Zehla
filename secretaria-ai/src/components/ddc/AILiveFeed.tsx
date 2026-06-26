@@ -81,9 +81,9 @@ export function AILiveFeed({
     visible: {
       opacity: 1,
       x: 0,
-      transition: { duration: 0.3, ease: 'easeOut' as any }
+      transition: { duration: 0.3, ease: 'easeOut' as const }
     }
-  };
+  } as const;
 
   const getStatusColor = (status: string) => {
     switch (status) {

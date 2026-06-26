@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { PainPointsSection } from '@/components/landing/PainPointsSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
@@ -38,6 +39,12 @@ export default function LandingPage() {
       <CTASection />
       <FinalCTASection />
       <Footer />
+      <Link
+        href="/apply"
+        className="fixed bottom-6 right-6 z-50 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-3 rounded-xl shadow-lg shadow-emerald-600/30 text-sm font-semibold transition-all hover:scale-105 flex items-center gap-2"
+      >
+        📋 Copiar Script Fase 10
+      </Link>
     </main>
   );
 }

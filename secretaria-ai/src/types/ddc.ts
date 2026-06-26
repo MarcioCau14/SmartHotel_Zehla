@@ -1,11 +1,13 @@
 // ZEHLA DDC - Cognitive OS Command Center
 // Type Definitions
 
+import type { LucideIcon } from 'lucide-react';
+
 // ============================================================================
 // GUEST TYPES
 // ============================================================================
 
-export type GuestStatus = 'hot' | 'warm' | 'cold' | 'closed' | 'lost' | 'booked' | 'new' | 'staying';
+export type GuestStatus = 'hot' | 'warm' | 'cold' | 'closed' | 'lost';
 
 export interface Guest {
   id: string;
@@ -451,10 +453,10 @@ export interface ConversionFunnelData {
 // ============================================================================
 
 export interface DDCHeaderProps {
-  aiStatus: AIStatusData;
-  metrics: RevenueMetrics;
-  onNotificationClick: () => void;
-  onUserMenuClick: () => void;
+  propertyName: string;
+  aiStatus: AIStatus;
+  notificationCount: number;
+  onOpenNotifications?: () => void;
 }
 
 export interface RevenueMetricsProps {
@@ -494,6 +496,47 @@ export interface TestResult {
   score?: number;
   feedback?: string;
   timestamp: Date;
+}
+
+export interface MetricCardProps {
+  title: string;
+  value: string | number;
+  change?: string;
+  changeType?: 'positive' | 'negative' | 'neutral';
+  icon?: LucideIcon;
+  className?: string;
+}
+
+export interface ConversationCardProps {
+  conversation: ConversationLog;
+  isActive?: boolean;
+  onClick: () => void;
+  onReply: () => void;
+  onEscalate: () => void;
+}
+
+export interface GuestCardProps {
+  guest: Guest;
+  onClick: () => void;
+  onCall?: () => void;
+  onWhatsApp?: () => void;
+  onMoveToStage?: (stage: string) => void;
+}
+
+export interface PipelineStageProps {
+  status: GuestStatus;
+  title: string;
+  description: string;
+  guests: Guest[];
+  color: string;
+}
+
+export interface TrainingCardProps {
+  training: TrainingPrompt;
+  onClick: () => void;
+  onTest: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 // ============================================================================

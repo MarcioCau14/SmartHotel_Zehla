@@ -32,9 +32,9 @@ export function PipelineStage({
     visible: {
       opacity: 1,
       x: 0,
-      transition: { duration: 0.3, ease: 'easeOut' as any }
+      transition: { duration: 0.3, ease: 'easeOut' as const }
     }
-  };
+  } as const;
 
   const totalGuests = 45; // Mock total
   const percentage = (count / totalGuests) * 100;
@@ -117,7 +117,7 @@ export function PipelineStage({
           className={`h-full bg-gradient-to-r ${color}`}
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
-          transition={{ duration: 0.5, ease: 'easeOut' as any }}
+          transition={{ duration: 0.5, ease: 'easeOut' as const }}
         />
       </div>
 

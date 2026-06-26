@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { Prisma } from '@prisma/client';
 import { resolveTenantId, mapGuest } from '@/lib/ddc/ddc-mapper';
 
 export async function GET(request: NextRequest) {

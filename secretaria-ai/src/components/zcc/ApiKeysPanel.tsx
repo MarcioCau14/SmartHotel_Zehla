@@ -120,7 +120,7 @@ export function ApiKeysPanel() {
               isActive: provider === 'zai_sdk',
               hasKey: false,
               usageCurrent: 0,
-              notes: PROVIDER_INFO[provider].notes || '',
+              notes: '',
             }))
           );
         }

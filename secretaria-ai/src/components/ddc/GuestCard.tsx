@@ -36,9 +36,9 @@ export function GuestCard({
     visible: {
       opacity: 1,
       x: 0,
-      transition: { duration: 0.3, ease: 'easeOut' as any }
+      transition: { duration: 0.3, ease: 'easeOut' as const }
     }
-  };
+  } as const;
 
   const stages = [
     { id: 'hot', label: 'Quente 🔥', color: 'from-orange-500 to-red-500' },
@@ -136,7 +136,7 @@ export function GuestCard({
          </div>
 
          <div className="flex items-center gap-2 mb-2">  
-           <Badge variant="outline" className={`text-[8px] h-4 ${getGuestStatusColor(guest.status)}`}>  
+           <Badge variant="outline" className={`text-[8px] h-4 ${getGuestStatusColor(guest.status as any)}`}>  
              {guest.status === 'hot' ? 'Quente' :  
               guest.status === 'warm' ? 'Morno' :  
               guest.status === 'cold' ? 'Frio' :  
@@ -156,13 +156,13 @@ export function GuestCard({
            <TrendingUp className="w-3 h-3 text-emerald-400" />  
          </div>
 
-         {guest.value > 0 && (  
-           <div className="mb-2">  
-             <span className="text-lg font-bold text-white">  
-               {formatCurrency(guest.value)}  
-             </span>  
-           </div>  
-         )}
+{guest.score != null && guest.score > 0 && (
+    <div className="mb-2">
+      <span className="text-lg font-bold text-white">
+        {formatCurrency(guest.score ?? 0)}
+      </span>
+    </div>
+  )}
 
          {guest.lastMessage && (  
            <div className="bg-white/[0.02] border border-white/[0.04] rounded-lg p-2">  

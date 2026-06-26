@@ -210,7 +210,7 @@ export default function ZCCPage() {
                 filterTargetId={selectedTargetId}
                 selectedLeadIds={selectedLeadIds}
                 onSelectionChange={handleSelectionChange}
-                onDiagnoseLead={handleDiagnoseLead}
+                    onDiagnoseLead={handleDiagnoseLead as any}
               />
             </motion.section>
           </motion.div>
@@ -234,7 +234,7 @@ export default function ZCCPage() {
 
       {/* Revenue Diagnosis Modal */}
       <RevenueReportElite
-        lead={diagnosisLead}
+        lead={diagnosisLead as any}
         open={diagnosisOpen}
         onClose={handleCloseDiagnosis}
       />

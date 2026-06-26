@@ -171,18 +171,15 @@ export function useDebounce<T>(value: T, delay: number): T {
 // ============================================================================
 
 export function useGuestStatusColor(status: GuestStatus): string {
-  const colors = {
-    new: 'from-blue-500 to-cyan-500',
-    warm: 'from-yellow-500 to-orange-500',
+  const colors: Record<GuestStatus, string> = {
     hot: 'from-orange-500 to-red-500',
-    booked: 'from-emerald-500 to-green-500',
-    staying: 'from-purple-500 to-violet-500',
-    checked_out: 'from-slate-500 to-gray-500',
-    lost: 'from-gray-500 to-slate-500',
-    inactive: 'from-gray-400 to-slate-400'
+    warm: 'from-yellow-500 to-orange-500',
+    cold: 'from-blue-500 to-cyan-500',
+    closed: 'from-emerald-500 to-green-500',
+    lost: 'from-gray-500 to-slate-500'
   };
 
-  return colors[status as keyof typeof colors] || colors.new;
+  return colors[status];
 }
 
 // ============================================================================

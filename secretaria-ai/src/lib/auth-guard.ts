@@ -12,7 +12,7 @@ export async function getAuthSession(
 ): Promise<{ session: AuthSession | null; errorResponse: NextResponse | null }> {
   try {
     const token = await getToken({
-      req: request as any,
+      req: request,
       secret: process.env.NEXTAUTH_SECRET,
     });
     if (!token?.tenantId) {

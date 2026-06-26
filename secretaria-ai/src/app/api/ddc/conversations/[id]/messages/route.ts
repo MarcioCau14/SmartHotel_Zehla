@@ -25,7 +25,7 @@ export async function POST(
   try {
     const { id: conversationId } = await params;
     const body = await request.json();
-    const { from, content, type = 'text', metadata = {} } = body;
+    const { from, content, metadata = {} } = body;
 
     if (!from || !content) {
       return NextResponse.json({ error: 'from e content são obrigatórios' }, { status: 400 });
@@ -36,7 +36,7 @@ export async function POST(
         conversationId,
         from,
         content,
-        metadata: JSON.stringify({ ...metadata, type }),
+        metadata: JSON.stringify(metadata),
       },
     });
 

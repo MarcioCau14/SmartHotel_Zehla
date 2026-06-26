@@ -34,15 +34,13 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 
-type AIStatus = 'online' | 'offline' | 'learning' | 'error' | 'processing' | string;
+import type { AIStatus } from '@/types/ddc';
 
 interface DDCHeaderProps {
   propertyName: string;
   aiStatus: AIStatus;
   notificationCount: number;
   onOpenNotifications?: () => void;
-  onNotificationClick?: () => void;
-  onUserMenuClick?: () => void;
 }
 
 export function DDCHeader({
@@ -79,7 +77,7 @@ export function DDCHeader({
           glowColor: 'shadow-emerald-500/50',
           bgColor: 'bg-emerald-500/10'
         };
-      case 'learning':
+      case 'processing':
         return {
           icon: Sparkles,
           label: 'IA Aprendendo',

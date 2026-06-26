@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { logger } from '@/lib/logger';
+import { handleApiError } from '@/lib/error-handler';
 
 const MOCK_DECISORES = [
   'Carlos Mendes', 'Ana Souza', 'Roberto Lima', 'Fernanda Oliveira',
@@ -136,10 +138,6 @@ export async function POST(request: Request) {
       leads: createdLeads,
     }, { status: 201 });
   } catch (error: unknown) {
-    console.error('[HUNT_POST]', error);
-    return NextResponse.json(
-      { error: 'Erro na prospecção' },
-      { status: 500 }
-    );
+    return handleApiError(error, { endpoint: '/api/hunt' });
   }
 }

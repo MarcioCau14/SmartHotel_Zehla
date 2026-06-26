@@ -67,8 +67,7 @@ export default function DDCDashboardPage() {
         propertyName={propertyName}
         aiStatus={aiStatusLocal}
         notificationCount={unreadCount}
-        onNotificationClick={handleNotificationClick}
-        onUserMenuClick={handleUserMenuClick}
+        onOpenNotifications={handleNotificationClick}
       />
 
       {/* Main Content */}
@@ -180,15 +179,12 @@ export default function DDCDashboardPage() {
                onEscalate={(conversationId) => escalateConversation(conversationId)}  
                onViewDetails={(conversationId) => selectConversation(conversationId)}  
              />  
-             <GuestCRMPipeline  
-               pipeline={pipeline}  
-               onStatusChange={(guestId, newStatus) => {  
-                 console.log('Move guest:', guestId, 'to:', newStatus);  
-               }}  
-               onFilterChange={(filters) => {  
-                 console.log('Filter changed:', filters);  
-               }}  
-             />  
+             <GuestCRMPipeline
+                pipeline={pipeline}
+                allGuests={allGuests}
+                onStatusChange={updateGuestStatus}
+                onFilterChange={setFilters}
+              />  
            </div>  
          </motion.div>
 

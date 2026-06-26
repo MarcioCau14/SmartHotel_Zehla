@@ -136,10 +136,10 @@ export function TrainingCenter() {
       transition: {
         delay: i * 0.05,
         duration: 0.3,
-        ease: 'easeOut' as any
+        ease: 'easeOut' as const
       }
     })
-  };
+  } as const;
 
   const activeTrainingsCount = trainings.filter(t => t.isActive).length;
 

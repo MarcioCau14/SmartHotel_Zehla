@@ -48,17 +48,17 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.tenantId = (user as any).tenantId;
-        token.role = (user as any).role;
-        token.plan = (user as any).plan;
+        token.tenantId = user.tenantId;
+        token.role = user.role;
+        token.plan = user.plan;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).tenantId = token.tenantId;
-        (session.user as any).role = token.role;
-        (session.user as any).plan = token.plan;
+        session.user.tenantId = token.tenantId;
+        session.user.role = token.role;
+        session.user.plan = token.plan;
       }
       return session;
     },
@@ -80,7 +80,7 @@ export async function requireTenant() {
     redirect('/login');
   }
 
-  const tenantId = (session.user as any).tenantId;
+  const tenantId = session.user.tenantId;
   if (!tenantId) {
     redirect('/login');
   }
