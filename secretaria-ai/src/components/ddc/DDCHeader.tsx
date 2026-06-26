@@ -138,7 +138,7 @@ export function DDCHeader({
           transition={{
             duration: 2,
             repeat: Infinity,
-            ease: 'linear'
+            ease: 'linear' as const
           }}
           style={{ opacity: pulseActive ? 1 : 0.5 }}
         />
@@ -216,7 +216,7 @@ export function DDCHeader({
                   scale: [1, 1.3, 1],
                   opacity: [1, 0.6, 1]
                 }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' as const }}
               />
             </div>
             <span className={`text-xs font-medium ${statusConfig.textColor}`}>

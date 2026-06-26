@@ -232,7 +232,7 @@ export function CerebroZella() {
         <div className="flex items-center gap-3">
           <motion.div
             animate={{ scale: [1, 1.08, 1] }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' as const }}
           >
             <Brain className="w-6 h-6 text-emerald-400" />
           </motion.div>
@@ -299,7 +299,7 @@ export function CerebroZella() {
                       : 'linear-gradient(90deg, rgba(248,113,113,0.25), rgba(248,113,113,0.4))',
                   }}
                   animate={{ width: `${p.successRate}%` }}
-                  transition={{ duration: 1.2, ease: 'easeInOut' }}
+                  transition={{ duration: 1.2, ease: 'easeInOut' as const }}
                 />
                 <span className="absolute inset-0 flex items-center justify-center text-[10px] font-mono font-bold text-white/80">
                   {p.successRate.toFixed(1)}%
@@ -453,7 +453,7 @@ export function CerebroZella() {
                           : 'linear-gradient(90deg, #6b7280, #4b5563)',
                     }}
                     animate={{ width: `${b.level}%` }}
-                    transition={{ duration: 1.5, ease: 'easeInOut' }}
+                    transition={{ duration: 1.5, ease: 'easeInOut' as const }}
                   />
                 </div>
               </motion.div>
@@ -496,7 +496,7 @@ export function CerebroZella() {
             <motion.div
               className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"
               animate={{ width: `${(cacheEntries / 1000) * 100}%` }}
-              transition={{ duration: 1.5, ease: 'easeInOut' }}
+              transition={{ duration: 1.5, ease: 'easeInOut' as const }}
             />
           </div>
           <span className="text-[10px] font-mono text-neutral-500 w-10 text-right">

@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
           tenantId: TENANT_ID,
           name: contactName || `Hóspede - ${fromPhone}`,
           phone: fromPhone,
-          status: 'new',
+          status: 'cold',
           source: 'whatsapp',
           conversationCount: 1,
           metadata: JSON.stringify({ wa_id: contactWaId })

@@ -19,6 +19,7 @@
 # Allow the secretaria-ai project (SmartHotel_Zehla)
 !/secretaria-ai/
 !/secretaria-ai/**
+__pycache__/
 .vercel
 .env*
 !.env.example

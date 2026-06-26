@@ -46,9 +46,9 @@ export default function DDCDashboardPage() {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { duration: 0.5, ease: 'easeOut' as any }
+      transition: { duration: 0.5, ease: 'easeOut' as const }
     }
-  };
+  } as const;
 
   const staggerContainer = {
     hidden: { opacity: 0 },
@@ -95,8 +95,7 @@ export default function DDCDashboardPage() {
             className="lg:col-span-2"
           >
             <RevenueMetrics
-              metrics={(metrics || mockRevenueMetrics) as any}
-              isLoading={isLoading}
+              metrics={metrics || mockRevenueMetrics}
             />
           </motion.div>
 
@@ -123,7 +122,7 @@ export default function DDCDashboardPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-white/50">Atendimentos Hoje</span>
-                  <span className="text-sm font-bold text-white">{metrics?.attendedToday || 45}</span>
+                  <span className="text-sm font-bold text-white">{metrics?.today?.aiAttended || 45}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-white/50">Tempo Resposta</span>

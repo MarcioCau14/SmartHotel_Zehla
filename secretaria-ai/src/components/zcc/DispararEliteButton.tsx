@@ -88,7 +88,7 @@ export function DispararEliteButton({ selectedCount, selectedLeadIds, onClearSel
           >
             <motion.div
               animate={{ scale: [1, 1.15, 1] }}
-              transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' as const }}
             >
               <MessageSquare className="w-5 h-5" />
             </motion.div>

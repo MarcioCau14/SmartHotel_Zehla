@@ -234,24 +234,23 @@ export interface PerformanceSnapshot {
 }
 
 export interface RevenueMetrics {
-  attendedToday?: number;
-  attendedChange?: number;
-  bookingsClosed?: number;
-  bookingsChange?: number;
-  revenue?: number;
-  revenueChange?: number;
-  occupancy?: number;
-  occupancyChange?: number;
-  conversion?: number;
-  conversionChange?: number;
-  aiScore?: number;
-  aiScoreChange?: number;
-  lastUpdated?: Date;
-  // properties from mock data
-  today?: any;
-  weekly?: any;
-  monthly?: any;
-  [key: string]: any;
+  today: {
+    generated: number;
+    reservations: number;
+    aiAttended: number;
+    conversionRate: number;
+  };
+  week: {
+    generated: number;
+    reservations: number;
+    growth: number;
+  };
+  month: {
+    generated: number;
+    reservations: number;
+    growth: number;
+    projected: number;
+  };
 }
 
 export type PerformanceMetrics = RevenueMetrics;

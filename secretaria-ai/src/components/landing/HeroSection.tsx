@@ -186,7 +186,7 @@ export function HeroSection() {
             {/* Floating notification */}
             <motion.div
               animate={{ y: [0, -8, 0] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' as const }}
               className="absolute -right-4 top-16 bg-[#111] border border-white/[0.08] rounded-xl px-4 py-3 shadow-xl"
             >
               <div className="flex items-center gap-2">
@@ -203,7 +203,7 @@ export function HeroSection() {
             {/* Floating PIX */}
             <motion.div
               animate={{ y: [0, 8, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' as const, delay: 1 }}
               className="absolute -left-4 bottom-20 bg-[#111] border border-white/[0.08] rounded-xl px-4 py-3 shadow-xl"
             >
               <div className="flex items-center gap-2">

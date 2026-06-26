@@ -69,7 +69,7 @@ function CircularGauge({ value, max = 100, size = 100, strokeWidth = 6 }: { valu
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1.2, ease: 'easeOut' }}
+           transition={{ duration: 1.2, ease: 'easeOut' as const }}
         />
       </svg>
       <div className="absolute flex flex-col items-center">

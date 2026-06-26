@@ -249,7 +249,7 @@ export function HunterConsole({
         >
           {isHunting ? (
             <>
-              <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
+              <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' as const }}>
                 <Crosshair size={16} />
               </motion.div>
               Caçando...
@@ -322,7 +322,7 @@ export function HunterConsole({
         <div className="flex items-center gap-3">
           <motion.div
             animate={loop ? { rotate: 360 } : { rotate: 0 }}
-            transition={loop ? { duration: 3, repeat: Infinity, ease: 'linear' } : { duration: 0 }}
+            transition={loop ? { duration: 3, repeat: Infinity, ease: 'linear' as const } : { duration: 0 }}
           >
             <RotateCcw size={15} className="text-[#94a3b8]" />
           </motion.div>

@@ -270,7 +270,7 @@ export function HunterConsole() {
                 className="h-full bg-gradient-to-r from-emerald-500 to-cyan-400 rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.4, ease: 'easeOut' }}
+                transition={{ duration: 0.4, ease: 'easeOut' as const }}
               />
             </div>
             <span className="text-[11px] font-mono text-white/50 w-10 text-right">{progress}%</span>

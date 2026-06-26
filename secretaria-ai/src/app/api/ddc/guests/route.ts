@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
         name: body.name,
         phone: body.phoneNumber,
         email: body.email,
-        status: body.status === 'hot' || body.status === 'warm' ? body.status : 'new',
+        status: body.status === 'hot' || body.status === 'warm' ? body.status : 'cold',
         aiScore: body.score || 50,
         source: body.source || 'whatsapp',
         value: body.value || 0,

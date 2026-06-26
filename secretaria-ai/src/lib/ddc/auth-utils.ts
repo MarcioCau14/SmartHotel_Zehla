@@ -17,7 +17,7 @@ export async function resolveTenantId(): Promise<string> {
       return FALLBACK_TENANT_ID;
     }
 
-    const tenantId = (session.user as any).tenantId;
+    const tenantId = session.user.tenantId;
     if (tenantId) {
       return tenantId;
     }
