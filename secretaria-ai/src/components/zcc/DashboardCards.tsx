@@ -2,10 +2,11 @@
 
 import { motion } from 'framer-motion';
 import { Users, CheckCircle, Send, Megaphone, TrendingUp, DollarSign } from 'lucide-react';
-import { mockDashboardStats } from '@/lib/zcc-mock-data';
+import { useQuery } from '@tanstack/react-query';
+import type { DashboardStats } from '@/lib/leads-types';
 
 interface DashboardCardsProps {
-  stats?: typeof mockDashboardStats;
+  stats?: DashboardStats;
 }
 
 const cards = [
@@ -79,7 +80,19 @@ const cardVariants = {
 } as const;
 
 export function DashboardCards({ stats }: DashboardCardsProps) {
-  const data = stats ?? mockDashboardStats;
+  const { data: apiStats } = useQuery<DashboardStats>({
+    queryKey: ['zcc', 'stats'],
+    queryFn: async () => {
+      const res = await fetch('/api/zcc/stats');
+      if (!res.ok) throw new Error('Failed to fetch stats');
+      return res.json();
+    },
+    staleTime: 30_000,
+  });
+  const data = stats ?? apiStats ?? {
+    totalLeads: 0, verifiedLeads: 0, messagesSent: 0,
+    activeCampaigns: 0, conversionRate: '0.0', monthlyAICost: 0,
+  };
 
   return (
     <motion.div

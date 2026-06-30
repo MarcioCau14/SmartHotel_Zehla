@@ -1,4 +1,4 @@
-import { prisma } from '../../prisma';
+import { db } from '@/lib/db';
 import { type LeadProfile, type SwipeMatch, type SwipeMatchResult, type TierRecommendation, type SwipeTemplate, type PlanTier } from "./types";
 import { classificarTier } from "./classifier";
 
@@ -33,7 +33,7 @@ async function buscarCandidatos(profile: LeadProfile, channel?: string, category
   if (profile.dor && profile.dor !== "desconhecida") {
     where.OR = [{ painType: profile.dor }, { painType: null }];
   }
-  const results = await prisma.swipeTemplate.findMany({ where, orderBy: [{ convRate: "desc" }, { timesUsed: "desc" }], take: 20 });
+  const results = await db.swipeTemplate.findMany({ where, orderBy: [{ convRate: "desc" }, { timesUsed: "desc" }], take: 20 });
   return results as unknown as SwipeTemplate[];
 }
 

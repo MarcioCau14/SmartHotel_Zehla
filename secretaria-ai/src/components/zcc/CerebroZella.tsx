@@ -127,12 +127,14 @@ export function CerebroZella() {
   const [status, setStatus] = useState<'Ativo' | 'Aprendendo'>('Ativo');
 
   // ---- Real-time feed state ----
-  const seedFeed: FeedEntry[] = Array.from({ length: 6 }, (_, i) => {
-    const msg = feedMessages[i % feedMessages.length];
-    const d = new Date(Date.now() - (6 - i) * 2500);
-    return { id: `seed-${i}`, timestamp: formatTime(d), type: msg.type, message: msg.message };
+  const [feed, setFeed] = useState<FeedEntry[]>(() => {
+    const baseTime = Date.now();
+    return Array.from({ length: 6 }, (_, i) => {
+      const msg = feedMessages[i % feedMessages.length];
+      const d = new Date(baseTime - (6 - i) * 2500);
+      return { id: `seed-${i}`, timestamp: formatTime(d), type: msg.type, message: msg.message };
+    });
   });
-  const [feed, setFeed] = useState<FeedEntry[]>(seedFeed);
   const feedIndexRef = useRef(6);
   const feedEndRef = useRef<HTMLDivElement>(null);
 

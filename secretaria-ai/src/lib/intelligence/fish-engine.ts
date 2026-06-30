@@ -1,4 +1,4 @@
-import { prisma } from '../prisma';
+import { db } from '@/lib/db';
 
 export interface EnrichedLeadResult {
   roomsCount: number;
@@ -21,7 +21,7 @@ export class FishEngine {
   private static OTA_COMMISSION_FEE = 0.22;
 
   static async enrichLead(leadId: string): Promise<EnrichedLeadResult> {
-    const lead = await prisma.lead.findUnique({ where: { id: leadId } });
+    const lead = await db.lead.findUnique({ where: { id: leadId } });
     if (!lead) throw new Error(`Lead ${leadId} não encontrado.`);
 
     console.log(`🐠 [FISH] Iniciando pipeline para: ${lead.name}`);
@@ -42,10 +42,10 @@ export class FishEngine {
     else if (instagramFollowers > 8000) buyingBehavior = 'Premium';
     else buyingBehavior = 'Inovador';
 
-    let demographicScore = roomsCount >= 30 ? 30 : roomsCount >= 12 ? 20 : 10;
-    let digitalScore = 5 + (hasWebsite ? 10 : 0) + (instagramFollowers > 5000 ? 5 : 0) + (googleRating > 4.4 ? 5 : 0);
-    let behavioralScore = buyingBehavior === 'Inovador' ? 25 : buyingBehavior === 'Premium' ? 20 : buyingBehavior === 'Sob-Pressão' ? 15 : 5;
-    let otaPainScore = otaCommissionLost > 180000 ? 20 : otaCommissionLost > 70000 ? 12 : 5;
+    const demographicScore = roomsCount >= 30 ? 30 : roomsCount >= 12 ? 20 : 10;
+    const digitalScore = 5 + (hasWebsite ? 10 : 0) + (instagramFollowers > 5000 ? 5 : 0) + (googleRating > 4.4 ? 5 : 0);
+    const behavioralScore = buyingBehavior === 'Inovador' ? 25 : buyingBehavior === 'Premium' ? 20 : buyingBehavior === 'Sob-Pressão' ? 15 : 5;
+    const otaPainScore = otaCommissionLost > 180000 ? 20 : otaCommissionLost > 70000 ? 12 : 5;
     const score = demographicScore + digitalScore + behavioralScore + otaPainScore;
 
     let leadTier: 'HOT' | 'WARM' | 'WARM_LOW' | 'COLD' | 'DEAD' = 'COLD';
@@ -63,7 +63,7 @@ export class FishEngine {
       objectKeywords: JSON.stringify(objections), recommendedPitch, score, leadTier
     };
 
-    await prisma.lead.update({
+    await db.lead.update({
       where: { id: leadId },
       data: { roomsCount, instagramFollowers, googleReviewsCount, otaCommissionLost: result.otaCommissionLost, hasWebsite, otaDependenceLevel, buyingBehavior, conversionProbability, objectKeywords: result.objectKeywords, recommendedPitch, score, leadTier }
     });

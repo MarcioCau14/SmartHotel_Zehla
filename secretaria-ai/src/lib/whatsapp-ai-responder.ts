@@ -1,8 +1,7 @@
 import { db } from '@/lib/db';
 import { getNeuroRouter } from '@/lib/ai/zaos-neuro-router';
 import { sendWhatsAppMessage } from './whatsapp-send';
-
-const TENANT_ID = 'client-001';
+import { resolveTenantId } from '@/lib/ddc/auth-utils';
 
 /**
  * Função principal em background para carregar contexto do hotel, responder
@@ -19,6 +18,7 @@ export async function respondToWhatsAppMessage(
   lastMessageContent: string
 ): Promise<void> {
   const startTime = Date.now();
+  const TENANT_ID = await resolveTenantId();
 
   try {
     // 1. Carregar contexto da Pousada/Propriedade

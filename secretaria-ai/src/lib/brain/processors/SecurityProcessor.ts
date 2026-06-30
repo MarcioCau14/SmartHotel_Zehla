@@ -1,4 +1,4 @@
-import { prisma } from '../../prisma';
+import { db } from '@/lib/db';
 import { sanitizePrompt, scanAndMaskPII } from '../../security/pii-scanner';
 
 export class SecurityProcessor {
@@ -7,7 +7,7 @@ export class SecurityProcessor {
     const hasInjectionAttempt = sanitizedInput.includes('[REDACTED_ATTEMPT]');
 
     if (hasInjectionAttempt) {
-      await prisma.securityAlert.create({
+      await db.securityAlert.create({
         data: {
           tenantId: propertyId,
           alertType: 'PROMPT_INJECTION',

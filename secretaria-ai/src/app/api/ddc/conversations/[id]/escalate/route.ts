@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-
-const TENANT_ID = 'client-001';
+import { resolveTenantId } from '@/lib/ddc/auth-utils';
 
 export async function POST(
   request: NextRequest,
@@ -9,6 +8,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
+    const tenantId = await resolveTenantId();
 
     const conversation = await db.conversationLog.findUnique({
       where: { id },
@@ -38,7 +38,7 @@ export async function POST(
       }),
       db.notification.create({
         data: {
-          tenantId: TENANT_ID,
+          tenantId,
           type: 'escalation',
           priority: 'urgent',
           title: '⚠️ Escalonamento Necessário',

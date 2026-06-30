@@ -134,8 +134,8 @@ export function MetricCard({
            <div className="mt-3 h-1 bg-white/[0.05] rounded-full overflow-hidden">  
              <motion.div  
                className={`h-full bg-gradient-to-r ${color}`}  
-               initial={{ width: 0 }}  
-               animate={{ width: `${Math.random() * 30 + 70}%` }}  
+                initial={{ width: 0 }}
+                animate={{ width: `${((title.length * 7 + 13) % 30) + 70}%` }}
                transition={{ duration: 1, delay: delay + 0.2 }}  
              />  
            </div>  

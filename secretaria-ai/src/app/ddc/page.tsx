@@ -28,8 +28,7 @@ export default function DDCDashboardPage() {
   const aiStatusLocal: AIStatus = aiStatus?.status || 'online';
 
   const handleActionClick = (action: string) => {
-    console.log('Action clicked:', action);
-    // Handle navigation or action
+    setActiveTab(action);
   };
 
   const handleNotificationClick = () => {
@@ -82,7 +81,6 @@ export default function DDCDashboardPage() {
           <QuickActionsBar onActionClick={handleActionClick} activeAction={activeTab} />
         </motion.div>
 
-        {/* Bento Grid Layout */}
         <motion.div
           variants={staggerContainer}
           initial="hidden"
@@ -189,10 +187,10 @@ export default function DDCDashboardPage() {
 
          <motion.div variants={fadeIn} className="lg:col-span-3">  
            <TrainingCenter />  
-         </motion.div>  
-       </motion.div>
+          </motion.div>
+        </motion.div>
 
-       {/* Bottom Status Bar */}  
+        {/* Bottom Status Bar */}
        <motion.div  
          variants={fadeIn}  
          initial="hidden"  

@@ -8,7 +8,7 @@ import { classifyIntent, type ClassifiedIntent } from './intent-classifier';
 import { executeTool } from './zehla-tools';
 import { getCachedResponse, setCachedResponse } from '../ai/semanticCache';
 import { llmRouter } from '../ai/llm-router';
-import { prisma } from '../../prisma';
+import { db } from '@/lib/db';
 
 export interface AgentRequest {
   propertyId: string;
@@ -154,7 +154,7 @@ class LoggingHandler extends AgentHandler {
   async process(ctx: ProcessContext): Promise<ProcessContext> {
     if (ctx.response && ctx.response.tokensUsed !== undefined) {
       try {
-        await prisma.agentLog.create({
+        await db.agentLog.create({
           data: { agentName: ctx.response.agent, action: 'RESPOND', intent: ctx.classified.intent, confidence: ctx.classified.confidence, input: ctx.request.message || '', output: ctx.response.response, tokensUsed: ctx.response.tokensUsed || 0, cost: ctx.response.cost || 0, duration: Date.now() - ctx.startTime, status: 'SUCCESS' }
         });
       } catch {}

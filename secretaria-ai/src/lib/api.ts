@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Lead } from './leads-types';
-import { mockLeads, mockTargets } from './mock-data';
 
 /* ============================================
    TIPOS DA API (contrato com back-end v1.1.0)
@@ -31,7 +30,6 @@ export function useLeads() {
       const data = await res.json();
       return Array.isArray(data.leads) ? data.leads : data;
     },
-    placeholderData: mockLeads,
     staleTime: 30 * 1000,
     retry: 1,
   });
@@ -56,7 +54,6 @@ export function useTargets() {
         status: String(t.status ?? 'active').toLowerCase(),
       }));
     },
-    placeholderData: mockTargets,
     staleTime: 60 * 1000,
     retry: 1,
   });

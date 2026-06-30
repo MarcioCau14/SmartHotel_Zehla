@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Users, CheckSquare, FileSpreadsheet, Download, Linkedin, Instagram, Twitter, ShieldCheck, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Lead } from '@/lib/leads-types';
-import { mockLeads } from '@/lib/mock-data';
+import { useLeads } from '@/lib/api-hooks';
 import { RevenueReportElite } from './RevenueReportElite';
 
 const STATUS_CFG: Record<string, { label: string; color: string; bg: string; border: string }> = {
@@ -38,7 +38,7 @@ interface LeadsTableProps {
 }
 
 export function LeadsTable({
-  leads: rawLeads = mockLeads,
+  leads: rawLeads,
   selectedLeads,
   onToggle,
   onSelectAll,
@@ -47,7 +47,8 @@ export function LeadsTable({
   minScore,
 }: LeadsTableProps) {
   const [selectedRMLead, setSelectedRMLead] = useState<Lead | null>(null);
-  let leads = rawLeads;
+  const { data: apiLeads = [] } = useLeads();
+  let leads = rawLeads ?? apiLeads;
   
   if (filterCompany) {
     leads = leads.filter(l => l.empresa.toLowerCase() === filterCompany.toLowerCase());

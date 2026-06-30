@@ -1,15 +1,15 @@
-import { prisma } from '../../prisma';
+import { db } from '@/lib/db';
 import { detectSignal } from "./detector";
 
 export async function collectTrends(tierFilter?: string) {
-  const keywords = await prisma.trendKeyword.findMany({
+  const keywords = await db.trendKeyword.findMany({
     where: { isActive: true, ...(tierFilter ? { tier: tierFilter } : {}) },
   });
 
   const results: any[] = [];
 
   for (const kw of keywords) {
-    const lastPoint = await prisma.trendDataPoint.findFirst({
+    const lastPoint = await db.trendDataPoint.findFirst({
       where: { keywordId: kw.id },
       orderBy: { date: 'desc' },
     });
@@ -18,7 +18,7 @@ export async function collectTrends(tierFilter?: string) {
     const data = await fetchTrendData(kw.keyword, kw.geo || undefined);
     if (data) {
       const fullData = { ...data, previousScore };
-      await prisma.trendDataPoint.create({
+      await db.trendDataPoint.create({
         data: {
           keywordId: kw.id,
           interestScore: fullData.interestScore,
@@ -31,13 +31,13 @@ export async function collectTrends(tierFilter?: string) {
       });
       const signal = detectSignal(kw as any, fullData);
       if (signal) {
-        await prisma.trendSignal.create({ data: signal as any });
+        await db.trendSignal.create({ data: signal as any });
         results.push(signal);
       }
     }
   }
 
-  await prisma.trendKeyword.updateMany({
+  await db.trendKeyword.updateMany({
     where: { id: { in: keywords.map(k => k.id) } },
     data: { lastCheckedAt: new Date() },
   });

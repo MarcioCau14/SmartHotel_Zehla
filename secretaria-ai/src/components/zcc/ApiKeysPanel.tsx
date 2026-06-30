@@ -98,6 +98,20 @@ export function ApiKeysPanel() {
   const [editingKeys, setEditingKeys] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  const defaultConfigs = () =>
+    Object.keys(PROVIDER_INFO).map((provider) => ({
+      id: '',
+      provider,
+      model: PROVIDER_INFO[provider].defaultModel,
+      apiKey: '',
+      apiSecret: '',
+      baseUrl: '',
+      isActive: provider === 'zai_sdk',
+      hasKey: false,
+      usageCurrent: 0,
+      notes: '',
+    }));
+
   useEffect(() => {
     const loadConfigs = async () => {
       try {
@@ -106,39 +120,9 @@ export function ApiKeysPanel() {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const data = await res.json();
-        if (data.success) {
-          setConfigs(data.data || []);
-        } else {
-          setConfigs(
-            Object.keys(PROVIDER_INFO).map((provider) => ({
-              id: '',
-              provider,
-              model: PROVIDER_INFO[provider].defaultModel,
-              apiKey: '',
-              apiSecret: '',
-              baseUrl: '',
-              isActive: provider === 'zai_sdk',
-              hasKey: false,
-              usageCurrent: 0,
-              notes: '',
-            }))
-          );
-        }
+        setConfigs(data.success && data.data ? data.data : defaultConfigs());
       } catch {
-        setConfigs(
-          Object.keys(PROVIDER_INFO).map((provider) => ({
-            id: '',
-            provider,
-            model: PROVIDER_INFO[provider].defaultModel,
-            apiKey: '',
-            apiSecret: '',
-            baseUrl: '',
-            isActive: provider === 'zai_sdk',
-            hasKey: false,
-            usageCurrent: 0,
-            notes: '',
-          }))
-        );
+        setConfigs(defaultConfigs());
       }
       setLoading(false);
     };

@@ -178,9 +178,9 @@ export function PricingSection() {
 
       if (data.success) {
         if (data.redirectUrl) {
-          window.location.assign(data.redirectUrl);
+          router.push(data.redirectUrl);
         } else if (data.checkoutUrl) {
-          window.location.assign(data.checkoutUrl);
+          router.push(data.checkoutUrl);
         }
       } else {
         alert('Erro ao criar checkout: ' + (data.error || 'Unknown error'));

@@ -178,9 +178,9 @@ export function RevenueMetrics({ metrics }: RevenueMetricsProps) {
                     <div className="mt-3 h-1 bg-white/[0.05] rounded-full overflow-hidden">
                       <motion.div
                         className={`h-full bg-gradient-to-r ${card.color}`}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${Math.random() * 30 + 70}%` }}
-                        transition={{ duration: 1, delay: index * 0.2 }}
+                initial={{ width: 0 }}
+                animate={{ width: `${((card.id.length * 11 + 7) % 30) + 70}%` }}
+                transition={{ duration: 1, delay: index * 0.2 }}
                       />
                     </div>
                   </div>

@@ -43,14 +43,8 @@ export async function GET(request: NextRequest) {
 
   const stream = new ReadableStream({
     async start(controller) {
-      let tenantId = 'client-001';
+      const tenantId = await resolveTenantId().catch(() => 'client-001');
       let lastCheck = new Date();
-
-      try {
-        tenantId = await resolveTenantId();
-      } catch {
-        // use fallback
-      }
 
       // Initial load
       try {

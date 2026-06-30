@@ -1,4 +1,4 @@
-import { prisma } from '../../prisma'
+import { db } from '@/lib/db'
 import { llmRouter } from '../ai/llm-router'
 import { assertSanitized } from '../security/pii-sanitizer'
 import { validateLearnedPersona } from '../security/prompt-guard'
@@ -25,7 +25,7 @@ export class WhatsappPersonaLearner {
     const circuitKey = `llm:persona:${propertyId}`
 
     try {
-      const messages = await prisma.message.findMany({
+      const messages = await db.message.findMany({
         where: { propertyId, direction: 'OUTBOUND' },
         orderBy: { createdAt: 'desc' },
         take: 100
@@ -72,7 +72,7 @@ ${messageHistoryText}`
 
       const validation = validateLearnedPersona(rawPersona)
       if (!validation.valid) {
-        await prisma.securityAlert.create({
+        await db.securityAlert.create({
           data: {
             tenantId: propertyId,
             alertType: 'PROMPT_INJECTION_DETECTED',

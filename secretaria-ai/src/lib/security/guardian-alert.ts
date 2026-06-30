@@ -1,4 +1,4 @@
-import { prisma } from '../prisma';
+import { db } from '@/lib/db';
 
 interface AlertPayload {
   alertType: string;
@@ -12,7 +12,7 @@ export async function fireGuardianAlert(payload: AlertPayload): Promise<void> {
 
   void (async () => {
     try {
-      await prisma.securityAlert.create({
+      await db.securityAlert.create({
         data: {
           tenantId: payload.tenantId || 'SYSTEM',
           alertType: payload.alertType,

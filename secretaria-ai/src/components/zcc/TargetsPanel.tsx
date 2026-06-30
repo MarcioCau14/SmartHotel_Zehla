@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Plus, MapPin, Globe, Crosshair, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,14 +23,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { mockTargets, type Target, type TargetStatus } from '@/lib/zcc-mock-data';
+import { useQuery } from '@tanstack/react-query';
+import type { ZccTarget, ZccTargetStatus } from '@/lib/leads-types';
 
 interface TargetsPanelProps {
   selectedTargetId: string | null;
   onSelectTarget: (targetId: string | null) => void;
 }
 
-const statusConfig: Record<TargetStatus, { label: string; className: string }> = {
+const statusConfig: Record<ZccTargetStatus, { label: string; className: string }> = {
   active: { label: 'Ativo', className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20' },
   pending: { label: 'Pendente', className: 'bg-amber-500/15 text-amber-400 border-amber-500/20' },
   inactive: { label: 'Inativo', className: 'bg-white/10 text-white/40 border-white/10' },
@@ -50,7 +51,16 @@ function PriorityStars({ priority }: { priority: number }) {
 }
 
 export function TargetsPanel({ selectedTargetId, onSelectTarget }: TargetsPanelProps) {
-  const [targets, setTargets] = useState<Target[]>(mockTargets);
+  const { data: apiTargets = [] } = useQuery<ZccTarget[]>({
+    queryKey: ['zcc', 'targets'],
+    queryFn: async () => {
+      const res = await fetch('/api/zcc/targets');
+      if (!res.ok) throw new Error('Failed to fetch targets');
+      return res.json();
+    },
+    staleTime: 30_000,
+  });
+  const [targets, setTargets] = useState<ZccTarget[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newTarget, setNewTarget] = useState({
     name: '',
@@ -58,12 +68,14 @@ export function TargetsPanel({ selectedTargetId, onSelectTarget }: TargetsPanelP
     city: '',
     state: '',
     priority: 3,
-    status: 'pending' as TargetStatus,
+    status: 'pending' as ZccTargetStatus,
   });
+
+  useEffect(() => { setTargets(apiTargets); }, [apiTargets]);
 
   const handleAddTarget = () => {
     if (!newTarget.name.trim() || !newTarget.city.trim()) return;
-    const t: Target = {
+    const t: ZccTarget = {
       id: `T${String(targets.length + 1).padStart(2, '0')}`,
       ...newTarget,
       leadCount: 0,
@@ -196,7 +208,7 @@ export function TargetsPanel({ selectedTargetId, onSelectTarget }: TargetsPanelP
             <span className="font-medium text-white/70">Todos os Alvos</span>
           </div>
           <div className="text-[10px] text-white/30 mt-0.5 ml-5.5">
-            {mockTargets.reduce((sum, t) => sum + t.leadCount, 0)} leads totais
+            {targets.reduce((sum, t) => sum + t.leadCount, 0)} leads totais
           </div>
         </button>
 

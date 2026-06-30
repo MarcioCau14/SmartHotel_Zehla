@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { respondToWhatsAppMessage } from '@/lib/whatsapp-ai-responder';
-
-const TENANT_ID = 'client-001';
+import { resolveTenantId } from '@/lib/ddc/auth-utils';
 
 /**
  * GET Handler para verificação de webhook exigida pela Meta Developer Platform.
@@ -44,6 +43,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const payload = await request.json();
+    const TENANT_ID = await resolveTenantId();
 
     // Ignorar payloads de validação ou de outros objetos do Facebook
     if (payload.object !== 'whatsapp_business_account') {

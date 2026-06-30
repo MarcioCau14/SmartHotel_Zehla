@@ -40,7 +40,7 @@ export function AILiveFeed({
   // Default select first conversation if none selected
   useEffect(() => {
     if (conversations.length > 0 && !selectedConversationId) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setSelectedConversationId(conversations[0].id);
     }
   }, [conversations, selectedConversationId]);

@@ -151,3 +151,43 @@ export type LeadFilter = {
   company?: string;
   search?: string;
 };
+
+// ── ZCC Types (migrated from zcc-mock-data) ──
+
+export type ZccCampaignStatus = 'active' | 'paused' | 'completed' | 'draft';
+export type ZccCampaignType = 'whatsapp' | 'email' | 'ads';
+export type ZccTargetStatus = 'active' | 'pending' | 'inactive';
+
+export interface ZccTarget {
+  id: string;
+  name: string;
+  domain: string;
+  city: string;
+  state: string;
+  priority: number;
+  status: ZccTargetStatus;
+  leadCount: number;
+}
+
+export interface ZccCampaign {
+  id: string;
+  name: string;
+  type: ZccCampaignType;
+  status: ZccCampaignStatus;
+  sent: number;
+  delivered: number;
+  read: number;
+  replied: number;
+  total: number;
+  createdAt: string;
+  template: string;
+}
+
+export interface DashboardStats {
+  totalLeads: number;
+  verifiedLeads: number;
+  messagesSent: number;
+  activeCampaigns: number;
+  conversionRate: string;
+  monthlyAICost: number;
+}

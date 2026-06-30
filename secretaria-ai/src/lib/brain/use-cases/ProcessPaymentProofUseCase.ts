@@ -1,4 +1,4 @@
-import { prisma } from '../../prisma';
+import { db } from '@/lib/db';
 
 export interface ProcessPaymentResult {
   success: boolean;

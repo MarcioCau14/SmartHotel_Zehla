@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Megaphone,
@@ -34,26 +34,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { mockCampaigns, type Campaign, type CampaignStatus, type CampaignType } from '@/lib/zcc-mock-data';
+import { useQuery } from '@tanstack/react-query';
+import type { ZccCampaign, ZccCampaignStatus, ZccCampaignType } from '@/lib/leads-types';
 
 interface CampaignPanelProps {
-  campaigns?: Campaign[];
+  campaigns?: ZccCampaign[];
 }
 
-const statusConfig: Record<CampaignStatus, { label: string; className: string; icon: typeof Play }> = {
+const statusConfig: Record<ZccCampaignStatus, { label: string; className: string; icon: typeof Play }> = {
   active: { label: 'Ativa', className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20', icon: Play },
   paused: { label: 'Pausada', className: 'bg-amber-500/15 text-amber-400 border-amber-500/20', icon: Pause },
   completed: { label: 'Concluída', className: 'bg-violet-500/15 text-violet-400 border-violet-500/20', icon: CheckCircle2 },
   draft: { label: 'Rascunho', className: 'bg-white/10 text-white/40 border-white/10', icon: Pause },
 };
 
-const typeIcons: Record<CampaignType, typeof Send> = {
+const typeIcons: Record<ZccCampaignType, typeof Send> = {
   whatsapp: Send,
   email: Mail,
   ads: Radio,
 };
 
-const typeLabels: Record<CampaignType, string> = {
+const typeLabels: Record<ZccCampaignType, string> = {
   whatsapp: 'WhatsApp',
   email: 'E-mail',
   ads: 'Anúncios',
@@ -68,7 +69,7 @@ const templates = [
   'Reengajamento Premium',
 ];
 
-function CampaignProgressBar({ sent, total, delivered, read, replied }: Campaign) {
+function CampaignProgressBar({ sent, total, delivered, read, replied }: ZccCampaign) {
   const pctDelivered = total > 0 ? (delivered / total) * 100 : 0;
   const pctRead = total > 0 ? (read / total) * 100 : 0;
   const pctReplied = total > 0 ? (replied / total) * 100 : 0;
@@ -114,18 +115,29 @@ function CampaignProgressBar({ sent, total, delivered, read, replied }: Campaign
 }
 
 export function CampaignPanel({ campaigns: initialCampaigns }: CampaignPanelProps) {
-  const [campaigns, setCampaigns] = useState<Campaign[]>(initialCampaigns ?? mockCampaigns);
+  const { data: apiCampaigns = [] } = useQuery<ZccCampaign[]>({
+    queryKey: ['zcc', 'campaigns'],
+    queryFn: async () => {
+      const res = await fetch('/api/zcc/campaigns');
+      if (!res.ok) throw new Error('Failed to fetch campaigns');
+      return res.json();
+    },
+    staleTime: 30_000,
+  });
+  const [campaigns, setCampaigns] = useState<ZccCampaign[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newCampaign, setNewCampaign] = useState({
     name: '',
-    type: 'whatsapp' as CampaignType,
+    type: 'whatsapp' as ZccCampaignType,
     template: '',
     total: 100,
   });
 
+  useEffect(() => { setCampaigns(apiCampaigns); }, [apiCampaigns]);
+
   const handleCreate = () => {
     if (!newCampaign.name.trim() || !newCampaign.template) return;
-    const c: Campaign = {
+    const c: ZccCampaign = {
       id: `C${String(campaigns.length + 1).padStart(3, '0')}`,
       name: newCampaign.name,
       type: newCampaign.type,
@@ -143,7 +155,7 @@ export function CampaignPanel({ campaigns: initialCampaigns }: CampaignPanelProp
     setDialogOpen(false);
   };
 
-  const updateStatus = (id: string, status: CampaignStatus) => {
+  const updateStatus = (id: string, status: ZccCampaignStatus) => {
     setCampaigns(prev =>
       prev.map(c => (c.id === id ? { ...c, status } : c))
     );
@@ -188,7 +200,7 @@ export function CampaignPanel({ campaigns: initialCampaigns }: CampaignPanelProp
                 <Label className="text-white/60 text-xs">Tipo</Label>
                 <Select
                   value={newCampaign.type}
-                  onValueChange={v => setNewCampaign(p => ({ ...p, type: v as CampaignType }))}
+                  onValueChange={v => setNewCampaign(p => ({ ...p, type: v as ZccCampaignType }))}
                 >
                   <SelectTrigger className="bg-white/5 border-white/10 text-sm text-white">
                     <SelectValue />

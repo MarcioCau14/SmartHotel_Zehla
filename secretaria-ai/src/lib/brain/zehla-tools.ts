@@ -1,4 +1,4 @@
-import { prisma } from '../../prisma';
+import { db } from '@/lib/db';
 
 export interface ToolDefinition {
   type: 'function';
@@ -32,8 +32,8 @@ async function analisarOcupacao(args: Record<string, any>): Promise<string> {
   const { pousada_id, periodo_inicio, periodo_fim } = args;
   const start = periodo_inicio ? new Date(periodo_inicio) : new Date(Date.now() - 30 * 86400000);
   const end = periodo_fim ? new Date(periodo_fim) : new Date();
-  const totalRooms = await prisma.lead.count({ where: { city: pousada_id || undefined } });
-  const reservations = await prisma.lead.findMany({ where: { createdAt: { gte: start, lte: end } } });
+  const totalRooms = await db.lead.count({ where: { city: pousada_id || undefined } });
+  const reservations = await db.lead.findMany({ where: { createdAt: { gte: start, lte: end } } });
   const totalNights = Math.ceil((end.getTime() - start.getTime()) / 86400000);
   const occupiedRoomNights = reservations.length;
   const occupancyRate = totalRooms > 0 ? (occupiedRoomNights / (totalRooms * totalNights)) * 100 : 0;
@@ -53,7 +53,7 @@ async function sugerirPreco(args: Record<string, any>): Promise<string> {
 
 async function analisarReviews(args: Record<string, any>): Promise<string> {
   const { limite = 20 } = args;
-  const leads = await prisma.lead.findMany({ where: { googleRating: { not: null } }, take: limite, orderBy: { updatedAt: 'desc' }, select: { name: true, googleRating: true, score: true, city: true } });
+  const leads = await db.lead.findMany({ where: { googleRating: { not: null } }, take: limite, orderBy: { updatedAt: 'desc' }, select: { name: true, googleRating: true, score: true, city: true } });
   const ratings = leads.filter(l => l.googleRating).map(l => l.googleRating!) as number[];
   const avgRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
   return JSON.stringify({ total_reviews: leads.length, nota_media: Math.round(avgRating * 10) / 10, sentimento_geral: avgRating >= 4 ? 'positivo' : avgRating >= 3 ? 'neutro' : 'negativo', fonte: 'secretaria_ai' }, null, 2);
@@ -64,15 +64,15 @@ async function gerarRelatorioDiario(args: Record<string, any>): Promise<string> 
   hoje.setHours(0, 0, 0, 0);
   const amanha = new Date(hoje);
   amanha.setDate(amanha.getDate() + 1);
-  const totalLeads = await prisma.lead.count();
-  const novosHoje = await prisma.lead.count({ where: { createdAt: { gte: hoje } } });
-  const hotLeads = await prisma.lead.count({ where: { leadTier: 'HOT' } });
+  const totalLeads = await db.lead.count();
+  const novosHoje = await db.lead.count({ where: { createdAt: { gte: hoje } } });
+  const hotLeads = await db.lead.count({ where: { leadTier: 'HOT' } });
   return JSON.stringify({ data: hoje.toISOString().slice(0, 10), metricas: { total_leads: totalLeads, novos_hoje: novosHoje, hot_leads: hotLeads }, fonte: 'secretaria_ai' }, null, 2);
 }
 
 async function buscarDadosProperty(args: Record<string, any>): Promise<string> {
   const { pousada_id } = args;
-  const lead = await prisma.lead.findFirst({ where: { name: { contains: pousada_id || '' } } });
+  const lead = await db.lead.findFirst({ where: { name: { contains: pousada_id || '' } } });
   if (!lead) return JSON.stringify({ error: 'Propriedade não encontrada' });
   return JSON.stringify({ id: lead.id, nome: lead.name, cidade: lead.city, estado: lead.state, quartos: lead.roomsCount, fonte: 'secretaria_ai' }, null, 2);
 }
