@@ -22,11 +22,6 @@ export function HeroSection() {
 
   return (
     <section ref={ref} className="relative min-h-screen flex items-center overflow-hidden bg-[#0a0a0a]">
-      {/* Subtle grid */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)',
-        backgroundSize: '80px 80px',
-      }} />
 
       {/* Ambient glow */}
       <div className="absolute top-1/4 -left-32 w-[500px] h-[500px] rounded-full bg-emerald-500/[0.07] blur-[120px]" />
@@ -71,16 +66,6 @@ export function HeroSection() {
                 Começar Grátis — 7 dias
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </button>
-              <button
-                onClick={() => {
-                  const el = document.querySelector('#como-funciona');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-white/10 bg-white/[0.03] text-neutral-300 font-medium hover:bg-white/[0.06] hover:border-white/20 transition-all duration-200 cursor-pointer text-base"
-              >
-                <Play className="w-4 h-4 text-emerald-400" />
-                Ver como funciona
-              </button>
             </div>
 
             {/* Social proof mini */}
@@ -92,7 +77,7 @@ export function HeroSection() {
                   </div>
                 ))}
               </div>
-              <span className="border-l border-white/10 pl-6">+500 pousadas já usam</span>
+              <span className="border-l border-white/10 pl-6">+100 pousadas na sua região usam</span>
             </div>
           </motion.div>
 
