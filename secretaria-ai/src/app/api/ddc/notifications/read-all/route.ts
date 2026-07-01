@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { resolveTenantId } from '@/lib/ddc/ddc-mapper';
+import { apiRatelimit } from '@/lib/rate-limit';
 
 export async function PUT(request: NextRequest) {
   try {
@@ -8,6 +9,9 @@ export async function PUT(request: NextRequest) {
     if (!tenantId || tenantId === 'client-001') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const { success } = await apiRatelimit.limit(tenantId);
+    if (!success) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+
     await db.notification.updateMany({
       where: { tenantId, read: false },
       data: { read: true },

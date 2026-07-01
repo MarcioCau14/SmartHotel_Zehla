@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { resolveTenantId, mapTraining } from '@/lib/ddc/ddc-mapper';
+import { apiRatelimit } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,6 +9,9 @@ export async function GET(request: NextRequest) {
     if (!tenantId || tenantId === 'client-001') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const { success } = await apiRatelimit.limit(tenantId);
+    if (!success) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+
     const trainings = await db.trainingPrompt.findMany({
       where: { tenantId },
       orderBy: { createdAt: 'desc' },
@@ -25,6 +29,9 @@ export async function POST(request: NextRequest) {
     if (!tenantId || tenantId === 'client-001') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const { success } = await apiRatelimit.limit(tenantId);
+    if (!success) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+
     const body = await request.json();
     if (!body.title || !body.content || !body.category) {
       return NextResponse.json({ success: false, error: { code: '400', message: 'Missing required fields: title, content, category' } }, { status: 400 });

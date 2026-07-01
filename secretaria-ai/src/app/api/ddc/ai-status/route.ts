@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { resolveTenantId } from '@/lib/ddc/auth-utils';
+import { apiRatelimit } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,6 +9,9 @@ export async function GET(request: NextRequest) {
     if (!tenantId || tenantId === 'client-001') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const { success } = await apiRatelimit.limit(tenantId);
+    if (!success) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 

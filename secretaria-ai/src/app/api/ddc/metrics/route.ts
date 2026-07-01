@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { resolveTenantId } from '@/lib/ddc/auth-utils';
+import { apiRatelimit } from '@/lib/rate-limit';
 
 function dateRange(period: string) {
   const now = new Date();
@@ -37,6 +38,9 @@ export async function GET(request: NextRequest) {
     if (!tenantId || tenantId === 'client-001') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const { success } = await apiRatelimit.limit(tenantId);
+    if (!success) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+
     const period = request.nextUrl.searchParams.get('period') || 'today';
     const { start, prevStart } = dateRange(period);
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { resolveTenantId, mapConversation } from '@/lib/ddc/ddc-mapper';
+import { apiRatelimit } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,6 +9,9 @@ export async function GET(request: NextRequest) {
     if (!tenantId || tenantId === 'client-001') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const { success } = await apiRatelimit.limit(tenantId);
+    if (!success) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status');
     const escalated = searchParams.get('escalated');
@@ -45,6 +49,12 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const tenantId = await resolveTenantId();
+    if (!tenantId || tenantId === 'client-001') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const { success } = await apiRatelimit.limit(tenantId);
+    if (!success) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     const body = await request.json();
     if (!body.conversationId) return NextResponse.json({ success: false, error: { code: '400', message: 'Missing conversationId' } }, { status: 400 });
     await db.conversationLog.delete({ where: { id: body.conversationId } });

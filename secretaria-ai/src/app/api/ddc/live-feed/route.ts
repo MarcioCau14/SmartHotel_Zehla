@@ -15,6 +15,8 @@ export async function POST(request: NextRequest) {
   try {
     const tenantId = await resolveTenantId();
     if (!tenantId || tenantId === 'client-001') return createError(401, 'UNAUTHORIZED', 'Não autorizado');
+    const { success } = await apiRatelimit.limit(tenantId);
+    if (!success) return createError(429, 'RATE_LIMITED', 'Muitas requisições');
     const body = await request.json();
     const data = messageSchema.parse(body);
 
