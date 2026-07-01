@@ -24,7 +24,7 @@ export function SavingsCalculator() {
   }, [rooms]);
 
   return (
-    <section ref={ref} className="py-20 sm:py-28 bg-[#060608]">
+    <section ref={ref} id="calculadora" className="py-20 sm:py-28 bg-[#060608]">
       <div className="max-w-6xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

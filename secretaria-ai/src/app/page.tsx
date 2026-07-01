@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Header } from '@/components/landing/Header';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { PainPointsSection } from '@/components/landing/PainPointsSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
@@ -22,6 +23,7 @@ import { Footer } from '@/components/landing/Footer';
 export default function LandingPage() {
   return (
     <main className="min-h-screen bg-white text-gray-900">
+      <Header />
       <HeroSection />
       <PainPointsSection />
       <HowItWorksSection />
