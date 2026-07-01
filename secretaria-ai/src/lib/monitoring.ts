@@ -1,5 +1,5 @@
 // ==============================================================================  
-// ZEHLA SmartHotel — Monitoring Utilities (Fase 6B)  
+// ZEHLA SmartHotel — Monitoring Utilities (Fase 5)  
 // ==============================================================================
 
 interface MetricCounter { name: string; value: number; labels: Record<string, string>; }  

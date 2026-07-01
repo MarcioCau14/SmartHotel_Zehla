@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { sendError } from '@/lib/send-error';
+import { createError } from '@/lib/error-handler';
 import { authRatelimit } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
@@ -11,26 +11,26 @@ export async function GET(request: NextRequest) {
     const paymentId = searchParams.get('payment_id');
 
     if (!paymentId) {
-      return sendError(400, 'MISSING_PAYMENT_ID', 'payment_id é obrigatório');
+      return createError(400, 'MISSING_PAYMENT_ID', 'payment_id é obrigatório');
     }
 
     const session = await getServerSession(authOptions);
-    if (!session?.user?.tenantId) return sendError(401, 'UNAUTHORIZED', 'Faça login primeiro');
+    if (!session?.user?.tenantId) return createError(401, 'UNAUTHORIZED', 'Faça login primeiro');
     const { success: allowed } = await authRatelimit.limit(session.user.tenantId);
-    if (!allowed) return sendError(429, 'RATE_LIMITED', 'Muitas requisições');
+    if (!allowed) return createError(429, 'RATE_LIMITED', 'Muitas requisições');
 
     const transaction = await db.paymentTransaction.findFirst({
       where: { externalId: paymentId },
       include: { subscription: true },
     });
-    if (!transaction) return sendError(404, 'TRANSACTION_NOT_FOUND', 'Transação não encontrada');
+    if (!transaction) return createError(404, 'TRANSACTION_NOT_FOUND', 'Transação não encontrada');
     if (transaction.subscription?.tenantId !== session.user.tenantId) {
-      return sendError(403, 'FORBIDDEN', 'Esta transação não pertence à sua conta');
+      return createError(403, 'FORBIDDEN', 'Esta transação não pertence à sua conta');
     }
 
     const token = process.env.MP_ACCESS_TOKEN;
     if (!token) {
-      return sendError(500, 'MP_NOT_CONFIGURED', 'MP não configurado');
+      return createError(500, 'MP_NOT_CONFIGURED', 'MP não configurado');
     }
 
     const response = await fetch(
@@ -56,6 +56,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('PIX status error:', error);
-    return sendError(500, 'PIX_STATUS_FAILED', 'Falha ao verificar status do PIX');
+    return createError(500, 'PIX_STATUS_FAILED', 'Falha ao verificar status do PIX');
   }
 }

@@ -1,5 +1,5 @@
 // ==============================================================================  
-// ZEHLA SmartHotel — Error Handler (Fase 6B)  
+// ZEHLA SmartHotel — Error Handler (Fase 5)  
 // ==============================================================================
 
 import { NextResponse } from 'next/server';  
@@ -67,21 +67,27 @@ export function handleApiError(error: unknown, options: { requestId?: string; en
      logger.warn(classified.logMessage, logCtx, requestId);  
    }  
  }  
- return NextResponse.json({ ok: false, error: classified.userMessage, category: classified.category, ...(requestId ? { requestId } : {}), ...(process.env.NODE_ENV !== 'production' ? { details: error instanceof Error ? error.message : String(error) } : {}) }, { status: classified.statusCode });  
+  return NextResponse.json({ success: false, error: { code: classified.category.toUpperCase(), message: classified.userMessage, ...(process.env.NODE_ENV !== 'production' ? { details: error instanceof Error ? error.message : String(error) } : {}) }, category: classified.category, ...(requestId ? { requestId } : {}) }, { status: classified.statusCode });  
 }
 
 export function apiSuccess<T>(data: T, options: { requestId?: string; status?: number; message?: string } = {}): NextResponse {  
- const { requestId, status = 200, message } = options;  
- return NextResponse.json({ ok: true, data, ...(message ? { message } : {}), ...(requestId ? { requestId } : {}) }, { status });  
+  const { requestId, status = 200, message } = options;  
+  return NextResponse.json({ success: true, data, ...(message ? { message } : {}), ...(requestId ? { requestId } : {}) }, { status });  
 }
 
 export function validationError(message: string, fields?: Record<string, string>, options: { requestId?: string } = {}): NextResponse {  
  logger.warn(`Validation: ${message}`, { fields, category: 'validation' }, options.requestId);  
- return NextResponse.json({ ok: false, error: message, category: 'validation', ...(fields ? { fields } : {}), ...(options.requestId ? { requestId: options.requestId } : {}) }, { status: 400 });  
+ return NextResponse.json({ success: false, error: { code: 'VALIDATION', message }, category: 'validation', ...(fields ? { fields } : {}), ...(options.requestId ? { requestId: options.requestId } : {}) }, { status: 400 });  
 }
 
 export function notFoundError(resource: string, options: { requestId?: string } = {}): NextResponse {  
- return NextResponse.json({ ok: false, error: `${resource} nao encontrado.`, category: 'not_found', ...(options.requestId ? { requestId: options.requestId } : {}) }, { status: 404 });  
+ return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: `${resource} nao encontrado.` }, category: 'not_found', ...(options.requestId ? { requestId: options.requestId } : {}) }, { status: 404 });  
+}
+
+export function createError(status: number, code: string, message: string, details?: unknown): NextResponse {
+  const payload: { code: string; message: string; details?: unknown } = { code, message };
+  if (details !== undefined) payload.details = details;
+  return NextResponse.json({ success: false, error: payload }, { status });
 }
 
 export function withErrorHandling(handler: (request: Request, context: { requestId: string; startTime: number }) => Promise<NextResponse>): (request: Request) => Promise<NextResponse> {  

@@ -1,0 +1,23 @@
+name: Browser Tests
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bunx prisma generate
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Run browser tests
+        run: bun run test:browser
+        continue-on-error: true

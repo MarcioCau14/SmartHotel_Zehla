@@ -2,19 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { sendError } from '@/lib/send-error';
+import { createError } from '@/lib/error-handler';
 import { authRatelimit } from '@/lib/rate-limit';
-
-/**
- * POST /api/checkout/downgrade
- *
- * Faz downgrade de plano. Sem cobrança — o novo plano entra
- * na próxima renovação (currentPeriodEnd).
- *
- * Body: { tenantId, newPlanType }
- *
- * Planos: max → pro → lite → gratuito (só permite descer)
- */
 
 const PLAN_ORDER = ['gratuito', 'lite', 'pro', 'max'] as const;
 type PlanType = (typeof PLAN_ORDER)[number];
@@ -22,9 +11,9 @@ type PlanType = (typeof PLAN_ORDER)[number];
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.tenantId) return sendError(401, 'UNAUTHORIZED', 'Faça login primeiro');
+    if (!session?.user?.tenantId) return createError(401, 'UNAUTHORIZED', 'Faça login primeiro');
     const { success: allowed } = await authRatelimit.limit(session.user.tenantId);
-    if (!allowed) return sendError(429, 'RATE_LIMITED', 'Muitas requisições');
+    if (!allowed) return createError(429, 'RATE_LIMITED', 'Muitas requisições');
 
     const body = await request.json();
     const { tenantId, newPlanType } = body as {
@@ -33,11 +22,11 @@ export async function POST(request: NextRequest) {
     };
 
     if (!tenantId || !newPlanType) {
-      return sendError(400, 'MISSING_FIELDS', 'Missing tenantId or newPlanType');
+      return createError(400, 'MISSING_FIELDS', 'Missing tenantId or newPlanType');
     }
 
     if (!PLAN_ORDER.includes(newPlanType as PlanType)) {
-      return sendError(400, 'INVALID_PLAN', `Invalid plan: ${newPlanType}. Valid: ${PLAN_ORDER.join(', ')}`);
+      return createError(400, 'INVALID_PLAN', `Invalid plan: ${newPlanType}. Valid: ${PLAN_ORDER.join(', ')}`);
     }
 
     const subscription = await db.subscription.findFirst({
@@ -45,7 +34,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!subscription) {
-      return sendError(404, 'SUBSCRIPTION_NOT_FOUND', 'No active subscription found for this tenant');
+      return createError(404, 'SUBSCRIPTION_NOT_FOUND', 'No active subscription found for this tenant');
     }
 
     const currentPlan = subscription.planType as PlanType;
@@ -53,7 +42,7 @@ export async function POST(request: NextRequest) {
     const newIdx = PLAN_ORDER.indexOf(newPlanType as PlanType);
 
     if (newIdx >= currentIdx) {
-      return sendError(400, 'CANNOT_UPGRADE', `Cannot upgrade via downgrade endpoint. Current: ${currentPlan}, Requested: ${newPlanType}. Use /api/checkout/upgrade instead.`);
+      return createError(400, 'CANNOT_UPGRADE', `Cannot upgrade via downgrade endpoint. Current: ${currentPlan}, Requested: ${newPlanType}. Use /api/checkout/upgrade instead.`);
     }
 
     const effectiveDate =
@@ -90,6 +79,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('[Checkout Downgrade] Error:', error);
-    return sendError(500, 'DOWNGRADE_FAILED', 'Failed to process downgrade', error instanceof Error ? error.message : 'Unknown error');
+    return createError(500, 'DOWNGRADE_FAILED', 'Failed to process downgrade', error instanceof Error ? error.message : 'Unknown error');
   }
 }

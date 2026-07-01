@@ -2,20 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { sendError } from '@/lib/send-error';
+import { createError } from '@/lib/error-handler';
 import { authRatelimit } from '@/lib/rate-limit';
-
-/**
- * POST /api/checkout/upgrade
- *
- * Faz upgrade de plano com cálculo pró-rata.
- * O crédito do período atual é descontado do novo plano.
- *
- * Body: { tenantId, newPlanType, paymentMethod }
- *
- * Planos: gratuito → lite → pro → max (só permite subir)
- * Preços (PIX): gratuito=0, lite=197, pro=397, max=697
- */
 
 const PLAN_ORDER = ['gratuito', 'lite', 'pro', 'max'] as const;
 type PlanType = (typeof PLAN_ORDER)[number];
@@ -30,9 +18,9 @@ const PRICING: Record<PlanType, number> = {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.tenantId) return sendError(401, 'UNAUTHORIZED', 'Faça login primeiro');
+    if (!session?.user?.tenantId) return createError(401, 'UNAUTHORIZED', 'Faça login primeiro');
     const { success: allowed } = await authRatelimit.limit(session.user.tenantId);
-    if (!allowed) return sendError(429, 'RATE_LIMITED', 'Muitas requisições');
+    if (!allowed) return createError(429, 'RATE_LIMITED', 'Muitas requisições');
 
     const body = await request.json();
     const { tenantId, newPlanType, paymentMethod } = body as {
@@ -42,11 +30,11 @@ export async function POST(request: NextRequest) {
     };
 
     if (!tenantId || !newPlanType) {
-      return sendError(400, 'MISSING_FIELDS', 'Missing tenantId or newPlanType');
+      return createError(400, 'MISSING_FIELDS', 'Missing tenantId or newPlanType');
     }
 
     if (!PLAN_ORDER.includes(newPlanType as PlanType)) {
-      return sendError(400, 'INVALID_PLAN', `Invalid plan: ${newPlanType}. Valid: ${PLAN_ORDER.join(', ')}`);
+      return createError(400, 'INVALID_PLAN', `Invalid plan: ${newPlanType}. Valid: ${PLAN_ORDER.join(', ')}`);
     }
 
     const method = paymentMethod || 'pix';
@@ -56,7 +44,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!subscription) {
-      return sendError(404, 'SUBSCRIPTION_NOT_FOUND', 'No active subscription found for this tenant');
+      return createError(404, 'SUBSCRIPTION_NOT_FOUND', 'No active subscription found for this tenant');
     }
 
     const currentPlan = subscription.planType as PlanType;
@@ -64,7 +52,7 @@ export async function POST(request: NextRequest) {
     const newIdx = PLAN_ORDER.indexOf(newPlanType as PlanType);
 
     if (newIdx <= currentIdx) {
-      return sendError(400, 'CANNOT_DOWNGRADE', `Cannot downgrade via upgrade endpoint. Current: ${currentPlan}, Requested: ${newPlanType}. Use /api/checkout/downgrade instead.`);
+      return createError(400, 'CANNOT_DOWNGRADE', `Cannot downgrade via upgrade endpoint. Current: ${currentPlan}, Requested: ${newPlanType}. Use /api/checkout/downgrade instead.`);
     }
 
     // Cálculo pró-rata
@@ -104,15 +92,7 @@ export async function POST(request: NextRequest) {
         data: { plan: newPlanType },
       });
 
-      return NextResponse.json({
-        success: true,
-        message: `Upgrade para ${newPlanType} ativado (sem custo)`,
-        newPlanType,
-        proratedCost: 0,
-        creditApplied: totalCredit,
-        amountPaid: 0,
-        remainingDays,
-      });
+      return NextResponse.json({ success: true, message: `Upgrade para ${newPlanType} ativado (sem custo)`, newPlanType, proratedCost: 0, creditApplied: totalCredit, amountPaid: 0, remainingDays });
     }
 
     // Criar transação de pagamento
@@ -157,23 +137,7 @@ export async function POST(request: NextRequest) {
 
         const pixData = mpResult.point_of_interaction?.transaction_data;
 
-        return NextResponse.json({
-          success: true,
-          transactionId: transaction.id,
-          newPlanType,
-          amountToPay,
-          proratedCost,
-          creditApplied: totalCredit,
-          remainingDays,
-          pix: pixData
-            ? {
-                qrCode: pixData.qr_code,
-                qrCodeBase64: pixData.qr_code_base64,
-                ticketUrl: pixData.ticket_url,
-              }
-            : null,
-          message: `Upgrade de R$${currentPrice} para R$${newPrice}/mês. Pró-rata: R$${amountToPay.toFixed(2)}`,
-        });
+        return NextResponse.json({ success: true, transactionId: transaction.id, newPlanType, amountToPay, proratedCost, creditApplied: totalCredit, remainingDays, pix: pixData ? { qrCode: pixData.qr_code, qrCodeBase64: pixData.qr_code_base64, ticketUrl: pixData.ticket_url } : null, message: `Upgrade de R$${currentPrice} para R$${newPrice}/mês. Pró-rata: R$${amountToPay.toFixed(2)}` });
       } catch (mpError) {
         console.error('MP upgrade error, falling back to mock:', mpError);
       }
@@ -201,21 +165,9 @@ export async function POST(request: NextRequest) {
       data: { status: amountToPay === 0 ? 'approved' : 'pending' },
     });
 
-    return NextResponse.json({
-      success: true,
-      transactionId: transaction.id,
-      newPlanType,
-      amountToPay,
-      proratedCost,
-      creditApplied: totalCredit,
-      remainingDays,
-      message:
-        amountToPay === 0
-          ? `Upgrade para ${newPlanType} ativado (sem custo)`
-          : `Upgrade criado (modo mock). R$${amountToPay.toFixed(2)} pró-rata.`,
-    });
+    return NextResponse.json({ success: true, transactionId: transaction.id, newPlanType, amountToPay, proratedCost, creditApplied: totalCredit, remainingDays, message: amountToPay === 0 ? `Upgrade para ${newPlanType} ativado (sem custo)` : `Upgrade criado (modo mock). R$${amountToPay.toFixed(2)} pró-rata.` });
   } catch (error) {
     console.error('[Checkout Upgrade] Error:', error);
-    return sendError(500, 'UPGRADE_FAILED', 'Failed to process upgrade', error instanceof Error ? error.message : 'Unknown error');
+    return createError(500, 'UPGRADE_FAILED', 'Failed to process upgrade', error instanceof Error ? error.message : 'Unknown error');
   }
 }

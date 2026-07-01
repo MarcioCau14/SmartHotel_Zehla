@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { sendError } from '@/lib/send-error';
+import { createError } from '@/lib/error-handler';
 import { authRatelimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
@@ -11,12 +11,12 @@ export async function POST(request: NextRequest) {
     const { name, planType, paymentMethod } = body;
 
     if (!name || !planType || !paymentMethod) {
-      return sendError(400, 'MISSING_FIELDS', 'Campos obrigatórios ausentes');
+      return createError(400, 'MISSING_FIELDS', 'Campos obrigatórios ausentes');
     }
 
     const validPlans = ['gratuito', 'lite', 'pro', 'max'];
     if (!validPlans.includes(planType)) {
-      return sendError(400, 'INVALID_PLAN', 'Plano inválido');
+      return createError(400, 'INVALID_PLAN', 'Plano inválido');
     }
 
     const pricing = {
@@ -29,13 +29,13 @@ export async function POST(request: NextRequest) {
     const amount = pricing[planType as keyof typeof pricing];
 
     const session = await getServerSession(authOptions);
-    if (!session?.user?.tenantId) return sendError(401, 'UNAUTHORIZED', 'Faça login primeiro');
+    if (!session?.user?.tenantId) return createError(401, 'UNAUTHORIZED', 'Faça login primeiro');
     const { success: allowed } = await authRatelimit.limit(session.user.tenantId);
-    if (!allowed) return sendError(429, 'RATE_LIMITED', 'Muitas requisições');
+    if (!allowed) return createError(429, 'RATE_LIMITED', 'Muitas requisições');
 
     const tenantId = session.user.tenantId;
     const tenant = await db.tenant.findUnique({ where: { id: tenantId } });
-    if (!tenant) return sendError(404, 'TENANT_NOT_FOUND', 'Conta não encontrada');
+    if (!tenant) return createError(404, 'TENANT_NOT_FOUND', 'Conta não encontrada');
     const email = tenant.email;
 
     const subscription = await db.subscription.create({
@@ -56,10 +56,7 @@ export async function POST(request: NextRequest) {
         where: { id: tenant.id },
         data: { plan: 'trial', subscriptionAt: new Date() },
       });
-      return NextResponse.json({
-        success: true, subscriptionId: subscription.id,
-        redirectUrl: '/dashboard', message: 'Trial iniciado com sucesso!',
-      });
+      return NextResponse.json({ success: true, subscriptionId: subscription.id, redirectUrl: '/dashboard', message: 'Trial iniciado com sucesso!' });
     }
 
     if (paymentMethod === 'pix' && process.env.MP_ACCESS_TOKEN) {
@@ -90,25 +87,15 @@ export async function POST(request: NextRequest) {
         }
 
         const pixData = mpResult.point_of_interaction?.transaction_data;
-        return NextResponse.json({
-          success: true, subscriptionId: subscription.id,
-          checkoutUrl: ticketUrl || `/checkout/success?subscription_id=${subscription.id}`,
-          amount, paymentMethod, planType,
-          pix: pixData ? { qrCode: pixData.qr_code, qrCodeBase64: pixData.qr_code_base64, ticketUrl: pixData.ticket_url } : null,
-          message: 'QR Code PIX gerado com sucesso!',
-        });
+        return NextResponse.json({ success: true, subscriptionId: subscription.id, checkoutUrl: ticketUrl || `/checkout/success?subscription_id=${subscription.id}`, amount, paymentMethod, planType, pix: pixData ? { qrCode: pixData.qr_code, qrCodeBase64: pixData.qr_code_base64, ticketUrl: pixData.ticket_url } : null, message: 'QR Code PIX gerado com sucesso!' });
       } catch (mpError) {
         console.error('Mercado Pago error, falling back to mock:', mpError);
       }
     }
 
-    return NextResponse.json({
-      success: true, subscriptionId: subscription.id,
-      checkoutUrl: `/checkout/success?subscription_id=${subscription.id}`,
-      amount, paymentMethod, planType, message: 'Checkout criado com sucesso!',
-    });
+    return NextResponse.json({ success: true, subscriptionId: subscription.id, checkoutUrl: `/checkout/success?subscription_id=${subscription.id}`, amount, paymentMethod, planType, message: 'Checkout criado com sucesso!' });
   } catch (error) {
     console.error('Checkout creation error:', error);
-    return sendError(500, 'CREATE_FAILED', 'Falha ao criar checkout');
+    return createError(500, 'CREATE_FAILED', 'Falha ao criar checkout');
   }
 }

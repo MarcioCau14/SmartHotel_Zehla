@@ -23,12 +23,5 @@ jobs:
         run: bun run lint
       - name: Run tests (162 tests)
         run: bun run test
-      - name: Type check (zero errors required)
-        run: |
-          ERRORS=$(npx tsc --noEmit 2>&1 | grep -c "error TS" || true)
-          echo "Total TypeScript errors: $ERRORS"
-          if [ "$ERRORS" -gt 0 ]; then
-            echo "::error::TypeScript has $ERRORS errors"
-            npx tsc --noEmit 2>&1 | grep "error TS" | head -20
-            exit 1
-          fi
+      - name: Type check
+        run: bun run typecheck

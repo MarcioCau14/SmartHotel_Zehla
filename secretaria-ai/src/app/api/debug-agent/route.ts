@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { sendError } from '@/lib/send-error';
+import { createError, apiSuccess } from '@/lib/error-handler';
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,17 +26,8 @@ export async function POST(request: NextRequest) {
     const avgLatency = total > 0 ? Math.round(logs.reduce((s, l) => s + l.latencyMs, 0) / total) : 0;
     const totalCost = logs.reduce((s, l) => s + l.costUsd, 0);
 
-    return NextResponse.json({
-      success: true,
-      logs,
-      summary: {
-        total,
-        successRate: total > 0 ? Math.round((successCount / total) * 100) : 0,
-        avgLatencyMs: avgLatency,
-        totalCostUsd: Math.round(totalCost * 10000) / 10000,
-      },
-    });
+    return apiSuccess({ logs, summary: { total, successRate: total > 0 ? Math.round((successCount / total) * 100) : 0, avgLatencyMs: avgLatency, totalCostUsd: Math.round(totalCost * 10000) / 10000 } });
   } catch (error) {
-    return sendError(500, 'DEBUG_AGENT_FAILED', 'Falha ao depurar agente', error instanceof Error ? error.message : undefined);
+    return createError(500, 'DEBUG_AGENT_FAILED', 'Falha ao depurar agente', error instanceof Error ? error.message : undefined);
   }
 }

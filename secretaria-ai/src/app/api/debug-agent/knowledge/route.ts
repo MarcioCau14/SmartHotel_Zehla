@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { sendError } from '@/lib/send-error';
+import { createError, apiSuccess } from '@/lib/error-handler';
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const { query, topK = 10 } = body;
 
     if (!query || typeof query !== 'string') {
-      return sendError(400, 'MISSING_QUERY', 'query é obrigatória');
+      return createError(400, 'MISSING_QUERY', 'query é obrigatória');
     }
 
     const entries = await db.knowledgeEntry.findMany({
@@ -28,8 +28,8 @@ export async function POST(request: NextRequest) {
       return { ...e, score: qScore + aScore + e.effectiveness / 100 };
     }).sort((a, b) => b.score - a.score);
 
-    return NextResponse.json({ success: true, entries: ranked });
+    return apiSuccess({ entries: ranked });
   } catch (error) {
-    return sendError(500, 'KNOWLEDGE_DEBUG_FAILED', 'Falha ao depurar conhecimento', error instanceof Error ? error.message : undefined);
+    return createError(500, 'KNOWLEDGE_DEBUG_FAILED', 'Falha ao depurar conhecimento', error instanceof Error ? error.message : undefined);
   }
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { resolveTenantId, mapConversation } from '@/lib/ddc/ddc-mapper';
-import { sendError } from '@/lib/send-error';
+import { createError, apiSuccess } from '@/lib/error-handler';
 import { apiRatelimit } from '@/lib/rate-limit';
 import { z } from 'zod';
 
@@ -14,7 +14,7 @@ const messageSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const tenantId = await resolveTenantId();
-    if (!tenantId || tenantId === 'client-001') return sendError(401, 'UNAUTHORIZED', 'Não autorizado');
+    if (!tenantId || tenantId === 'client-001') return createError(401, 'UNAUTHORIZED', 'Não autorizado');
     const body = await request.json();
     const data = messageSchema.parse(body);
 
@@ -32,13 +32,13 @@ export async function POST(request: NextRequest) {
       data: { lastUpdate: new Date() },
     });
 
-    return NextResponse.json({ success: true, message });
+    return apiSuccess({ message });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Invalid data', details: error.issues }, { status: 400 });
+      return createError(400, 'VALIDATION_ERROR', 'Invalid data');
     }
     console.error('[live-feed POST] Error:', error);
-    return NextResponse.json({ error: 'Failed to create message' }, { status: 500 });
+    return createError(500, 'CREATE_FAILED', 'Failed to create message');
   }
 }
 
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
 
   const tenantId = await resolveTenantId();
   if (!tenantId || tenantId === 'client-001') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return createError(401, 'UNAUTHORIZED', 'Não autorizado');
   }
 
   const stream = new ReadableStream({

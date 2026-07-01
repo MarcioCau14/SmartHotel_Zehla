@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:browser": "echo 'No Playwright tests configured yet'",
     "ci": "npm run lint && npm run typecheck && npm run test",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
