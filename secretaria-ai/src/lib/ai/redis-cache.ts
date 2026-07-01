@@ -175,7 +175,7 @@ export class RedisSemanticCache {
     return JSON.parse(data.result) as CacheEntry<T>;
   }
 
-  private async redisSet(key: string, entry: CacheEntry, ttlMs?: number): Promise<void> {
+  private async redisSet(key: string, entry: CacheEntry<any>, ttlMs?: number): Promise<void> {
     const ttl = ttlMs ?? this.config.defaultTtlMs;
     const ttlSeconds = Math.ceil(ttl / 1000);
     await fetch(`${this.config.url}/set/${key}`, {

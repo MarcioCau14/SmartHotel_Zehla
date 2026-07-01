@@ -41,7 +41,7 @@ export async function GET(
       return createError(404, 'FILE_NOT_FOUND', 'Arquivo não encontrado');
     }
 
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       headers: {
         'Content-Type': ALLOWED_EXTENSIONS[ext],
         'Content-Disposition': `attachment; filename="${filename}"`,

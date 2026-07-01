@@ -62,11 +62,11 @@ export class CostLogger {
     }
   }
 
-  getDailyCost(tenantId?: string): number {
+  async getDailyCost(tenantId?: string): Promise<number> {
     return this.calculateCostForPeriod('day', tenantId);
   }
 
-  getMonthlyCost(tenantId?: string): number {
+  async getMonthlyCost(tenantId?: string): Promise<number> {
     return this.calculateCostForPeriod('month', tenantId);
   }
 
@@ -87,7 +87,7 @@ export class CostLogger {
     }
   }
 
-  private calculateCostForPeriod(period: 'day' | 'month', tenantId?: string): number {
+  private async calculateCostForPeriod(period: 'day' | 'month', tenantId?: string): Promise<number> {
     const now = new Date();
     const start = new Date(now);
     if (period === 'day') {
@@ -105,7 +105,7 @@ export class CostLogger {
     }
 
     try {
-      const logs = db.costLog.findMany({ where: filter });
+      const logs = await db.costLog.findMany({ where: filter });
       return logs.reduce((sum: number, log: { costUsd: number }) => sum + log.costUsd, 0);
     } catch {
       return 0;

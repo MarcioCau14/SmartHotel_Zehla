@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
     const entries = await db.knowledgeEntry.findMany({
       where: {
         OR: [
-          { question: { contains: query, mode: 'insensitive' } },
-          { answer: { contains: query, mode: 'insensitive' } },
+          { question: { contains: query, mode: 'insensitive' } as any },
+          { answer: { contains: query, mode: 'insensitive' } as any },
         ],
       },
       orderBy: { usage: 'desc' },

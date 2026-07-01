@@ -41,7 +41,7 @@ export function withTenant(tenantId: string): TenantDbProxy {
 
   for (const [model, field] of Object.entries(TENANT_SCOPED)) {
     const modelKey = model as TenantScopedModel;
-    const prismaModel = (db as Record<string, unknown>)[modelKey] as Record<string, unknown>;
+    const prismaModel = (db as unknown as Record<string, unknown>)[modelKey] as Record<string, unknown>;
 
     proxy[modelKey] = {
       findMany: (args?: Record<string, unknown>) => {

@@ -208,8 +208,13 @@ describe('Remaining routes', () => {
     });
     it('500 MP not configured', async () => {
       (mockDb.paymentTransaction.findFirst as any).mockResolvedValue({
-        id: 'tx-1', externalId: 'pay1',
-        subscription: { id: 'sub-1', tenantId: 'test-tenant' },
+        id: 'tx-1',
+        externalId: 'pay1',
+        subscriptionId: 'sub-1',
+      });
+      (mockDb.subscription.findUnique as any).mockResolvedValue({
+        id: 'sub-1',
+        tenantId: 'test-tenant',
       });
       const res = await pixStatusGet(createRequest('/api/checkout/pix-status?payment_id=pay1') as any);
       const body = await res.json();
