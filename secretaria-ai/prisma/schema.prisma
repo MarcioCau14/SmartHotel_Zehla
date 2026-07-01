@@ -719,6 +719,29 @@ model BudgetGuardState {
   @@map("budget_guard_state")
 }
 
+// ===== LLM COST LOG =====
+model CostLog {
+  id           String   @id @default(cuid())
+  tenantId     String?
+  provider     String
+  model        String
+  inputTokens  Int
+  outputTokens Int
+  costUsd      Float
+  tier         Int      @default(1)
+  bucket       String   @default("general")
+  cacheHit     Boolean  @default(false)
+  latencyMs    Int      @default(0)
+  circuitState String?
+  budgetLevel  String?
+  createdAt    DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([createdAt])
+  @@index([provider])
+  @@map("cost_logs")
+}
+
 // ===== MESSAGE (WhatsApp history) =====
 model Message {
   id         String   @id @default(cuid())

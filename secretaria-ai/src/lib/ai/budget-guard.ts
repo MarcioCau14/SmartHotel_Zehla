@@ -250,3 +250,81 @@ export class BudgetGuard {
     return `${y}-${m}-${day}`;
   }
 }
+
+/**
+ * Per-tenant BudgetGuard wrapper.
+ *
+ * Isola o orçamento de cada pousada/tenant, garantindo que
+ * o consumo de uma não afete a disponibilidade de outra.
+ *
+ * Cada tenant tem seu próprio BudgetGuard com budgets definidos
+ * pelo plano contratado:
+ *   Lite  → $10/dia, $300/mês
+ *   Pro   → $25/dia, $750/mês
+ *   Max   → $50/dia, $1500/mês
+ */
+export class TenantBudgetGuard {
+  private tenants: Map<string, BudgetGuard> = new Map();
+
+  private readonly PLAN_BUDGETS: Record<string, { daily: number; monthly: number }> = {
+    lite: { daily: 10, monthly: 300 },
+    pro: { daily: 25, monthly: 750 },
+    max: { daily: 50, monthly: 1500 },
+  };
+
+  getGuard(tenantId: string, plan?: string): BudgetGuard {
+    let guard = this.tenants.get(tenantId);
+    if (!guard) {
+      const budgets = this.PLAN_BUDGETS[plan?.toLowerCase() ?? 'lite'] ?? this.PLAN_BUDGETS.lite;
+      guard = new BudgetGuard({
+        dailyBudgetUsd: budgets.daily,
+        monthlyBudgetUsd: budgets.monthly,
+      });
+      this.tenants.set(tenantId, guard);
+    }
+    return guard;
+  }
+
+  addSpend(tenantId: string, amountUsd: number, plan?: string): void {
+    const guard = this.getGuard(tenantId, plan);
+    guard.addSpend(amountUsd);
+  }
+
+  getSnapshot(tenantId: string, plan?: string): BudgetGuardSnapshot {
+    const guard = this.getGuard(tenantId, plan);
+    return guard.getSnapshot();
+  }
+
+  canUseTier(tenantId: string, tier: number, estimatedCost?: number, plan?: string): boolean {
+    const guard = this.getGuard(tenantId, plan);
+    return guard.canUseTier(tier, estimatedCost);
+  }
+
+  getMaxAllowedTier(tenantId: string, plan?: string): number {
+    const guard = this.getGuard(tenantId, plan);
+    return guard.getMaxAllowedTier();
+  }
+
+  getLevel(tenantId: string, plan?: string): BudgetLevel {
+    const guard = this.getGuard(tenantId, plan);
+    return guard.getLevel();
+  }
+
+  removeTenant(tenantId: string): void {
+    this.tenants.delete(tenantId);
+  }
+
+  getActiveTenantCount(): number {
+    return this.tenants.size;
+  }
+
+  getAllSnapshots(): Record<string, BudgetGuardSnapshot> {
+    const result: Record<string, BudgetGuardSnapshot> = {};
+    for (const [id, guard] of this.tenants) {
+      result[id] = guard.getSnapshot();
+    }
+    return result;
+  }
+}
+
+export const tenantBudgetGuard = new TenantBudgetGuard();
