@@ -214,10 +214,13 @@ describe('Remaining routes', () => {
   });
 
   describe('GET /api (root)', () => {
-    it('returns Hello world', async () => {
+    it('returns API info', async () => {
       const res = await rootGet();
       const body = await expectJson(res);
-      expect(body.message).toBe('Hello, world!');
+      expect(body.api).toBe('ZEHLA SmartHotel API');
+      expect(body.version).toBe('2.0');
+      expect(body.endpoints).toBeDefined();
+      expect(body.endpoints.total).toBeGreaterThan(0);
     });
   });
 });

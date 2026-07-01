@@ -1,28 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { sendError } from '@/lib/send-error';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { prompt, context } = body;
+    const { agentId, startDate, endDate, limit = 50 } = body;
 
-    const result = await db.$queryRawUnsafe<Array<{ id: string; content: string; relevance: number }>>(
-      `SELECT id, content, 1.0 as relevance FROM knowledge_entries WHERE content LIKE '%' || ? || '%' LIMIT 5`,
-      prompt || '',
-    );
+    const where: Record<string, unknown> = {};
+    if (agentId) where.agentId = agentId;
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) (where.createdAt as Record<string, unknown>).gte = new Date(startDate);
+      if (endDate) (where.createdAt as Record<string, unknown>).lte = new Date(endDate);
+    }
 
-    const agentLog = await db.agentLog.create({
-      data: {
-        action: 'debug_agent',
-        status: 'completed',
-        input: prompt || '',
-        output: JSON.stringify(result),
-        metadata: JSON.stringify({ context }),
-      },
+    const logs = await db.agentLog.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: Math.min(limit, 200),
     });
 
-    return NextResponse.json({ success: true, result, logId: agentLog.id });
+    const total = logs.length;
+    const successCount = logs.filter((l) => l.status === 'success').length;
+    const avgLatency = total > 0 ? Math.round(logs.reduce((s, l) => s + l.latencyMs, 0) / total) : 0;
+    const totalCost = logs.reduce((s, l) => s + l.costUsd, 0);
+
+    return NextResponse.json({
+      success: true,
+      logs,
+      summary: {
+        total,
+        successRate: total > 0 ? Math.round((successCount / total) * 100) : 0,
+        avgLatencyMs: avgLatency,
+        totalCostUsd: Math.round(totalCost * 10000) / 10000,
+      },
+    });
   } catch (error) {
-    return NextResponse.json({ success: false, error: 'Debug agent failed' }, { status: 500 });
+    return sendError(500, 'DEBUG_AGENT_FAILED', 'Falha ao depurar agente', error instanceof Error ? error.message : undefined);
   }
 }
