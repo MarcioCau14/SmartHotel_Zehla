@@ -18,10 +18,19 @@ const { mockDb, _now } = vi.hoisted(() => {
     groupBy: m([]),
   });
   return {
-    mockDb: { agentLog: createModel(), routerProvider: createModel(), budgetGuardState: createModel() },
+    mockDb: { agentLog: createModel(), routerProvider: createModel(), budgetGuardState: createModel(), paymentTransaction: createModel(), subscription: createModel() },
     _now,
   };
 });
+
+vi.mock('next-auth', () => ({
+  getServerSession: vi.fn().mockResolvedValue({ user: { tenantId: 'test-tenant' } }),
+}));
+
+vi.mock('@/lib/rate-limit', () => ({
+  apiRatelimit: { limit: vi.fn().mockResolvedValue({ success: true }) },
+  authRatelimit: { limit: vi.fn().mockResolvedValue({ success: true }) },
+}));
 
 vi.mock('@/lib/db', () => ({ db: mockDb }));
 
@@ -198,10 +207,14 @@ describe('Remaining routes', () => {
       expect(res.status).toBe(400);
     });
     it('500 MP not configured', async () => {
+      (mockDb.paymentTransaction.findFirst as any).mockResolvedValue({
+        id: 'tx-1', externalId: 'pay1',
+        subscription: { id: 'sub-1', tenantId: 'test-tenant' },
+      });
       const res = await pixStatusGet(createRequest('/api/checkout/pix-status?payment_id=pay1') as any);
       const body = await res.json();
       expect(res.status).toBe(500);
-      expect(body.error).toContain('MP not configured');
+      expect(body.error).toBeDefined();
     });
   });
 

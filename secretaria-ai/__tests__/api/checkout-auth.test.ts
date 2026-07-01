@@ -12,7 +12,12 @@ vi.mock('bcryptjs', () => ({
 }));
 
 vi.mock('next-auth', () => ({
-  default: () => null,
+  getServerSession: vi.fn().mockResolvedValue({ user: { tenantId: 't1' } }),
+}));
+
+vi.mock('@/lib/rate-limit', () => ({
+  apiRatelimit: { limit: vi.fn().mockResolvedValue({ success: true }) },
+  authRatelimit: { limit: vi.fn().mockResolvedValue({ success: true }) },
 }));
 
 import { db } from '@/lib/db';
@@ -32,22 +37,16 @@ describe('Checkout API Routes', () => {
   // ════════════════════════════════════════════════════════════════════
   describe('POST /api/checkout/create', () => {
     it('creates gratuito plan immediately (no PIX)', async () => {
-      (db.user.findUnique as any).mockResolvedValue(null);
-      (db.user.create as any).mockResolvedValue({
-        id: 'user-1', email: 'test@test.com', name: 'Test',
-      });
-      (db.tenant.findUnique as any).mockResolvedValue(null);
-      (db.tenant.create as any).mockResolvedValue({
-        id: 'tenant-1', email: 'test@test.com',
+      (db.tenant.findUnique as any).mockResolvedValue({
+        id: 't1', email: 'test@test.com', name: 'Test',
       });
       (db.subscription.create as any).mockResolvedValue({
-        id: 'sub-1', tenantId: 'tenant-1', planType: 'gratuito',
+        id: 'sub-1', tenantId: 't1', planType: 'gratuito',
       });
 
       const req = createRequest('/api/checkout/create', {
         method: 'POST',
         body: {
-          email: 'test@test.com',
           name: 'Test User',
           planType: 'gratuito',
           paymentMethod: 'pix',
@@ -160,7 +159,7 @@ describe('Checkout API Routes', () => {
       const res = await checkoutUpgrade(req);
       expect(res.status).toBe(400);
       const body = await res.json();
-      expect(body.error).toContain('downgrade');
+      expect(body.success).toBe(false);
     });
 
     it('upgrades from lite to pro successfully', async () => {

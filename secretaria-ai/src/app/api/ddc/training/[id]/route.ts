@@ -1,15 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { mapTraining } from '@/lib/ddc/ddc-mapper';
+import { resolveTenantId, mapTraining } from '@/lib/ddc/ddc-mapper';
+import { sendError } from '@/lib/send-error';
+import { apiRatelimit } from '@/lib/rate-limit';
 
 interface RouteContext { params: Promise<{ id: string }> }
 
+async function guard(): Promise<string | NextResponse> {
+  const tenantId = await resolveTenantId();
+  if (!tenantId || tenantId === 'client-001') return sendError(401, 'UNAUTHORIZED', 'Não autorizado');
+  const { success } = await apiRatelimit.limit(tenantId);
+  if (!success) return sendError(429, 'RATE_LIMITED', 'Muitas requisições');
+  return tenantId;
+}
+
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
+    const g = await guard();
+    if (g instanceof NextResponse) return g;
     const { id } = await context.params;
     const body = await request.json();
     const existing = await db.trainingPrompt.findUnique({ where: { id } });
-    if (!existing) return NextResponse.json({ success: false, error: { code: '404', message: 'Training not found' } }, { status: 404 });
+    if (!existing) return sendError(404, 'NOT_FOUND', 'Training not found');
 
     const updateData: any = {};
     if (body.title) updateData.name = body.title;
@@ -20,25 +32,29 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     const updated = await db.trainingPrompt.update({ where: { id }, data: updateData });
     return NextResponse.json({ success: true, data: mapTraining(updated) });
   } catch (error) {
-    return NextResponse.json({ success: false, error: { code: '500', message: 'Failed to update training' } }, { status: 500 });
+    return sendError(500, 'UPDATE_FAILED', 'Failed to update training');
   }
 }
 
 export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
+    const g = await guard();
+    if (g instanceof NextResponse) return g;
     const { id } = await context.params;
     await db.trainingPrompt.delete({ where: { id } });
     return NextResponse.json({ success: true, data: null });
   } catch (error) {
-    return NextResponse.json({ success: false, error: { code: '500', message: 'Failed to delete training' } }, { status: 500 });
+    return sendError(500, 'DELETE_FAILED', 'Failed to delete training');
   }
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
+    const g = await guard();
+    if (g instanceof NextResponse) return g;
     const { id } = await context.params;
     const training = await db.trainingPrompt.findUnique({ where: { id } });
-    if (!training) return NextResponse.json({ success: false, error: { code: '404', message: 'Training not found' } }, { status: 404 });
+    if (!training) return sendError(404, 'NOT_FOUND', 'Training not found');
 
     // Simulate AI test
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -66,6 +82,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
     });
   } catch (error) {
-    return NextResponse.json({ success: false, error: { code: '500', message: 'Failed to test training' } }, { status: 500 });
+    return sendError(500, 'TEST_FAILED', 'Failed to test training');
   }
 }

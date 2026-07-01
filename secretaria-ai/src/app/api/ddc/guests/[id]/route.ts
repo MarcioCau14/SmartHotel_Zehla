@@ -1,11 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { mapGuest } from '@/lib/ddc/ddc-mapper';
+import { resolveTenantId, mapGuest } from '@/lib/ddc/ddc-mapper';
+import { sendError } from '@/lib/send-error';
+import { apiRatelimit } from '@/lib/rate-limit';
 
 interface RouteContext { params: Promise<{ id: string }> }
 
+async function guard(): Promise<string | NextResponse> {
+  const tenantId = await resolveTenantId();
+  if (!tenantId || tenantId === 'client-001') return sendError(401, 'UNAUTHORIZED', 'Não autorizado');
+  const { success } = await apiRatelimit.limit(tenantId);
+  if (!success) return sendError(429, 'RATE_LIMITED', 'Muitas requisições');
+  return tenantId;
+}
+
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
+    const g = await guard();
+    if (g instanceof NextResponse) return g;
     const { id } = await context.params;
     const guest = await db.guest.findUnique({ where: { id } });
     if (!guest) return NextResponse.json({ success: false, error: { code: '404', message: 'Guest not found' } }, { status: 404 });
@@ -17,6 +29,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
+    const g = await guard();
+    if (g instanceof NextResponse) return g;
     const { id } = await context.params;
     const body = await request.json();
     const existing = await db.guest.findUnique({ where: { id } });
@@ -40,6 +54,8 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
 export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
+    const g = await guard();
+    if (g instanceof NextResponse) return g;
     const { id } = await context.params;
     await db.guest.delete({ where: { id } });
     return NextResponse.json({ success: true, data: null });

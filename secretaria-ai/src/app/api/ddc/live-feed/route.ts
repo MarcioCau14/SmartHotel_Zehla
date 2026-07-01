@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { resolveTenantId, mapConversation } from '@/lib/ddc/ddc-mapper';
+import { sendError } from '@/lib/send-error';
+import { apiRatelimit } from '@/lib/rate-limit';
 import { z } from 'zod';
 
 const messageSchema = z.object({
@@ -11,6 +13,8 @@ const messageSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const tenantId = await resolveTenantId();
+    if (!tenantId || tenantId === 'client-001') return sendError(401, 'UNAUTHORIZED', 'Não autorizado');
     const body = await request.json();
     const data = messageSchema.parse(body);
 

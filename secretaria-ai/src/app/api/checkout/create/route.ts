@@ -1,18 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { sendError } from '@/lib/send-error';
+import { authRatelimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, name, planType, paymentMethod } = body;
+    const { name, planType, paymentMethod } = body;
 
-    if (!email || !name || !planType || !paymentMethod) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!name || !planType || !paymentMethod) {
+      return sendError(400, 'MISSING_FIELDS', 'Campos obrigatórios ausentes');
     }
 
     const validPlans = ['gratuito', 'lite', 'pro', 'max'];
     if (!validPlans.includes(planType)) {
-      return NextResponse.json({ error: 'Invalid plan type' }, { status: 400 });
+      return sendError(400, 'INVALID_PLAN', 'Plano inválido');
     }
 
     const pricing = {
@@ -24,21 +28,15 @@ export async function POST(request: NextRequest) {
 
     const amount = pricing[planType as keyof typeof pricing];
 
-    let user = await db.user.findUnique({ where: { email } });
-    if (!user) {
-      user = await db.user.create({ data: { email, name } });
-    }
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.tenantId) return sendError(401, 'UNAUTHORIZED', 'Faça login primeiro');
+    const { success: allowed } = await authRatelimit.limit(session.user.tenantId);
+    if (!allowed) return sendError(429, 'RATE_LIMITED', 'Muitas requisições');
 
-    let tenant = await db.tenant.findUnique({ where: { email } });
-    if (!tenant) {
-      tenant = await db.tenant.create({
-        data: {
-          name, email, passwordHash: '', plan: 'trial', status: 'active',
-          trialStart: new Date(),
-          trialEnd: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-        },
-      });
-    }
+    const tenantId = session.user.tenantId;
+    const tenant = await db.tenant.findUnique({ where: { id: tenantId } });
+    if (!tenant) return sendError(404, 'TENANT_NOT_FOUND', 'Conta não encontrada');
+    const email = tenant.email;
 
     const subscription = await db.subscription.create({
       data: {
@@ -111,6 +109,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Checkout creation error:', error);
-    return NextResponse.json({ error: 'Failed to create checkout' }, { status: 500 });
+    return sendError(500, 'CREATE_FAILED', 'Falha ao criar checkout');
   }
 }

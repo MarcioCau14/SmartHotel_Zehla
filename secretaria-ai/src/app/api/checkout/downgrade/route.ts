@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { sendError } from '@/lib/send-error';
+import { authRatelimit } from '@/lib/rate-limit';
 
 /**
  * POST /api/checkout/downgrade
@@ -17,6 +21,11 @@ type PlanType = (typeof PLAN_ORDER)[number];
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.tenantId) return sendError(401, 'UNAUTHORIZED', 'Faça login primeiro');
+    const { success: allowed } = await authRatelimit.limit(session.user.tenantId);
+    if (!allowed) return sendError(429, 'RATE_LIMITED', 'Muitas requisições');
+
     const body = await request.json();
     const { tenantId, newPlanType } = body as {
       tenantId?: string;
@@ -24,20 +33,11 @@ export async function POST(request: NextRequest) {
     };
 
     if (!tenantId || !newPlanType) {
-      return NextResponse.json(
-        { success: false, error: 'Missing tenantId or newPlanType' },
-        { status: 400 },
-      );
+      return sendError(400, 'MISSING_FIELDS', 'Missing tenantId or newPlanType');
     }
 
     if (!PLAN_ORDER.includes(newPlanType as PlanType)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Invalid plan: ${newPlanType}. Valid: ${PLAN_ORDER.join(', ')}`,
-        },
-        { status: 400 },
-      );
+      return sendError(400, 'INVALID_PLAN', `Invalid plan: ${newPlanType}. Valid: ${PLAN_ORDER.join(', ')}`);
     }
 
     const subscription = await db.subscription.findFirst({
@@ -45,13 +45,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!subscription) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'No active subscription found for this tenant',
-        },
-        { status: 404 },
-      );
+      return sendError(404, 'SUBSCRIPTION_NOT_FOUND', 'No active subscription found for this tenant');
     }
 
     const currentPlan = subscription.planType as PlanType;
@@ -59,13 +53,7 @@ export async function POST(request: NextRequest) {
     const newIdx = PLAN_ORDER.indexOf(newPlanType as PlanType);
 
     if (newIdx >= currentIdx) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Cannot upgrade via downgrade endpoint. Current: ${currentPlan}, Requested: ${newPlanType}. Use /api/checkout/upgrade instead.`,
-        },
-        { status: 400 },
-      );
+      return sendError(400, 'CANNOT_UPGRADE', `Cannot upgrade via downgrade endpoint. Current: ${currentPlan}, Requested: ${newPlanType}. Use /api/checkout/upgrade instead.`);
     }
 
     const effectiveDate =
@@ -102,13 +90,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('[Checkout Downgrade] Error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to process downgrade',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 },
-    );
+    return sendError(500, 'DOWNGRADE_FAILED', 'Failed to process downgrade', error instanceof Error ? error.message : 'Unknown error');
   }
 }

@@ -18,6 +18,11 @@ vi.mock('@/lib/ddc/auth-utils', () => ({
   resolveTenantId: vi.fn().mockResolvedValue('tenant-test-001'),
 }));
 
+vi.mock('@/lib/rate-limit', () => ({
+  apiRatelimit: { limit: vi.fn().mockResolvedValue({ success: true }) },
+  authRatelimit: { limit: vi.fn().mockResolvedValue({ success: true }) },
+}));
+
 import { db } from '@/lib/db';
 
 import {
