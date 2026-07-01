@@ -15,7 +15,7 @@ vi.mock('@/lib/db', () => ({ db: createMockDb() }));
 
 // Mock resolveTenantId to avoid NextAuth dependency
 vi.mock('@/lib/ddc/auth-utils', () => ({
-  resolveTenantId: vi.fn().mockResolvedValue('client-001'),
+  resolveTenantId: vi.fn().mockResolvedValue('tenant-test-001'),
 }));
 
 import { db } from '@/lib/db';
@@ -72,7 +72,7 @@ describe('DDC API Routes', () => {
       const req = createRequest('/api/ddc/guests');
       await getGuests(req);
       const calledWith = (db.guest.findMany as any).mock.calls[0][0];
-      expect(calledWith.where.tenantId).toBe('client-001');
+      expect(calledWith.where.tenantId).toBe('tenant-test-001');
     });
 
     it('passes status filter when provided', async () => {

@@ -1,16 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import crypto from 'crypto';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const subscriptionId = searchParams.get('subscription_id');
+    const sig = searchParams.get('sig');
 
     if (!subscriptionId) {
       return NextResponse.redirect(new URL('/?error=missing_subscription', request.url));
     }
 
-    const subscription = await db.subscription.update({
+    if (!sig) {
+      return NextResponse.redirect(new URL('/?error=invalid_signature', request.url));
+    }
+
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.tenantId) {
+      return NextResponse.redirect(new URL('/?error=unauthorized', request.url));
+    }
+
+    const secret = process.env.NEXTAUTH_SECRET || 'dev-secret-change-in-production';
+    const expectedSig = crypto
+      .createHmac('sha256', secret)
+      .update(subscriptionId)
+      .digest('hex');
+
+    if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expectedSig))) {
+      return NextResponse.redirect(new URL('/?error=invalid_signature', request.url));
+    }
+
+    const subscription = await db.subscription.findUnique({
+      where: { id: subscriptionId },
+    });
+
+    if (!subscription) {
+      return NextResponse.redirect(new URL('/?error=subscription_not_found', request.url));
+    }
+
+    if (subscription.tenantId !== session.user.tenantId) {
+      return NextResponse.redirect(new URL('/?error=forbidden', request.url));
+    }
+
+    await db.subscription.update({
       where: { id: subscriptionId },
       data: {
         status: 'active',

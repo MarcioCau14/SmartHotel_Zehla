@@ -5,6 +5,9 @@ import { resolveTenantId, mapNotification } from '@/lib/ddc/ddc-mapper';
 export async function GET(request: NextRequest) {
   try {
     const tenantId = await resolveTenantId();
+    if (!tenantId || tenantId === 'client-001') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const notifications = await db.notification.findMany({
       where: { tenantId },
       orderBy: { createdAt: 'desc' },

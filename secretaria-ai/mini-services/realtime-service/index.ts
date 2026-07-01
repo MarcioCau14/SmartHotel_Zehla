@@ -1,4 +1,5 @@
 import { Server } from 'socket.io';
+import * as jose from 'jose';
 
 const PORT = 3005;
 
@@ -17,10 +18,33 @@ const io = new Server(PORT, {
   },
 });
 
+io.use(async (socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (!token) {
+    console.warn('[Realtime] MOCK mode — conexão sem token');
+    socket.data.tenantId = 'client-001';
+    socket.data.role = 'guest';
+    return next();
+  }
+  try {
+    const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || 'dev-secret-change-in-production');
+    const { payload } = await jose.jwtVerify(token, secret);
+    socket.data.tenantId = (payload as Record<string, unknown>).tenantId as string || 'client-001';
+    socket.data.role = (payload as Record<string, unknown>).role as string || 'guest';
+    next();
+  } catch {
+    next(new Error('Invalid token'));
+  }
+});
+
 io.on('connection', (socket) => {
-  console.log(`[Realtime] Client connected: ${socket.id}`);
+  console.log(`[Realtime] Client connected: ${socket.id} (tenant: ${socket.data.tenantId})`);
 
   socket.on('tenant:join', (tenantId: string) => {
+    if (tenantId !== socket.data.tenantId && socket.data.tenantId !== 'client-001') {
+      socket.emit('error', { message: 'Unauthorized room access' });
+      return;
+    }
     socket.join(`tenant:${tenantId}`);
     console.log(`[Realtime] ${socket.id} joined tenant:${tenantId}`);
   });
@@ -30,31 +54,45 @@ io.on('connection', (socket) => {
   });
 
   socket.on('ai:message', (data: { tenantId: string; message: object }) => {
-    io.to(`tenant:${data.tenantId}`).emit('ai:message', data.message);
+    if (data.tenantId === socket.data.tenantId || socket.data.tenantId === 'client-001') {
+      io.to(`tenant:${data.tenantId}`).emit('ai:message', data.message);
+    }
   });
 
   socket.on('ai:escalation', (data: { tenantId: string; escalation: object }) => {
-    io.to(`tenant:${data.tenantId}`).emit('ai:escalation', data.escalation);
+    if (data.tenantId === socket.data.tenantId || socket.data.tenantId === 'client-001') {
+      io.to(`tenant:${data.tenantId}`).emit('ai:escalation', data.escalation);
+    }
   });
 
   socket.on('booking:created', (data: { tenantId: string; booking: object }) => {
-    io.to(`tenant:${data.tenantId}`).emit('booking:created', data.booking);
+    if (data.tenantId === socket.data.tenantId || socket.data.tenantId === 'client-001') {
+      io.to(`tenant:${data.tenantId}`).emit('booking:created', data.booking);
+    }
   });
 
   socket.on('booking:updated', (data: { tenantId: string; booking: object }) => {
-    io.to(`tenant:${data.tenantId}`).emit('booking:updated', data.booking);
+    if (data.tenantId === socket.data.tenantId || socket.data.tenantId === 'client-001') {
+      io.to(`tenant:${data.tenantId}`).emit('booking:updated', data.booking);
+    }
   });
 
   socket.on('notification:new', (data: { tenantId: string; notification: object }) => {
-    io.to(`tenant:${data.tenantId}`).emit('notification:new', data.notification);
+    if (data.tenantId === socket.data.tenantId || socket.data.tenantId === 'client-001') {
+      io.to(`tenant:${data.tenantId}`).emit('notification:new', data.notification);
+    }
   });
 
   socket.on('guest:updated', (data: { tenantId: string; guest: object }) => {
-    io.to(`tenant:${data.tenantId}`).emit('guest:updated', data.guest);
+    if (data.tenantId === socket.data.tenantId || socket.data.tenantId === 'client-001') {
+      io.to(`tenant:${data.tenantId}`).emit('guest:updated', data.guest);
+    }
   });
 
   socket.on('metrics:refresh', (data: { tenantId: string }) => {
-    io.to(`tenant:${data.tenantId}`).emit('metrics:refresh');
+    if (data.tenantId === socket.data.tenantId || socket.data.tenantId === 'client-001') {
+      io.to(`tenant:${data.tenantId}`).emit('metrics:refresh');
+    }
   });
 
   socket.on('disconnect', (reason) => {

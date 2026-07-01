@@ -5,6 +5,9 @@ import { resolveTenantId, mapTraining } from '@/lib/ddc/ddc-mapper';
 export async function GET(request: NextRequest) {
   try {
     const tenantId = await resolveTenantId();
+    if (!tenantId || tenantId === 'client-001') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const trainings = await db.trainingPrompt.findMany({
       where: { tenantId },
       orderBy: { createdAt: 'desc' },
@@ -19,6 +22,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const tenantId = await resolveTenantId();
+    if (!tenantId || tenantId === 'client-001') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const body = await request.json();
     if (!body.title || !body.content || !body.category) {
       return NextResponse.json({ success: false, error: { code: '400', message: 'Missing required fields: title, content, category' } }, { status: 400 });

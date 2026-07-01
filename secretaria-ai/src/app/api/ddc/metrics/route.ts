@@ -34,6 +34,9 @@ const emptyMetrics = (period: string) => ({
 export async function GET(request: NextRequest) {
   try {
     const tenantId = await resolveTenantId();
+    if (!tenantId || tenantId === 'client-001') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const period = request.nextUrl.searchParams.get('period') || 'today';
     const { start, prevStart } = dateRange(period);
 

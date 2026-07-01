@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile>
+  <diagram name="Arquitetura Geral" id="arq-geral">
+    <mxGraphModel dx="0" dy="0" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Camada: Browser -->
+        <mxCell id="browser-layer" value="&lt;b&gt;CAMADA DO USUÁRIO&lt;/b&gt;" style="swimlane;whiteSpace=wrap;html=1;fillColor=#1a1a2e;fontColor=#ffffff;strokeColor=#16213e;startSize=30;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="30" y="20" width="1040" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="browser-comp" value="🌐 Browser" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e94560;fontColor=#ffffff;strokeColor=#c23152;" vertex="1" parent="browser-layer">
+          <mxGeometry x="440" y="40" width="160" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Camada: Next.js -->
+        <mxCell id="next-layer" value="&lt;b&gt;NEXT.JS APP (Servidor)&lt;/b&gt;" style="swimlane;whiteSpace=wrap;html=1;fillColor=#0f3460;fontColor=#ffffff;strokeColor=#16213e;startSize=30;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="30" y="160" width="1040" height="200" as="geometry"/>
+        </mxCell>
+
+        <!-- Páginas -->
+        <mxCell id="page-ddc" value="📊 DDC Dashboard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#16213e;fontColor=#ffffff;strokeColor=#0f3460;" vertex="1" parent="next-layer">
+          <mxGeometry x="40" y="40" width="150" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="page-zcc" value="🎛️ ZCC Control Center" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#16213e;fontColor=#ffffff;strokeColor=#0f3460;" vertex="1" parent="next-layer">
+          <mxGeometry x="230" y="40" width="150" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="page-landing" value="🏠 Landing Page" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#16213e;fontColor=#ffffff;strokeColor=#0f3460;" vertex="1" parent="next-layer">
+          <mxGeometry x="420" y="40" width="150" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="page-auth" value="🔐 Auth + Checkout" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#16213e;fontColor=#ffffff;strokeColor=#0f3460;" vertex="1" parent="next-layer">
+          <mxGeometry x="610" y="40" width="150" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- API Routes -->
+        <mxCell id="api-routes" value="📡 52+ API Routes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#533483;fontColor=#ffffff;strokeColor=#3d2460;" vertex="1" parent="next-layer">
+          <mxGeometry x="40" y="120" width="720" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow Browser -> Next.js -->
+        <mxCell id="arrow-browser-next" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#e94560;strokeWidth=2;" edge="1" parent="1" source="browser-comp" target="next-layer">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Camada: Cérebro / IA -->
+        <mxCell id="brain-layer" value="&lt;b&gt;CÉREBRO &amp; IA&lt;/b&gt;" style="swimlane;whiteSpace=wrap;html=1;fillColor=#2d6a4f;fontColor=#ffffff;strokeColor=#1b4332;startSize=30;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="30" y="380" width="1040" height="180" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="brain-zaos" value="🧠 ZaosNeuroRouter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#40916c;fontColor=#ffffff;strokeColor=#2d6a4f;" vertex="1" parent="brain-layer">
+          <mxGeometry x="40" y="40" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="brain-thompson" value="🎯 Thompson Sampling" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#40916c;fontColor=#ffffff;strokeColor=#2d6a4f;" vertex="1" parent="brain-layer">
+          <mxGeometry x="240" y="40" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="brain-cb" value="🔒 Circuit Breaker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#40916c;fontColor=#ffffff;strokeColor=#2d6a4f;" vertex="1" parent="brain-layer">
+          <mxGeometry x="440" y="40" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="brain-budget" value="💰 Budget Guard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#40916c;fontColor=#ffffff;strokeColor=#2d6a4f;" vertex="1" parent="brain-layer">
+          <mxGeometry x="640" y="40" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="brain-cache" value="⚡ Semantic Cache" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#40916c;fontColor=#ffffff;strokeColor=#2d6a4f;" vertex="1" parent="brain-layer">
+          <mxGeometry x="840" y="40" width="160" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="brain-providers" value="🤖 LLM Providers (OpenRouter, Groq, Ollama...)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#52b788;fontColor=#ffffff;strokeColor=#40916c;" vertex="1" parent="brain-layer">
+          <mxGeometry x="240" y="110" width="560" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Camada: Dados -->
+        <mxCell id="data-layer" value="&lt;b&gt;CAMADA DE DADOS&lt;/b&gt;" style="swimlane;whiteSpace=wrap;html=1;fillColor=#370617;fontColor=#ffffff;strokeColor=#1a0003;startSize=30;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="30" y="580" width="1040" height="140" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="data-prisma" value="🗃️ Prisma ORM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6a040f;fontColor=#ffffff;strokeColor=#370617;" vertex="1" parent="data-layer">
+          <mxGeometry x="40" y="40" width="200" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="data-sqlite" value="💾 SQLite (30 modelos)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#9d0208;fontColor=#ffffff;strokeColor=#6a040f;" vertex="1" parent="data-layer">
+          <mxGeometry x="300" y="40" width="200" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="data-redis" value="🔴 Redis (Mock)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#9d0208;fontColor=#ffffff;strokeColor=#6a040f;" vertex="1" parent="data-layer">
+          <mxGeometry x="560" y="40" width="200" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Conexões API -> Brain -->
+        <mxCell id="arrow-api-brain" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.1;exitY=1;exitDx=0;exitDy=0;entryX=0.1;entryY=0;entryDx=0;entryDy=0;strokeColor=#533483;strokeWidth=2;dashed=1;" edge="1" parent="1" source="api-routes" target="brain-layer">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow-brain-data" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#52b788;strokeWidth=2;" edge="1" parent="1" source="brain-layer" target="data-layer">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Recursos externos -->
+        <mxCell id="ext-socket" value="🔌 Socket.IO (Realtime)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e9c46a;fontColor=#000000;strokeColor=#d4a373;" vertex="1" parent="1">
+          <mxGeometry x="800" y="200" width="160" height="50" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

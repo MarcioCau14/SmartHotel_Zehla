@@ -6,6 +6,9 @@ import { resolveTenantId, mapGuest } from '@/lib/ddc/ddc-mapper';
 export async function GET(request: NextRequest) {
   try {
     const tenantId = await resolveTenantId();
+    if (!tenantId || tenantId === 'client-001') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status');
     const scoreMin = searchParams.get('scoreMin');
@@ -47,6 +50,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const tenantId = await resolveTenantId();
+    if (!tenantId || tenantId === 'client-001') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const body = await request.json();
     if (!body.name || !body.phoneNumber) {
       return NextResponse.json({ success: false, error: { code: '400', message: 'Missing required fields: name and phoneNumber' } }, { status: 400 });

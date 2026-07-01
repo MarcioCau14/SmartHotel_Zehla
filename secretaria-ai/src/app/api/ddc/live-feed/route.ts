@@ -41,9 +41,13 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const encoder = new TextEncoder();
 
+  const tenantId = await resolveTenantId();
+  if (!tenantId || tenantId === 'client-001') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const stream = new ReadableStream({
     async start(controller) {
-      const tenantId = await resolveTenantId().catch(() => 'client-001');
       let lastCheck = new Date();
 
       // Initial load

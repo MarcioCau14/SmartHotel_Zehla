@@ -1,9 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const rawBody = await request.text();
+    const signature = request.headers.get('x-signature');
+    const webhookSecret = process.env.MP_WEBHOOK_SECRET;
+
+    if (webhookSecret) {
+      if (!signature) {
+        console.warn('[Webhook] Sem x-signature — modo MOCK');
+      } else {
+        const parts = signature.split(',');
+        const ts = parts.find(p => p.startsWith('ts='))?.split('=')[1] || '';
+        const v1 = parts.find(p => p.startsWith('v1='))?.split('=')[1] || '';
+        const expected = crypto
+          .createHmac('sha256', webhookSecret)
+          .update(`id:${ts};request:`)
+          .update(rawBody)
+          .digest('hex');
+        if (!crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected))) {
+          return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+        }
+      }
+    }
+
+    const body = JSON.parse(rawBody);
 
     if (body.action === 'payment.updated' || body.type === 'payment') {
       const paymentId = body.data?.id;

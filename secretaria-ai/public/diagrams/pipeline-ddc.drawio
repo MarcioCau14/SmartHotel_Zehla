@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile>
+  <diagram name="Pipeline DDC" id="ddc-pipeline">
+    <mxGraphModel dx="0" dy="0" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- DDC Container -->
+        <mxCell id="ddc-container" value="&lt;b&gt;DDC — DIGITAL DEALERSHIP CENTER&lt;/b&gt;" style="swimlane;whiteSpace=wrap;html=1;fillColor=#0f3460;fontColor=#ffffff;strokeColor=#16213e;startSize=40;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="30" y="20" width="1040" height="800" as="geometry"/>
+        </mxCell>
+
+        <!-- Pipeline Stages (horizontal flow) -->
+        <mxCell id="stage-new" value="🆕 NOVO&#10;Hóspede entra&#10;em contato" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e94560;fontColor=#ffffff;strokeColor=#c23152;" vertex="1" parent="ddc-container">
+          <mxGeometry x="40" y="60" width="160" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="stage-engaged" value="💬 EM ATENDIMENTO&#10;Conversa ativa&#10;no WhatsApp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f48c06;fontColor=#000000;strokeColor=#dc2f02;" vertex="1" parent="ddc-container">
+          <mxGeometry x="260" y="60" width="160" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="stage-qualified" value="📋 QUALIFICADO&#10;Dados coletados&#10;Interesse validado" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e9c46a;fontColor=#000000;strokeColor=#d4a373;" vertex="1" parent="ddc-container">
+          <mxGeometry x="480" y="60" width="160" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="stage-booked" value="📅 RESERVA&#10;Booking confirmado&#10;Ok para check-in" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2d6a4f;fontColor=#ffffff;strokeColor=#1b4332;" vertex="1" parent="ddc-container">
+          <mxGeometry x="700" y="60" width="160" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="stage-checkin" value="✅ CHECK-IN&#10;Hóspede no local&#10;Experiência completa" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#52b788;fontColor=#ffffff;strokeColor=#40916c;" vertex="1" parent="ddc-container">
+          <mxGeometry x="840" y="200" width="160" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrows between stages -->
+        <mxCell id="arrow-new-eng" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#ffffff;strokeWidth=2;" edge="1" parent="ddc-container" source="stage-new" target="stage-engaged">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow-eng-qual" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#ffffff;strokeWidth=2;" edge="1" parent="ddc-container" source="stage-engaged" target="stage-qualified">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow-qual-book" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#ffffff;strokeWidth=2;" edge="1" parent="ddc-container" source="stage-qualified" target="stage-booked">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow-book-ci" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#ffffff;strokeWidth=2;" edge="1" parent="ddc-container" source="stage-booked" target="stage-checkin">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Drop-off -->
+        <mxCell id="dropoff" value="🚫 DESISTÊNCIA / ARQUIVADO" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#370617;fontColor=#ffffff;strokeColor=#24040e;arcSize=10;dashed=1;" vertex="1" parent="ddc-container">
+          <mxGeometry x="40" y="200" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow-drop" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.3;exitY=1;entryX=0.5;entryY=0;strokeColor=#e94560;strokeWidth=1;dashed=1;" edge="1" parent="ddc-container" source="stage-engaged" target="dropoff">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Componentes do DDC -->
+        <mxCell id="components-title" value="&lt;b&gt;COMPONENTES DO DDC DASHBOARD&lt;/b&gt;" style="text;whiteSpace=wrap;html=1;fillColor=none;fontColor=#ffffff;strokeColor=none;fontSize=14;" vertex="1" parent="ddc-container">
+          <mxGeometry x="40" y="310" width="300" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="cmp-metrics" value="📊 RevenueMetrics&#10;Métricas em tempo real" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#16213e;fontColor=#ffffff;strokeColor=#0f3460;" vertex="1" parent="ddc-container">
+          <mxGeometry x="40" y="350" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="cmp-guest" value="👤 GuestCRMPipeline&#10;Pipeline visual de hóspedes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#16213e;fontColor=#ffffff;strokeColor=#0f3460;" vertex="1" parent="ddc-container">
+          <mxGeometry x="280" y="350" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="cmp-ai" value="🤖 AILiveFeed + AIStatus&#10;Feed da IA em tempo real" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#16213e;fontColor=#ffffff;strokeColor=#0f3460;" vertex="1" parent="ddc-container">
+          <mxGeometry x="520" y="350" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="cmp-conv" value="💬 ConversationCard&#10;Detalhes da conversa" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#16213e;fontColor=#ffffff;strokeColor=#0f3460;" vertex="1" parent="ddc-container">
+          <mxGeometry x="760" y="350" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="cmp-train" value="🎓 TrainingCenter&#10;Treinamento da IA" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#16213e;fontColor=#ffffff;strokeColor=#0f3460;" vertex="1" parent="ddc-container">
+          <mxGeometry x="40" y="440" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="cmp-notif" value="🔔 Notificações&#10;Alertas em tempo real" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#16213e;fontColor=#ffffff;strokeColor=#0f3460;" vertex="1" parent="ddc-container">
+          <mxGeometry x="280" y="440" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="cmp-quick" value="⚡ QuickActionsBar&#10;Ações rápidas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#16213e;fontColor=#ffffff;strokeColor=#0f3460;" vertex="1" parent="ddc-container">
+          <mxGeometry x="520" y="440" width="200" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- API Routes DDC -->
+        <mxCell id="api-ddc" value="&lt;b&gt;14 ROTAS DE API DDC&lt;/b&gt;&#10;/metrics, /bookings, /guests, /conversations,&#10;/live-feed, /ai-status, /notifications, /training" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#533483;fontColor=#ffffff;strokeColor=#3d2460;" vertex="1" parent="ddc-container">
+          <mxGeometry x="40" y="550" width="480" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Hooks DDC -->
+        <mxCell id="hooks-ddc" value="&lt;b&gt;HOOKS DDC&lt;/b&gt;&#10;useDDC, use-ddc-metrics, use-guest-pipeline,&#10;use-ai-live-feed, use-ddc-notifications, use-training-center" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2d6a4f;fontColor=#ffffff;strokeColor=#1b4332;" vertex="1" parent="ddc-container">
+          <mxGeometry x="580" y="550" width="380" height="70" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

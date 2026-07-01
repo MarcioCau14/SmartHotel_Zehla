@@ -9,6 +9,9 @@ export async function POST(
   try {
     const { id } = await params;
     const tenantId = await resolveTenantId();
+    if (!tenantId || tenantId === 'client-001') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const conversation = await db.conversationLog.findUnique({
       where: { id },

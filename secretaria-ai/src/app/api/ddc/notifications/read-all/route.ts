@@ -5,6 +5,9 @@ import { resolveTenantId } from '@/lib/ddc/ddc-mapper';
 export async function PUT(request: NextRequest) {
   try {
     const tenantId = await resolveTenantId();
+    if (!tenantId || tenantId === 'client-001') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     await db.notification.updateMany({
       where: { tenantId, read: false },
       data: { read: true },
