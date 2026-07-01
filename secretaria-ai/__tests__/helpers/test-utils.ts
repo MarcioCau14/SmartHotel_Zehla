@@ -39,6 +39,7 @@ function createModelMock() {
     findFirst: vi.fn().mockResolvedValue(null),
     findUnique: vi.fn().mockResolvedValue(null),
     create: vi.fn().mockResolvedValue({ id: 'mock-id' }),
+    createMany: vi.fn().mockResolvedValue({ count: 0 }),
     update: vi.fn().mockResolvedValue({ id: 'mock-id' }),
     updateMany: vi.fn().mockResolvedValue({ count: 0 }),
     delete: vi.fn().mockResolvedValue({ id: 'mock-id' }),
@@ -51,7 +52,7 @@ function createModelMock() {
 }
 
 export function createMockDb() {
-  return {
+  const dbInstance = {
     user: createModelMock(),
     tenant: createModelMock(),
     property: createModelMock(),
@@ -82,14 +83,19 @@ export function createMockDb() {
     paymentTransaction: createModelMock(),
     trendKeyword: createModelMock(),
     trendDataPoint: createModelMock(),
+    feedback: createModelMock(),
     $connect: vi.fn().mockResolvedValue(undefined),
     $disconnect: vi.fn().mockResolvedValue(undefined),
     $queryRaw: vi.fn().mockResolvedValue([{ 1: 1 }]),
-    $transaction: vi.fn().mockImplementation(async (fn: (db: unknown) => unknown) => {
-      if (typeof fn === 'function') return fn(createMockDb());
-      return fn;
-    }),
+    $transaction: vi.fn(),
   };
+
+  (dbInstance as any).$transaction.mockImplementation(async (fn: any) => {
+    if (typeof fn === 'function') return fn(dbInstance);
+    return fn;
+  });
+
+  return dbInstance;
 }
 
 export async function expectJson(

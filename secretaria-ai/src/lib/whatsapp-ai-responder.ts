@@ -1,206 +1,263 @@
 import { db } from '@/lib/db';
 import { getNeuroRouter } from '@/lib/ai/zaos-neuro-router';
-import { sendWhatsAppMessage } from './whatsapp-send';
-import { resolveTenantId } from '@/lib/ddc/auth-utils';
+import { mapConversation } from '@/lib/ddc/ddc-mapper';
 
 /**
- * Função principal em background para carregar contexto do hotel, responder
- * a mensagens recebidas do hóspede de forma contextualizada usando a IA,
- * persistir a resposta no banco e tentar o envio físico.
- *
- * @param conversationId - ID do ConversationLog correspondente
- * @param guestId - ID do Guest correspondente
- * @param lastMessageContent - Texto da última mensagem recebida do hóspede
+ * Global helper to notify active SSE DDC connections about new message events.
  */
-export async function respondToWhatsAppMessage(
-  conversationId: string,
-  guestId: string,
-  lastMessageContent: string
-): Promise<void> {
-  const startTime = Date.now();
-  const TENANT_ID = await resolveTenantId();
-
-  try {
-    // 1. Carregar contexto da Pousada/Propriedade
-    const property = await db.property.findFirst({
-      where: { tenantId: TENANT_ID }
-    });
-
-    // 2. Carregar informações de quartos (rooms)
-    const rooms = await db.room.findMany({
-      where: { propertyId: property?.id || '' }
-    });
-
-    // 3. Carregar regras e FAQ da base de conhecimento (knowledge entries)
-    const knowledge = await db.knowledgeEntry.findMany({
-      where: { tenantId: TENANT_ID }
-    });
-
-    // 3.5. Carregar prompts de treinamento ativos (TrainingPrompts)
-    const trainingPrompts = await db.trainingPrompt.findMany({
-      where: {
-        tenantId: TENANT_ID,
-        isActive: true
+export function notifyLiveFeed(tenantId: string, eventData: any) {
+  const listeners = (globalThis as any).sseListeners;
+  if (listeners) {
+    const ssePayload = `data: ${JSON.stringify(eventData)}\n\n`;
+    for (const listener of listeners) {
+      try {
+        listener(tenantId, ssePayload);
+      } catch (err) {
+        // Dead connection clean-up is handled in the route
       }
-    });
+    }
+  }
+}
 
-    // 4. Carregar histórico da conversa (últimas 10 mensagens)
-    const recentMessages = await db.conversationMessage.findMany({
-      where: { conversationId },
+/**
+ * Helper to fetch, map, and broadcast the updated conversation to the SSE stream.
+ */
+export async function broadcastConversationUpdate(tenantId: string, conversationId: string): Promise<void> {
+  try {
+    const fullConversation = await db.conversationLog.findUnique({
+      where: { id: conversationId },
+      include: { messages: { orderBy: { timestamp: 'asc' } } }
+    });
+    if (fullConversation) {
+      notifyLiveFeed(tenantId, {
+        type: 'update',
+        data: mapConversation(fullConversation)
+      });
+    }
+  } catch (error) {
+    console.error('[broadcastConversationUpdate] Error sending SSE update:', error);
+  }
+}
+
+interface ProcessParams {
+  tenantId: string;
+  guestPhone: string;
+  guestName?: string;
+  messageContent: string;
+  messageFrom?: string; // 'whatsapp' | 'instagram' | 'web'
+}
+
+/**
+ * Core ZÉLLA Brain pipeline - Processes incoming messages from guests,
+ * resolves context, queries the ZaosNeuroRouter, saves everything to SQLite,
+ * and notifies the real-time DDC dashboard.
+ */
+export async function processIncomingMessage(params: ProcessParams): Promise<{
+  conversationId: string;
+  aiResponse: string;
+  guestId: string;
+}> {
+  const startTime = Date.now();
+  const { tenantId, guestPhone, guestName, messageContent } = params;
+
+  // 1. Fetch or create Guest
+  let guest = await db.guest.findFirst({
+    where: {
+      tenantId,
+      phone: guestPhone,
+    },
+  });
+
+  if (!guest) {
+    guest = await db.guest.create({
+      data: {
+        tenantId,
+        name: guestName || `Hóspede — ${guestPhone}`,
+        phone: guestPhone,
+        status: 'new',
+        source: params.messageFrom || 'whatsapp',
+        conversationCount: 1,
+        metadata: '{}',
+      },
+    });
+  } else {
+    // Increment conversation count
+    guest = await db.guest.update({
+      where: { id: guest.id },
+      data: {
+        conversationCount: { increment: 1 },
+        lastContact: new Date(),
+      },
+    });
+  }
+
+  // 2. Fetch or create an active ConversationLog
+  let conversation = await db.conversationLog.findFirst({
+    where: {
+      tenantId,
+      guestId: guest.id,
+      status: 'active',
+    },
+  });
+
+  if (!conversation) {
+    conversation = await db.conversationLog.create({
+      data: {
+        tenantId,
+        guestId: guest.id,
+        guestName: guest.name,
+        guestPhone: guestPhone,
+        status: 'active',
+        aiConfidence: 0,
+        metadata: '{}',
+      },
+    });
+  }
+
+  // 3. Save incoming guest message
+  const guestMessage = await db.conversationMessage.create({
+    data: {
+      conversationId: conversation.id,
+      from: 'guest',
+      content: messageContent,
+      metadata: '{}',
+    },
+  });
+
+  // Notify DDC about the guest's message
+  await broadcastConversationUpdate(tenantId, conversation.id);
+
+  // 4. Load context dynamically from Prisma
+  const [property, rooms, knowledge, trainingPrompts, recentMessages] = await Promise.all([
+    db.property.findFirst({ where: { tenantId } }),
+    db.room.findMany({ where: { property: { tenantId } } }), // Query rooms via Property filter
+    db.knowledgeEntry.findMany({ where: { tenantId } }),
+    db.trainingPrompt.findMany({ where: { tenantId, isActive: true } }),
+    db.conversationMessage.findMany({
+      where: { conversationId: conversation.id },
       orderBy: { timestamp: 'asc' },
-      take: 10
-    });
+      take: 10,
+    }),
+  ]);
 
-    // 5. Estruturar os dados no System Prompt da IA
-    let hotelContext = `
-Você é a ZÉLLA, uma assistente virtual de inteligência artificial ultra-atenciosa e hospitaleira da pousada "${property?.name || 'Pousada Serenity'}".
+  // 5. Structure the dynamic system prompt
+  let systemPrompt = `
+Você é a ZÉLLA, uma assistente virtual de inteligência artificial ultra-atenciosa e hospitaleira da pousada "${property?.name || 'Pousada' }".
 Seu objetivo é sanar dúvidas, encantar o hóspede, sugerir acomodações e incentivar a reserva direta de forma natural, educada e calorosa.
 
 === INFORMAÇÕES GERAIS DA POUSADA ===
-Nome: ${property?.name || 'Pousada Serenity'}
-Endereço/Localização: ${property?.city || 'Paraty'}, ${property?.state || 'RJ'}
-Descrição/Tom: ${property?.description || 'Um refúgio tranquilo e acolhedor com atendimento de excelência.'}
+Nome: ${property?.name || 'Pousada'}
+Endereço/Localização: ${property?.city || ''}, ${property?.state || ''}
+Descrição/Tom: ${property?.description || 'Um refúgio tranquilo e acolhedor.'}
 
 === NOSSAS ACOMODAÇÕES (QUARTOS) ===
 ${rooms.length > 0 
-  ? rooms.map(r => `- Quarto: ${r.name || 'Acomodação'} (Capacidade: ${r.capacity} pessoas, Preço base: R$${r.basePrice ?? r.price ?? 'sob consulta'}/diária)`).join('\n')
+  ? rooms.map(r => `- Quarto: ${r.name} (Capacidade: ${r.capacity} pessoas, Preço base: R$${r.price}/diária)`).join('\n')
   : 'Consulte o gerente de reservas para valores de quartos.'}
 
 === INFORMAÇÕES ADICIONAIS & REGRAS (FAQ) ===
 ${knowledge.length > 0
   ? knowledge.map(k => `- Pergunta/Tópico: ${k.question}\n  Resposta: ${k.answer}`).join('\n')
-  : 'Check-in padrão a partir das 14h, check-out até às 12h. Café da manhã artesanal incluso.'}
+  : 'Check-in padrão a partir das 14h, check-out até às 12h.'}
 
 === DIRETRIZES DE COMUNICAÇÃO ===
 1. Responda de forma concisa e objetiva (máximo de 3 parágrafos curtos). Mensagens de WhatsApp muito longas cansam o hóspede.
 2. Seja hospitaleira, use emojis de forma moderada e profissional.
 3. Se o hóspede perguntar preços, apresente as opções de quartos disponíveis e pergunte a data desejada e quantidade de pessoas para refinar a cotação.
-4. Responda SEMPRE in português do Brasil de forma natural.
+4. Responda SEMPRE em português do Brasil de forma natural.
 5. Se for perguntado algo sobre o qual você não tem contexto ou informação no prompt, seja honesta e diga que vai verificar com o atendente humano, deixando a conversa em aberto.
 6. Nunca invente informações que não estejam listadas nos quartos ou no FAQ acima.
 `;
 
-    if (trainingPrompts.length > 0) {
-      hotelContext += `\n=== DIRETRIZES ADICIONAIS DE TREINAMENTO ===\n`;
-      for (const prompt of trainingPrompts) {
-        hotelContext += `[${prompt.type.toUpperCase()}] ${prompt.content}\n`;
-      }
+  if (trainingPrompts.length > 0) {
+    systemPrompt += `\n=== DIRETRIZES ADICIONAIS DE TREINAMENTO ===\n`;
+    for (const prompt of trainingPrompts) {
+      systemPrompt += `[${prompt.type.toUpperCase()}] ${prompt.content}\n`;
     }
+  }
 
-    // 6. Estruturar o histórico para a IA
-    let historyPrompt = 'Abaixo está o histórico recente de interações com este hóspede:\n';
-    
-    for (const msg of recentMessages) {
-      const senderName = msg.from === 'guest' ? 'Hóspede' : msg.from === 'ai' ? 'ZÉLLA (IA)' : 'Atendente Humano';
-      historyPrompt += `\n[${senderName}]: ${msg.content}`;
-    }
+  // 6. Build the conversation thread prompt
+  let conversationThread = 'Abaixo está o histórico recente de interações com este hóspede:\n';
+  for (const msg of recentMessages) {
+    const sender = msg.from === 'guest' ? 'Hóspede' : msg.from === 'ai' ? 'ZÉLLA (IA)' : 'Atendente Humano';
+    conversationThread += `\n[${sender}]: ${msg.content}`;
+  }
+  conversationThread += `\n\n[Hóspede] (última mensagem recebida): ${messageContent}\n\nZÉLLA (IA):`;
 
-    historyPrompt += `\n\n[Hóspede] (última mensagem recebida): ${lastMessageContent}\n\nZÉLLA (IA):`;
+  // 7. Invoke the ZaosNeuroRouter
+  const router = await getNeuroRouter();
+  const aiResult = await router.generate({
+    message: conversationThread,
+    systemPrompt,
+    sessionId: conversation.id,
+    tier: 2, // Use Tier 2 for general guest messaging
+  });
 
-    // 7. Invocar a IA do ZaosNeuroRouter
-    const router = await getNeuroRouter();
-    const aiResponse = await router.generate({
-      message: historyPrompt,
-      systemPrompt: hotelContext,
-      sessionId: conversationId,
-      tier: 2 // Usar tier 2 (Gemini Flash / Mid-tier) para respostas rápidas e eficientes no WhatsApp
-    });
+  const aiResponseText = aiResult.response;
+  const latency = Date.now() - startTime;
 
-    const responseText = aiResponse.response;
-    const latency = Date.now() - startTime;
+  // 8. Save the AI response
+  const aiMessage = await db.conversationMessage.create({
+    data: {
+      conversationId: conversation.id,
+      from: 'ai',
+      content: aiResponseText,
+      metadata: JSON.stringify({
+        latencyMs: latency,
+        providerUsed: aiResult.providerId,
+        tierUsed: aiResult.tier,
+        isMock: aiResult.isMock,
+      }),
+    },
+  });
 
-    // 8. Salvar a resposta da IA como uma mensagem em ConversationMessage
-    const savedMessage = await db.conversationMessage.create({
+  // 9. Update ConversationLog lastUpdate and confidence score
+  const confidencePct = Math.round((aiResult.confidence || 0.85) * 100);
+  await db.conversationLog.update({
+    where: { id: conversation.id },
+    data: {
+      lastUpdate: new Date(),
+      aiConfidence: confidencePct,
+    },
+  });
+
+  // 10. Record activities and alerts
+  await Promise.all([
+    db.aIActivityLog.create({
       data: {
-        conversationId,
-        from: 'ai',
-        content: responseText,
-        metadata: JSON.stringify({
-          latencyMs: latency,
-          providerUsed: aiResponse.providerId,
-          tierUsed: aiResponse.tier
-        })
-      }
-    });
-
-    // 9. Atualizar o ConversationLog com confiança da IA e tempo
-    const confidencePct = Math.round((aiResponse.confidence || 0.85) * 100);
-    await db.conversationLog.update({
-      where: { id: conversationId },
-      data: {
-        lastUpdate: new Date(),
-        aiConfidence: confidencePct
-      }
-    });
-
-    // 10. Gravar no AIActivityLog o sucesso da resposta
-    await db.aIActivityLog.create({
-      data: {
-        tenantId: TENANT_ID,
+        tenantId,
         type: 'message',
         message: `IA respondeu em background (${latency}ms, Confiança: ${confidencePct}%)`,
         status: 'success',
         duration: latency,
         metadata: JSON.stringify({
-          messageId: savedMessage.id,
-          provider: aiResponse.providerId,
-          costUsd: aiResponse.costUsd
-        })
-      }
-    });
-
-    // 11. Enviar mensagem física ao WhatsApp
-    const guest = await db.guest.findUnique({
-      where: { id: guestId }
-    });
-
-    if (guest && guest.phone) {
-      const sendResult = await sendWhatsAppMessage(guest.phone, responseText);
-      
-      if (sendResult.success) {
-        // Atualizar metadados da mensagem se o envio físico gerou ID real do WhatsApp
-        if (sendResult.messageId && !sendResult.isMock) {
-          await db.conversationMessage.update({
-            where: { id: savedMessage.id },
-            data: {
-              metadata: JSON.stringify({
-                latencyMs: latency,
-                providerUsed: aiResponse.providerId,
-                tierUsed: aiResponse.tier,
-                wamid: sendResult.messageId
-              })
-            }
-          });
-        }
-      } else {
-        console.error('[whatsapp-ai-responder] Erro no envio físico do WhatsApp:', sendResult.error);
-        
-        // Log de erro no envio
-        await db.aIActivityLog.create({
-          data: {
-            tenantId: TENANT_ID,
-            type: 'alert',
-            message: `Falha ao entregar WhatsApp físico: ${sendResult.error}`,
-            status: 'error',
-            metadata: JSON.stringify({ guestId, error: sendResult.error })
-          }
-        });
-      }
-    }
-  } catch (error) {
-    const latency = Date.now() - startTime;
-    console.error('[whatsapp-ai-responder] Erro crítico ao gerar ou enviar resposta automática da IA:', error);
-    
-    // Log de erro de processamento
-    await db.aIActivityLog.create({
+          messageId: aiMessage.id,
+          provider: aiResult.providerId,
+          costUsd: aiResult.costUsd,
+          isMock: aiResult.isMock,
+        }),
+      },
+    }),
+    db.notification.create({
       data: {
-        tenantId: TENANT_ID,
-        type: 'alert',
-        message: `Falha crítica no processamento da resposta da IA: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        status: 'error',
-        duration: latency,
-        metadata: JSON.stringify({ conversationId, guestId })
-      }
-    });
-  }
+        tenantId,
+        title: `Nova mensagem WhatsApp — ${guest.name}`,
+        message: messageContent.length > 60 ? `${messageContent.substring(0, 60)}...` : messageContent,
+        type: 'escalation',
+        priority: 'medium',
+        read: false,
+        actionLabel: 'Ver conversa',
+        actionUrl: `/ddc?guest=${guest.id}`,
+      },
+    }),
+  ]);
+
+  // 11. Notify DDC about the AI's response
+  await broadcastConversationUpdate(tenantId, conversation.id);
+
+  return {
+    conversationId: conversation.id,
+    aiResponse: aiResponseText,
+    guestId: guest.id,
+  };
 }

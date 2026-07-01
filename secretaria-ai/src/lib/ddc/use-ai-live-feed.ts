@@ -2,7 +2,7 @@
 // Hook: use-ai-live-feed
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { ConversationLog, ConversationMessage } from '@/types/ddc';
-import { connectToLiveFeed, fetchConversations } from './api';
+import { connectToLiveFeed, fetchConversations, sendMessage as apiSendMessage } from './api';
 
 interface UseAILiveFeedReturn {
   conversations: ConversationLog[];
@@ -158,8 +158,7 @@ export function useAILiveFeed(): UseAILiveFeedReturn {
       });
 
       // Actually send the message via API
-      // Note: In real implementation, this would call sendMessage() from api.ts
-      // For now, we'll simulate it
+      await apiSendMessage(conversationId, message);
 
     } catch (err) {
       setError(err as Error);

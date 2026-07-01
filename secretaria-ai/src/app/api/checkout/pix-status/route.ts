@@ -21,10 +21,13 @@ export async function GET(request: NextRequest) {
 
     const transaction = await db.paymentTransaction.findFirst({
       where: { externalId: paymentId },
-      include: { subscription: true },
     });
     if (!transaction) return createError(404, 'TRANSACTION_NOT_FOUND', 'Transação não encontrada');
-    if (transaction.subscription?.tenantId !== session.user.tenantId) {
+
+    const subscription = await db.subscription.findUnique({
+      where: { id: transaction.subscriptionId },
+    });
+    if (!subscription || subscription.tenantId !== session.user.tenantId) {
       return createError(403, 'FORBIDDEN', 'Esta transação não pertence à sua conta');
     }
 

@@ -291,6 +291,7 @@ async function main() {
   console.log('🌱 ZEHLA Seed — Populando banco de dados...\n');
 
   console.log('🧹 Limpando dados de semente antigos...');
+  await prisma.feedback.deleteMany({});
   await prisma.performanceSnapshot.deleteMany({});
   await prisma.quickAction.deleteMany({});
   await prisma.notification.deleteMany({});
@@ -404,6 +405,8 @@ async function main() {
 
   // 5. Criar Conversas + Mensagens
   console.log('5. Criando Conversas e Mensagens...');
+  const aiMessages: Array<{ conversationId: string; messageId: string }> = [];
+
   for (let i = 0; i < conversations.length; i++) {
     const conv = conversations[i];
     const guest = guestRecords[conv.guestIdx];
@@ -422,7 +425,7 @@ async function main() {
     });
 
     for (const msg of conv.messages) {
-      await prisma.conversationMessage.create({
+      const msgRecord = await prisma.conversationMessage.create({
         data: {
           conversationId: convRecord.id,
           from: msg.from,
@@ -432,7 +435,40 @@ async function main() {
           metadata: '{}',
         },
       });
+
+      if (msg.from === 'ai') {
+        aiMessages.push({
+          conversationId: convRecord.id,
+          messageId: msgRecord.id,
+        });
+      }
     }
+  }
+
+  // 5.5 Criar Feedbacks de exemplo
+  console.log('5.5. Criando Feedbacks de exemplo...');
+  const feedbackData = [
+    { rating: 5, notes: 'Resposta perfeita sobre horários' },
+    { rating: 4, notes: 'Atendeu bem, mas demorou um pouco na simulação' },
+    { rating: 5, notes: 'Passou a senha do Wi-Fi corretamente' },
+    { rating: 3, notes: 'IA foi um pouco repetitiva na resposta' },
+    { rating: 5, notes: 'Confirmou reserva com sucesso' },
+  ];
+
+  for (let i = 0; i < Math.min(feedbackData.length, aiMessages.length); i++) {
+    const f = feedbackData[i];
+    const msg = aiMessages[i];
+    await prisma.feedback.create({
+      data: {
+        tenantId: tenant.id,
+        conversationId: msg.conversationId,
+        messageId: msg.messageId,
+        rating: f.rating,
+        notes: f.notes,
+        source: 'ddc',
+        metadata: '{}',
+      },
+    });
   }
 
   // 6. Criar Reservas

@@ -30,6 +30,12 @@ import { HeadroomClient } from './headroom-client';
 import { CostKnowledge, costKnowledge } from './cost-knowledge';
 import ZAI from 'z-ai-web-dev-sdk';
 import {
+  callOpenAICompatible,
+  callAnthropic,
+  callGemini,
+  AdapterMessage
+} from './llm-adapters';
+import {
   persistBudgetGuard,
   loadBudgetGuard,
   persistRouterState,
@@ -97,6 +103,8 @@ export interface LLMResponse {
   thompsonTheta: number;
   /** All Thompson Sampling thetas (for observability) */
   allThetas: Record<string, number>;
+  /** Whether this response was generated using a mock engine */
+  isMock: boolean;
 }
 
 /** Provider registration configuration */
@@ -860,6 +868,7 @@ export class ZaosNeuroRouter {
           budgetLevel,
           thompsonTheta: this._lastSelectedTheta,
           allThetas: this._lastThetas,
+          isMock: false,
         };
       }
     }
@@ -881,34 +890,11 @@ export class ZaosNeuroRouter {
     let calculatedOutputTokens = 0;
 
     const dispatchStart = Date.now();
-    try {
-      if (!this.zai) {
-        this.zai = await ZAI.create();
-      }
+    const isMock = this.isMockMode(providerId);
 
-      const messages: any[] = [];
-      if (request.systemPrompt) {
-        messages.push({ role: 'system', content: request.systemPrompt });
-      }
-      messages.push({ role: 'user', content: finalPrompt });
-
-      const completion = await this.zai.chat.completions.create({
-        model: providerId,
-        messages,
-        thinking: { type: 'disabled' }
-      });
-
-      responseText = completion.choices[0]?.message?.content || '';
-      dispatchLatency = Date.now() - dispatchStart;
-
-      calculatedInputTokens = Math.ceil(finalPrompt.length / 4);
-      calculatedOutputTokens = Math.ceil(responseText.length / 4);
-    } catch (error) {
-      console.error(`[ZaosNeuroRouter] Error dispatching to provider ${providerId}:`, error);
-      isSuccess = false;
-      dispatchLatency = Date.now() - dispatchStart;
-
-      // Fallback response in case the SDK fails (so the guest still gets a response)
+    if (isMock) {
+      // Simulate latency and return mock response
+      dispatchLatency = this.simulateProviderLatency(provider);
       responseText = this.generateMockResponse(
         request.message,
         classification.bucket,
@@ -916,6 +902,28 @@ export class ZaosNeuroRouter {
       );
       calculatedInputTokens = Math.ceil(finalPrompt.length / 4);
       calculatedOutputTokens = Math.ceil(responseText.length / 4);
+      isSuccess = true;
+    } else {
+      try {
+        const result = await this.callRealLLM(provider, finalPrompt, request.systemPrompt);
+        responseText = result.content;
+        calculatedInputTokens = result.inputTokens;
+        calculatedOutputTokens = result.outputTokens;
+        dispatchLatency = Date.now() - dispatchStart;
+      } catch (error) {
+        console.error(`[ZaosNeuroRouter] Error dispatching to provider ${providerId}:`, error);
+        isSuccess = false;
+        dispatchLatency = Date.now() - dispatchStart;
+
+        // Fallback response in case the SDK fails (so the guest still gets a response)
+        responseText = this.generateMockResponse(
+          request.message,
+          classification.bucket,
+          providerName,
+        );
+        calculatedInputTokens = Math.ceil(finalPrompt.length / 4);
+        calculatedOutputTokens = Math.ceil(responseText.length / 4);
+      }
     }
 
     const totalLatencyMs = Date.now() - startTime;
@@ -973,6 +981,7 @@ export class ZaosNeuroRouter {
       budgetLevel,
       thompsonTheta: this._lastSelectedTheta,
       allThetas: thetas,
+      isMock: isMock || !isSuccess,
     };
   }
 
@@ -1027,6 +1036,93 @@ export class ZaosNeuroRouter {
     };
 
     return responses[bucket] ?? `🤖 **Resposta do Cérebro ZÉLLA**\n\nSua mensagem foi processada pelo roteador cognitivo. Contexto: ${bucket}.\n\n*Processado via ${providerName}*`;
+  }
+
+  private isMockMode(providerId: string): boolean {
+    let apiKey = '';
+    if (providerId.includes('groq')) {
+      apiKey = process.env.GROQ_API_KEY || '';
+    } else if (providerId.includes('gemini')) {
+      apiKey = process.env.GEMINI_API_KEY || '';
+    } else if (providerId.includes('openai')) {
+      apiKey = process.env.OPENAI_API_KEY || '';
+    } else if (providerId.includes('anthropic')) {
+      apiKey = process.env.ANTHROPIC_API_KEY || '';
+    } else if (providerId.includes('openrouter')) {
+      apiKey = process.env.OPENROUTER_API_KEY || '';
+    } else if (providerId.includes('deepseek')) {
+      apiKey = process.env.DEEPSEEK_API_KEY || '';
+    } else if (providerId.includes('glm5') || providerId.includes('zhipu')) {
+      apiKey = process.env.GLM_5_2_API_KEY || process.env.ZHIPU_API_KEY || '';
+    } else if (providerId.includes('kimi') || providerId.includes('moonshot')) {
+      apiKey = process.env.KIMI_K2_6_API_KEY || process.env.MOONSHOT_API_KEY || '';
+    }
+
+    if (!apiKey || apiKey === 'sk-mock' || apiKey.startsWith('sk-mock')) {
+      return true;
+    }
+    return false;
+  }
+
+  private async callRealLLM(
+    provider: RouterProviderState,
+    prompt: string,
+    systemPrompt?: string,
+  ): Promise<{ content: string; inputTokens: number; outputTokens: number }> {
+    const providerId = provider.registration.id;
+    const baseUrl = provider.registration.baseUrl || '';
+
+    const messages: AdapterMessage[] = [];
+    if (systemPrompt) {
+      messages.push({ role: 'system', content: systemPrompt });
+    }
+    messages.push({ role: 'user', content: prompt });
+
+    const maxTokens = 1024;
+    const temp = 0.7;
+
+    if (providerId.includes('gemini')) {
+      const apiKey = process.env.GEMINI_API_KEY || '';
+      return callGemini({ apiKey, model: providerId, messages, temperature: temp, maxTokens });
+    } else if (providerId.includes('anthropic')) {
+      const apiKey = process.env.ANTHROPIC_API_KEY || '';
+      return callAnthropic({ apiKey, model: providerId, messages, temperature: temp, maxTokens });
+    } else {
+      let apiKey = '';
+      let realModel = providerId;
+      let realUrl = baseUrl;
+
+      if (providerId.includes('groq')) {
+        apiKey = process.env.GROQ_API_KEY || '';
+        if (providerId === 'groq-llama3-70b') {
+          realModel = 'llama-3.3-70b-versatile';
+        } else if (providerId === 'groq-llama3-8b') {
+          realModel = 'llama-3.1-8b-instant';
+        }
+      } else if (providerId.includes('openai')) {
+        apiKey = process.env.OPENAI_API_KEY || '';
+      } else if (providerId.includes('openrouter')) {
+        apiKey = process.env.OPENROUTER_API_KEY || '';
+      } else if (providerId.includes('deepseek')) {
+        apiKey = process.env.DEEPSEEK_API_KEY || '';
+      } else if (providerId.includes('glm5') || providerId.includes('zhipu')) {
+        apiKey = process.env.GLM_5_2_API_KEY || process.env.ZHIPU_API_KEY || '';
+        realModel = 'glm-5.2';
+      } else if (providerId.includes('kimi') || providerId.includes('moonshot')) {
+        apiKey = process.env.KIMI_K2_6_API_KEY || process.env.MOONSHOT_API_KEY || '';
+        realModel = 'kimi-k2.6';
+      }
+
+      return callOpenAICompatible({
+        apiKey,
+        baseUrl: realUrl,
+        model: realModel,
+        messages,
+        temperature: temp,
+        maxTokens,
+        isOpenRouter: providerId.includes('openrouter'),
+      });
+    }
   }
 
   private calculateCost(

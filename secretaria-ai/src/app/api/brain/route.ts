@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
       budgetLevel: result.budgetLevel,
       thompsonTheta: result.thompsonTheta,
       allThetas: result.allThetas,
+      isMock: result.isMock,
       response: result.response,
     });
   } catch (error: unknown) {

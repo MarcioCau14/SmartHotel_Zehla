@@ -36,6 +36,28 @@ export function AILiveFeed({
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [replyText, setReplyText] = useState('');
+  const [votedMessages, setVotedMessages] = useState<Record<string, 'up' | 'down'>>({});
+
+  const handleVote = async (messageId: string, rating: number) => {
+    if (!selectedConversation) return;
+    const voteType = rating === 5 ? 'up' : 'down';
+    setVotedMessages(prev => ({ ...prev, [messageId]: voteType }));
+
+    try {
+      await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conversationId: selectedConversation.id,
+          messageId,
+          rating,
+          source: 'ddc'
+        })
+      });
+    } catch (error) {
+      console.error('Failed to submit feedback:', error);
+    }
+  };
 
   // Default select first conversation if none selected
   useEffect(() => {
@@ -306,6 +328,36 @@ export function AILiveFeed({
                               </span>
                             </div>
                             <p className="text-xs leading-relaxed">{message.content}</p>
+                            {msgFrom === 'ai' && message.id && (
+                              <div className="flex justify-end gap-1.5 mt-2 pt-1 border-t border-white/[0.04]">
+                                <button
+                                  type="button"
+                                  onClick={() => handleVote(message.id, 5)}
+                                  disabled={!!votedMessages[message.id]}
+                                  className={`p-1 rounded text-[10px] transition ${
+                                    votedMessages[message.id] === 'up'
+                                      ? 'bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30'
+                                      : 'hover:bg-white/10 text-white/40'
+                                  }`}
+                                  title="Feedback Positivo"
+                                >
+                                  👍
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleVote(message.id, 1)}
+                                  disabled={!!votedMessages[message.id]}
+                                  className={`p-1 rounded text-[10px] transition ${
+                                    votedMessages[message.id] === 'down'
+                                      ? 'bg-red-500/20 text-red-400 font-bold border border-red-500/30'
+                                      : 'hover:bg-white/10 text-white/40'
+                                  }`}
+                                  title="Feedback Negativo"
+                                >
+                                  👎
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </motion.div>
                       );

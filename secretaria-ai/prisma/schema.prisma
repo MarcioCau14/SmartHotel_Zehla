@@ -1019,3 +1019,22 @@ model QuickAction {
   @@map("quick_actions")
 }
 
+// ===== FEEDBACK (Guest and admin ratings of AI messages) =====
+model Feedback {
+  id             String   @id @default(cuid())
+  tenantId       String
+  conversationId String   // Relacionamento com logs de conversa
+  messageId      String   // ID da ConversationMessage avaliada
+  rating         Int      // Nota de 1 a 5 estrelas
+  notes          String?  // Comentário opcional do atendente
+  source         String   @default("ddc") // ddc | whatsapp | auto
+  metadata       String   @default("{}") // JSON
+  createdAt      DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([conversationId])
+  @@index([messageId])
+  @@index([tenantId, createdAt])
+  @@map("feedbacks")
+}
+

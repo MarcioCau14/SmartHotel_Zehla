@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { respondToWhatsAppMessage } from '@/lib/whatsapp-ai-responder';
-import { resolveTenantId } from '@/lib/ddc/auth-utils';
+import { processIncomingMessage } from '@/lib/whatsapp-ai-responder';
+import { resolveTenantByPhone } from '@/lib/resolve-tenant-by-phone';
 
 /**
  * GET Handler para verificação de webhook exigida pela Meta Developer Platform.
@@ -43,7 +43,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const payload = await request.json();
-    const TENANT_ID = await resolveTenantId();
 
     // Ignorar payloads de validação ou de outros objetos do Facebook
     if (payload.object !== 'whatsapp_business_account') {
@@ -60,7 +59,6 @@ export async function POST(request: NextRequest) {
 
     const contact = value.contacts?.[0];
     const contactName = contact?.profile?.name || '';
-    const contactWaId = contact?.wa_id || '';
 
     const message = value.messages?.[0];
     if (!message) {
@@ -69,142 +67,37 @@ export async function POST(request: NextRequest) {
     }
 
     const fromPhone = message.from;
-    const messageId = message.id;
-    const timestamp = parseInt(message.timestamp || '0', 10);
     const messageType = message.type;
-    const phoneNumberId = value.metadata?.phone_number_id || '';
+    const displayPhoneNumber = value.metadata?.display_phone_number || '';
 
-    // Tratar somente mensagens de texto. Outros tipos registram erro ou ignoram
+    // Tratar somente mensagens de texto. Outros tipos de mensagem são ignorados no momento
     if (messageType !== 'text') {
       console.warn(`[whatsapp-webhook] Tipo de mensagem não suportado: ${messageType}. Ignorando.`);
-      
-      // Registrar log de auditoria
-      await db.aIActivityLog.create({
-        data: {
-          tenantId: TENANT_ID,
-          type: 'alert',
-          message: `Mensagem WhatsApp recebida do tipo '${messageType}' (não suportado).`,
-          status: 'warning',
-          metadata: JSON.stringify({ messageId, from: fromPhone, type: messageType })
-        }
-      });
-
       return NextResponse.json({ status: 'ok', processed: 0, reason: 'unsupported_message_type' });
     }
 
     const messageText = message.text?.body || '';
 
-    // 1. Busca ou cria o Guest com base no telefone
-    let guest = await db.guest.findFirst({
-      where: {
-        tenantId: TENANT_ID,
-        phone: fromPhone
-      }
-    });
+    // Resolver Tenant com base no número receptor da pousada
+    const tenantId = await resolveTenantByPhone(displayPhoneNumber);
 
-    if (!guest) {
-      guest = await db.guest.create({
-        data: {
-          tenantId: TENANT_ID,
-          name: contactName || `Hóspede - ${fromPhone}`,
-          phone: fromPhone,
-          status: 'cold',
-          source: 'whatsapp',
-          conversationCount: 1,
-          metadata: JSON.stringify({ wa_id: contactWaId })
-        }
-      });
-    } else {
-      // Incrementa o contador de conversas do hóspede
-      await db.guest.update({
-        where: { id: guest.id },
-        data: {
-          conversationCount: { increment: 1 },
-          lastContact: new Date()
-        }
-      });
+    if (!tenantId) {
+      console.warn(`[whatsapp-webhook] Nenhum Tenant ativo encontrado para o telefone destinatário: ${displayPhoneNumber}`);
+      return NextResponse.json({ status: 'ignored', reason: 'no_tenant_resolved' });
     }
 
-    // 2. Busca ou cria um ConversationLog ativo para esse hóspede
-    let conversation = await db.conversationLog.findFirst({
-      where: {
-        tenantId: TENANT_ID,
-        guestId: guest.id,
-        status: 'active'
-      }
+    // Disparar o pipeline completo de forma assíncrona (fire-and-forget) para responder à Meta imediatamente
+    processIncomingMessage({
+      tenantId,
+      guestPhone: fromPhone,
+      guestName: contactName,
+      messageContent: messageText,
+      messageFrom: 'whatsapp'
+    }).catch((err) => {
+      console.error('[whatsapp-webhook] Erro crítico ao processar mensagem no pipeline:', err);
     });
 
-    if (!conversation) {
-      conversation = await db.conversationLog.create({
-        data: {
-          tenantId: TENANT_ID,
-          guestId: guest.id,
-          guestName: guest.name,
-          guestPhone: fromPhone,
-          status: 'active',
-          aiConfidence: 0,
-          metadata: JSON.stringify({
-            whatsapp_phone_number_id: phoneNumberId
-          })
-        }
-      });
-    }
-
-    // 3. Grava a mensagem em ConversationMessage (vinculada ao Log)
-    const conversationMessage = await db.conversationMessage.create({
-      data: {
-        conversationId: conversation.id,
-        from: 'guest',
-        content: messageText,
-        metadata: JSON.stringify({
-          wamid: messageId,
-          whatsappTimestamp: timestamp
-        })
-      }
-    });
-
-    // 4. Atualiza o timestamp de lastUpdate do ConversationLog
-    await db.conversationLog.update({
-      where: { id: conversation.id },
-      data: { lastUpdate: new Date() }
-    });
-
-    // 5. Envia notificação para os atendentes humanos no painel
-    await db.notification.create({
-      data: {
-        tenantId: TENANT_ID,
-        title: `Nova mensagem WhatsApp — ${guest.name}`,
-        message: messageText.length > 60 ? `${messageText.substring(0, 60)}...` : messageText,
-        type: 'escalation',
-        priority: 'medium',
-        read: false,
-        actionLabel: 'Ver conversa',
-        actionUrl: `/ddc?guest=${guest.id}`
-      }
-    });
-
-    // 6. Grava auditoria no AIActivityLog
-    await db.aIActivityLog.create({
-      data: {
-        tenantId: TENANT_ID,
-        type: 'message',
-        message: `Mensagem recebida de ${guest.name}: "${messageText.substring(0, 40)}"`,
-        status: 'info',
-        metadata: JSON.stringify({
-          guestId: guest.id,
-          messageId: messageId,
-          conversationId: conversation.id
-        })
-      }
-    });
-
-    // 7. [BACKGROUND - fire-and-forget] Disparar resposta automática da IA de forma assíncrona
-    // Não usamos await para responder imediatamente HTTP 200 à Meta e evitar timeout
-    respondToWhatsAppMessage(conversation.id, guest.id, messageText).catch((err) => {
-      console.error('[whatsapp-webhook] Erro ao disparar resposta assíncrona da IA:', err);
-    });
-
-    return NextResponse.json({ status: 'ok', processed: 1 });
+    return NextResponse.json({ success: true, processed: true });
   } catch (error) {
     console.error('[whatsapp-webhook-error] Erro ao processar mensagem POST:', error);
     return NextResponse.json(

@@ -56,6 +56,21 @@ export async function GET(request: NextRequest) {
     async start(controller) {
       let lastCheck = new Date();
 
+      // Listener for real-time push events
+      const listener = (incomingTenantId: string, sseData: string) => {
+        if (incomingTenantId === tenantId) {
+          try {
+            controller.enqueue(encoder.encode(sseData));
+          } catch {
+            // Controller might be closed
+          }
+        }
+      };
+
+      // Register listener globally
+      (globalThis as any).sseListeners = (globalThis as any).sseListeners || new Set();
+      (globalThis as any).sseListeners.add(listener);
+
       // Initial load
       try {
         const conversations = await db.conversationLog.findMany({
@@ -69,7 +84,7 @@ export async function GET(request: NextRequest) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'initial', data: [] })}\n\n`));
       }
 
-      // Polling loop
+      // Polling loop (fallback/redundancy)
       const interval = setInterval(async () => {
         try {
           const newMessages = await db.conversationMessage.findMany({
@@ -79,7 +94,6 @@ export async function GET(request: NextRequest) {
           });
 
           if (newMessages.length > 0) {
-            // Get unique conversation IDs
             const convIds = [...new Set(newMessages.map(m => m.conversationId))];
             const updatedConvs = await db.conversationLog.findMany({
               where: { id: { in: convIds } },
@@ -96,17 +110,23 @@ export async function GET(request: NextRequest) {
         }
       }, 5000);
 
-      // Cleanup on disconnect
-      request.signal.addEventListener('abort', () => {
+      const cleanup = () => {
         clearInterval(interval);
-        controller.close();
-      });
+        if ((globalThis as any).sseListeners) {
+          (globalThis as any).sseListeners.delete(listener);
+        }
+        try {
+          controller.close();
+        } catch {
+          // Ignore if already closed
+        }
+      };
 
-      // Auto-close after 10 minutes
-      setTimeout(() => {
-        clearInterval(interval);
-        controller.close();
-      }, 10 * 60 * 1000);
+      // Cleanup on disconnect
+      request.signal.addEventListener('abort', cleanup);
+
+      // Auto-close after 10 minutes to prevent resource leak
+      setTimeout(cleanup, 10 * 60 * 1000);
     }
   });
 

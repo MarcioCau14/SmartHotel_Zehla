@@ -13,6 +13,7 @@ import { useAILiveFeed } from '@/lib/ddc/use-ai-live-feed';
 import { useGuestPipeline } from '@/lib/ddc/use-guest-pipeline';
 import { useDDCNotifications } from '@/lib/ddc/use-ddc-notifications';
 import { mockRevenueMetrics, mockPropertySettings } from '@/lib/ddc/mock-data';
+import { adaptRevenueMetrics } from '@/lib/ddc/ddc-mapper';
 import type { AIStatus } from '@/types/ddc';
 
 export default function DDCDashboardPage() {
@@ -24,7 +25,14 @@ export default function DDCDashboardPage() {
 
   // Local state
   const [activeTab, setActiveTab] = useState('overview');
-  const [propertyName, setPropertyName] = useState('Pousada Serenity');
+  const [propertyName, setPropertyName] = useState('Minha Pousada');
+
+  useEffect(() => {
+    fetch('/api/ddc/property-name')
+      .then(r => r.json())
+      .then(d => setPropertyName(d.name || 'Minha Pousada'))
+      .catch(() => setPropertyName('Minha Pousada'));
+  }, []);
   const aiStatusLocal: AIStatus = aiStatus?.status || 'online';
 
   const handleActionClick = (action: string) => {
@@ -93,7 +101,7 @@ export default function DDCDashboardPage() {
             className="lg:col-span-2"
           >
             <RevenueMetrics
-              metrics={metrics || mockRevenueMetrics}
+              metrics={adaptRevenueMetrics(metrics) || mockRevenueMetrics}
             />
           </motion.div>
 

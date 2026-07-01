@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       try {
         const { createPixPayment } = await import('@/lib/mercadopago');
         const mpResult = await createPixPayment({
-          amount, email,
+          amount, email: email ?? '',
           firstName: name.split(' ')[0] || name,
           lastName: name.split(' ').slice(1).join(' ') || '',
           description: `ZEHLA SmartHotel - Plano ${planType.toUpperCase()}`,
