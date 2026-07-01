@@ -246,6 +246,19 @@
 
 ---
 
+## ⏳ FASE 11 — Plano Beta (6 Pousadas) em Modo Mock
+
+| # | Item | Status | Detalhes |
+|---|------|--------|----------|
+| 11.1 | Pipeline End-to-End | ⏳ Planejado | Webhook WhatsApp ➔ Roteador ➔ DB ➔ Live Feed SSE |
+| 11.2 | Conexão Groq/OpenAI | ⏳ Planejado | Adaptador HTTP real chaveável por `.env` |
+| 11.3 | Onboarding Automático | ⏳ Planejado | Injeção de AgentConfig + 10 FAQ KnowledgeEntry no registro |
+| 11.4 | DDC com dados reais do banco | ⏳ Planejado | Exibição dinâmica de tenant e cálculo de bookings via Prisma |
+| 11.5 | Rating e Feedback Beta | ⏳ Planejado | Componente de avaliação + API de feedback + painel admin |
+| 11.6 | Script de Seed para 6 Pousadas | ⏳ Planejado | `prisma/seed-beta.ts` para popular dados reais/mock das pousadas |
+
+---
+
 ## 📊 Resumo Visual — Onde Estamos Agora
 
 ```
@@ -259,16 +272,16 @@ Landing Page      ████████████████████ 1
 Mini-Serviços     ██████████████░░░░░░  70% (Socket.IO real, SSE feed)
 CI/CD & Deploy    ████████████████████ 100% (CI/CD + Vercel + Railway config)
 Observability     ████████████████████ 100% (Logger + Monitoring + ErrorHandler)
-TypeScript Strict ██░░░░░░░░░░░░░░░░░░  10% (noImplicitAny + ignoreBuildErrors mantidos)
-Go-to-Market      ░░░░░░░░░░░░░░░░░░░░   0%
+TypeScript Strict ████████████████████ 100% (noImplicitAny + strict passados sem erro)
+Plano Beta (Mock) ░░░░░░░░░░░░░░░░░░░░   0% (Fase 11)
 ```
 
 ---
 
-## 🎯 Próximos Passos Recomendados
+## 🎯 Próximos Passos Recomendados (Fase 11)
 
-1. **Deploy de Staging** (Vercel + Railway) — seguir `docs/staging-deployment.md`
-2. **GitHub Secrets** — adicionar VERCEL_TOKEN, RAILWAY_TOKEN, CRON_SECRET (ver `GO_LIVE_CHECKLIST.md`)
-3. **Deploy de Produção** — seguir `GO_LIVE_CHECKLIST.md` (Semana 3)
-4. **TypeScript Strict** — ativar `noImplicitAny` e remover `ignoreBuildErrors`
-5. **Go-to-Market** — campanhas de email, lead scoring, SDR handoff
+1. **Implementar o Adaptador de LLM Real Chaveável** (`ZaosNeuroRouter` suportando `LLM_API_KEY` do Groq/OpenAI no `.env`).
+2. **Escrever o Script de Seed das 6 Pousadas Beta** (`prisma/seed-beta.ts` com dados simulados reais de teste).
+3. **Estruturar o Pipeline End-to-End** no webhook `/api/webhook-whatsapp` para processar e salvar conversas no banco de dados.
+4. **Vincular o Dashboard DDC ao Banco** para ler dinamicamente as métricas e nomes do inquilino em sessão.
+5. **Desenvolver o Fluxo de Feedback Loop** (Rating de mensagens na UI e gravação no banco).
