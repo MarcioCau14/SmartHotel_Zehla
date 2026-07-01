@@ -150,7 +150,7 @@ export function HowItWorksSection() {
             }}
             className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold hover:from-emerald-400 hover:to-emerald-500 transition-all duration-300 shadow-lg shadow-emerald-500/25 cursor-pointer"
           >
-            Começar agora — é grátis
+            Grátis por 7 dias
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
         </motion.div>

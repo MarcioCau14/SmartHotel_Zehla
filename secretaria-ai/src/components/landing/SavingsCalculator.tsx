@@ -156,7 +156,7 @@ export function SavingsCalculator() {
                 }}
                 className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-xl hover:from-emerald-400 hover:to-emerald-500 transition-all duration-200 shadow-xl shadow-emerald-500/30 cursor-pointer"
               >
-                Começar Grátis
+                Grátis por 7 dias
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

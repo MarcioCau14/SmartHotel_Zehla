@@ -55,7 +55,7 @@ export function FinalCTASection() {
               className="group px-10 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-xl hover:from-emerald-400 hover:to-emerald-500 transition-all duration-300 shadow-xl shadow-emerald-500/30 hover:shadow-emerald-500/50 cursor-pointer text-lg"
             >
               <span className="flex items-center gap-2">
-                Começar Grátis Agora
+                Grátis por 7 dias
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </span>
             </button>
