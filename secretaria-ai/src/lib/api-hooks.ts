@@ -129,7 +129,7 @@ export function useBudgetGuard() {
   return useQuery<BudgetGuardState>({
     queryKey: queryKeys.budgetGuard(),
     queryFn: async () => {
-      const res = await fetch('/api/budget-guard');
+      const res = await fetch('/api/router/budget');
       if (!res.ok) throw new Error(`Erro ao buscar orçamento: ${res.statusText}`);
       return res.json();
     },
@@ -157,7 +157,7 @@ export function useDiagnosis(leadId?: string) {
     queryKey: queryKeys.diagnosis(leadId),
     queryFn: async () => {
       if (!leadId) throw new Error('leadId é obrigatório para diagnóstico');
-      const res = await fetch(`/api/leads/${encodeURIComponent(leadId)}/diagnosis`);
+      const res = await fetch(`/api/diagnose?leadId=${encodeURIComponent(leadId)}`);
       if (!res.ok) throw new Error(`Erro ao buscar diagnóstico: ${res.statusText}`);
       return res.json();
     },
@@ -241,7 +241,7 @@ export function useSendBulkWhatsApp() {
     { leadIds: string[]; templateId: string; scheduledAt?: string }
   >({
     mutationFn: async (payload) => {
-      const res = await fetch('/api/whatsapp/bulk', {
+      const res = await fetch('/api/bulk-whatsapp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

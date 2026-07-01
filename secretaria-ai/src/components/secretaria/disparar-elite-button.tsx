@@ -15,7 +15,7 @@ export function DispararEliteButton({ selectedCount, selectedEmails, onClear }: 
 
   const handleClick = async () => {
     try {
-      const response = await fetch('/api/proxy/outreach', {
+      const response = await fetch('/api/bulk-whatsapp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ emails: selectedEmails }),
