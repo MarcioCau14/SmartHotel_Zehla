@@ -323,7 +323,7 @@ async function main() {
           tenantId: tenant.id,
           guestId: guest.id,
           guestName: guest.name,
-          guestPhone: guest.phone,
+          guestPhone: guest.phone || '',
           status: 'active',
           aiConfidence: 90,
         }
