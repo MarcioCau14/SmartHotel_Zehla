@@ -23,7 +23,6 @@ describe('POST /api/auth/register (Onboarding Automático)', () => {
     };
 
     mockDb.tenant.create.mockResolvedValueOnce({ id: 'tenant-green', name: 'Recanto Verde Flat' });
-    mockDb.user.create.mockResolvedValueOnce({ id: 'user-admin', email: 'recantoverde@example.com' });
     mockDb.agentConfig.create.mockResolvedValueOnce({ id: 'agent-config-id' });
     mockDb.apiConfig.create.mockResolvedValueOnce({ id: 'api-config-id' });
     mockDb.subscription.create.mockResolvedValueOnce({ id: 'sub-id' });
@@ -40,7 +39,6 @@ describe('POST /api/auth/register (Onboarding Automático)', () => {
     expect(body.success).toBe(true);
     expect(body.tenant.id).toBe('tenant-green');
     expect(mockDb.tenant.create).toHaveBeenCalled();
-    expect(mockDb.user.create).toHaveBeenCalled();
     expect(mockDb.knowledgeEntry.createMany).toHaveBeenCalled();
   });
 });

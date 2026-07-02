@@ -68,52 +68,82 @@ function FeatureMockup({ type }: { type: string }) {
 
   if (type === 'linkinbio') {
     return (
-      <div className="bg-[#111] rounded-2xl border border-white/[0.06] p-4 space-y-3">
-        {/* Profile header */}
-        <div className="flex items-center gap-3 pb-3 border-b border-white/[0.04]">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
-            <Wifi className="w-6 h-6 text-white" />
-          </div>
-          <div className="flex-1">
-            <div className="text-white text-sm font-bold">Pousada Serenity</div>
-            <div className="text-neutral-500 text-[10px]">✨ Sua casa na natureza</div>
-            <div className="text-emerald-400 text-[10px] mt-0.5">@pousadaserenity</div>
-          </div>
+      <div className="relative w-[280px] mx-auto h-[530px] rounded-[42px] border-[6px] border-neutral-800 bg-[#070709] shadow-2xl p-2.5 overflow-hidden flex flex-col justify-between select-none">
+        {/* iPhone 15 Pro Dynamic Island */}
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-20 h-5 bg-black rounded-full z-20 flex items-center justify-center">
+          <div className="w-2.5 h-2.5 rounded-full bg-[#111] border border-neutral-900/50 absolute right-2" />
         </div>
 
-        {/* Links */}
-        <div className="space-y-2">
-          {[
-            { label: 'Reservar Agora', highlight: true, icon: '🏡' },
-            { label: 'Galeria de Fotos', highlight: false, icon: '📸' },
-            { label: 'Avaliações', highlight: false, icon: '⭐' },
-            { label: 'Como Chegar', highlight: false, icon: '📍' },
-            { label: 'WhatsApp', highlight: false, icon: '💬' },
-          ].map((link, i) => (
-            <div key={link.label} className={`p-3 rounded-xl text-[11px] text-white font-medium text-center cursor-default flex items-center justify-center gap-2 ${
-              link.highlight
-                ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 border border-emerald-500/30 shadow-lg shadow-emerald-500/20'
-                : 'bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] transition-colors'
-            }`}>
-              <span>{link.icon}</span>
-              {link.label}
-              {link.highlight && <Check className="w-3.5 h-3.5 ml-1" />}
+        {/* Screen Content Wrapper */}
+        <div className="w-full h-full rounded-[32px] bg-gradient-to-b from-emerald-950/20 via-black to-black p-3 pt-6 flex flex-col justify-between overflow-y-auto scrollbar-none">
+          <div>
+            {/* Profile header */}
+            <div className="flex flex-col items-center text-center pb-3 border-b border-white/[0.04] mt-3">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 p-0.5 mb-2 shadow-lg shadow-emerald-500/10">
+                <div className="w-full h-full rounded-full bg-[#111] flex items-center justify-center overflow-hidden">
+                  <Wifi className="w-7 h-7 text-emerald-400" />
+                </div>
+              </div>
+              <h4 className="text-white text-sm font-bold tracking-tight">Pousada Serenity</h4>
+              <p className="text-neutral-400 text-[9px] mt-0.5">✨ Seu refúgio em meio à natureza</p>
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[8px] font-semibold mt-2">
+                <span>⭐ 4.9</span>
+                <span className="text-neutral-500 font-normal">| 128 avaliações</span>
+              </div>
             </div>
-          ))}
-        </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/[0.04]">
-          {[
-            { label: '4.9', sub: 'Avaliação' },
-            { label: '500+', sub: 'Hóspedes' },
-            { label: '100%', sub: 'Satisfação' },
-          ].map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className="text-emerald-400 text-xs font-bold">{stat.label}</div>
-              <div className="text-neutral-600 text-[9px]">{stat.sub}</div>
+            {/* Links */}
+            <div className="space-y-2 mt-4">
+              {[
+                { label: 'Reservar Agora (PIX Automático)', highlight: true, icon: '🏡' },
+                { label: 'Galeria de Fotos do Chalé', highlight: false, icon: '📸' },
+                { label: 'Nossas Avaliações', highlight: false, icon: '⭐' },
+                { label: 'Como Chegar (Mapa)', highlight: false, icon: '📍' },
+                { label: 'Conversar no WhatsApp', highlight: false, icon: '💬' },
+              ].map((link, i) => (
+                <div key={link.label} className={`p-2.5 rounded-xl text-[10px] text-white font-semibold text-center cursor-default flex items-center justify-center gap-2 ${
+                  link.highlight
+                    ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 border border-emerald-400/20 shadow-lg shadow-emerald-500/20 hover:scale-[1.01] transition-transform'
+                    : 'bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.06] transition-colors'
+                }`}>
+                  <span>{link.icon}</span>
+                  {link.label}
+                  {link.highlight && <Check className="w-3.5 h-3.5 ml-0.5" />}
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
+
+          {/* Galeria de Fotos e Rodapé */}
+          <div className="mt-4 pt-3 border-t border-white/[0.04] space-y-3">
+            <p className="text-left text-neutral-500 text-[8px] font-semibold uppercase tracking-wider">📸 Galeria de Fotos</p>
+            <div className="grid grid-cols-3 gap-1.5">
+              {/* Box simulando fotos reais da pousada */}
+              <div className="aspect-square rounded-lg bg-white/[0.02] border border-white/[0.05] flex items-center justify-center overflow-hidden">
+                <span className="text-[10px]">🛏️</span>
+              </div>
+              <div className="aspect-square rounded-lg bg-white/[0.02] border border-white/[0.05] flex items-center justify-center overflow-hidden">
+                <span className="text-[10px]">🏊</span>
+              </div>
+              <div className="aspect-square rounded-lg bg-white/[0.02] border border-white/[0.05] flex items-center justify-center overflow-hidden">
+                <span className="text-[10px]">🍳</span>
+              </div>
+            </div>
+            
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-1 pt-2">
+              {[
+                { label: '4.9', sub: 'Avaliação' },
+                { label: '500+', sub: 'Hóspedes' },
+                { label: '100%', sub: 'Satisfação' },
+              ].map((stat) => (
+                <div key={stat.label} className="text-center">
+                  <div className="text-emerald-400 text-[10px] font-bold">{stat.label}</div>
+                  <div className="text-neutral-500 text-[8px]">{stat.sub}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );

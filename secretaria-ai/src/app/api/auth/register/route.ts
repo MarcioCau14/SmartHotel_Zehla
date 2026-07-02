@@ -88,18 +88,7 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // 2. Criar o NextAuth User vinculado ao Tenant
-      const user = await tx.user.create({
-        data: {
-          name: data.name,
-          email: data.email,
-          passwordHash,
-          role: 'admin',
-          tenantId: tenant.id,
-        },
-      });
-
-      // 3. Criar os 8 KnowledgeEntry padrão de FAQ para o Tenant
+      // 2. Criar os 8 KnowledgeEntry padrão de FAQ para o Tenant
       const faqs = [
         {
           question: 'Qual é a senha do Wi-Fi?',
@@ -147,13 +136,12 @@ export async function POST(request: NextRequest) {
         data: faqs.map((faq) => ({
           tenantId: tenant.id,
           category: faq.category,
-          keyword: faq.question.toLowerCase(),
-          content: `Pergunta: ${faq.question}\nResposta: ${faq.answer}`,
-          isActive: true,
+          question: faq.question,
+          answer: faq.answer,
         })),
       });
 
-      return { tenant, user };
+      return { tenant };
     });
 
     return NextResponse.json({
@@ -165,7 +153,7 @@ export async function POST(request: NextRequest) {
         plan: result.tenant.plan,
         trialEnd: result.tenant.trialEnd,
       },
-      userId: result.user.id,
+      userId: result.tenant.id,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
