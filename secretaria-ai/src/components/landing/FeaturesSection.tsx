@@ -22,7 +22,7 @@ const features = [
     icon: Wifi,
     title: 'Link-in-Bio Profissional',
     subtitle: 'Sua vitrine digital completa',
-    desc: 'Galeria, reservas, avaliações e contato — tudo num link único. Coloque na bio do Instagram e transforme seguidores em hóspedes pagantes. Um perfil profissional completo com visual premium.',
+    desc: 'Galeria, reservas, avaliações e contato — tudo num link único. Coloque na bio do Instagram e transforme seguidores em hóspedes pagantes. Um perfil profissional completo com visual premium (somente planos PRO e MAX).',
     highlights: ['Galeria integrada', 'SEO otimizado', 'Reservas diretas', 'Análise de tráfego', 'Visual profissional', 'Perfil personalizado'],
     mockup: 'linkinbio',
     reverse: true,
@@ -75,7 +75,19 @@ function FeatureMockup({ type }: { type: string }) {
         </div>
 
         {/* Screen Content Wrapper */}
-        <div className="w-full h-full rounded-[32px] bg-gradient-to-b from-emerald-950/20 via-black to-black p-3 pt-6 flex flex-col justify-between overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden">
+        <div className="w-full h-full rounded-[32px] bg-gradient-to-b from-emerald-950/20 via-black to-black p-3 pt-6 flex flex-col justify-between overflow-y-auto no-scrollbar scrollbar-none">
+          <style dangerouslySetInnerHTML={{__html: `
+            .no-scrollbar::-webkit-scrollbar {
+              display: none !important;
+              width: 0 !important;
+              height: 0 !important;
+              background: transparent !important;
+            }
+            .no-scrollbar {
+              -ms-overflow-style: none !important;
+              scrollbar-width: none !important;
+            }
+          `}} />
           <div>
             {/* Profile header */}
             <div className="flex flex-col items-center text-center pb-3 border-b border-white/[0.04] mt-3">
