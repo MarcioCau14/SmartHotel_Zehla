@@ -39,9 +39,9 @@ const plans = [
     ctaStyle: 'border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.06]',
     popular: false,
     features: [
-      { text: '5 hóspedes atendidos por mês', included: true },
+      { text: '5 hóspedes atendidos dentro dos 7 dias', included: true },
       { text: 'Link-in-bio básico', included: true },
-      { text: '100 mensagens mensais', included: true },
+      { text: '100 mensagens nos 7 dias', included: true },
       { text: '7 dias de teste grátis', included: true },
       { text: 'Dashboard básico', included: true },
       { text: 'Marca d\'água ZÉLLA obrigatória', included: true },
