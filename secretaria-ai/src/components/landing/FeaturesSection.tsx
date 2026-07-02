@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
 import {
   MessageSquare,
@@ -30,6 +30,17 @@ const features = [
 ];
 
 function FeatureMockup({ type }: { type: string }) {
+  const [activeView, setActiveView] = useState<'instagram' | 'linkinbio'>('instagram');
+
+  useEffect(() => {
+    if (type !== 'linkinbio') return;
+    const timer = setTimeout(() => {
+      setActiveView((prev) => (prev === 'instagram' ? 'linkinbio' : 'instagram'));
+    }, activeView === 'instagram' ? 2000 : 5000);
+
+    return () => clearTimeout(timer);
+  }, [activeView, type]);
+
   if (type === 'whatsapp') {
     return (
       <div className="relative">
@@ -143,8 +154,6 @@ function FeatureMockup({ type }: { type: string }) {
   }
 
   if (type === 'linkinbio') {
-    const [activeView, setActiveView] = useState<'instagram' | 'linkinbio'>('instagram');
-
     return (
       <div className="relative">
         {/* Ambient green glow behind the mockup */}
@@ -223,7 +232,7 @@ function FeatureMockup({ type }: { type: string }) {
                       onClick={() => setActiveView('linkinbio')}
                       className="text-sky-400 font-semibold mt-1 hover:underline cursor-pointer block text-left animate-pulse"
                     >
-                      zehla.com.br/serenity
+                      seuzella.com/pousadaserenity
                     </button>
                   </div>
 
@@ -288,7 +297,7 @@ function FeatureMockup({ type }: { type: string }) {
                   >
                     ✕
                   </button>
-                  <span className="text-neutral-400 text-[8px] font-medium tracking-tight">zehla.com.br/serenity</span>
+                  <span className="text-neutral-400 text-[8px] font-medium tracking-tight">seuzella.com/pousadaserenity</span>
                   <span className="text-[10px] text-neutral-400 rotate-90 leading-none">...</span>
                 </div>
 
