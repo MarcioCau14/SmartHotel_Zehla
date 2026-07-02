@@ -47,43 +47,43 @@ export function withTenant(tenantId: string): TenantDbProxy {
       findMany: (args?: Record<string, unknown>) => {
         const merged = { ...args };
         merged.where = { ...(merged.where as Record<string, unknown> || {}), [field]: tenantId };
-        return (prismaModel.findMany as Function)(merged);
+        return (prismaModel.findMany as (...args: any[]) => any)(merged);
       },
       findUnique: (args: { where: Record<string, unknown>; include?: Record<string, unknown> }) => {
-        return (prismaModel.findUnique as Function)(args);
+        return (prismaModel.findUnique as (...args: any[]) => any)(args);
       },
       findFirst: (args: Record<string, unknown>) => {
         const merged = { ...args };
         merged.where = { ...(merged.where as Record<string, unknown> || {}), [field]: tenantId };
-        return (prismaModel.findFirst as Function)(merged);
+        return (prismaModel.findFirst as (...args: any[]) => any)(merged);
       },
       count: (args?: Record<string, unknown>) => {
         const merged = { ...args };
         merged.where = { ...(merged.where as Record<string, unknown> || {}), [field]: tenantId };
-        return (prismaModel.count as Function)(merged);
+        return (prismaModel.count as (...args: any[]) => any)(merged);
       },
       create: (args: { data: Record<string, unknown>; include?: Record<string, unknown> }) => {
         const data = { ...args.data, [field]: tenantId };
-        return (prismaModel.create as Function)({ ...args, data });
+        return (prismaModel.create as (...args: any[]) => any)({ ...args, data });
       },
       update: (args: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
-        return (prismaModel.update as Function)(args);
+        return (prismaModel.update as (...args: any[]) => any)(args);
       },
       delete: (args: { where: Record<string, unknown> }) => {
-        return (prismaModel.delete as Function)(args);
+        return (prismaModel.delete as (...args: any[]) => any)(args);
       },
       updateMany: (args: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
         const merged = { ...args };
         merged.where = { ...(merged.where as Record<string, unknown> || {}), [field]: tenantId };
-        return (prismaModel.updateMany as Function)(merged);
+        return (prismaModel.updateMany as (...args: any[]) => any)(merged);
       },
       deleteMany: (args?: { where?: Record<string, unknown> }) => {
         const merged = { ...args };
         merged.where = { ...(merged.where as Record<string, unknown> || {}), [field]: tenantId };
-        return (prismaModel.deleteMany as Function)(merged);
+        return (prismaModel.deleteMany as (...args: any[]) => any)(merged);
       },
       upsert: (args: { where: Record<string, unknown>; create: Record<string, unknown>; update: Record<string, unknown> }) => {
-        return (prismaModel.upsert as Function)(args);
+        return (prismaModel.upsert as (...args: any[]) => any)(args);
       },
     };
   }

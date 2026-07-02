@@ -255,8 +255,18 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
     ? (trainingPrompts.find(p => p.type === 'name')?.content || 'ZÉLLA') 
     : 'ZÉLLA';
 
+  const { formatConversationHistory } = await import('./ai/cognitive-router');
+  const historyText = formatConversationHistory(
+    recentMessages.map(m => ({
+      from: m.from === 'guest' ? 'guest' : m.from === 'ai' ? 'ai' : 'human',
+      content: m.content
+    }))
+  );
+
   let systemPrompt = `Você é a ${assistantName}, uma assistente virtual de inteligência artificial ultra-atenciosa e hospitaleira da pousada "${property?.name || 'Pousada'}".
 Seu objetivo é sanar dúvidas, encantar o hóspede, sugerir acomodações e incentivar a reserva direta de forma natural, educada e calorosa.
+
+${historyText}
 
 === INFORMAÇÕES GERAIS DA POUSADA ===
 Nome: ${property?.name || 'Pousada'}

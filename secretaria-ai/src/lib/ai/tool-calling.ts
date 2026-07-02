@@ -349,7 +349,7 @@ export async function executeToolCallingLoop(
   const router = await getNeuroRouter();
 
   const toolCallsLog: ToolCallingResponse['toolCalls'] = [];  
-  let currentMessage = message;  
+  const currentMessage = message;  
   let currentContext = '';  
   let lastLlmResponse: LLMResponse | null = null;
 

@@ -319,8 +319,7 @@ async function main() {
             syncToken: crypto.randomUUID().replace(/-/g, ''),
             status: 'active'
           }
-        ],
-        skipDuplicates: true
+        ]
       });
     }
 

@@ -31,6 +31,7 @@ vi.mock('@/lib/db', () => ({
   db: {
     subscription: {
       findUnique: vi.fn(),
+      findFirst: vi.fn(),
     },
     tenant: {
       findUnique: vi.fn(),
@@ -71,7 +72,7 @@ describe('Zellador Support API Security & Hardening', () => {
     vi.mocked(getServerSession).mockResolvedValueOnce({
       user: { tenantId: 'tenant-lite' },
     });
-    vi.mocked(db.subscription.findUnique).mockResolvedValueOnce({
+    vi.mocked(db.subscription.findFirst).mockResolvedValueOnce({
       planType: 'lite',
       status: 'active',
       currentPeriodEnd: null,
@@ -93,7 +94,7 @@ describe('Zellador Support API Security & Hardening', () => {
     vi.mocked(getServerSession).mockResolvedValueOnce({
       user: { tenantId: 'tenant-max-canceled' },
     });
-    vi.mocked(db.subscription.findUnique).mockResolvedValueOnce({
+    vi.mocked(db.subscription.findFirst).mockResolvedValueOnce({
       planType: 'max',
       status: 'canceled',
       currentPeriodEnd: null,
@@ -113,7 +114,7 @@ describe('Zellador Support API Security & Hardening', () => {
     vi.mocked(getServerSession).mockResolvedValue({
       user: { tenantId: 'tenant-rate-limit' },
     });
-    vi.mocked(db.subscription.findUnique).mockResolvedValue({
+    vi.mocked(db.subscription.findFirst).mockResolvedValue({
       planType: 'max',
       status: 'active',
       currentPeriodEnd: null,
@@ -145,7 +146,7 @@ describe('Zellador Support API Security & Hardening', () => {
     vi.mocked(getServerSession).mockResolvedValueOnce({
       user: { tenantId: 'tenant-max' },
     });
-    vi.mocked(db.subscription.findUnique).mockResolvedValueOnce({
+    vi.mocked(db.subscription.findFirst).mockResolvedValueOnce({
       planType: 'max',
       status: 'active',
       currentPeriodEnd: null,
@@ -168,7 +169,7 @@ describe('Zellador Support API Security & Hardening', () => {
     vi.mocked(getServerSession).mockResolvedValue({
       user: { tenantId: 'tenant-jailbreak' },
     });
-    vi.mocked(db.subscription.findUnique).mockResolvedValue({
+    vi.mocked(db.subscription.findFirst).mockResolvedValue({
       planType: 'max',
       status: 'active',
       currentPeriodEnd: null,
@@ -201,7 +202,7 @@ describe('Zellador Support API Security & Hardening', () => {
     vi.mocked(getServerSession).mockResolvedValueOnce({
       user: { tenantId: 'tenant-max' },
     });
-    vi.mocked(db.subscription.findUnique).mockResolvedValueOnce({
+    vi.mocked(db.subscription.findFirst).mockResolvedValueOnce({
       planType: 'max',
       status: 'active',
       currentPeriodEnd: null,
@@ -229,7 +230,7 @@ describe('Zellador Support API Security & Hardening', () => {
     vi.mocked(getServerSession).mockResolvedValueOnce({
       user: { tenantId: 'tenant-max' },
     });
-    vi.mocked(db.subscription.findUnique).mockResolvedValueOnce({
+    vi.mocked(db.subscription.findFirst).mockResolvedValueOnce({
       planType: 'max',
       status: 'active',
       currentPeriodEnd: null,

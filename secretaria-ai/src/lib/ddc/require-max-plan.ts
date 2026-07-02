@@ -32,7 +32,7 @@ export interface PlanCheckResult {
  * Se qualquer filtro falhar, o acesso é negado.
  */
 export async function requireMaxPlan(tenantId: string): Promise<PlanCheckResult> {
-  const subscription = await db.subscription.findUnique({
+  const subscription = await db.subscription.findFirst({
     where: { tenantId },
     select: {
       planType: true,

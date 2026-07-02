@@ -1092,7 +1092,7 @@ export class ZaosNeuroRouter {
     } else {
       let apiKey = '';
       let realModel = providerId;
-      let realUrl = baseUrl;
+      const realUrl = baseUrl;
 
       if (providerId.includes('groq')) {
         apiKey = process.env.GROQ_API_KEY || '';

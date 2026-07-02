@@ -208,7 +208,7 @@ export async function POST(request: NextRequest) {
 
   const fullPrompt = `${formattedContext}\n\nHóspede: ${message}`;
 
-  const router = getNeuroRouter();
+  const router = await getNeuroRouter();
   const llmResult = await router.generate({
     message: fullPrompt,
     systemPrompt,

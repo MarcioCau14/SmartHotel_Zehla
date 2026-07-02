@@ -8,7 +8,7 @@ import { resolveTenantId } from '@/lib/ddc/auth-utils';
 
 export async function POST(request: NextRequest) {
   try {
-    const tenantId = await resolveTenantId(request);
+    const tenantId = await resolveTenantId();
     const body = await request.json();
     const { message, tier, provider, sessionId, maxLatencyMs, noCache, systemPrompt = '' } = body;
 

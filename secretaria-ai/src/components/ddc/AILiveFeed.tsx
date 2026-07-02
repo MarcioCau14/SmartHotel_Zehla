@@ -68,9 +68,7 @@ export function AILiveFeed({
   }, [conversations, selectedConversationId]);
 
   // Find the selected conversation object
-  const selectedConversation = useMemo(() => {
-    return conversations.find(c => c.id === selectedConversationId) || conversations[0] || null;
-  }, [conversations, selectedConversationId]);
+  const selectedConversation = conversations.find(c => c.id === selectedConversationId) || conversations[0] || null;
 
   // Notify parent of selected details
   useEffect(() => {

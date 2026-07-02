@@ -5,7 +5,7 @@ import { resolveTenantId } from '@/lib/ddc/auth-utils';
 
 export async function POST(request: NextRequest) {
   try {
-    const tenantId = await resolveTenantId(request);
+    const tenantId = await resolveTenantId();
 
     // 1. Validar tenant existe
     const tenant = await db.tenant.findUnique({
