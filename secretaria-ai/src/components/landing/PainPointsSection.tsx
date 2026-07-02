@@ -22,7 +22,7 @@ const pains = [
     icon: DollarSign,
     title: 'Preços parados no tempo',
     desc: 'Vender R$150 num feriado de R$350 é desperdício. O Cérebro ZÉLLA ajusta preços automaticamente baseado em demanda, sazonalidade e concorrência.',
-    color: 'purple',
+    color: 'royal',
   },
   {
     icon: Users,
@@ -52,8 +52,8 @@ const pains = [
 
 const colorMap: Record<string, { bg: string; accent: string; ring: string }> = {
   emerald: { bg: 'from-emerald-500 to-emerald-700', accent: 'bg-emerald-500/10', ring: 'border-emerald-500/20' },
-  purple: { bg: 'from-purple-500 to-purple-700', accent: 'bg-purple-500/10', ring: 'border-purple-500/20' },
-  blue: { bg: 'from-blue-500 to-blue-700', accent: 'bg-blue-500/10', ring: 'border-blue-500/20' },
+  royal: { bg: 'from-blue-600 to-blue-800', accent: 'bg-blue-500/10', ring: 'border-blue-500/20' },
+  blue: { bg: 'from-sky-500 to-sky-700', accent: 'bg-sky-500/10', ring: 'border-sky-500/20' },
   amber: { bg: 'from-amber-500 to-amber-700', accent: 'bg-amber-500/10', ring: 'border-amber-500/20' },
   pink: { bg: 'from-pink-500 to-pink-700', accent: 'bg-pink-500/10', ring: 'border-pink-500/20' },
   red: { bg: 'from-red-500 to-red-700', accent: 'bg-red-500/10', ring: 'border-red-500/20' },

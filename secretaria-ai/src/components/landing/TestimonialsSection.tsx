@@ -24,7 +24,7 @@ const testimonials = [
     role: 'Pousada dos Coqueiros — Noronha, PE',
     text: 'O preço dinâmico é mágico. Num feriado lotado o sistema ajustou automaticamente e eu ganhei R$3.200 a mais em 3 dias. Antes eu deixava esse dinheiro na mesa sem saber.',
     rating: 5,
-    color: 'purple',
+    color: 'royal',
   },
   {
     name: 'Carlos A.',
@@ -52,7 +52,7 @@ const testimonials = [
 const colorMap: Record<string, { border: string; bg: string; star: string }> = {
   emerald: { border: 'border-emerald-500/15', bg: 'from-emerald-500/10 to-emerald-900/5', star: 'text-emerald-400' },
   blue: { border: 'border-blue-500/15', bg: 'from-blue-500/10 to-blue-900/5', star: 'text-blue-400' },
-  purple: { border: 'border-purple-500/15', bg: 'from-purple-500/10 to-purple-900/5', star: 'text-purple-400' },
+  royal: { border: 'border-blue-500/15', bg: 'from-blue-500/10 to-blue-900/5', star: 'text-blue-400' },
   amber: { border: 'border-amber-500/15', bg: 'from-amber-500/10 to-amber-900/5', star: 'text-amber-400' },
 };
 

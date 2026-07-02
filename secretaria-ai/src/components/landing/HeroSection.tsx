@@ -46,7 +46,7 @@ export function HeroSection() {
 
             {/* Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold leading-[1.08] text-white mb-6">
-              O zelador da sua <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">pousada 24/7</span>.
+              O zelador da sua <span className="gradient-text-royal font-bold">pousada 24/7</span>.
             </h1>
 
             {/* Sub */}

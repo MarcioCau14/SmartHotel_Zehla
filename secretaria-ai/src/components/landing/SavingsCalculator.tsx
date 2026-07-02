@@ -34,7 +34,7 @@ export function SavingsCalculator() {
         >
           <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-4 tracking-tight">
             Calculadora de{' '}
-            <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+            <span className="gradient-text-royal font-bold">
               economia
             </span>
           </h2>

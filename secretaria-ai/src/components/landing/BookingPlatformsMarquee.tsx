@@ -27,7 +27,7 @@ export default function BookingPlatformsMarquee() {
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-6">
           Integrado com as maiores
           <br />
-          <span className="bg-gradient-to-r from-emerald-400 to-purple-500 bg-clip-text text-transparent">
+          <span className="gradient-text-royal font-bold">
             plataformas de hospedagem do Brasil
           </span>
         </h2>

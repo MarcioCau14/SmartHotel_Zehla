@@ -32,7 +32,7 @@ const steps = [
     icon: BarChart3,
     title: 'Acompanhe e otimize seus resultados',
     desc: 'No dashboard, veja em tempo real quantas reservas a IA gerou, receita do mês, taxa de ocupação e sugestões do Cérebro ZÉLLA. Quanto mais usa, mais inteligente o sistema fica.',
-    color: 'purple',
+    color: 'royal',
   },
 ];
 
@@ -44,16 +44,16 @@ const colorMap: Record<string, { bg: string; border: string; text: string; glow:
     glow: 'shadow-emerald-500/10',
   },
   blue: {
+    bg: 'from-sky-500/20 to-sky-900/10',
+    border: 'border-sky-500/20',
+    text: 'text-sky-400',
+    glow: 'shadow-sky-500/10',
+  },
+  royal: {
     bg: 'from-blue-500/20 to-blue-900/10',
     border: 'border-blue-500/20',
     text: 'text-blue-400',
     glow: 'shadow-blue-500/10',
-  },
-  purple: {
-    bg: 'from-purple-500/20 to-purple-900/10',
-    border: 'border-purple-500/20',
-    text: 'text-purple-400',
-    glow: 'shadow-purple-500/10',
   },
 };
 

@@ -45,7 +45,7 @@ export function Header() {
             <img src="/logo.svg" className="w-5 h-5" alt="Seu ZÉLLA Logo" />
           </div>
           <span className="text-lg font-bold text-white tracking-wide font-sans">
-            Seu <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-400">ZÉLLA</span>
+            Seu <span className="gradient-text-royal font-bold">ZÉLLA</span>
           </span>
         </Link>
 

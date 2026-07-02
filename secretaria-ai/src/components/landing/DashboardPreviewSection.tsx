@@ -33,7 +33,7 @@ export function DashboardPreviewSection() {
             {/* Título Principal */}
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
               Veja cada reserva acontecer, <br className="hidden sm:inline" />
-              <span className="gradient-text bg-gradient-to-r from-emerald-400 to-purple-400 bg-clip-text text-transparent">
+              <span className="gradient-text-royal font-bold">
                 em tempo real.
               </span>
             </h2>

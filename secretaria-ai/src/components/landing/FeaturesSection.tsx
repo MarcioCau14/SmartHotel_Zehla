@@ -423,7 +423,7 @@ export function FeaturesSection() {
           className="text-center mb-20"
         >
           <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-6 tracking-tight">
-            Funcionalidades que <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">transformam</span>
+            Funcionalidades que <span className="gradient-text-royal font-bold">transformam</span>
           </h2>
           <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
             O ZÉLLA vai ser seu zelador com funcionalidades inovadoras. São funções que vão te dar mais tempo para fazer sua pousada decolar.

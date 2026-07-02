@@ -38,7 +38,7 @@ export function FinalCTASection() {
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight">
             Sua pousada merece
             <br />
-            <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">um Zelador 24 por 7</span>
+            <span className="gradient-text-royal font-bold">um Zelador 24 por 7</span>
           </h2>
 
           <p className="text-neutral-400 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
