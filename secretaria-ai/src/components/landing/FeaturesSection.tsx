@@ -75,13 +75,17 @@ function FeatureMockup({ type }: { type: string }) {
         </div>
 
         {/* Screen Content Wrapper */}
-        <div className="w-full h-full rounded-[32px] bg-gradient-to-b from-emerald-950/20 via-black to-black p-3 pt-6 flex flex-col justify-between overflow-y-auto scrollbar-none">
+        <div className="w-full h-full rounded-[32px] bg-gradient-to-b from-emerald-950/20 via-black to-black p-3 pt-6 flex flex-col justify-between overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden">
           <div>
             {/* Profile header */}
             <div className="flex flex-col items-center text-center pb-3 border-b border-white/[0.04] mt-3">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 p-0.5 mb-2 shadow-lg shadow-emerald-500/10">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 p-0.5 mb-2 shadow-lg shadow-emerald-500/20">
                 <div className="w-full h-full rounded-full bg-[#111] flex items-center justify-center overflow-hidden">
-                  <Wifi className="w-7 h-7 text-emerald-400" />
+                  <img 
+                    src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=150&auto=format&fit=crop&q=80" 
+                    className="w-full h-full object-cover" 
+                    alt="Pousada Serenity" 
+                  />
                 </div>
               </div>
               <h4 className="text-white text-sm font-bold tracking-tight">Pousada Serenity</h4>
@@ -118,15 +122,27 @@ function FeatureMockup({ type }: { type: string }) {
           <div className="mt-4 pt-3 border-t border-white/[0.04] space-y-3">
             <p className="text-left text-neutral-500 text-[8px] font-semibold uppercase tracking-wider">📸 Galeria de Fotos</p>
             <div className="grid grid-cols-3 gap-1.5">
-              {/* Box simulando fotos reais da pousada */}
-              <div className="aspect-square rounded-lg bg-white/[0.02] border border-white/[0.05] flex items-center justify-center overflow-hidden">
-                <span className="text-[10px]">🛏️</span>
+              {/* Fotos reais integradas da pousada */}
+              <div className="aspect-square rounded-lg border border-white/[0.05] overflow-hidden bg-[#111]">
+                <img 
+                  src="https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=150&auto=format&fit=crop&q=80" 
+                  className="w-full h-full object-cover" 
+                  alt="Quarto"
+                />
               </div>
-              <div className="aspect-square rounded-lg bg-white/[0.02] border border-white/[0.05] flex items-center justify-center overflow-hidden">
-                <span className="text-[10px]">🏊</span>
+              <div className="aspect-square rounded-lg border border-white/[0.05] overflow-hidden bg-[#111]">
+                <img 
+                  src="https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=150&auto=format&fit=crop&q=80" 
+                  className="w-full h-full object-cover" 
+                  alt="Piscina"
+                />
               </div>
-              <div className="aspect-square rounded-lg bg-white/[0.02] border border-white/[0.05] flex items-center justify-center overflow-hidden">
-                <span className="text-[10px]">🍳</span>
+              <div className="aspect-square rounded-lg border border-white/[0.05] overflow-hidden bg-[#111]">
+                <img 
+                  src="https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=150&auto=format&fit=crop&q=80" 
+                  className="w-full h-full object-cover" 
+                  alt="Café"
+                />
               </div>
             </div>
             
