@@ -32,11 +32,14 @@ export function SavingsCalculator() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">
-            Calculadora de economia
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-4 tracking-tight">
+            Calculadora de{' '}
+            <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+              economia
+            </span>
           </h2>
-          <p className="text-neutral-400 text-lg mb-2">
-            Menos trabalho. Mais dinheiro.
+          <p className="text-neutral-400 text-lg sm:text-xl mb-3 font-medium">
+            Menos trabalho. Mais dinheiro. Mais economia.
           </p>
           <p className="text-neutral-500 text-sm max-w-xl mx-auto">
             Veja quanto o ZÉLLA pode economizar e gerar para sua pousada com base no número de quartos

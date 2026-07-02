@@ -19,11 +19,15 @@ export async function POST(request: NextRequest) {
       return createError(400, 'INVALID_PLAN', 'Plano inválido');
     }
 
+    if ((planType === 'pro' || planType === 'max') && paymentMethod === 'pix') {
+      return createError(400, 'INVALID_PAYMENT_METHOD', 'Os planos PRO e MAX só aceitam pagamento via Cartão de Crédito.');
+    }
+
     const pricing = {
       gratuito: 0,
       lite: paymentMethod === 'pix' ? 197 : 247,
-      pro: paymentMethod === 'pix' ? 397 : 447,
-      max: paymentMethod === 'pix' ? 697 : 797,
+      pro: 447,
+      max: 797,
     };
 
     const amount = pricing[planType as keyof typeof pricing];

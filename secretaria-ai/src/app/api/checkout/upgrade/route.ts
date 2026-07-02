@@ -8,13 +8,6 @@ import { authRatelimit } from '@/lib/rate-limit';
 const PLAN_ORDER = ['gratuito', 'lite', 'pro', 'max'] as const;
 type PlanType = (typeof PLAN_ORDER)[number];
 
-const PRICING: Record<PlanType, number> = {
-  gratuito: 0,
-  lite: 197,
-  pro: 397,
-  max: 697,
-};
-
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -37,7 +30,11 @@ export async function POST(request: NextRequest) {
       return createError(400, 'INVALID_PLAN', `Invalid plan: ${newPlanType}. Valid: ${PLAN_ORDER.join(', ')}`);
     }
 
-    const method = paymentMethod || 'pix';
+    const method = paymentMethod || (newPlanType === 'pro' || newPlanType === 'max' ? 'cartao' : 'pix');
+
+    if ((newPlanType === 'pro' || newPlanType === 'max') && method === 'pix') {
+      return createError(400, 'INVALID_PAYMENT_METHOD', 'Os planos PRO e MAX só aceitam pagamento via Cartão de Crédito.');
+    }
 
     const subscription = await db.subscription.findFirst({
       where: { tenantId },
@@ -55,9 +52,16 @@ export async function POST(request: NextRequest) {
       return createError(400, 'CANNOT_DOWNGRADE', `Cannot downgrade via upgrade endpoint. Current: ${currentPlan}, Requested: ${newPlanType}. Use /api/checkout/downgrade instead.`);
     }
 
-    // Cálculo pró-rata
-    const newPrice = PRICING[newPlanType as PlanType];
-    const currentPrice = PRICING[currentPlan];
+    // Cálculo pró-rata com base no método de pagamento
+    const pricing = {
+      gratuito: 0,
+      lite: method === 'pix' ? 197 : 247,
+      pro: 447,
+      max: 797,
+    };
+
+    const newPrice = pricing[newPlanType as keyof typeof pricing];
+    const currentPrice = pricing[currentPlan as keyof typeof pricing] || 0;
 
     const now = new Date();
     const periodEnd = subscription.currentPeriodEnd || new Date();

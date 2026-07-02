@@ -45,9 +45,7 @@ const plans = [
       { text: '7 dias de teste grátis', included: true },
       { text: 'Dashboard básico', included: true },
       { text: 'Marca d\'água ZÉLLA obrigatória', included: true },
-      { text: 'WhatsApp IA 24/7', included: false },
-      { text: 'Preços dinâmicos', included: false },
-      { text: 'Suporte prioritário', included: false },
+      { text: 'Atendimento 24h nos 7 dias', included: true },
     ],
   },
   {
@@ -68,15 +66,13 @@ const plans = [
     popular: false,
     features: [
       { text: '50 hóspedes atendidos por mês', included: true },
-      { text: 'Link-in-bio profissional', included: true },
       { text: '500 mensagens mensais', included: true },
+      { text: 'Recarga de 250 mensagens por R$97 (se exceder limite)', included: true },
       { text: 'WhatsApp IA 24/7 com tom personalizado', included: true },
       { text: 'Checkout PIX integrado (Mercado Pago)', included: true },
       { text: 'Dashboard de métricas completo', included: true },
       { text: 'Relatórios semanais por e-mail', included: true },
       { text: 'Sem marca d\'água ZÉLLA', included: true },
-      { text: 'Preços dinâmicos', included: false },
-      { text: 'Suporte prioritário', included: false },
     ],
   },
   {
@@ -88,19 +84,21 @@ const plans = [
     icon: Star,
     iconBg: 'from-emerald-500/20 to-emerald-900/10',
     iconColor: 'text-emerald-400',
-    pricePix: 397,
+    pricePix: 447,
     priceCartao: 447,
-    priceLabel: 'R$397',
+    priceLabel: 'R$447',
+    onlyCard: true,
     desc: 'Para pousadas que querem crescer com inteligência avançada e recursos premium.',
-    cta: 'Assinar PRO via PIX',
+    cta: 'Assinar PRO via Cartão',
     ctaStyle: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-400 hover:to-emerald-500 shadow-lg shadow-emerald-500/25',
     popular: true,
     features: [
       { text: 'Hóspedes ilimitados', included: true },
-      { text: 'Link-in-bio premium com galeria', included: true },
-      { text: 'Mensagens ilimitadas', included: true },
+      { text: 'Link-in-bio profissional liberado', included: true },
+      { text: 'Mensagens ilimitadas (sem recargas)', included: true },
       { text: 'WhatsApp IA com tom 100% personalizado', included: true },
-      { text: 'Checkout PIX + Cartão integrado', included: true },
+      { text: 'Checkout Cartão integrado', included: true },
+      { text: 'Dashboard completo', included: true },
       { text: 'Preços dinâmicos (Cérebro ZÉLLA)', included: true },
       { text: 'Campanhas automatizadas', included: true },
       { text: 'Análise de sentimento', included: true },
@@ -116,26 +114,27 @@ const plans = [
     icon: Crown,
     iconBg: 'from-amber-500/20 to-amber-900/10',
     iconColor: 'text-amber-400',
-    pricePix: 697,
+    pricePix: 797,
     priceCartao: 797,
-    priceLabel: 'R$697',
+    priceLabel: 'R$797',
+    onlyCard: true,
     desc: 'Pacote topo de linha com recursos exclusivos e suporte VIP para quem domina o mercado.',
-    cta: 'Assinar MAX via PIX',
+    cta: 'Assinar MAX via Cartão',
     ctaStyle: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/25',
     popular: false,
     features: [
       { text: 'Tudo do plano PRO', included: true },
+      { text: 'Link-in-bio profissional liberado', included: true },
+      { text: 'Mensagens ilimitadas (sem recargas)', included: true },
       { text: 'Cérebro ZÉLLA avançado', included: true },
-      { text: 'White label completo (sem marca ZÉLLA)', included: true },
+      { text: 'Dashboard completo', included: true },
       { text: 'Split de pagamentos automático', included: true },
-      { text: 'API dedicada com documentação', included: true },
+      { text: 'Atendimentos 24 por 7', included: true },
       { text: 'Integrações customizadas', included: true },
-      { text: 'Gerente de conta dedicado', included: true },
+      { text: 'Gerente de conta IA Dedicado para Treinamento', included: true },
       { text: 'Onboarding personalizado', included: true },
       { text: 'SLA garantido 99.9%', included: true },
       { text: 'Treinamento mensal com equipe', included: true },
-      { text: 'Relatórios executivos customizados', included: true },
-      { text: 'Acesso antecipado a novos recursos', included: true },
     ],
   },
 ];
@@ -147,7 +146,7 @@ export function PricingSection() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleSubscribe = async (planId: string) => {
+  const handleSubscribe = async (planId: string, forcedPaymentMethod?: string) => {
     setLoadingPlan(planId);
 
     try {
@@ -170,7 +169,7 @@ export function PricingSection() {
           email,
           name,
           planType: planId,
-          paymentMethod: paymentMode,
+          paymentMethod: forcedPaymentMethod || paymentMode,
         }),
       });
 
@@ -247,8 +246,9 @@ export function PricingSection() {
         {/* Pricing Cards Grid */}
         <div className="pricing-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-16">
           {plans.map((plan, i) => {
-            const price = paymentMode === 'pix' ? plan.pricePix : plan.priceCartao;
-            const savings = plan.priceCartao > 0 ? plan.priceCartao - plan.pricePix : 0;
+            const activePaymentMethod = plan.onlyCard ? 'cartao' : paymentMode;
+            const price = activePaymentMethod === 'pix' ? plan.pricePix : plan.priceCartao;
+            const savings = plan.priceCartao > 0 && !plan.onlyCard ? plan.priceCartao - plan.pricePix : 0;
             const Icon = plan.icon;
 
             return (
@@ -290,6 +290,7 @@ export function PricingSection() {
                     </span>
                   </div>
 
+                  {/* Plan Details */}
                   <h3 className="text-white font-bold text-xl mb-1">{plan.name}</h3>
                   <p className="text-neutral-500 text-xs mb-5 leading-relaxed">{plan.desc}</p>
 
@@ -306,11 +307,18 @@ export function PricingSection() {
                           <span className="text-4xl font-extrabold text-white">{price}</span>
                           <span className="text-neutral-500 text-sm">/mês</span>
                         </div>
-                        {paymentMode === 'pix' && savings > 0 && (
+                        {activePaymentMethod === 'pix' && savings > 0 && (
                           <div className="flex items-center gap-1 mt-1">
                             <span className="text-neutral-600 text-xs line-through">R${plan.priceCartao}/mês</span>
                             <span className="text-emerald-400 text-xs font-medium">
                               Economia de R${savings}/mês
+                            </span>
+                          </div>
+                        )}
+                        {plan.onlyCard && (
+                          <div className="flex items-center gap-1 mt-1">
+                            <span className="text-amber-400/80 text-[9px] font-semibold uppercase tracking-wider bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                              Exclusivo no Cartão
                             </span>
                           </div>
                         )}
@@ -320,7 +328,7 @@ export function PricingSection() {
 
                   {/* CTA */}
                   <button
-                    onClick={() => handleSubscribe(plan.id)}
+                    onClick={() => handleSubscribe(plan.id, activePaymentMethod)}
                     disabled={loadingPlan === plan.id}
                     className={`w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 ${plan.ctaStyle} ${loadingPlan === plan.id ? 'opacity-70 cursor-not-allowed' : ''}`}
                   >
@@ -332,7 +340,7 @@ export function PricingSection() {
                     ) : price === 0 ? (
                       'Começar Trial Grátis'
                     ) : (
-                      `Assinar ${plan.nameShort} via ${paymentMode === 'pix' ? 'PIX' : 'Cartão'}`
+                      `Assinar ${plan.nameShort} via ${activePaymentMethod === 'pix' ? 'PIX' : 'Cartão'}`
                     )}
                   </button>
 

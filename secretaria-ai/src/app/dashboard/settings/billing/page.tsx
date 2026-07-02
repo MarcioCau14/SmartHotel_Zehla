@@ -11,28 +11,43 @@ export default function BillingPage() {
   const [upgradeModal, setUpgradeModal] = useState(false);
   const [downgradeModal, setDowngradeModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('cartao');
 
-  // Mock dados para demonstração
+  useEffect(() => {
+    fetch('/api/ddc/property-name')
+      .then(r => r.json())
+      .then(d => {
+        if (d.plan) setCurrentPlan(d.plan);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Dados reais dos planos
   const planos = {
+    gratuito: { name: 'TRIAL', price: 0 },
     lite: { name: 'LITE', price: 197 },
-    pro: { name: 'PRO', price: 397 },
-    max: { name: 'MAX', price: 697 }
+    pro: { name: 'PRO', price: 447 },
+    max: { name: 'MAX', price: 797 }
   };
 
   const handleUpgrade = async () => {
     if (!selectedPlan) return;
     setLoading(true);
     try {
+      const activeMethod = selectedPlan === 'lite' ? paymentMethod : 'cartao';
       const res = await fetch('/api/checkout/upgrade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planType: selectedPlan })
+        body: JSON.stringify({ 
+          tenantId: 'prop-001',
+          newPlanType: selectedPlan,
+          paymentMethod: activeMethod
+        })
       });
       const data = await res.json();
       if (res.ok) {
         setCurrentPlan(selectedPlan);
         setUpgradeModal(false);
-        // Toast message ideal aqui
         alert('Upgrade efetuado com sucesso!');
         router.refresh();
       } else {
@@ -52,7 +67,10 @@ export default function BillingPage() {
       const res = await fetch('/api/checkout/downgrade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planType: selectedPlan })
+        body: JSON.stringify({ 
+          tenantId: 'prop-001',
+          newPlanType: selectedPlan
+        })
       });
       const data = await res.json();
       if (res.ok) {
@@ -106,11 +124,17 @@ export default function BillingPage() {
           <div className="flex gap-4">
             <button 
               onClick={() => {
-                 setSelectedPlan(currentPlan === 'lite' ? 'pro' : 'max');
+                 setSelectedPlan(
+                   currentPlan === 'gratuito' || currentPlan === 'trial'
+                     ? 'lite'
+                     : currentPlan === 'lite'
+                     ? 'pro'
+                     : 'max'
+                 );
                  setUpgradeModal(true);
               }}
               disabled={currentPlan === 'max'}
-              className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               <ArrowUpCircle className="w-5 h-5" />
               Fazer Upgrade
@@ -120,8 +144,8 @@ export default function BillingPage() {
                 setSelectedPlan(currentPlan === 'max' ? 'pro' : 'lite');
                 setDowngradeModal(true);
               }}
-              disabled={currentPlan === 'lite'}
-              className="flex items-center gap-2 px-6 py-2.5 bg-transparent border border-border hover:bg-accent hover:text-accent-foreground font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={currentPlan === 'lite' || currentPlan === 'gratuito' || currentPlan === 'trial'}
+              className="flex items-center gap-2 px-6 py-2.5 bg-transparent border border-border hover:bg-accent hover:text-accent-foreground font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               <ArrowDownCircle className="w-5 h-5" />
               Alterar Plano (Downgrade)
@@ -232,6 +256,34 @@ export default function BillingPage() {
                   <span className="font-semibold">Total cobrado hoje</span>
                   <span className="font-bold text-lg">R$ {prorataVisual},00</span>
                 </div>
+              </div>
+
+              {/* Forma de Pagamento */}
+              <div className="space-y-2 pt-2">
+                <label className="block text-xs font-semibold text-muted-foreground">Forma de Pagamento</label>
+                {selectedPlan === 'lite' ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('pix')}
+                      className={`py-2 px-3 text-xs font-semibold border rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${paymentMethod === 'pix' ? 'border-primary bg-primary/5 text-primary' : 'border-border hover:bg-accent hover:text-accent-foreground'}`}
+                    >
+                      ⚡ PIX (R$197)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('cartao')}
+                      className={`py-2 px-3 text-xs font-semibold border rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${paymentMethod === 'cartao' ? 'border-primary bg-primary/5 text-primary' : 'border-border hover:bg-accent hover:text-accent-foreground'}`}
+                    >
+                      💳 Cartão (R$247)
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-3 border border-amber-500/20 bg-amber-500/5 text-amber-500 rounded-lg text-xs font-semibold flex items-center gap-2">
+                    <span>💳</span>
+                    <span>Pagamento exclusivo via Cartão de Crédito para planos PRO/MAX</span>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-start gap-3 mt-4 text-sm text-muted-foreground bg-primary/5 text-primary/80 p-3 rounded-lg">

@@ -13,11 +13,17 @@ export async function GET() {
       where: { tenantId }
     });
 
+    const tenant = await db.tenant.findUnique({
+      where: { id: tenantId },
+      select: { plan: true }
+    });
+
     return NextResponse.json({
-      name: property?.name || 'Minha Pousada'
+      name: property?.name || 'Minha Pousada',
+      plan: tenant?.plan || 'trial'
     });
   } catch (error) {
     console.error('[property-name GET] Error:', error);
-    return NextResponse.json({ name: 'Minha Pousada' });
+    return NextResponse.json({ name: 'Minha Pousada', plan: 'trial' });
   }
 }

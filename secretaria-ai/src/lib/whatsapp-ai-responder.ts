@@ -128,7 +128,8 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
   await broadcastConversationUpdate(tenantId, conversation.id);
 
   // 4. Load context dynamically from Prisma
-  const [property, rooms, knowledge, trainingPrompts, recentMessages] = await Promise.all([
+  const [tenant, property, rooms, knowledge, trainingPrompts, recentMessages] = await Promise.all([
+    db.tenant.findUnique({ where: { id: tenantId } }),
     db.property.findFirst({ where: { tenantId } }),
     db.room.findMany({ where: { property: { tenantId } } }), // Query rooms via Property filter
     db.knowledgeEntry.findMany({ where: { tenantId } }),
@@ -140,9 +141,109 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
     }),
   ]);
 
+  // 4.1. Validar cota de mensagens e hóspedes do tenant baseado no seu plano
+  const planType = tenant?.plan || 'trial';
+
+  if (planType === 'trial' || planType === 'gratuito') {
+    // Limite de 5 hóspedes nos últimos 7 dias
+    const guestLimit = 5;
+    const guestsCount = await db.guest.count({
+      where: {
+        tenantId,
+        createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+      }
+    });
+
+    if (guestsCount > guestLimit) {
+      const responseText = "[IA Silenciada: Limite de hóspedes atendidos no plano Gratuito excedido (máximo 5)]";
+      await db.conversationMessage.create({
+        data: { conversationId: conversation.id, from: 'ai', content: responseText }
+      });
+      await broadcastConversationUpdate(tenantId, conversation.id);
+      return { conversationId: conversation.id, aiResponse: responseText, guestId: guest.id };
+    }
+
+    // Limite de 100 mensagens nos últimos 7 dias
+    const messageLimit = 100;
+    const messagesCount = await db.conversationMessage.count({
+      where: {
+        from: 'ai',
+        conversation: { tenantId },
+        timestamp: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+      }
+    });
+
+    if (messagesCount >= messageLimit) {
+      const responseText = "[IA Silenciada: Limite de mensagens do plano Gratuito excedido (máximo 100)]";
+      await db.conversationMessage.create({
+        data: { conversationId: conversation.id, from: 'ai', content: responseText }
+      });
+      await broadcastConversationUpdate(tenantId, conversation.id);
+      return { conversationId: conversation.id, aiResponse: responseText, guestId: guest.id };
+    }
+  } else if (planType === 'lite') {
+    // Limite de 50 hóspedes nos últimos 30 dias
+    const guestLimit = 50;
+    const guestsCount = await db.guest.count({
+      where: {
+        tenantId,
+        createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+      }
+    });
+
+    if (guestsCount > guestLimit) {
+      const responseText = "[IA Silenciada: Limite de hóspedes atendidos no plano LITE excedido (máximo 50). Faça upgrade para o plano PRO.]";
+      await db.conversationMessage.create({
+        data: { conversationId: conversation.id, from: 'ai', content: responseText }
+      });
+      await broadcastConversationUpdate(tenantId, conversation.id);
+      return { conversationId: conversation.id, aiResponse: responseText, guestId: guest.id };
+    }
+
+    // Limite de 500 mensagens + recargas nos últimos 30 dias
+    const subscription = await db.subscription.findFirst({
+      where: { tenantId }
+    });
+
+    let recargasCompradas = 0;
+    if (subscription) {
+      const recargas = await db.paymentTransaction.count({
+        where: {
+          subscriptionId: subscription.id,
+          type: 'message_recarga',
+          status: 'approved'
+        }
+      });
+      recargasCompradas = recargas * 250;
+    }
+
+    const messageLimit = 500 + recargasCompradas;
+    const messagesCount = await db.conversationMessage.count({
+      where: {
+        from: 'ai',
+        conversation: { tenantId },
+        timestamp: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+      }
+    });
+
+    if (messagesCount >= messageLimit) {
+      const responseText = "[IA Silenciada: Limite de mensagens do plano LITE excedido. Adquira recargas adicionais no painel.]";
+      await db.conversationMessage.create({
+        data: { conversationId: conversation.id, from: 'ai', content: responseText }
+      });
+      await broadcastConversationUpdate(tenantId, conversation.id);
+      return { conversationId: conversation.id, aiResponse: responseText, guestId: guest.id };
+    }
+  }
+
   // 5. Structure the dynamic system prompt
+  // White label checking: Only MAX can brand-customize the assistant name
+  const assistantName = (planType === 'max') 
+    ? (trainingPrompts.find(p => p.type === 'name')?.content || 'ZÉLLA') 
+    : 'ZÉLLA';
+
   let systemPrompt = `
-Você é a ZÉLLA, uma assistente virtual de inteligência artificial ultra-atenciosa e hospitaleira da pousada "${property?.name || 'Pousada' }".
+Você é a ${assistantName}, uma assistente virtual de inteligência artificial ultra-atenciosa e hospitaleira da pousada "${property?.name || 'Pousada' }".
 Seu objetivo é sanar dúvidas, encantar o hóspede, sugerir acomodações e incentivar a reserva direta de forma natural, educada e calorosa.
 
 === INFORMAÇÕES GERAIS DA POUSADA ===
@@ -172,17 +273,19 @@ ${knowledge.length > 0
   if (trainingPrompts.length > 0) {
     systemPrompt += `\n=== DIRETRIZES ADICIONAIS DE TREINAMENTO ===\n`;
     for (const prompt of trainingPrompts) {
-      systemPrompt += `[${prompt.type.toUpperCase()}] ${prompt.content}\n`;
+      if (prompt.type !== 'name') {
+        systemPrompt += `[${prompt.type.toUpperCase()}] ${prompt.content}\n`;
+      }
     }
   }
 
   // 6. Build the conversation thread prompt
   let conversationThread = 'Abaixo está o histórico recente de interações com este hóspede:\n';
   for (const msg of recentMessages) {
-    const sender = msg.from === 'guest' ? 'Hóspede' : msg.from === 'ai' ? 'ZÉLLA (IA)' : 'Atendente Humano';
+    const sender = msg.from === 'guest' ? 'Hóspede' : msg.from === 'ai' ? `${assistantName} (IA)` : 'Atendente Humano';
     conversationThread += `\n[${sender}]: ${msg.content}`;
   }
-  conversationThread += `\n\n[Hóspede] (última mensagem recebida): ${messageContent}\n\nZÉLLA (IA):`;
+  conversationThread += `\n\n[Hóspede] (última mensagem recebida): ${messageContent}\n\n${assistantName} (IA):`;
 
   // 7. Invoke the ZaosNeuroRouter
   const router = await getNeuroRouter();
