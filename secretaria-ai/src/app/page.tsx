@@ -13,7 +13,6 @@ import { PricingSection } from '@/components/landing/PricingSection';
 import { FAQSection } from '@/components/landing/FAQSection';
 import { ContactSection } from '@/components/landing/ContactSection';
 import { BetaFounderSection } from '@/components/landing/BetaFounderSection';
-import { CTASection } from '@/components/landing/CTASection';
 import { FinalCTASection } from '@/components/landing/FinalCTASection';
 import { Footer } from '@/components/landing/Footer';
 
@@ -32,7 +31,6 @@ export default function LandingPage() {
       <FAQSection />
       <ContactSection />
       <BetaFounderSection />
-      <CTASection />
       <FinalCTASection />
       <Footer />
     </main>
