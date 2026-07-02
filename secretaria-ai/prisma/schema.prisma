@@ -76,6 +76,7 @@ model Tenant {
 
   subscriptionId String?
   subscriptions  Subscription[]
+  calendarSyncs  CalendarSync[]
 
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -133,6 +134,8 @@ model Room {
   property   Property? @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   tenant     Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   reservations Reservation[]
+  bookings      Booking[]
+  calendarSyncs CalendarSync[]
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -821,31 +824,37 @@ model GuestMessage {
 
 // ===== BOOKING (Reservas) =====
 model Booking {
-  id            String   @id @default(cuid())
-  tenantId      String
-  guestId       String
-  guestName     String
-  roomName      String
-  checkIn       DateTime
-  checkOut      DateTime
-  nights        Int
-  guests        Int
-  totalValue    Float
-  status        String   @default("pending") // pending | confirmed | checked_in | checked_out | cancelled | no_show
-  paymentMethod String // pix | credit_card | debit_card | cash | bank_transfer
-  paymentStatus String   @default("pending") // pending | paid | partial | overdue
-  source        String // whatsapp_ai | whatsapp_human | booking | airbnb | direct
-  aiGenerated   Boolean  @default(false)
-  metadata      String   @default("{}") // JSON
+  id             String    @id @default(cuid())
+  tenantId       String
+  guestId        String?
+  guestName      String
+  roomName       String
+  roomId         String?
+  checkIn        DateTime
+  checkOut       DateTime
+  nights         Int
+  guests         Int
+  totalValue     Float
+  status         String    @default("pending") // pending | confirmed | checked_in | checked_out | cancelled | no_show | blocked
+  paymentMethod  String    @default("none") // pix | credit_card | debit_card | cash | bank_transfer | none
+  paymentStatus  String    @default("pending") // pending | paid | partial | overdue | none
+  source         String    // whatsapp_ai | whatsapp_human | booking | airbnb | expedia | ical_import | direct
+  aiGenerated    Boolean   @default(false)
+  externalUid    String?   // UID do evento iCal para deduplicação
+  externalSource String?   // booking | airbnb | expedia — OTA de origem do sync
+  metadata       String    @default("{}") // JSON
 
-  guest Guest @relation(fields: [guestId], references: [id])
+  guest          Guest?    @relation(fields: [guestId], references: [id])
+  room           Room?     @relation(fields: [roomId], references: [id], onDelete: SetNull)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
+  @@unique([tenantId, externalUid])
   @@index([tenantId, status])
   @@index([tenantId, checkIn])
   @@index([guestId])
+  @@index([roomId])
   @@map("bookings")
 }
 
@@ -1036,5 +1045,30 @@ model Feedback {
   @@index([messageId])
   @@index([tenantId, createdAt])
   @@map("feedbacks")
+}
+
+// ===== CALENDAR SYNC (iCal Integration) =====
+model CalendarSync {
+  id           String    @id @default(cuid())
+  tenantId     String
+  roomId       String
+  otaName      String    // booking | airbnb | expedia
+  syncUrl      String
+  syncToken    String    @unique  // hash SHA-256 público para acesso ao feed iCal
+  lastSync     DateTime?
+  status       String    @default("active") // active | error | paused
+  errorMessage String    @default("")
+  syncCount    Int       @default(0)
+  metadata     String    @default("{}") // JSON
+
+  room         Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([roomId, otaName])  // Um canal por quarto
+  @@index([tenantId, status])  // Busca eficiente por tenant
+  @@map("calendar_syncs")
 }
 

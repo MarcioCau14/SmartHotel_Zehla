@@ -294,6 +294,35 @@ async function main() {
       }))
     });
 
+    // Inserir Calendar Syncs Mock para teste de integração iCal
+    const createdRooms = await prisma.room.findMany({
+      where: { tenantId: tenant.id }
+    });
+
+    for (const r of createdRooms) {
+      await prisma.calendarSync.createMany({
+        data: [
+          {
+            tenantId: tenant.id,
+            roomId: r.id,
+            otaName: 'airbnb',
+            syncUrl: `https://www.airbnb.com.br/calendar/ical/${r.id}.ics`,
+            syncToken: `airbnb-token-${r.id}`,
+            status: 'active'
+          },
+          {
+            tenantId: tenant.id,
+            roomId: r.id,
+            otaName: 'booking',
+            syncUrl: `https://ical.booking.com/v1/sync?id=${r.id}`,
+            syncToken: `booking-token-${r.id}`,
+            status: 'active'
+          }
+        ],
+        skipDuplicates: true
+      });
+    }
+
     // Inserir FAQs comuns genéricas
     await prisma.knowledgeEntry.createMany({
       data: [

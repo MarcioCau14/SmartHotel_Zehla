@@ -18,49 +18,49 @@ const platforms: Platform[] = [
     category: 'Reservas',
     icon: '🏨',
     color: 'from-blue-500 to-blue-600',
-    badge: 'Integração Completa',
+    badge: 'Sincronização iCal',
   },
   {
     name: 'Airbnb',
     category: 'Reservas',
     icon: '🏠',
     color: 'from-rose-500 to-rose-600',
-    badge: 'Integração Completa',
+    badge: 'Sincronização iCal',
   },
   {
     name: 'Google Hotels',
     category: 'Busca',
     icon: '🔍',
     color: 'from-blue-400 to-blue-500',
-    badge: 'Integração Completa',
+    badge: 'Metasearch / Futura via API',
   },
   {
     name: 'TripAdvisor',
     category: 'Avaliações',
     icon: '⭐',
     color: 'from-emerald-500 to-emerald-600',
-    badge: 'Integração Completa',
+    badge: 'Metasearch / Futura via API',
   },
   {
     name: 'Expedia',
     category: 'Reservas',
     icon: '✈️',
     color: 'from-yellow-500 to-yellow-600',
-    badge: 'Integração Completa',
+    badge: 'Sincronização iCal',
   },
   {
     name: 'Decolar',
     category: 'Reservas',
     icon: '🌎',
     color: 'from-orange-500 to-orange-600',
-    badge: 'Integração Completa',
+    badge: 'Integração Futura via API',
   },
   {
     name: 'Trivago',
     category: 'Comparador',
     icon: '🔍',
     color: 'from-green-500 to-green-600',
-    badge: 'Integração Completa',
+    badge: 'Metasearch / Futura via API',
   },
   {
     name: 'Mercado Pago',
@@ -104,21 +104,21 @@ export function IntegrationsSection() {
 
           <p className="text-neutral-400 text-lg max-w-2xl mx-auto mb-8">
             Conecte sua pousada a todas as principais plataformas de reservas e pagamentos em um único painel.
-            Sincronização automática de disponibilidade e preços em tempo real.
+            Sincronização periódica (~15 min) de disponibilidade e tarifas.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
             <div className="flex items-center gap-2 text-neutral-500">
               <Check className="w-4 h-4 text-emerald-400" />
-              <span>Sincronização automática</span>
+              <span>Sincronização periódica (~15 min)</span>
             </div>
             <div className="flex items-center gap-2 text-neutral-500">
               <Check className="w-4 h-4 text-emerald-400" />
-              <span>Atualização em tempo real</span>
+              <span>Atualização automática de disponibilidade</span>
             </div>
             <div className="flex items-center gap-2 text-neutral-500">
               <Check className="w-4 h-4 text-emerald-400" />
-              <span>Sem conflito de datas</span>
+              <span>Redução significativa de conflitos</span>
             </div>
           </div>
         </motion.div>
