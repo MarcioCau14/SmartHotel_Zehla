@@ -66,7 +66,7 @@ export function ContactSection() {
     }
   };
 
-  const inputClass = "w-full rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3 text-sm text-white placeholder-neutral-500 focus:border-emerald-500/50 focus:bg-white/[0.04] focus:outline-none transition-all duration-200";
+  const inputClass = "w-full rounded-xl border border-white/[0.05] bg-[#0c0c0e] px-4 py-3 text-sm text-white placeholder-neutral-500 focus:border-emerald-500/40 focus:bg-black focus:outline-none transition-all duration-200";
 
   return (
     <section ref={ref} id="contato" className="py-24 sm:py-32 relative overflow-hidden">
@@ -104,7 +104,7 @@ export function ContactSection() {
             initial={{ opacity: 0, x: -20 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.5 }}
-            className="glass-strong p-8 sm:p-10 rounded-2xl border border-white/[0.06] bg-white/[0.01]"
+            className="glass-strong p-8 sm:p-10 rounded-2xl border border-white/[0.05] bg-[#0c0c0e]/30"
           >
             <AnimatePresence mode="wait">
               {status === 'success' ? (
@@ -284,7 +284,7 @@ export function ContactSection() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="flex flex-col gap-6"
           >
-            <div className="glass-strong p-6 rounded-2xl border border-white/[0.06] bg-white/[0.01]">
+            <div className="glass-strong p-6 rounded-2xl border border-white/[0.05] bg-[#0c0c0e]/30">
               <h3 className="mb-6 text-sm font-bold text-white">Canais diretos</h3>
               
               <div className="space-y-5">
@@ -341,7 +341,7 @@ export function ContactSection() {
             </div>
 
             {/* Atendimento Note */}
-            <div className="p-6 rounded-2xl border border-white/[0.04] bg-white/[0.01]/50 text-neutral-500 text-xs leading-relaxed">
+            <div className="p-6 rounded-2xl border border-white/[0.03] bg-[#0c0c0e]/20 text-neutral-500 text-xs leading-relaxed">
               <span className="font-semibold text-neutral-300 block mb-1">Horário de Atendimento</span>
               De segunda a sexta-feira, das 09h às 18h (Horário de Brasília). Para urgências operacionais de hotéis parceiros, temos plantão 24h via central.
             </div>
