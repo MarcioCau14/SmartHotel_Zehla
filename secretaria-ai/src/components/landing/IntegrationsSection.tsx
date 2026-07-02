@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Globe, Check, ArrowRight, Zap } from 'lucide-react';
+import { Globe, Check, ArrowRight, Zap, Clock, Shield } from 'lucide-react';
 
 interface Platform {
   name: string;
@@ -10,6 +10,7 @@ interface Platform {
   icon: string;
   color: string;
   badge?: string;
+  badgeColor?: string;
 }
 
 const platforms: Platform[] = [
@@ -18,49 +19,56 @@ const platforms: Platform[] = [
     category: 'Reservas',
     icon: '🏨',
     color: 'from-blue-500 to-blue-600',
-    badge: 'Sincronização iCal',
+    badge: 'iCal Ativo',
+    badgeColor: 'from-emerald-500 to-emerald-600',
   },
   {
     name: 'Airbnb',
     category: 'Reservas',
     icon: '🏠',
     color: 'from-rose-500 to-rose-600',
-    badge: 'Sincronização iCal',
-  },
-  {
-    name: 'Google Hotels',
-    category: 'Busca',
-    icon: '🔍',
-    color: 'from-blue-400 to-blue-500',
-    badge: 'Metasearch / Futura via API',
-  },
-  {
-    name: 'TripAdvisor',
-    category: 'Avaliações',
-    icon: '⭐',
-    color: 'from-emerald-500 to-emerald-600',
-    badge: 'Metasearch / Futura via API',
+    badge: 'iCal Ativo',
+    badgeColor: 'from-emerald-500 to-emerald-600',
   },
   {
     name: 'Expedia',
     category: 'Reservas',
     icon: '✈️',
     color: 'from-yellow-500 to-yellow-600',
-    badge: 'Sincronização iCal',
+    badge: 'iCal Ativo',
+    badgeColor: 'from-emerald-500 to-emerald-600',
   },
   {
     name: 'Decolar',
     category: 'Reservas',
     icon: '🌎',
     color: 'from-orange-500 to-orange-600',
-    badge: 'Integração Futura via API',
+    badge: 'API Futura',
+    badgeColor: 'from-zinc-500 to-zinc-600',
   },
   {
     name: 'Trivago',
-    category: 'Comparador',
+    category: 'Metasearch',
     icon: '🔍',
     color: 'from-green-500 to-green-600',
-    badge: 'Metasearch / Futura via API',
+    badge: 'API Futura',
+    badgeColor: 'from-zinc-500 to-zinc-600',
+  },
+  {
+    name: 'Google Hotels',
+    category: 'Metasearch',
+    icon: '🔍',
+    color: 'from-blue-400 to-blue-500',
+    badge: 'API Futura',
+    badgeColor: 'from-zinc-500 to-zinc-600',
+  },
+  {
+    name: 'TripAdvisor',
+    category: 'Metasearch',
+    icon: '⭐',
+    color: 'from-emerald-500 to-emerald-600',
+    badge: 'API Futura',
+    badgeColor: 'from-zinc-500 to-zinc-600',
   },
   {
     name: 'Mercado Pago',
@@ -68,6 +76,7 @@ const platforms: Platform[] = [
     icon: '💳',
     color: 'from-blue-500 to-indigo-600',
     badge: 'Gateway Oficial',
+    badgeColor: 'from-emerald-500 to-emerald-600',
   },
 ];
 
@@ -103,22 +112,22 @@ export function IntegrationsSection() {
           </h2>
 
           <p className="text-neutral-400 text-lg max-w-2xl mx-auto mb-8">
-            Conecte sua pousada a todas as principais plataformas de reservas e pagamentos em um único painel.
-            Sincronização periódica (~15 min) de disponibilidade e tarifas.
+            Conecte sua pousada às principais plataformas de reservas e pagamentos em um único painel.
+            Sincronização periódica de disponibilidade via iCal (intervalo ~15 min).
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
             <div className="flex items-center gap-2 text-neutral-500">
               <Check className="w-4 h-4 text-emerald-400" />
-              <span>Sincronização periódica (~15 min)</span>
+              <span>Sincronização periódica</span>
             </div>
             <div className="flex items-center gap-2 text-neutral-500">
-              <Check className="w-4 h-4 text-emerald-400" />
-              <span>Atualização automática de disponibilidade</span>
+              <Clock className="w-4 h-4 text-emerald-400" />
+              <span>Atualização automática (~15 min)</span>
             </div>
             <div className="flex items-center gap-2 text-neutral-500">
-              <Check className="w-4 h-4 text-emerald-400" />
-              <span>Redução significativa de conflitos</span>
+              <Shield className="w-4 h-4 text-emerald-400" />
+              <span>Redução de conflitos</span>
             </div>
           </div>
         </motion.div>
@@ -136,7 +145,7 @@ export function IntegrationsSection() {
               <div className="relative p-6 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.05] transition-all duration-300">
                 {/* Badge */}
                 {platform.badge && (
-                  <div className="absolute -top-3 right-4 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-[10px] font-bold shadow-lg shadow-emerald-500/20">
+                  <div className={`absolute -top-3 right-4 px-3 py-1 rounded-full bg-gradient-to-r ${platform.badgeColor ?? 'from-zinc-500 to-zinc-600'} text-white text-[10px] font-bold shadow-lg`}>
                     {platform.badge}
                   </div>
                 )}
@@ -151,10 +160,17 @@ export function IntegrationsSection() {
                 <p className="text-neutral-500 text-xs mb-4">{platform.category}</p>
 
                 {/* Status */}
-                <div className="flex items-center gap-2 text-emerald-400 text-xs">
-                  <Zap className="w-3 h-3" />
-                  <span className="font-medium">Conectado</span>
-                </div>
+                {platform.badge === 'iCal Ativo' || platform.badge === 'Gateway Oficial' ? (
+                  <div className="flex items-center gap-2 text-emerald-400 text-xs">
+                    <Zap className="w-3 h-3" />
+                    <span className="font-medium">Conectado</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-neutral-500 text-xs">
+                    <Clock className="w-3 h-3" />
+                    <span className="font-medium">Previsto</span>
+                  </div>
+                )}
               </div>
             </motion.div>
           ))}
@@ -169,18 +185,18 @@ export function IntegrationsSection() {
         >
           {[
             {
-              title: 'Sincronização Automática',
-              desc: 'Quando uma reserva é feita em qualquer plataforma, o ZÉLLA atualiza automaticamente todas as outras. Sem mais sobreposição de datas ou reservas duplicadas.',
+              title: 'Sincronização Periódica',
+              desc: 'Quando uma reserva é feita em qualquer plataforma conectada via iCal, o ZÉLLA atualiza a disponibilidade automaticamente. Redução significativa de conflitos de datas.',
               icon: '🔄',
             },
             {
               title: 'Preços Unificados',
-              desc: 'Defina seus preços no ZÉLLA e espalhe para todas as plataformas. Ajustes automáticos baseados em demanda são aplicados em tempo real.',
+              desc: 'Defina seus preços no ZÉLLA e exporte para as plataformas. Ajustes manuais baseados em demanda podem ser aplicados quando necessário.',
               icon: '💰',
             },
             {
               title: 'Analytics Centralizado',
-              desc: 'Veja todas as métricas de todas as plataformas em um único dashboard. Receita, ocupação, reviews e muito mais em tempo real.',
+              desc: 'Veja todas as métricas de todas as plataformas em um único dashboard. Receita, ocupação, reviews e muito mais consolidados.',
               icon: '📊',
             },
           ].map((benefit, index) => (

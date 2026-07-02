@@ -30,6 +30,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   posts     Post[]
+  tenant    Tenant?
 }
 
 model Post {
@@ -62,11 +63,13 @@ model Tenant {
   domain         String?   @unique
   clerkOrgId     String?   @unique
 
-  // Relations from new Tenant
   property       Property?
   apiConfigs     ApiConfig[]
   agentConfigs   AgentConfig[]
   auditLogs      AuditLog[]
+  calendarSyncs  CalendarSync[]
+  userId         String?   @unique
+  user           User?     @relation(fields: [userId], references: [id])
 
   // Relations from old Tenant
   rooms          Room[]
@@ -76,7 +79,6 @@ model Tenant {
 
   subscriptionId String?
   subscriptions  Subscription[]
-  calendarSyncs  CalendarSync[]
 
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -121,27 +123,20 @@ model Property {
 // ===== ROOM =====
 model Room {
   id         String  @id @default(cuid())
-  propertyId String?
-  tenantId   String?
-  name       String? // new Room has name
-  number     String? // old Room has number
-  type       String  @default("standard") // standard | luxo | suite | chale / STANDARD, DELUXE, SUITE
+  propertyId String
+  name       String
+  type       String  @default("standard") // standard | luxo | suite | chale
   capacity   Int     @default(2)
-  price      Float?  @default(150)
-  basePrice  Float?  // old basePrice
-  status     String  @default("disponivel") // disponivel | ocupado | sujo | manutencao | reservado / AVAILABLE, OCCUPIED, MAINTENANCE
+  price      Float   @default(150)
+  status     String  @default("disponivel") // disponivel | ocupado | sujo | manutencao | reservado
 
-  property   Property? @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  tenant     Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  reservations Reservation[]
-  bookings      Booking[]
-  calendarSyncs CalendarSync[]
+  property       Property       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  bookings       Booking[]
+  calendarSyncs  CalendarSync[]
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  @@index([tenantId])
-  @@index([propertyId])
   @@map("rooms")
 }
 

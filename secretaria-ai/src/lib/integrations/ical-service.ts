@@ -1,262 +1,337 @@
-import { db } from '@/lib/db';
-import ical from 'node-ical';
+// =============================================================================
+// ZEHLA SmartHotel — iCal Synchronization Service
+// Duas unidirecionais: Export (.ics feed) + Import (OTA → DB)
+// 100% Mock Mode ready — ICAL_SYNC_PROVIDER=mock (default)
+// =============================================================================
 
-/**
- * Gera um feed iCal válido no formato RFC 5545 contendo todos os bloqueios e reservas
- * confirmados do quarto fornecido.
- */
+import { db } from '@/lib/db';
+import * as crypto from 'crypto';
+
+// ── Mock mode detection ──────────────────────────────────────────────────────
+const IS_MOCK = process.env.ICAL_SYNC_PROVIDER !== 'real';
+
+// ── Date helpers ─────────────────────────────────────────────────────────────
+
+function formatDateICS(date: Date): string {
+  return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+}
+
+function parseICSDate(raw: string | Date | undefined): Date | null {
+  if (!raw) return null;
+  if (raw instanceof Date) return raw;
+  // iCal format: YYYYMMDDTHHMMSSZ
+  const cleaned = raw.replace(/[TZ]/g, '');
+  const year = parseInt(cleaned.slice(0, 4), 10);
+  const month = parseInt(cleaned.slice(4, 6), 10) - 1;
+  const day = parseInt(cleaned.slice(6, 8), 10);
+  const hour = parseInt(cleaned.slice(8, 10) || '0', 10);
+  const min = parseInt(cleaned.slice(10, 12) || '0', 10);
+  const sec = parseInt(cleaned.slice(12, 14) || '0', 10);
+  const d = new Date(year, month, day, hour, min, sec);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+// ── Token generation ─────────────────────────────────────────────────────────
+
+export function generateSyncToken(): string {
+  return crypto.randomBytes(24).toString('hex');
+}
+
+// =============================================================================
+// EXPORT: Generate .ics feed from local bookings
+// =============================================================================
+
 export async function generateICalFeed(roomId: string): Promise<string> {
+  const bookings = await db.booking.findMany({
+    where: {
+      roomId,
+      status: { in: ['confirmed', 'checked_in', 'blocked'] },
+    },
+    orderBy: { checkIn: 'asc' },
+  });
+
   const room = await db.room.findUnique({
     where: { id: roomId },
-    include: {
-      bookings: {
-        where: {
-          status: { in: ['confirmed', 'checked_in', 'checked_out', 'blocked'] }
-        }
-      }
-    }
+    include: { property: { include: { tenant: true } } },
   });
 
-  if (!room) {
-    throw new Error('Room not found');
-  }
+  const propertyName = room?.property?.name ?? 'ZÉHLA';
+  const tenantEmail = room?.property?.tenant?.email ?? 'sync@zehla.ai';
 
-  const ics = [
+  const events = bookings.map((b) => {
+    const summary = b.status === 'blocked'
+      ? `[BLOQUEADO] ${b.roomName}`
+      : `Reserva: ${b.guestName} — ${b.roomName}`;
+
+    return [
+      'BEGIN:VEVENT',
+      `UID:${b.id}@zehla.ai`,
+      `DTSTART:${formatDateICS(b.checkIn)}`,
+      `DTEND:${formatDateICS(b.checkOut)}`,
+      `SUMMARY:${summary}`,
+      `DESCRIPTION:${b.nights} noite(s) | Hóspedes: ${b.guests} | Status: ${b.status}`,
+      `STATUS:${b.status === 'cancelled' ? 'CANCELLED' : 'CONFIRMED'}`,
+      `ORGANIZER;CN=${propertyName}:mailto:${tenantEmail}`,
+      `END:VEVENT`,
+    ].join('\r\n');
+  });
+
+  const now = formatDateICS(new Date());
+
+  return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Zehla SmartHotel//iCal Sync Feed//PT',
-    'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH'
-  ];
-
-  for (const booking of room.bookings) {
-    const startStr = booking.checkIn.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    const endStr = booking.checkOut.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    const createdStr = booking.createdAt.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    const uid = booking.externalUid || `booking-${booking.id}@zehla.com.br`;
-    const summary = booking.status === 'blocked' ? 'Bloqueado (Zehla)' : `Reserva: ${booking.guestName} (${booking.source})`;
-
-    ics.push('BEGIN:VEVENT');
-    ics.push(`UID:${uid}`);
-    ics.push(`DTSTAMP:${createdStr}`);
-    ics.push(`DTSTART:${startStr}`);
-    ics.push(`DTEND:${endStr}`);
-    ics.push(`SUMMARY:${summary}`);
-    ics.push('DESCRIPTION:Reserva integrada via Seu ZÉLLA.');
-    ics.push('END:VEVENT');
-  }
-
-  ics.push('END:VCALENDAR');
-  return ics.join('\r\n');
+    'PRODID:-//ZÉLLA SmartHotel//iCal Feed//PT-BR',
+    `CALSCALE:GREGORIAN`,
+    `METHOD:PUBLISH`,
+    `X-WR-CALNAME:${propertyName}`,
+    `X-WR-TIMEZONE:America/Sao_Paulo`,
+    `DTSTAMP:${now}`,
+    ...events,
+    'END:VCALENDAR',
+  ].join('\r\n');
 }
 
-/**
- * Puxa, parseia e integra as reservas do iCal da OTA configurada no banco de dados.
- */
+// =============================================================================
+// IMPORT: Parse external iCal feed and upsert bookings
+// =============================================================================
+
+interface ParsedEvent {
+  uid: string;
+  summary: string;
+  start: Date;
+  end: Date;
+  description?: string;
+}
+
 export async function parseAndImportICal(syncConfigId: string): Promise<number> {
-  const sync = await db.calendarSync.findUnique({
-    where: { id: syncConfigId },
-    include: { room: true }
-  });
-
-  if (!sync) {
-    throw new Error('CalendarSync config not found');
-  }
-
-  const isMock = process.env.ICAL_SYNC_PROVIDER === 'mock' || !process.env.LLM_API_KEY || process.env.LLM_API_KEY.startsWith('sk-mock');
-  if (isMock) {
+  if (IS_MOCK) {
     return mockImportFromICal(syncConfigId);
   }
+  return realImportFromICal(syncConfigId);
+}
+
+async function realImportFromICal(syncConfigId: string): Promise<number> {
+  const config = await db.calendarSync.findUnique({
+    where: { id: syncConfigId },
+  });
+
+  if (!config || config.status !== 'active') return 0;
 
   try {
-    const res = await fetch(sync.syncUrl);
-    if (!res.ok) {
-      throw new Error(`Failed to fetch iCal feed: ${res.statusText}`);
+    const ical = await import('node-ical');
+    const response = await fetch(config.syncUrl, {
+      headers: { 'User-Agent': 'ZehlaSmartHotel/1.0' },
+      signal: AbortSignal.timeout(30_000),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
-    const icsText = await res.text();
-    const data = ical.parseICS(icsText);
-    
-    let count = 0;
-    
-    for (const k in data) {
-      if (data.hasOwnProperty(k)) {
-        const ev = data[k];
-        if (ev.type === 'VEVENT') {
-          const checkIn = new Date(ev.start as Date);
-          const checkOut = new Date(ev.end as Date);
-          const externalUid = ev.uid;
-          
-          if (!externalUid) continue;
 
-          // Deduplicação: verifica se já existe booking com esse tenantId e externalUid
-          const existing = await db.booking.findUnique({
-            where: {
-              tenantId_externalUid: {
-                tenantId: sync.tenantId,
-                externalUid: externalUid
-              }
-            }
-          });
+    const text = await response.text();
+    const data = ical.parseICS(text);
+    const events = parseICSEvents(data);
 
-          if (!existing) {
-            const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
-            
-            await db.booking.create({
-              data: {
-                tenantId: sync.tenantId,
-                roomId: sync.roomId,
-                roomName: sync.room.name || 'Quarto Integrado',
-                checkIn,
-                checkOut,
-                nights: nights > 0 ? nights : 1,
-                guests: 2,
-                guestName: `Hóspede ${sync.otaName.toUpperCase()}`,
-                totalValue: 0.0,
-                status: 'confirmed',
-                paymentMethod: 'none',
-                paymentStatus: 'none',
-                source: 'ical_import',
-                externalUid,
-                externalSource: sync.otaName,
-                metadata: JSON.stringify({ summary: ev.summary || '' })
-              }
-            });
-            count++;
-          }
-        }
-      }
+    let imported = 0;
+    for (const event of events) {
+      const nights = Math.max(1, Math.ceil(
+        (event.end.getTime() - event.start.getTime()) / (1000 * 60 * 60 * 24)
+      ));
+
+      await db.booking.upsert({
+        where: {
+          tenantId_externalUid: {
+            tenantId: config.tenantId,
+            externalUid: event.uid,
+          },
+        },
+        create: {
+          tenantId: config.tenantId,
+          guestId: null,
+          guestName: event.summary || 'Hóspede OTA',
+          roomName: '',
+          roomId: config.roomId,
+          checkIn: event.start,
+          checkOut: event.end,
+          nights,
+          guests: 1,
+          totalValue: 0,
+          status: 'confirmed',
+          source: config.otaName,
+          aiGenerated: false,
+          externalUid: event.uid,
+          externalSource: config.otaName,
+        },
+        update: {
+          checkIn: event.start,
+          checkOut: event.end,
+          nights,
+          status: 'confirmed',
+        },
+      });
+      imported++;
     }
 
     await db.calendarSync.update({
       where: { id: syncConfigId },
       data: {
         lastSync: new Date(),
+        syncCount: { increment: 1 },
         status: 'active',
         errorMessage: '',
-        syncCount: { increment: count }
-      }
+      },
     });
 
-    return count;
-  } catch (err: any) {
+    return imported;
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
     await db.calendarSync.update({
       where: { id: syncConfigId },
       data: {
-        lastSync: new Date(),
         status: 'error',
-        errorMessage: err.message || 'Unknown integration sync error'
-      }
+        errorMessage: msg,
+      },
     });
-    throw err;
+    return 0;
   }
 }
 
-/**
- * Mock offline de importação para simular o download de calendário.
- */
-export async function mockImportFromICal(syncConfigId: string): Promise<number> {
-  const sync = await db.calendarSync.findUnique({
+// =============================================================================
+// MOCK IMPORT: Offline simulation
+// =============================================================================
+
+async function mockImportFromICal(syncConfigId: string): Promise<number> {
+  const config = await db.calendarSync.findUnique({
     where: { id: syncConfigId },
-    include: { room: true }
   });
 
-  if (!sync) {
-    throw new Error('CalendarSync config not found');
-  }
+  if (!config || config.status !== 'active') return 0;
 
-  const ota = sync.otaName.toLowerCase();
-  
-  // Datas deterministas no futuro para simular eventos de iCal
-  const mockEvents = [
+  const now = new Date();
+  const mockBookings = [
     {
-      uid: `mock-event-1-${ota}-${sync.roomId}`,
-      summary: `Reserva Mock ${ota.toUpperCase()}`,
-      checkIn: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-      checkOut: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
+      uid: `mock-${config.otaName}-${config.roomId}-event1`,
+      summary: `Reserva ${config.otaName} — Hóspede Mock`,
+      start: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7),
+      end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 9),
     },
     {
-      uid: `mock-event-2-${ota}-${sync.roomId}`,
-      summary: `Reserva Mock 2 ${ota.toUpperCase()}`,
-      checkIn: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000),
-      checkOut: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
-    }
+      uid: `mock-${config.otaName}-${config.roomId}-event2`,
+      summary: `Reserva ${config.otaName} — Família Silva`,
+      start: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 15),
+      end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 18),
+    },
   ];
 
-  let count = 0;
+  let imported = 0;
+  for (const event of mockBookings) {
+    const nights = Math.max(1, Math.ceil(
+      (event.end.getTime() - event.start.getTime()) / (1000 * 60 * 60 * 24)
+    ));
 
-  for (const ev of mockEvents) {
-    const existing = await db.booking.findUnique({
+    await db.booking.upsert({
       where: {
         tenantId_externalUid: {
-          tenantId: sync.tenantId,
-          externalUid: ev.uid
-        }
-      }
+          tenantId: config.tenantId,
+          externalUid: event.uid,
+        },
+      },
+      create: {
+        tenantId: config.tenantId,
+        guestId: null,
+        guestName: event.summary || 'Hóspede OTA',
+        roomName: '',
+        roomId: config.roomId,
+        checkIn: event.start,
+        checkOut: event.end,
+        nights,
+        guests: 1,
+        totalValue: 0,
+        status: 'confirmed',
+        source: config.otaName,
+        aiGenerated: false,
+        externalUid: event.uid,
+        externalSource: config.otaName,
+      },
+      update: {
+        checkIn: event.start,
+        checkOut: event.end,
+        nights,
+        status: 'confirmed',
+      },
     });
-
-    if (!existing) {
-      const nights = Math.ceil((ev.checkOut.getTime() - ev.checkIn.getTime()) / (1000 * 60 * 60 * 24));
-      
-      await db.booking.create({
-        data: {
-          tenantId: sync.tenantId,
-          roomId: sync.roomId,
-          roomName: sync.room.name || 'Quarto Integrado Mock',
-          checkIn: ev.checkIn,
-          checkOut: ev.checkOut,
-          nights: nights > 0 ? nights : 1,
-          guests: 2,
-          guestName: `Hóspede Mock ${sync.otaName.toUpperCase()}`,
-          totalValue: 150.0 * (nights > 0 ? nights : 1),
-          status: 'confirmed',
-          paymentMethod: 'none',
-          paymentStatus: 'none',
-          source: 'ical_import',
-          externalUid: ev.uid,
-          externalSource: sync.otaName,
-          metadata: JSON.stringify({ summary: ev.summary })
-        }
-      });
-      count++;
-    }
+    imported++;
   }
 
   await db.calendarSync.update({
     where: { id: syncConfigId },
     data: {
       lastSync: new Date(),
+      syncCount: { increment: 1 },
       status: 'active',
       errorMessage: '',
-      syncCount: { increment: count }
-    }
+    },
   });
 
-  return count;
+  return imported;
 }
 
-/**
- * Auxiliar para gerar strings de feed em formato iCal para fins de teste.
- */
-export function mockICalFeed(): string {
-  const start = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
-  const end = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
-  const startStr = start.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  const endStr = end.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  
-  return [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//Zehla SmartHotel//iCal Sync Feed Mock//PT',
-    'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH',
-    'BEGIN:VEVENT',
-    'UID:mock-external-event-uid-999',
-    'DTSTAMP:20260701T000000Z',
-    `DTSTART:${startStr}`,
-    `DTEND:${endStr}`,
-    'SUMMARY:Reserva Mock Externa',
-    'DESCRIPTION:Reserva mock simulada para teste de importacao.',
-    'END:VEVENT',
-    'END:VCALENDAR'
-  ].join('\r\n');
+// =============================================================================
+// PARSE HELPERS
+// =============================================================================
+
+function parseICSEvents(data: Record<string, any>): ParsedEvent[] {
+  const events: ParsedEvent[] = [];
+
+  for (const key of Object.keys(data)) {
+    const component = data[key];
+    if (component.type !== 'VEVENT') continue;
+
+    const start = parseICSDate(component.start);
+    const end = parseICSDate(component.end);
+    if (!start || !end) continue;
+
+    events.push({
+      uid: component.uid || `imported-${key}`,
+      summary: component.summary || '',
+      start,
+      end,
+      description: component.description || undefined,
+    });
+  }
+
+  return events;
+}
+
+// =============================================================================
+// BULK SYNC: Process all active sync configs
+// =============================================================================
+
+export async function syncAllActiveChannels(): Promise<{
+  synced: number;
+  errors: number;
+  details: Array<{ configId: string; otaName: string; imported: number; error?: string }>;
+}> {
+  const configs = await db.calendarSync.findMany({
+    where: { status: 'active' },
+  });
+
+  let synced = 0;
+  let errors = 0;
+  const details: Array<{ configId: string; otaName: string; imported: number; error?: string }> = [];
+
+  for (const config of configs) {
+    try {
+      const imported = await parseAndImportICal(config.id);
+      synced += imported;
+      details.push({ configId: config.id, otaName: config.otaName, imported });
+    } catch (error: unknown) {
+      errors++;
+      const msg = error instanceof Error ? error.message : String(error);
+      details.push({ configId: config.id, otaName: config.otaName, imported: 0, error: msg });
+    }
+  }
+
+  return { synced, errors, details };
 }

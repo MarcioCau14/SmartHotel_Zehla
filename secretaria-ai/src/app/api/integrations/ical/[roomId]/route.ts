@@ -2,50 +2,72 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { generateICalFeed } from '@/lib/integrations/ical-service';
 
+/**
+ * GET /api/integrations/ical/[roomId]?token=<syncToken>
+ *
+ * Serves the iCal feed for a room's availability.
+ * Protected by cryptographic sync token in query string.
+ * Content-Type: text/calendar (RFC 5545)
+ */
 export async function GET(
   request: NextRequest,
-  props: { params: Promise<{ roomId: string }> }
+  { params }: { params: Promise<{ roomId: string }> }
 ) {
   try {
-    const params = await props.params;
-    const { roomId } = params;
-    const { searchParams } = new URL(request.url);
-    const token = searchParams.get('token');
-
-    if (!roomId) {
-      return NextResponse.json({ error: 'Parâmetro roomId ausente' }, { status: 400 });
-    }
+    const { roomId } = await params;
+    const token = request.nextUrl.searchParams.get('token');
 
     if (!token) {
-      return NextResponse.json({ error: 'Token de sincronização ausente' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Token de sincronização obrigatório' },
+        { status: 401 }
+      );
     }
 
-    // Valida se existe um CalendarSync com o syncToken correspondente para este roomId
-    const sync = await db.calendarSync.findFirst({
+    // Validate token against CalendarSync table
+    const syncConfig = await db.calendarSync.findFirst({
       where: {
         roomId,
-        syncToken: token
-      }
+        syncToken: token,
+        status: 'active',
+      },
     });
 
-    if (!sync) {
-      return NextResponse.json({ error: 'Token inválido ou sincronização não cadastrada' }, { status: 403 });
+    if (!syncConfig) {
+      return NextResponse.json(
+        { error: 'Token inválido ou configuração inativa' },
+        { status: 403 }
+      );
     }
 
-    const icsContent = await generateICalFeed(roomId);
+    // Verify room exists
+    const room = await db.room.findUnique({
+      where: { id: roomId },
+    });
 
-    return new Response(icsContent, {
+    if (!room) {
+      return NextResponse.json(
+        { error: 'Quarto não encontrado' },
+        { status: 404 }
+      );
+    }
+
+    // Generate iCal feed
+    const icsFeed = await generateICalFeed(roomId);
+
+    return new NextResponse(icsFeed, {
       status: 200,
       headers: {
         'Content-Type': 'text/calendar; charset=utf-8',
-        'Content-Disposition': `attachment; filename="room-${roomId}.ics"`,
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      }
+        'Content-Disposition': `attachment; filename="room-${roomId.slice(0, 8)}.ics"`,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+      },
     });
-  } catch (error: any) {
-    console.error('Error generating iCal feed:', error);
-    return NextResponse.json({ error: error.message || 'Erro interno do servidor' }, { status: 500 });
+  } catch (error) {
+    console.error('[iCal Feed API] Error:', error);
+    return NextResponse.json(
+      { error: 'Erro interno do servidor' },
+      { status: 500 }
+    );
   }
 }

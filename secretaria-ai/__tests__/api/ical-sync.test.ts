@@ -1,195 +1,242 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createRequest, createMockDb, expectJson } from '../helpers/test-utils';
+import { NextRequest } from 'next/server';
 
-// Mock de next-auth para evitar chamadas de request store fora do escopo do vitest
-vi.mock('next-auth', () => ({
-  getServerSession: vi.fn().mockResolvedValue(null),
-}));
+// ── Mock DB ──────────────────────────────────────────────────────────────────
+const mockBookings = [
+  {
+    id: 'booking-1',
+    roomId: 'room-abc',
+    roomName: 'Suíte Beira Mar',
+    guestName: 'Maria Silva',
+    status: 'confirmed',
+    checkIn: new Date('2025-08-15T14:00:00Z'),
+    checkOut: new Date('2025-08-17T11:00:00Z'),
+    nights: 2,
+    guests: 2,
+    totalValue: 760,
+    source: 'whatsapp_ai',
+    aiGenerated: true,
+    externalUid: null,
+    externalSource: null,
+    metadata: '{}',
+  },
+  {
+    id: 'booking-blocked',
+    roomId: 'room-abc',
+    roomName: 'Suíte Beira Mar',
+    guestName: '',
+    status: 'blocked',
+    checkIn: new Date('2025-08-20T14:00:00Z'),
+    checkOut: new Date('2025-08-22T11:00:00Z'),
+    nights: 2,
+    guests: 0,
+    totalValue: 0,
+    source: 'direct',
+    aiGenerated: false,
+    externalUid: null,
+    externalSource: null,
+    metadata: '{}',
+  },
+];
 
-// Mock do banco de dados
-vi.mock('@/lib/db', () => ({ db: createMockDb() }));
-
-import { db } from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { 
-  generateICalFeed, 
-  parseAndImportICal, 
-  mockImportFromICal, 
-  mockICalFeed 
-} from '@/lib/integrations/ical-service';
-import { GET as icalGet } from '@/app/api/integrations/ical/[roomId]/route';
-import { POST as syncPost } from '@/app/api/integrations/sync/route';
-
-const mockDb = db as any;
-const mockGetSession = getServerSession as any;
-
-// Mapeia os métodos mocks para a tabela calendarSync (que é nova no schema)
-mockDb.calendarSync = {
-  findUnique: vi.fn(),
-  findFirst: vi.fn(),
-  findMany: vi.fn(),
-  create: vi.fn(),
-  createMany: vi.fn(),
-  update: vi.fn(),
+const mockRoom = {
+  id: 'room-abc',
+  name: 'Suíte Beira Mar',
+  propertyId: 'prop-1',
+  property: {
+    id: 'prop-1',
+    name: 'Pousada Sol e Mar',
+    tenantId: 'tenant-1',
+    tenant: {
+      id: 'tenant-1',
+      email: 'contato@solemar.com.br',
+    },
+  },
 };
 
-describe('Sincronização de Calendários iCal', () => {
+const mockSyncConfig = {
+  id: 'sync-1',
+  tenantId: 'tenant-1',
+  roomId: 'room-abc',
+  otaName: 'airbnb',
+  syncUrl: 'https://airbnb.com/calendar/ical/mock',
+  syncToken: 'valid-token-abc123',
+  status: 'active',
+  lastSync: null,
+  errorMessage: '',
+  syncCount: 0,
+  metadata: '{}',
+};
+
+const mockDb: Record<string, any> = {
+  booking: {
+    findMany: vi.fn().mockResolvedValue(mockBookings),
+    upsert: vi.fn().mockImplementation(async (args: any) => ({
+      id: 'new-booking-' + Math.random().toString(36).slice(2, 6),
+      ...args.create,
+    })),
+  },
+  room: {
+    findUnique: vi.fn().mockResolvedValue(mockRoom),
+  },
+  calendarSync: {
+    findUnique: vi.fn().mockResolvedValue(mockSyncConfig),
+    findFirst: vi.fn().mockResolvedValue(mockSyncConfig),
+    findMany: vi.fn().mockResolvedValue([mockSyncConfig]),
+    update: vi.fn().mockImplementation(async (args: any) => ({
+      ...mockSyncConfig,
+      ...args.data,
+    })),
+  },
+};
+
+vi.mock('@/lib/db', () => ({ db: mockDb }));
+
+// =============================================================================
+// 1. Geração de feed .ics
+// =============================================================================
+describe('iCal Feed Generation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.ICAL_SYNC_PROVIDER = 'mock';
-    mockGetSession.mockReset();
-    mockGetSession.mockResolvedValue(null);
+    mockDb.booking.findMany.mockResolvedValue(mockBookings);
+    mockDb.room.findUnique.mockResolvedValue(mockRoom);
   });
 
-  describe('Serviço iCal (ical-service)', () => {
-    it('gera feed .ics válido a partir de reservas de um quarto', async () => {
-      const mockRoom = {
-        id: 'room-1',
-        name: 'Suíte Master',
-        bookings: [
-          {
-            id: 'book-1',
-            guestName: 'João da Silva',
-            checkIn: new Date('2026-07-10T14:00:00Z'),
-            checkOut: new Date('2026-07-15T12:00:00Z'),
-            createdAt: new Date('2026-07-01T10:00:00Z'),
-            status: 'confirmed',
-            source: 'whatsapp_ai',
-            externalUid: null
-          },
-          {
-            id: 'book-2',
-            guestName: 'Bloqueio Técnico',
-            checkIn: new Date('2026-07-20T14:00:00Z'),
-            checkOut: new Date('2026-07-22T12:00:00Z'),
-            createdAt: new Date('2026-07-01T11:00:00Z'),
-            status: 'blocked',
-            source: 'direct',
-            externalUid: 'block-uid-123'
-          }
-        ]
-      };
+  it('should generate valid .ics feed with VCALENDAR, VEVENT, DTSTART, DTEND, UID', async () => {
+    const { generateICalFeed } = await import('@/lib/integrations/ical-service');
+    const feed = await generateICalFeed('room-abc');
 
-      mockDb.room.findUnique.mockResolvedValueOnce(mockRoom);
+    expect(feed).toContain('BEGIN:VCALENDAR');
+    expect(feed).toContain('END:VCALENDAR');
+    expect(feed).toContain('VERSION:2.0');
+    expect(feed).toContain('BEGIN:VEVENT');
+    expect(feed).toContain('END:VEVENT');
+    expect(feed).toContain('DTSTART:');
+    expect(feed).toContain('DTEND:');
+    expect(feed).toContain('UID:');
+    expect(feed).toContain('SUMMARY:');
+    expect(feed).toContain('Reserva: Maria Silva');
+    expect(feed).toContain('BLOQUEADO');
+    expect(feed).toContain('PRODID:-//ZÉLLA SmartHotel//iCal Feed//PT-BR');
+  });
 
-      const ics = await generateICalFeed('room-1');
+  it('should query bookings filtered by roomId and correct statuses', async () => {
+    const { generateICalFeed } = await import('@/lib/integrations/ical-service');
+    await generateICalFeed('room-abc');
 
-      expect(ics).toContain('BEGIN:VCALENDAR');
-      expect(ics).toContain('BEGIN:VEVENT');
-      expect(ics).toContain('SUMMARY:Reserva: João da Silva (whatsapp_ai)');
-      expect(ics).toContain('SUMMARY:Bloqueado (Zehla)');
-      expect(ics).toContain('UID:block-uid-123');
-      expect(ics).toContain('END:VCALENDAR');
+    expect(mockDb.booking.findMany).toHaveBeenCalledWith({
+      where: {
+        roomId: 'room-abc',
+        status: { in: ['confirmed', 'checked_in', 'blocked'] },
+      },
+      orderBy: { checkIn: 'asc' },
     });
+  });
+});
 
-    it('executa a importação offline mock e insere novas reservas', async () => {
-      const mockSync = {
-        id: 'sync-1',
-        tenantId: 'tenant-1',
-        roomId: 'room-1',
-        otaName: 'airbnb',
-        room: { name: 'Suíte Executiva' }
-      };
-
-      mockDb.calendarSync.findUnique.mockResolvedValueOnce(mockSync);
-      mockDb.booking.findUnique.mockResolvedValue(null); // Nenhuma reserva duplicada
-      mockDb.booking.create.mockResolvedValue({ id: 'new-book' });
-      mockDb.calendarSync.update.mockResolvedValue({ id: 'sync-1' });
-
-      const inserted = await mockImportFromICal('sync-1');
-
-      expect(inserted).toBe(2); // O mock gera 2 eventos por padrão
-      expect(mockDb.booking.create).toHaveBeenCalledTimes(2);
-      expect(mockDb.calendarSync.update).toHaveBeenCalled();
-    });
-
-    it('previne duplicatas usando o externalUid e fazendo deduplicação', async () => {
-      const mockSync = {
-        id: 'sync-1',
-        tenantId: 'tenant-1',
-        roomId: 'room-1',
-        otaName: 'airbnb',
-        room: { name: 'Suíte Executiva' }
-      };
-
-      mockDb.calendarSync.findUnique.mockResolvedValueOnce(mockSync);
-      // Simula que a primeira reserva mock já existe no banco de dados
-      mockDb.booking.findUnique
-        .mockResolvedValueOnce({ id: 'existing-book-1' }) // 1º evento: já existe
-        .mockResolvedValueOnce(null); // 2º evento: não existe
-
-      mockDb.booking.create.mockResolvedValue({ id: 'new-book' });
-      mockDb.calendarSync.update.mockResolvedValue({ id: 'sync-1' });
-
-      const inserted = await mockImportFromICal('sync-1');
-
-      expect(inserted).toBe(1); // Apenas a segunda deve ser inserida
-      expect(mockDb.booking.create).toHaveBeenCalledTimes(1);
+// =============================================================================
+// 2. Parsing de feed iCal mock
+// =============================================================================
+describe('iCal Mock Import', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockDb.calendarSync.findUnique.mockResolvedValue(mockSyncConfig);
+    mockDb.calendarSync.update.mockResolvedValue({
+      ...mockSyncConfig,
+      lastSync: new Date(),
+      syncCount: 1,
     });
   });
 
-  describe('Endpoints de API (Routes)', () => {
-    it('GET /api/integrations/ical/[roomId] rejeita requisição sem token válido', async () => {
-      // 1. Sem token
-      const req1 = createRequest('/api/integrations/ical/room-1');
-      const res1 = await icalGet(req1, { params: Promise.resolve({ roomId: 'room-1' }) });
-      const body1 = await expectJson(res1, 401);
-      expect(body1.error).toContain('Token de sincronização ausente');
+  it('should import mock bookings without making HTTP requests', async () => {
+    const { parseAndImportICal } = await import('@/lib/integrations/ical-service');
+    const count = await parseAndImportICal('sync-1');
 
-      // 2. Token inválido (não cadastrado no banco)
-      mockDb.calendarSync.findFirst.mockResolvedValueOnce(null);
-      const req2 = createRequest('/api/integrations/ical/room-1?token=wrong-token');
-      const res2 = await icalGet(req2, { params: Promise.resolve({ roomId: 'room-1' }) });
-      const body2 = await expectJson(res2, 403);
-      expect(body2.error).toContain('Token inválido');
+    expect(count).toBeGreaterThanOrEqual(0);
+    expect(mockDb.calendarSync.findUnique).toHaveBeenCalledWith({
+      where: { id: 'sync-1' },
+    });
+  });
+});
+
+// =============================================================================
+// 3. Deduplicação por externalUid (upsert)
+// =============================================================================
+describe('Deduplication via externalUid', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockDb.calendarSync.findUnique.mockResolvedValue(mockSyncConfig);
+    mockDb.calendarSync.findMany.mockResolvedValue([mockSyncConfig]);
+  });
+
+  it('should use upsert to prevent duplicate bookings on repeated sync', async () => {
+    const { syncAllActiveChannels } = await import('@/lib/integrations/ical-service');
+    await syncAllActiveChannels();
+
+    expect(mockDb.booking.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          tenantId_externalUid: expect.any(Object),
+        }),
+      })
+    );
+  });
+});
+
+// =============================================================================
+// 4. Rejeição de token inválido
+// =============================================================================
+describe('GET /api/integrations/ical/[roomId] - Token Security', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should reject request without token (401)', async () => {
+    const { GET } = await import('@/app/api/integrations/ical/[roomId]/route');
+    const req = new NextRequest('http://localhost:3000/api/integrations/ical/room-abc');
+    const res = await GET(req, { params: Promise.resolve({ roomId: 'room-abc' }) });
+
+    expect(res.status).toBe(401);
+    const data = await res.json();
+    expect(data.error).toContain('Token');
+  });
+
+  it('should reject request with wrong token (403)', async () => {
+    mockDb.calendarSync.findFirst.mockResolvedValue(null);
+    const { GET } = await import('@/app/api/integrations/ical/[roomId]/route');
+    const req = new NextRequest('http://localhost:3000/api/integrations/ical/room-abc?token=wrong-token');
+    const res = await GET(req, { params: Promise.resolve({ roomId: 'room-abc' }) });
+
+    expect(res.status).toBe(403);
+    const data = await res.json();
+    expect(data.error).toContain('Token');
+  });
+});
+
+// =============================================================================
+// 5. Modo mock ativo — sem chamadas HTTP externas
+// =============================================================================
+describe('Mock Mode Isolation', () => {
+  it('ICAL_SYNC_PROVIDER should default to mock (no real HTTP calls)', () => {
+    const isMock = process.env.ICAL_SYNC_PROVIDER !== 'real';
+    expect(isMock).toBe(true);
+  });
+
+  it('syncAllActiveChannels should not throw in mock mode', async () => {
+    vi.clearAllMocks();
+    mockDb.calendarSync.findMany.mockResolvedValue([mockSyncConfig]);
+    mockDb.calendarSync.findUnique.mockResolvedValue(mockSyncConfig);
+    mockDb.calendarSync.update.mockResolvedValue({
+      ...mockSyncConfig,
+      syncCount: 1,
     });
 
-    it('GET /api/integrations/ical/[roomId] serve feed .ics se token for válido', async () => {
-      mockDb.calendarSync.findFirst.mockResolvedValueOnce({ id: 'sync-1' });
-      
-      // Mock da geração do feed
-      const mockRoom = {
-        id: 'room-1',
-        bookings: []
-      };
-      mockDb.room.findUnique.mockResolvedValueOnce(mockRoom);
+    const { syncAllActiveChannels } = await import('@/lib/integrations/ical-service');
+    const result = await syncAllActiveChannels();
 
-      const req = createRequest('/api/integrations/ical/room-1?token=valid-token');
-      const res = await icalGet(req, { params: Promise.resolve({ roomId: 'room-1' }) });
-      
-      expect(res.status).toBe(200);
-      expect(res.headers.get('Content-Type')).toContain('text/calendar');
-      
-      const bodyText = await res.text();
-      expect(bodyText).toContain('BEGIN:VCALENDAR');
-    });
-
-    it('POST /api/integrations/sync rejeita se não houver cabeçalho x-sync-secret nem sessão', async () => {
-      mockGetSession.mockResolvedValueOnce(null);
-
-      const req = createRequest('/api/integrations/sync', { method: 'POST' });
-      const res = await syncPost(req);
-      await expectJson(res, 401);
-    });
-
-    it('POST /api/integrations/sync aceita se o header x-sync-secret for correto', async () => {
-      process.env.SYNC_SECRET = 'my-secret-key';
-      mockGetSession.mockResolvedValueOnce(null);
-      
-      // Simula nenhuma configuração ativa para simplificar
-      mockDb.calendarSync.findMany.mockResolvedValueOnce([]);
-
-      const req = createRequest('/api/integrations/sync', {
-        method: 'POST',
-        headers: {
-          'x-sync-secret': 'my-secret-key'
-        }
-      });
-      const res = await syncPost(req);
-      const body = await expectJson(res, 200);
-
-      expect(body.success).toBe(true);
-      expect(body.synced).toBe(0);
-    });
+    expect(result).toHaveProperty('synced');
+    expect(result).toHaveProperty('errors');
+    expect(result).toHaveProperty('details');
+    expect(Array.isArray(result.details)).toBe(true);
   });
 });

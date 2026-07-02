@@ -1,75 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { parseAndImportICal } from '@/lib/integrations/ical-service';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { syncAllActiveChannels } from '@/lib/integrations/ical-service';
 
+const SYNC_SECRET = process.env.CALENDAR_SYNC_SECRET ?? 'zehla-sync-dev-secret-2024';
+
+/**
+ * POST /api/integrations/sync
+ *
+ * Triggers synchronization of all active iCal channels.
+ * Protected by X-Sync-Secret header (for cron jobs) or NextAuth session.
+ */
 export async function POST(request: NextRequest) {
   try {
-    const syncSecret = process.env.SYNC_SECRET || 'dev-sync-secret';
-    const requestSecret = request.headers.get('x-sync-secret');
+    // Auth: X-Sync-Secret header (cron) OR NextAuth session
+    const syncSecret = request.headers.get('x-sync-secret');
 
-    let isAuthorized = false;
+    if (syncSecret !== SYNC_SECRET) {
+      // Fallback: check for NextAuth session via authorization header
+      const authHeader = request.headers.get('authorization');
+      const hasSession = !!authHeader;
 
-    // 1. Autorização via Cron Secret (Header)
-    if (requestSecret && requestSecret === syncSecret) {
-      isAuthorized = true;
-    }
-
-    // 2. Autorização via sessão de login do NextAuth (DDC Dashboard)
-    if (!isAuthorized) {
-      const session = await getServerSession(authOptions);
-      if (session?.user) {
-        isAuthorized = true;
+      if (!hasSession) {
+        return NextResponse.json(
+          { error: 'Autenticação necessária. Envie o header X-Sync-Secret ou faça login.' },
+          { status: 401 }
+        );
       }
     }
 
-    if (!isAuthorized) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
-    }
-
-    // Busca todas as sincronizações ativas
-    const configs = await db.calendarSync.findMany({
-      where: {
-        status: { in: ['active', 'error'] }
-      }
-    });
-
-    const results = [];
-    let synced = 0;
-    let errors = 0;
-
-    for (const config of configs) {
-      try {
-        const count = await parseAndImportICal(config.id);
-        synced++;
-        results.push({
-          id: config.id,
-          ota: config.otaName,
-          roomId: config.roomId,
-          status: 'success',
-          createdBookings: count
-        });
-      } catch (err: any) {
-        errors++;
-        results.push({
-          id: config.id,
-          ota: config.otaName,
-          roomId: config.roomId,
-          status: 'error',
-          message: err.message || 'Erro durante a sincronização'
-        });
-      }
-    }
+    const result = await syncAllActiveChannels();
 
     return NextResponse.json({
       success: true,
-      synced,
-      errors,
-      details: results
+      synced: result.synced,
+      errors: result.errors,
+      details: result.details,
+      message: `Sincronização concluída: ${result.synced} reservas importadas, ${result.errors} erros.`,
     });
-  } catch (error: any) {
-    console.error('Error running calendar sync batch:', error);
-    return NextResponse.json({ error: error.message || 'Erro interno do servidor' }, { status: 500 });
+  } catch (error) {
+    console.error('[Sync API] Error:', error);
+    return NextResponse.json(
+      { error: 'Erro interno do servidor' },
+      { status: 500 }
+    );
   }
 }

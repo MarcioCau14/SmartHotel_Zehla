@@ -8,6 +8,7 @@
 
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -296,7 +297,7 @@ async function main() {
 
     // Inserir Calendar Syncs Mock para teste de integração iCal
     const createdRooms = await prisma.room.findMany({
-      where: { tenantId: tenant.id }
+      where: { property: { tenantId: tenant.id } }
     });
 
     for (const r of createdRooms) {
@@ -307,7 +308,7 @@ async function main() {
             roomId: r.id,
             otaName: 'airbnb',
             syncUrl: `https://www.airbnb.com.br/calendar/ical/${r.id}.ics`,
-            syncToken: `airbnb-token-${r.id}`,
+            syncToken: crypto.randomUUID().replace(/-/g, ''),
             status: 'active'
           },
           {
@@ -315,7 +316,7 @@ async function main() {
             roomId: r.id,
             otaName: 'booking',
             syncUrl: `https://ical.booking.com/v1/sync?id=${r.id}`,
-            syncToken: `booking-token-${r.id}`,
+            syncToken: crypto.randomUUID().replace(/-/g, ''),
             status: 'active'
           }
         ],
@@ -390,12 +391,20 @@ async function main() {
 
       // Criar reservas (Bookings) para o hóspede booked
       if (k === 0) {
+        const roomObj = await prisma.room.findFirst({
+          where: {
+            name: bp.rooms[0].name,
+            property: { tenantId: tenant.id }
+          }
+        });
+
         await prisma.booking.create({
           data: {
             tenantId: tenant.id,
             guestId: guest.id,
             guestName: guest.name,
             roomName: bp.rooms[0].name,
+            roomId: roomObj?.id ?? null,
             checkIn: daysAgo(-2),
             checkOut: daysAgo(2),
             nights: 4,
