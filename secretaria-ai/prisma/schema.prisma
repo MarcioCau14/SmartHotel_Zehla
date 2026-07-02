@@ -929,6 +929,8 @@ model KnowledgeEntry {
   effectiveness Float     @default(0) // 0-100
   createdFor    String    @default("both") // ai | human | both
   lastUsed      DateTime?
+  /** TF-IDF embedding vector stored as JSON array of numbers */
+  embeddingJson String    @default("[]")
   metadata      String    @default("{}") // JSON
 
   createdAt DateTime @default(now())

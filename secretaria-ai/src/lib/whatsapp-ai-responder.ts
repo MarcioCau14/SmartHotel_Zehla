@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
-import { getNeuroRouter } from '@/lib/ai/zaos-neuro-router';
 import { mapConversation } from '@/lib/ddc/ddc-mapper';
+import { executeCognitivePipeline } from './ai/cognitive-router';
+import { formatIntentLog } from './ai/intent-router';
 
 /**
  * Global helper to notify active SSE DDC connections about new message events.
@@ -11,12 +12,27 @@ export function notifyLiveFeed(tenantId: string, eventData: any) {
     const ssePayload = `data: ${JSON.stringify(eventData)}\n\n`;
     for (const listener of listeners) {
       try {
-        listener(tenantId, ssePayload);
+        if (typeof listener === 'function') {
+          listener(tenantId, ssePayload);
+        }
       } catch (err) {
         // Dead connection clean-up is handled in the route
       }
     }
   }
+}
+
+/**
+ * Registers an SSE listener to allow real-time client updates.
+ */
+export function registerSSEListener(listener: (tenantId: string, payload: string) => void): () => void {
+  if (!(globalThis as any).sseListeners) {
+    (globalThis as any).sseListeners = new Set();
+  }
+  (globalThis as any).sseListeners.add(listener);
+  return () => {
+    (globalThis as any).sseListeners.delete(listener);
+  };
 }
 
 /**
@@ -49,7 +65,7 @@ interface ProcessParams {
 
 /**
  * Core ZÉLLA Brain pipeline - Processes incoming messages from guests,
- * resolves context, queries the ZaosNeuroRouter, saves everything to SQLite,
+ * resolves context, queries the Cognitive Router (Fase 2), saves everything to SQLite,
  * and notifies the real-time DDC dashboard.
  */
 export async function processIncomingMessage(params: ProcessParams): Promise<{
@@ -115,7 +131,7 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
   }
 
   // 3. Save incoming guest message
-  const guestMessage = await db.conversationMessage.create({
+  await db.conversationMessage.create({
     data: {
       conversationId: conversation.id,
       from: 'guest',
@@ -128,11 +144,9 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
   await broadcastConversationUpdate(tenantId, conversation.id);
 
   // 4. Load context dynamically from Prisma
-  const [tenant, property, rooms, knowledge, trainingPrompts, recentMessages] = await Promise.all([
+  const [tenant, property, trainingPrompts, recentMessages] = await Promise.all([
     db.tenant.findUnique({ where: { id: tenantId } }),
     db.property.findFirst({ where: { tenantId } }),
-    db.room.findMany({ where: { property: { tenantId } } }), // Query rooms via Property filter
-    db.knowledgeEntry.findMany({ where: { tenantId } }),
     db.trainingPrompt.findMany({ where: { tenantId, isActive: true } }),
     db.conversationMessage.findMany({
       where: { conversationId: conversation.id },
@@ -237,13 +251,11 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
   }
 
   // 5. Structure the dynamic system prompt
-  // White label checking: Only MAX can brand-customize the assistant name
   const assistantName = (planType === 'max') 
     ? (trainingPrompts.find(p => p.type === 'name')?.content || 'ZÉLLA') 
     : 'ZÉLLA';
 
-  let systemPrompt = `
-Você é a ${assistantName}, uma assistente virtual de inteligência artificial ultra-atenciosa e hospitaleira da pousada "${property?.name || 'Pousada' }".
+  let systemPrompt = `Você é a ${assistantName}, uma assistente virtual de inteligência artificial ultra-atenciosa e hospitaleira da pousada "${property?.name || 'Pousada'}".
 Seu objetivo é sanar dúvidas, encantar o hóspede, sugerir acomodações e incentivar a reserva direta de forma natural, educada e calorosa.
 
 === INFORMAÇÕES GERAIS DA POUSADA ===
@@ -251,23 +263,13 @@ Nome: ${property?.name || 'Pousada'}
 Endereço/Localização: ${property?.city || ''}, ${property?.state || ''}
 Descrição/Tom: ${property?.description || 'Um refúgio tranquilo e acolhedor.'}
 
-=== NOSSAS ACOMODAÇÕES (QUARTOS) ===
-${rooms.length > 0 
-  ? rooms.map(r => `- Quarto: ${r.name} (Capacidade: ${r.capacity} pessoas, Preço base: R$${r.price}/diária)`).join('\n')
-  : 'Consulte o gerente de reservas para valores de quartos.'}
-
-=== INFORMAÇÕES ADICIONAIS & REGRAS (FAQ) ===
-${knowledge.length > 0
-  ? knowledge.map(k => `- Pergunta/Tópico: ${k.question}\n  Resposta: ${k.answer}`).join('\n')
-  : 'Check-in padrão a partir das 14h, check-out até às 12h.'}
-
 === DIRETRIZES DE COMUNICAÇÃO ===
 1. Responda de forma concisa e objetiva (máximo de 3 parágrafos curtos). Mensagens de WhatsApp muito longas cansam o hóspede.
 2. Seja hospitaleira, use emojis de forma moderada e profissional.
 3. Se o hóspede perguntar preços, apresente as opções de quartos disponíveis e pergunte a data desejada e quantidade de pessoas para refinar a cotação.
 4. Responda SEMPRE em português do Brasil de forma natural.
 5. Se for perguntado algo sobre o qual você não tem contexto ou informação no prompt, seja honesta e diga que vai verificar com o atendente humano, deixando a conversa em aberto.
-6. Nunca invente informações que não estejam listadas nos quartos ou no FAQ acima.
+6. Nunca invente informações que não estejam listadas nos quartos ou no FAQ.
 `;
 
   if (trainingPrompts.length > 0) {
@@ -279,27 +281,26 @@ ${knowledge.length > 0
     }
   }
 
-  // 6. Build the conversation thread prompt
-  let conversationThread = 'Abaixo está o histórico recente de interações com este hóspede:\n';
-  for (const msg of recentMessages) {
-    const sender = msg.from === 'guest' ? 'Hóspede' : msg.from === 'ai' ? `${assistantName} (IA)` : 'Atendente Humano';
-    conversationThread += `\n[${sender}]: ${msg.content}`;
+  // 6. Execute the Cognitive Pipeline
+  let aiResponseText = '';
+  let cognitiveRes: any = null;
+
+  try {
+    cognitiveRes = await executeCognitivePipeline({
+      message: messageContent,
+      tenantId,
+      sessionId: conversation.id,
+      systemPrompt,
+    });
+    aiResponseText = cognitiveRes.response;
+  } catch (err) {
+    console.error('[processIncomingMessage] Error executing cognitive pipeline:', err);
+    aiResponseText = 'Desculpe, tive um probleminha para processar sua mensagem agora. Posso chamar alguém para te ajudar?';
   }
-  conversationThread += `\n\n[Hóspede] (última mensagem recebida): ${messageContent}\n\n${assistantName} (IA):`;
 
-  // 7. Invoke the ZaosNeuroRouter
-  const router = await getNeuroRouter();
-  const aiResult = await router.generate({
-    message: conversationThread,
-    systemPrompt,
-    sessionId: conversation.id,
-    tier: 2, // Use Tier 2 for general guest messaging
-  });
-
-  const aiResponseText = aiResult.response;
   const latency = Date.now() - startTime;
 
-  // 8. Save the AI response
+  // 7. Save the AI response
   const aiMessage = await db.conversationMessage.create({
     data: {
       conversationId: conversation.id,
@@ -307,37 +308,55 @@ ${knowledge.length > 0
       content: aiResponseText,
       metadata: JSON.stringify({
         latencyMs: latency,
-        providerUsed: aiResult.providerId,
-        tierUsed: aiResult.tier,
-        isMock: aiResult.isMock,
+        providerUsed: cognitiveRes?.providerId,
+        tierUsed: cognitiveRes?.tierUsed,
+        isMock: cognitiveRes?.isMock,
+        pipeline: 'phase2',
+        intent: cognitiveRes?.intent,
+        guard: cognitiveRes?.securityAlerts,
+        rag: cognitiveRes?.searchStats,
+        tools: cognitiveRes?.toolCalls,
       }),
     },
   });
 
-  // 9. Update ConversationLog lastUpdate and confidence score
-  const confidencePct = Math.round((aiResult.confidence || 0.85) * 100);
+  // 8. Update ConversationLog lastUpdate, status and confidence score
+  const confidencePct = Math.round((cognitiveRes?.confidence || 0.85) * 100);
+  const nextStatus = (cognitiveRes?.requiresHumanHandover || cognitiveRes?.intent === 'human_handover')
+    ? 'escalated'
+    : 'active';
+
   await db.conversationLog.update({
     where: { id: conversation.id },
     data: {
       lastUpdate: new Date(),
+      status: nextStatus,
       aiConfidence: confidencePct,
     },
   });
 
-  // 10. Record activities and alerts
+  // 9. Record activities and alerts
+  const intentLog = cognitiveRes ? formatIntentLog({
+    intent: cognitiveRes.intent,
+    confidence: cognitiveRes.confidence,
+    method: 'heuristic',
+    matchedKeywords: [],
+    timestamp: new Date()
+  } as any) : 'UNKNOWN';
+
   await Promise.all([
     db.aIActivityLog.create({
       data: {
         tenantId,
-        type: 'message',
-        message: `IA respondeu em background (${latency}ms, Confiança: ${confidencePct}%)`,
+        type: nextStatus === 'escalated' ? 'escalation' : 'message',
+        message: `IA respondeu em background (${latency}ms, Confiança: ${confidencePct}%, Intent: ${intentLog})`,
         status: 'success',
         duration: latency,
         metadata: JSON.stringify({
           messageId: aiMessage.id,
-          provider: aiResult.providerId,
-          costUsd: aiResult.costUsd,
-          isMock: aiResult.isMock,
+          provider: cognitiveRes?.providerId,
+          costUsd: 0,
+          isMock: cognitiveRes?.isMock,
         }),
       },
     }),
@@ -346,8 +365,8 @@ ${knowledge.length > 0
         tenantId,
         title: `Nova mensagem WhatsApp — ${guest.name}`,
         message: messageContent.length > 60 ? `${messageContent.substring(0, 60)}...` : messageContent,
-        type: 'escalation',
-        priority: 'medium',
+        type: nextStatus === 'escalated' ? 'escalation' : 'message',
+        priority: nextStatus === 'escalated' ? 'high' : 'medium',
         read: false,
         actionLabel: 'Ver conversa',
         actionUrl: `/ddc?guest=${guest.id}`,
@@ -355,7 +374,7 @@ ${knowledge.length > 0
     }),
   ]);
 
-  // 11. Notify DDC about the AI's response
+  // 10. Notify DDC about the AI's response
   await broadcastConversationUpdate(tenantId, conversation.id);
 
   return {

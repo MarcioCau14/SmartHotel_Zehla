@@ -873,8 +873,10 @@ export class ZaosNeuroRouter {
       }
     }
 
-    // --- Headroom Compression ---
-    let finalPrompt = request.message;
+    // --- Build final prompt (prepend system prompt if provided) ---
+    let finalPrompt = request.systemPrompt
+      ? `${request.systemPrompt}\n\n${request.message}`
+      : request.message;
     let compressionRatio = 0;
     if (this.headroomClient.shouldCompress(finalPrompt.length)) {
       const result = await this.headroomClient.compress(finalPrompt);
