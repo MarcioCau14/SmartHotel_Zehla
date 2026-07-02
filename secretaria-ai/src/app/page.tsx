@@ -16,6 +16,7 @@ import { BetaFounderSection } from '@/components/landing/BetaFounderSection';
 import { FinalCTASection } from '@/components/landing/FinalCTASection';
 import { Footer } from '@/components/landing/Footer';
 import { FloatingCTA } from '@/components/landing/FloatingCTA';
+import { DashboardPreviewSection } from '@/components/landing/DashboardPreviewSection';
 
 export default function LandingPage() {
   return (
@@ -25,6 +26,7 @@ export default function LandingPage() {
       <PainPointsSection />
       <HowItWorksSection />
       <FeaturesSection />
+      <DashboardPreviewSection />
       <SavingsCalculator />
       <BookingPlatformsMarquee />
       <TestimonialsSection />
