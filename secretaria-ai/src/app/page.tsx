@@ -15,6 +15,7 @@ import { ContactSection } from '@/components/landing/ContactSection';
 import { BetaFounderSection } from '@/components/landing/BetaFounderSection';
 import { FinalCTASection } from '@/components/landing/FinalCTASection';
 import { Footer } from '@/components/landing/Footer';
+import { FloatingCTA } from '@/components/landing/FloatingCTA';
 
 export default function LandingPage() {
   return (
@@ -33,6 +34,7 @@ export default function LandingPage() {
       <BetaFounderSection />
       <FinalCTASection />
       <Footer />
+      <FloatingCTA />
     </main>
   );
 }
