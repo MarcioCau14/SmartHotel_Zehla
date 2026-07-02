@@ -9,7 +9,6 @@ import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { SavingsCalculator } from '@/components/landing/SavingsCalculator';
 import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
 import BookingPlatformsMarquee from '@/components/landing/BookingPlatformsMarquee';
-import { IntegrationsSection } from '@/components/landing/IntegrationsSection';
 import { SecuritySection } from '@/components/landing/SecuritySection';
 import { PricingSection } from '@/components/landing/PricingSection';
 import { FAQSection } from '@/components/landing/FAQSection';
@@ -29,7 +28,6 @@ export default function LandingPage() {
       <SavingsCalculator />
       <BookingPlatformsMarquee />
       <TestimonialsSection />
-      <IntegrationsSection />
       <SecuritySection />
       <PricingSection />
       <FAQSection />
