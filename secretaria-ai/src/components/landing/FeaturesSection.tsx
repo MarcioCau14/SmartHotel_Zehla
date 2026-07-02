@@ -68,7 +68,11 @@ function FeatureMockup({ type }: { type: string }) {
 
   if (type === 'linkinbio') {
     return (
-      <div className="relative w-[280px] mx-auto h-[530px] rounded-[42px] border-[6px] border-neutral-800 bg-[#070709] shadow-2xl p-2.5 overflow-hidden flex flex-col justify-between select-none">
+      <div className="relative">
+        {/* Ambient green glow behind the mockup */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[340px] rounded-full bg-emerald-500/[0.08] blur-[80px] pointer-events-none z-0" />
+        
+        <div className="relative w-[280px] mx-auto h-[530px] rounded-[42px] border-[6px] border-neutral-800 bg-[#070709] shadow-2xl p-2.5 overflow-hidden flex flex-col justify-between select-none z-10">
         {/* iPhone 15 Pro Dynamic Island */}
         <div className="absolute top-3 left-1/2 -translate-x-1/2 w-20 h-5 bg-black rounded-full z-20 flex items-center justify-center">
           <div className="w-2.5 h-2.5 rounded-full bg-[#111] border border-neutral-900/50 absolute right-2" />
@@ -173,6 +177,7 @@ function FeatureMockup({ type }: { type: string }) {
             </div>
           </div>
         </div>
+      </div>
       </div>
     );
   }

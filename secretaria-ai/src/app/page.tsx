@@ -8,7 +8,6 @@ import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { SavingsCalculator } from '@/components/landing/SavingsCalculator';
 import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
-import { TrustBadgesSection } from '@/components/landing/TrustBadgesSection';
 import BookingPlatformsMarquee from '@/components/landing/BookingPlatformsMarquee';
 import { ArchitectureSection } from '@/components/landing/ArchitectureSection';
 import { IntegrationsSection } from '@/components/landing/IntegrationsSection';
@@ -31,7 +30,6 @@ export default function LandingPage() {
       <SavingsCalculator />
       <BookingPlatformsMarquee />
       <TestimonialsSection />
-      <TrustBadgesSection />
       <ArchitectureSection />
       <IntegrationsSection />
       <SecuritySection />
