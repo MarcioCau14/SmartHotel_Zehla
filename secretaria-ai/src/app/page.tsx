@@ -11,6 +11,7 @@ import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
 import BookingPlatformsMarquee from '@/components/landing/BookingPlatformsMarquee';
 import { PricingSection } from '@/components/landing/PricingSection';
 import { FAQSection } from '@/components/landing/FAQSection';
+import { ContactSection } from '@/components/landing/ContactSection';
 import { BetaFounderSection } from '@/components/landing/BetaFounderSection';
 import { CTASection } from '@/components/landing/CTASection';
 import { FinalCTASection } from '@/components/landing/FinalCTASection';
@@ -29,6 +30,7 @@ export default function LandingPage() {
       <TestimonialsSection />
       <PricingSection />
       <FAQSection />
+      <ContactSection />
       <BetaFounderSection />
       <CTASection />
       <FinalCTASection />
