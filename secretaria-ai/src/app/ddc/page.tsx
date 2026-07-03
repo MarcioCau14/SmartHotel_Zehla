@@ -283,9 +283,6 @@ export default function DDCDashboardPage() {
               />
               <GuestCRMPipeline pipeline={pipeline} allGuests={allGuests} onStatusChange={updateGuestStatus} onFilterChange={setFilters} />
             </motion.div>
-            <motion.div variants={fadeIn} initial="hidden" animate="visible">
-              <TrainingCenter />
-            </motion.div>
           </div>
 
           {/* RIGHT PANEL */}
