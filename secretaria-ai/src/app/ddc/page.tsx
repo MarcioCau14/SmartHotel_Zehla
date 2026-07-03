@@ -142,7 +142,59 @@ export default function DDCDashboardPage() {
   const [pixReason, setPixReason] = useState('Taxa de Higienização de Pet');
   const [generatedPixPayload, setGeneratedPixPayload] = useState<string | null>(null);
   const [isSendingPix, setIsSendingPix] = useState(false);
-  const [isBoosting, setIsBoosting] = useState(false);
+
+  // Trial Onboarding states
+  const [onboardingChecked, setOnboardingChecked] = useState<{
+    voiceTone: boolean;
+    faq: boolean;
+    linkinbio: boolean;
+    simulator: boolean;
+  }>({
+    voiceTone: false,
+    faq: false,
+    linkinbio: false,
+    simulator: false,
+  });
+
+  // Load from localStorage on client-side mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('zehla_ddc_onboarding');
+      if (saved) {
+        setOnboardingChecked(JSON.parse(saved));
+      } else {
+        const initial = {
+          voiceTone: true,
+          faq: true,
+          linkinbio: false,
+          simulator: false,
+        };
+        setOnboardingChecked(initial);
+        localStorage.setItem('zehla_ddc_onboarding', JSON.stringify(initial));
+      }
+    } catch {}
+  }, []);
+
+  const markOnboardingStep = (step: 'voiceTone' | 'faq' | 'linkinbio' | 'simulator', value: boolean) => {
+    setOnboardingChecked(prev => {
+      const next = { ...prev, [step]: value };
+      try {
+        localStorage.setItem('zehla_ddc_onboarding', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  const getCompletedCount = () => {
+    let count = 0;
+    if (onboardingChecked.voiceTone) count++;
+    if (onboardingChecked.faq) count++;
+    if (onboardingChecked.linkinbio) count++;
+    if (onboardingChecked.simulator) count++;
+    return count;
+  };
+
+  const progressPercentage = Math.round((getCompletedCount() / 4) * 100);
 
   const handleQuickActionClick = (actionId: string) => {
     if (actionId === 'whatsapp') {
@@ -190,20 +242,6 @@ export default function DDCDashboardPage() {
       toast.error('Falha ao enviar mensagem de Pix no chat.');
     } finally {
       setIsSendingPix(false);
-    }
-  };
-
-  const handleBoost = async () => {
-    if (!selectedConversation) return;
-    setIsBoosting(true);
-    try {
-      await new Promise(r => setTimeout(r, 1500));
-      toast.success('Boost de IA concluído! Zélla re-analisou as regras e enviou a melhor resposta autônoma no WhatsApp.');
-      setActiveQuickAction(null);
-    } catch {
-      toast.error('Erro ao processar o Boost de IA.');
-    } finally {
-      setIsBoosting(false);
     }
   };
 
@@ -371,82 +409,195 @@ export default function DDCDashboardPage() {
                   initial={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.25, ease: 'easeOut' }}
-                  className="bg-[#121216] border border-white/[0.05] rounded-xl overflow-hidden"
+                  className="bg-gradient-to-b from-[#121216]/90 to-[#0a0a0f]/90 border border-white/[0.06] rounded-xl overflow-hidden shadow-2xl backdrop-blur-md"
                 >
-                  <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3 border-b border-white/[0.04]">
-                    <div className="flex items-center gap-2">
-                      <span>🚀</span>
-                      <span className="text-xs font-bold text-white">Primeiros passos</span>
-                    </div>
-                    <button
-                      onClick={() => { setShowOnboarding(false); toast.info('Guia ocultado.'); }}
-                      className="p-1 rounded hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                  <div className="p-4 space-y-2">
-                    <div className="flex items-center gap-2.5 py-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <div>
-                        <p className="text-xs font-semibold text-white">FAQ da pousada indexado</p>
-                        <p className="text-zinc-500 text-[10px] mt-0.5">Regras e respostas prontas para a IA.</p>
+                  {/* Header */}
+                  <div className="px-4 pt-4 pb-3 border-b border-white/[0.04]">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">🚀</span>
+                        <span className="text-xs font-extrabold text-white uppercase tracking-wider">Ativação do Trial</span>
+                        <span className="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1 rounded font-bold uppercase">7 dias grátis</span>
                       </div>
+                      <button
+                        onClick={() => { setShowOnboarding(false); toast.info('Painel de trial ocultado.'); }}
+                        className="p-1 rounded hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                    <div className="flex items-center gap-2.5 py-2 border-t border-white/[0.03]">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <div>
-                        <p className="text-xs font-semibold text-white">WhatsApp conectado</p>
-                        <p className="text-zinc-500 text-[10px] mt-0.5">Fluxo de mensagens ativo.</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => { setActiveTab('settings'); setSubTab('linkinbio'); }}
-                      className="w-full border-t border-white/[0.03] flex items-center justify-between gap-2 pt-3 text-left group cursor-pointer"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-4 h-4 rounded-full border border-zinc-700 flex items-center justify-center text-zinc-500 group-hover:border-emerald-500/40 group-hover:text-emerald-400 transition-colors shrink-0">
-                          <span className="text-[8px] font-bold">3</span>
-                        </div>
-                        <p className="text-xs font-semibold text-zinc-400 group-hover:text-emerald-400 transition-colors">Customizar Link-in-Bio</p>
-                      </div>
-                      <ChevronRight className="w-3.5 h-3.5 text-zinc-700 group-hover:text-emerald-400 transition-colors shrink-0" />
-                    </button>
 
-                    <div className="pt-3 border-t border-white/[0.03]">
-                      <p className="text-[11px] font-semibold text-emerald-400 mb-2">Teste ao vivo</p>
-                      <select
-                        id="simulation-msg"
-                        className="w-full bg-[#0a0a0f] border border-white/[0.07] rounded-lg p-1.5 text-[10px] text-zinc-300 focus:outline-none focus:border-emerald-500/30 mb-2"
-                        defaultValue="casal"
-                      >
-                        <option value="casal">Reservas: quarto de casal para amanhã?</option>
-                        <option value="pets">Pets: vocês aceitam animais?</option>
-                        <option value="rules">Check-in: horários e Wi-Fi?</option>
-                        <option value="pool">Lazer: piscina e estacionamento?</option>
-                      </select>
-                      <Button
-                        onClick={async () => {
-                          const selectEl = document.getElementById('simulation-msg') as HTMLSelectElement;
-                          const value = selectEl?.value;
-                          let message = 'Olá, tem quarto de casal disponível para amanhã? Qual o valor?';
-                          if (value === 'pets') message = 'Olá! Vocês aceitam animais de estimação (pets)?';
-                          else if (value === 'rules') message = 'Qual o horário do check-in e check-out de vocês? Tem Wi-Fi?';
-                          else if (value === 'pool') message = 'Boa tarde, queria saber se tem estacionamento incluso e piscina.';
-                          toast.promise(
-                            fetch('/api/ddc/simulate-message', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ message }),
-                            }).then(async r => { if (!r.ok) throw new Error(); return r.json(); }),
-                            { loading: 'Enviando...', success: 'Mensagem simulada com sucesso!', error: 'Falha ao simular.' }
-                          );
-                        }}
-                        className="w-full py-2 h-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] rounded-lg flex items-center justify-center gap-1.5 cursor-pointer transition-colors active:scale-[0.98]"
-                      >
-                        <Zap className="w-3 h-3" /> Simular Hóspede
-                      </Button>
+                    {/* Progress Bar */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="text-zinc-400 font-bold">{getCompletedCount()} de 4 etapas concluídas</span>
+                        <span className="text-emerald-400 font-extrabold font-mono">{progressPercentage}%</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-white/[0.04] rounded-full overflow-hidden border border-white/[0.02]">
+                        <motion.div
+                          className="h-full bg-gradient-to-r from-emerald-500 to-teal-400"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${progressPercentage}%` }}
+                          transition={{ duration: 0.4, ease: 'easeOut' }}
+                        />
+                      </div>
                     </div>
+                  </div>
+
+                  {/* Steps Checklist */}
+                  <div className="p-4 space-y-3.5">
+                    {/* Step 1: Tom de Voz */}
+                    <div className="flex items-start gap-3 group">
+                      <button
+                        onClick={() => markOnboardingStep('voiceTone', !onboardingChecked.voiceTone)}
+                        className={`w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer mt-0.5 shrink-0 ${
+                          onboardingChecked.voiceTone
+                            ? 'bg-emerald-500 border-emerald-500 text-white'
+                            : 'border-zinc-700 hover:border-zinc-500 bg-transparent'
+                        }`}
+                      >
+                        {onboardingChecked.voiceTone && <CheckCircle2 className="w-3.5 h-3.5 text-black stroke-[3px]" />}
+                      </button>
+                      <div className="min-w-0 flex-1">
+                        <button
+                          onClick={() => {
+                            setActiveTab('settings');
+                            setSubTab('geral');
+                            markOnboardingStep('voiceTone', true);
+                            toast.info('Personalize o Tom de Voz nas configurações da IA.');
+                          }}
+                          className="text-left font-bold text-xs text-white hover:text-emerald-400 transition-colors block"
+                        >
+                          1. Definir tom de voz da IA
+                        </button>
+                        <span className="text-[10px] text-zinc-500 block mt-0.5 leading-relaxed">
+                          Escolha a personalidade do Zélla (ex: simpático, formal ou direto).
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Step 2: Indexar FAQ */}
+                    <div className="flex items-start gap-3 group border-t border-white/[0.03] pt-3">
+                      <button
+                        onClick={() => markOnboardingStep('faq', !onboardingChecked.faq)}
+                        className={`w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer mt-0.5 shrink-0 ${
+                          onboardingChecked.faq
+                            ? 'bg-emerald-500 border-emerald-500 text-white'
+                            : 'border-zinc-700 hover:border-zinc-500 bg-transparent'
+                        }`}
+                      >
+                        {onboardingChecked.faq && <CheckCircle2 className="w-3.5 h-3.5 text-black stroke-[3px]" />}
+                      </button>
+                      <div className="min-w-0 flex-1">
+                        <button
+                          onClick={() => {
+                            setActiveTab('training');
+                            markOnboardingStep('faq', true);
+                            toast.info('Indexe regras no Centro de Treinamento.');
+                          }}
+                          className="text-left font-bold text-xs text-white hover:text-emerald-400 transition-colors block"
+                        >
+                          2. Indexar regras & FAQ da pousada
+                        </button>
+                        <span className="text-[10px] text-zinc-500 block mt-0.5 leading-relaxed">
+                          Ensine políticas de pets, horários de check-in e comodidades.
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Step 3: Link-in-Bio */}
+                    <div className="flex items-start gap-3 group border-t border-white/[0.03] pt-3">
+                      <button
+                        onClick={() => markOnboardingStep('linkinbio', !onboardingChecked.linkinbio)}
+                        className={`w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer mt-0.5 shrink-0 ${
+                          onboardingChecked.linkinbio
+                            ? 'bg-emerald-500 border-emerald-500 text-white'
+                            : 'border-zinc-700 hover:border-zinc-500 bg-transparent'
+                        }`}
+                      >
+                        {onboardingChecked.linkinbio && <CheckCircle2 className="w-3.5 h-3.5 text-black stroke-[3px]" />}
+                      </button>
+                      <div className="min-w-0 flex-1">
+                        <button
+                          onClick={() => {
+                            setActiveTab('settings');
+                            setSubTab('linkinbio');
+                            markOnboardingStep('linkinbio', true);
+                            toast.info('Personalize o seu Link-in-Bio.');
+                          }}
+                          className="text-left font-bold text-xs text-white hover:text-emerald-400 transition-colors block"
+                        >
+                          3. Customizar página Link-in-Bio
+                        </button>
+                        <span className="text-[10px] text-zinc-500 block mt-0.5 leading-relaxed">
+                          Sua vitrine virtual de reservas para o Instagram ou WhatsApp.
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Step 4: Simulador */}
+                    <div className="flex items-start gap-3 group border-t border-white/[0.03] pt-3">
+                      <button
+                        onClick={() => markOnboardingStep('simulator', !onboardingChecked.simulator)}
+                        className={`w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer mt-0.5 shrink-0 ${
+                          onboardingChecked.simulator
+                            ? 'bg-emerald-500 border-emerald-500 text-white'
+                            : 'border-zinc-700 hover:border-zinc-500 bg-transparent'
+                        }`}
+                      >
+                        {onboardingChecked.simulator && <CheckCircle2 className="w-3.5 h-3.5 text-black stroke-[3px]" />}
+                      </button>
+                      <div className="min-w-0 flex-1">
+                        <span className="font-bold text-xs text-white block">
+                          4. Testar atendimento (Simulador)
+                        </span>
+                        <span className="text-[10px] text-zinc-500 block mt-0.5 leading-relaxed">
+                          Envie uma mensagem simulada de hóspede e veja o Zélla respondendo.
+                        </span>
+
+                        <div className="mt-3 bg-[#0a0a0f] p-2.5 rounded-lg border border-white/[0.04] space-y-2">
+                          <select
+                            id="simulation-msg"
+                            className="w-full bg-[#121216] border border-white/[0.08] rounded p-1.5 text-[10px] text-zinc-300 focus:outline-none focus:border-emerald-500/30"
+                            defaultValue="casal"
+                          >
+                            <option value="casal">Reservas: quarto de casal para amanhã?</option>
+                            <option value="pets">Pets: vocês aceitam animais?</option>
+                            <option value="rules">Check-in: horários e Wi-Fi?</option>
+                            <option value="pool">Lazer: piscina e estacionamento?</option>
+                          </select>
+                          <Button
+                            onClick={async () => {
+                              const selectEl = document.getElementById('simulation-msg') as HTMLSelectElement;
+                              const value = selectEl?.value;
+                              let message = 'Olá, tem quarto de casal disponível para amanhã? Qual o valor?';
+                              if (value === 'pets') message = 'Olá! Vocês aceitam animais de estimação (pets)?';
+                              else if (value === 'rules') message = 'Qual o horário do check-in e check-out de vocês? Tem Wi-Fi?';
+                              else if (value === 'pool') message = 'Boa tarde, queria saber se tem estacionamento incluso e piscina.';
+                              
+                              markOnboardingStep('simulator', true);
+
+                              toast.promise(
+                                fetch('/api/ddc/simulate-message', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ message }),
+                                }).then(async r => { if (!r.ok) throw new Error(); return r.json(); }),
+                                {
+                                  loading: 'Simulando hóspede enviando mensagem...',
+                                  success: 'Mensagem enviada! Veja o Zélla respondendo no Live Feed.',
+                                  error: 'Falha ao simular mensagem.'
+                                }
+                              );
+                            }}
+                            className="w-full py-1.5 h-7 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] rounded flex items-center justify-center gap-1.5 cursor-pointer transition-colors active:scale-[0.98]"
+                          >
+                            <Zap className="w-3 h-3" /> Simular Mensagem
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
                   </div>
                 </motion.div>
               )}
@@ -1608,94 +1759,6 @@ export default function DDCDashboardPage() {
         </DialogContent>
       </Dialog>
 
-      {/* 3. BOOST MODAL */}
-      <Dialog open={activeQuickAction === 'boost'} onOpenChange={(open) => !open && setActiveQuickAction(null)}>
-        <DialogContent className="bg-[#0a0a0f] border border-white/[0.08] text-white max-w-sm p-6 rounded-xl shadow-2xl">
-          <DialogHeader className="border-b border-white/[0.04] pb-3">
-            <DialogTitle className="text-sm font-extrabold text-white flex items-center gap-2">
-              <Zap className="w-4 h-4 text-amber-400" />
-              Boost de Autonomia IA
-            </DialogTitle>
-            <DialogDescription className="text-zinc-500 text-[11px]">
-              Gerencie e audite o processamento de IA Zélla para a conversa atual.
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedConversation ? (
-            <div className="space-y-4 pt-3">
-              <div className="bg-[#121216] border border-white/[0.04] rounded-lg p-3.5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-zinc-400 font-bold uppercase block">Hóspede Ativo</span>
-                  <span className="text-xs text-white font-semibold">{selectedConversation.guestName}</span>
-                </div>
-                <div className="flex items-center justify-between border-t border-white/[0.03] pt-2">
-                  <span className="text-[10px] text-zinc-400 font-bold uppercase block">Confiança de Zélla</span>
-                  <span className={`text-xs font-mono font-extrabold ${
-                    (selectedConversation.aiScore || 0) >= 80 ? 'text-emerald-400' : 'text-yellow-400'
-                  }`}>
-                    {selectedConversation.aiScore || 0}% conf.
-                  </span>
-                </div>
-                <div className="flex items-center justify-between border-t border-white/[0.03] pt-2">
-                  <span className="text-[10px] text-zinc-400 font-bold uppercase block">Modo Operacional</span>
-                  <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 border border-emerald-500/15 rounded font-bold uppercase">
-                    Autônomo
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Button
-                  onClick={handleBoost}
-                  disabled={isBoosting}
-                  className="w-full h-10 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                >
-                  {isBoosting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" /> Processando Boost...
-                    </>
-                  ) : (
-                    <>
-                      <Zap className="w-4 h-4 text-white" /> Forçar Resposta Autônoma
-                    </>
-                  )}
-                </Button>
-                
-                <button
-                  onClick={() => {
-                    toast.promise(
-                      new Promise(r => setTimeout(r, 1200)),
-                      {
-                        loading: 'Zélla re-auditando regras e FAQ...',
-                        success: 'Regras cognitivas da pousada re-sincronizadas!',
-                        error: 'Falha na re-auditoria.'
-                      }
-                    );
-                    setActiveQuickAction(null);
-                  }}
-                  className="w-full h-9 bg-white/[0.04] hover:bg-white/[0.08] text-white font-bold text-xs rounded-lg border border-white/[0.06] transition-colors cursor-pointer"
-                >
-                  Re-auditar Histórico & Regras
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3 pt-3">
-              <p className="text-xs text-zinc-400 text-center py-4">
-                Selecione uma conversa no Live Feed para auditar ou impulsionar as respostas do Zélla.
-              </p>
-              <div className="border-t border-white/[0.04] pt-3 flex justify-end">
-                <Button 
-                  onClick={() => setActiveQuickAction(null)} 
-                  className="bg-white/[0.04] hover:bg-white/[0.08] text-white text-xs font-bold"
-                >
-                  Fechar
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

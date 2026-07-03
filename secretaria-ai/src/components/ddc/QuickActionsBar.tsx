@@ -38,8 +38,7 @@ export function QuickActionsBar({ onActionClick, onQuickActionClick, activeActio
   const quickActions = [
     { id: 'call', label: 'Ligar', icon: Phone, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/15' },
     { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, color: 'text-green-400 bg-green-500/10 border-green-500/15' },
-    { id: 'payment', label: 'Pagamento', icon: CreditCard, color: 'text-blue-400 bg-blue-500/10 border-blue-500/15' },
-    { id: 'boost', label: 'Boost IA', icon: Zap, color: 'text-amber-400 bg-amber-500/10 border-amber-500/15' }
+    { id: 'payment', label: 'Pagamento', icon: CreditCard, color: 'text-blue-400 bg-blue-500/10 border-blue-500/15' }
   ];
 
   return (
