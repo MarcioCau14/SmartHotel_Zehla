@@ -162,15 +162,15 @@ export function DDCHeader({
           <div className="flex items-center gap-3">
             <div>
               <h1 className="text-base font-bold text-white tracking-tight">
-                Seu Zélla <span className="text-emerald-400">COMMAND</span>
+                Seu Zélla
               </h1>
               <div className="flex items-center gap-2">
                 <p className="text-[10px] text-white/40 font-mono uppercase tracking-wider">
-                  {propertyName}
+                  Central de controle
                 </p>
                 <Badge
                   variant="outline"
-                  className="text-[9px] px-1.5 py-0 h-4 border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
+                  className="text-[9px] px-1.5 py-0 h-4 border-emerald-500/30 text-emerald-400 bg-emerald-500/10 font-mono uppercase"
                 >
                   PRO
                 </Badge>
@@ -193,27 +193,8 @@ export function DDCHeader({
           </div>
         </div>
 
-        {/* Right Section: AI Status + Notifications + User */}
+        {/* Right Section: Notifications + User */}
         <div className="flex items-center gap-3">
-          {/* AI Status Indicator */}
-          <div
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${statusConfig.bgColor} border ${statusConfig.textColor}/20`}
-          >
-            <div className="relative">
-              <StatusIcon className={`w-4 h-4 ${statusConfig.textColor}`} />
-              <motion.div
-                className={`absolute -top-0.5 -right-0.5 w-2 h-2 ${statusConfig.color} rounded-full`}
-                animate={{
-                  scale: [1, 1.3, 1],
-                  opacity: [1, 0.6, 1]
-                }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' as const }}
-              />
-            </div>
-            <span className={`text-xs font-medium ${statusConfig.textColor}`}>
-              {statusConfig.label}
-            </span>
-          </div>
 
           {/* Quick Stats - Desktop */}
           <div className="hidden lg:flex items-center gap-4 px-4 py-1.5 rounded-lg bg-white/[0.02] border border-white/[0.04]">

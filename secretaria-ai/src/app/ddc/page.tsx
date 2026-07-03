@@ -167,7 +167,7 @@ export default function DDCDashboardPage() {
           }`}
         >
           <MessageSquare className="w-3.5 h-3.5" />
-          Zellador (Suporte)
+          Fale com seu Zelador (Suporte)
         </button>
       </div>
 
