@@ -66,7 +66,7 @@ export function ContactSection() {
     }
   };
 
-  const inputClass = "w-full rounded-xl border border-white/[0.03] bg-[#070709] px-4 py-3 text-sm text-white placeholder-neutral-600 focus:border-emerald-500/40 focus:bg-black focus:outline-none transition-all duration-200";
+  const inputClass = "w-full rounded-xl border border-white/[0.03] bg-[#070709] px-4 py-3 text-sm text-white placeholder-neutral-600 focus:border-[#4169E1] focus:bg-black focus:outline-none focus:ring-2 focus:ring-[#4169E1]/40 transition-all duration-200";
 
   return (
     <section ref={ref} id="contato" className="py-24 sm:py-32 relative overflow-hidden">
@@ -247,7 +247,7 @@ export function ContactSection() {
                     <button
                       type="submit"
                       disabled={status === 'loading'}
-                      className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-sm font-bold text-white transition-all hover:from-emerald-400 hover:to-emerald-500 disabled:opacity-60 cursor-pointer shadow-lg shadow-emerald-500/20"
+                      className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-sm font-bold text-white transition-all hover:from-emerald-400 hover:to-emerald-500 disabled:opacity-60 cursor-pointer shadow-lg shadow-emerald-500/20 active:scale-95 duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                     >
                       {status === 'loading' ? (
                         <>

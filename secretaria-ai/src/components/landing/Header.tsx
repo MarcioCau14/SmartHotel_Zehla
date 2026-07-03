@@ -40,7 +40,7 @@ export function Header() {
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         {/* Brand Logo & Name */}
-        <Link href="/" className="flex items-center gap-2.5 group">
+        <Link href="/" className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-lg">
           <div className="relative w-8 h-8 flex items-center justify-center bg-white/[0.03] border border-white/10 rounded-lg group-hover:border-emerald-500/30 transition-all">
             <img src="/logo.svg" className="w-5 h-5" alt="Seu ZÉLLA Logo" />
           </div>
@@ -55,7 +55,7 @@ export function Header() {
             <Link
               key={link.name}
               href={link.href}
-              className="text-xs font-medium text-white/70 hover:text-white transition-colors"
+              className="text-xs font-medium text-white/70 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-md px-1 py-0.5"
             >
               {link.name}
             </Link>
@@ -66,13 +66,13 @@ export function Header() {
         <div className="hidden md:flex items-center gap-4">
           <Link
             href="/login"
-            className="text-xs font-semibold text-white/80 hover:text-white px-4 py-2 transition-all"
+            className="text-xs font-semibold text-white/80 hover:text-white px-4 py-2 transition-all active:scale-95 duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-lg"
           >
             ENTRAR
           </Link>
           <Link
             href="#precos"
-            className="group relative inline-flex items-center justify-center px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-xl overflow-hidden shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all hover:scale-[1.02]"
+            className="group relative inline-flex items-center justify-center px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-xl overflow-hidden shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all hover:scale-[1.02] active:scale-95 duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           >
             <span>Testar por 7 dias</span>
             <ArrowRight className="w-3.5 h-3.5 ml-1.5 transition-transform group-hover:translate-x-0.5" />
@@ -82,7 +82,7 @@ export function Header() {
         {/* Mobile Hamburger Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden p-1.5 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+          className="md:hidden p-1.5 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
         >
           {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>

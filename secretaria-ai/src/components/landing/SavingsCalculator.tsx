@@ -65,7 +65,7 @@ export function SavingsCalculator() {
               <div className="flex items-center justify-center gap-3">
                 <button
                   onClick={() => setRooms(Math.max(1, rooms - 1))}
-                  className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/[0.08] text-white font-bold text-lg hover:bg-white/[0.1] transition-colors cursor-pointer"
+                  className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/[0.08] text-white font-bold text-lg hover:bg-white/[0.1] transition-all cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 >
                   -
                 </button>
@@ -74,7 +74,7 @@ export function SavingsCalculator() {
                 </div>
                 <button
                   onClick={() => setRooms(Math.min(50, rooms + 1))}
-                  className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/[0.08] text-white font-bold text-lg hover:bg-white/[0.1] transition-colors cursor-pointer"
+                  className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/[0.08] text-white font-bold text-lg hover:bg-white/[0.1] transition-all cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 >
                   +
                 </button>

@@ -413,7 +413,7 @@ export function FeaturesSection() {
   const isInView = useInView(ref, { once: true, margin: '-50px' });
 
   return (
-    <section ref={ref} id="funcionalidades" className="py-20 sm:py-28 bg-[#0a0a0a]">
+    <section ref={ref} id="funcionalidades" className="py-24 sm:py-32 bg-[#0a0a0a]">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <motion.div
