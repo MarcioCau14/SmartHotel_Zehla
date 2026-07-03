@@ -7,16 +7,29 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Toaster } from 'sonner';
-import { toast } from 'sonner';
-import { Hotel, Mail, Lock, User, Phone, Building2, Loader2 } from 'lucide-react';
+import { Toaster, toast } from 'sonner';
+import {
+  Mail,
+  Lock,
+  User,
+  Phone,
+  Building2,
+  Loader2,
+  Zap,
+  CheckCircle2,
+  Activity,
+  Sparkles,
+  ArrowRight,
+  Eye,
+  EyeOff,
+  ShieldCheck
+} from 'lucide-react';
 
 export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] p-4 text-white">
+        <div className="min-h-screen flex items-center justify-center bg-[#0a0a0d] p-4 text-white">
           <div className="flex flex-col items-center gap-2">
             <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
             <span className="text-zinc-400 text-sm">Carregando...</span>
@@ -35,158 +48,482 @@ function LoginForm() {
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
 
   const [isLoading, setIsLoading] = useState(false);
+  const [mode, setMode] = useState<'login' | 'register'>('login');
+  
+  // Password reveal states
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Form states
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [registerData, setRegisterData] = useState({
-    name: '', email: '', password: '', phone: '', pousadaName: '',
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phone: '',
+    pousadaName: '',
+    cnpjOrCpf: '',
   });
+
+  const [agreedTerms, setAgreedTerms] = useState(false);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setIsLoading(true);
     try {
       const result = await signIn('credentials', {
-        email: loginData.email, password: loginData.password, redirect: false,
+        email: loginData.email,
+        password: loginData.password,
+        redirect: false,
       });
       if (result?.error) {
         toast.error('Credenciais inválidas. Verifique seu email e senha.');
       } else {
+        toast.success('Login realizado com sucesso!');
         router.push(callbackUrl);
         router.refresh();
       }
     } catch {
       toast.error('Erro ao fazer login. Tente novamente.');
-    } finally { setIsLoading(false); }
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
+
+    if (registerData.password !== registerData.confirmPassword) {
+      toast.error('As senhas não coincidem.');
+      return;
+    }
+
+    if (registerData.password.length < 6) {
+      toast.error('A senha deve ter pelo menos 6 caracteres.');
+      return;
+    }
+
+    if (!agreedTerms) {
+      toast.error('Você deve concordar com os Termos de Uso e a Política de Privacidade.');
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch('/api/auth/register', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(registerData),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: registerData.name,
+          email: registerData.email,
+          password: registerData.password,
+          phone: registerData.phone,
+          pousadaName: registerData.pousadaName,
+          cnpjOrCpf: registerData.cnpjOrCpf,
+        }),
       });
+      
       const data = await response.json();
       if (response.ok) {
-        toast.success('Conta criada com sucesso! Fazendo login...');
+        toast.success('Conta criada com sucesso! Acessando...');
         const result = await signIn('credentials', {
-          email: registerData.email, password: registerData.password, redirect: false,
+          email: registerData.email,
+          password: registerData.password,
+          redirect: false,
         });
-        if (result?.ok) { router.push(callbackUrl); router.refresh(); }
+        if (result?.ok) {
+          router.push(callbackUrl);
+          router.refresh();
+        }
       } else {
         toast.error(data.error || 'Erro ao criar conta.');
       }
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error('Erro ao criar conta. Tente novamente.');
-    } finally { setIsLoading(false); }
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] p-4">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-[#0a0a0d] text-white select-none">
       <Toaster position="top-center" richColors />
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-2">
-            <h1 className="text-3xl font-bold text-white">Seu Zélla</h1>
+
+      {/* LADO ESQUERDO: DESTAQUE DO PRODUTO (Estilo Editorial Premium) */}
+      <div className="hidden lg:flex lg:col-span-5 bg-[#121216] border-r border-white/[0.04] p-12 flex-col justify-between relative">
+        {/* Brand Header */}
+        <div className="flex items-center gap-3">
+          <div>
+            <span className="font-extrabold text-white text-xl block leading-none tracking-tight">
+              Seu Zélla
+            </span>
+            <span className="text-[9px] text-neutral-500 font-mono uppercase tracking-wider block mt-1">
+              Cognitive OS for Hospitality
+            </span>
           </div>
-          <p className="text-zinc-400 text-sm">SmartHotel — IA Cognitiva para Pousadas</p>
         </div>
 
-        <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-zinc-900">
-            <TabsTrigger value="login" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">Entrar</TabsTrigger>
-            <TabsTrigger value="register" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">Criar Conta</TabsTrigger>
-          </TabsList>
+        {/* Copy Editorial */}
+        <div className="my-auto space-y-8">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight tracking-tight font-serif">
+            Tudo o que você precisa para colocar o assistente da sua pousada no ar.
+          </h2>
 
-          <TabsContent value="login">
-            <Card className="bg-zinc-900 border-zinc-800">
-              <CardHeader>
-                <CardTitle className="text-white">Bem-vindo de volta</CardTitle>
-                <CardDescription className="text-zinc-400">Acesse o painel da sua pousada</CardDescription>
-              </CardHeader>
-              <form onSubmit={handleLogin}>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email" className="text-zinc-300">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                      <Input id="login-email" type="email" placeholder="seu@email.com" className="pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500" value={loginData.email} onChange={(e) => setLoginData({ ...loginData, email: e.target.value })} required />
-                    </div>
+          <div className="space-y-6">
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                <Zap className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="font-bold text-white text-sm">IA ativa no WhatsApp em minutos</h4>
+                <p className="text-zinc-500 text-xs mt-1">
+                  Sem burocracia ou processos complexos de homologação. Comece a responder imediatamente.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="font-bold text-white text-sm">FAQs e Calendário iCal nativos</h4>
+                <p className="text-zinc-500 text-xs mt-1">
+                  Importe as regras de hospedagem e sincronize com Booking e Airbnb em segundos.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                <Activity className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="font-bold text-white text-sm">Diário de Conversas & Handover</h4>
+                <p className="text-zinc-500 text-xs mt-1">
+                  Veja tudo em tempo real e assuma o controle do chat sempre que julgar necessário.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Esquerdo */}
+        <p className="text-zinc-600 text-xs">
+          © 2026 Seu Zélla. Todos os direitos reservados.
+        </p>
+      </div>
+
+      {/* LADO DIREITO: FORMULÁRIO DE LOGIN OU CADASTRO */}
+      <div className="lg:col-span-7 flex flex-col justify-center items-center p-6 sm:p-12 overflow-y-auto min-h-screen relative">
+        <div className="w-full max-w-xl py-8">
+          
+          {mode === 'login' ? (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                  Acesse sua conta
+                </h3>
+                <p className="text-zinc-400 text-sm mt-2">
+                  Gerencie as reservas e acompanhe a IA da sua pousada
+                </p>
+              </div>
+
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="login-email" className="text-zinc-300 text-xs font-semibold">Email *</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                    <Input
+                      id="login-email"
+                      type="email"
+                      placeholder="seu@email.com"
+                      className="pl-10 bg-[#121216] border-white/[0.06] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
+                      value={loginData.email}
+                      onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                      required
+                    />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password" className="text-zinc-300">Senha</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                      <Input id="login-password" type="password" placeholder="--------" className="pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500" value={loginData.password} onChange={(e) => setLoginData({ ...loginData, password: e.target.value })} required />
-                    </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="login-password" className="text-zinc-300 text-xs font-semibold">Senha *</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                    <Input
+                      id="login-password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="--------"
+                      className="pl-10 pr-10 bg-[#121216] border-white/[0.06] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
+                      value={loginData.password}
+                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
-                </CardContent>
-                <CardFooter>
-                  <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white" disabled={isLoading}>
-                    {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Entrando...</>) : 'Entrar'}
-                  </Button>
-                </CardFooter>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold rounded-xl mt-6 cursor-pointer active:scale-[0.98] transition-all"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Acessando...</>
+                  ) : (
+                    'Entrar no Painel'
+                  )}
+                </Button>
               </form>
-            </Card>
-          </TabsContent>
 
-          <TabsContent value="register">
-            <Card className="bg-zinc-900 border-zinc-800">
-              <CardHeader>
-                <CardTitle className="text-white">Criar sua conta</CardTitle>
-                <CardDescription className="text-zinc-400">14 dias grátis — sem cartão de crédito</CardDescription>
-              </CardHeader>
-              <form onSubmit={handleRegister}>
-                <CardContent className="space-y-3">
+              <p className="text-center text-zinc-500 text-sm mt-8">
+                Não possui uma conta?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('register');
+                    setShowPassword(false);
+                  }}
+                  className="text-emerald-400 hover:underline font-semibold"
+                >
+                  Criar conta
+                </button>
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                  Crie sua conta
+                </h3>
+                <p className="text-zinc-400 text-sm mt-2">
+                  Comece a otimizar seu faturamento direto hoje mesmo
+                </p>
+              </div>
+
+              <form onSubmit={handleRegister} className="space-y-5">
+                
+                {/* Grid 1: Informações Pessoais */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="reg-name" className="text-zinc-300">Seu Nome</Label>
+                    <Label htmlFor="reg-name" className="text-zinc-300 text-xs font-semibold">Nome completo *</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                      <Input id="reg-name" placeholder="Maria Silva" className="pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500" value={registerData.name} onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })} required />
+                      <Input
+                        id="reg-name"
+                        placeholder="Seu nome completo"
+                        className="pl-10 bg-[#121216] border-white/[0.06] text-white placeholder:text-zinc-500 rounded-xl"
+                        value={registerData.name}
+                        onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
+                        required
+                      />
                     </div>
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="reg-pousada" className="text-zinc-300">Nome da Pousada</Label>
-                    <div className="relative">
-                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                      <Input id="reg-pousada" placeholder="Pousada Paraíso" className="pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500" value={registerData.pousadaName} onChange={(e) => setRegisterData({ ...registerData, pousadaName: e.target.value })} required />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="reg-email" className="text-zinc-300">Email</Label>
+                    <Label htmlFor="reg-email" className="text-zinc-300 text-xs font-semibold">E-mail *</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                      <Input id="reg-email" type="email" placeholder="contato@pousada.com" className="pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500" value={registerData.email} onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })} required />
+                      <Input
+                        id="reg-email"
+                        type="email"
+                        placeholder="seu@email.com"
+                        className="pl-10 bg-[#121216] border-white/[0.06] text-white placeholder:text-zinc-500 rounded-xl"
+                        value={registerData.email}
+                        onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                        required
+                      />
                     </div>
                   </div>
+                </div>
+
+                {/* Grid 2: Senha e Confirmação */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="reg-phone" className="text-zinc-300">WhatsApp</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                      <Input id="reg-phone" placeholder="11999999999" className="pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500" value={registerData.phone} onChange={(e) => setRegisterData({ ...registerData, phone: e.target.value })} />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="reg-password" className="text-zinc-300">Senha</Label>
+                    <Label htmlFor="reg-password" className="text-zinc-300 text-xs font-semibold">Senha *</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                      <Input id="reg-password" type="password" placeholder="Mínimo 6 caracteres" className="pl-10 bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500" value={registerData.password} onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })} required minLength={6} />
+                      <Input
+                        id="reg-password"
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Mínimo 8 caracteres"
+                        className="pl-10 pr-10 bg-[#121216] border-white/[0.06] text-white placeholder:text-zinc-500 rounded-xl"
+                        value={registerData.password}
+                        onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
                     </div>
                   </div>
-                </CardContent>
-                <CardFooter>
-                  <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white" disabled={isLoading}>
-                    {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Criando conta...</>) : 'Criar Conta Grátis'}
-                  </Button>
-                </CardFooter>
-              </form>
-            </Card>
-          </TabsContent>
-        </Tabs>
 
-        <p className="text-center text-zinc-500 text-xs mt-6">
-          © 2026 SEU ZÉLLA — O zelador da sua pousada.
-        </p>
+                  <div className="space-y-2">
+                    <Label htmlFor="reg-confirm-password" className="text-zinc-300 text-xs font-semibold">Confirmar senha *</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                      <Input
+                        id="reg-confirm-password"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        placeholder="Repita a senha"
+                        className="pl-10 pr-10 bg-[#121216] border-white/[0.06] text-white placeholder:text-zinc-500 rounded-xl"
+                        value={registerData.confirmPassword}
+                        onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Separator / Label */}
+                <div className="relative flex py-2 items-center">
+                  <div className="flex-grow border-t border-white/[0.06]"></div>
+                  <span className="flex-shrink mx-4 text-[10px] text-zinc-500 font-bold tracking-widest uppercase">
+                    Sua Pousada
+                  </span>
+                  <div className="flex-grow border-t border-white/[0.06]"></div>
+                </div>
+
+                {/* Campos Pousada */}
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="reg-pousada" className="text-zinc-300 text-xs font-semibold">Nome da sua pousada *</Label>
+                    <div className="relative">
+                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                      <Input
+                        id="reg-pousada"
+                        placeholder="Minha Pousada Premium"
+                        className="pl-10 bg-[#121216] border-white/[0.06] text-white placeholder:text-zinc-500 rounded-xl"
+                        value={registerData.pousadaName}
+                        onChange={(e) => setRegisterData({ ...registerData, pousadaName: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="reg-cnpj" className="text-zinc-300 text-xs font-semibold">CNPJ ou CPF *</Label>
+                      <Input
+                        id="reg-cnpj"
+                        placeholder="CNPJ ou CPF"
+                        className="bg-[#121216] border-white/[0.06] text-white placeholder:text-zinc-500 rounded-xl"
+                        value={registerData.cnpjOrCpf}
+                        onChange={(e) => setRegisterData({ ...registerData, cnpjOrCpf: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="reg-phone" className="text-zinc-300 text-xs font-semibold">WhatsApp ou Telefone *</Label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                        <Input
+                          id="reg-phone"
+                          placeholder="(11) 99999-9999"
+                          className="pl-10 bg-[#121216] border-white/[0.06] text-white placeholder:text-zinc-500 rounded-xl"
+                          value={registerData.phone}
+                          onChange={(e) => setRegisterData({ ...registerData, phone: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Explicador de Dados */}
+                <p className="text-[11px] text-zinc-500 leading-relaxed">
+                  Seu nome, e-mail e telefone são usados para criar e proteger o acesso à sua conta — não usamos esses dados para outra finalidade sem te avisar.
+                </p>
+
+                {/* Checkbox de Termos */}
+                <div className="flex items-start gap-3 mt-2">
+                  <input
+                    id="terms-checkbox"
+                    type="checkbox"
+                    checked={agreedTerms}
+                    onChange={(e) => setAgreedTerms(e.target.checked)}
+                    className="w-4 h-4 mt-0.5 rounded border-white/[0.06] bg-[#121216] text-emerald-500 focus:ring-emerald-500/20"
+                  />
+                  <Label htmlFor="terms-checkbox" className="text-zinc-400 text-xs leading-relaxed font-normal cursor-pointer select-none">
+                    Concordo com os <a href="#" className="text-emerald-400 hover:underline">Termos de Uso</a> e a <a href="#" className="text-emerald-400 hover:underline">Política de Privacidade</a>.
+                  </Label>
+                </div>
+
+                {/* Cloudflare Turnstile Mock */}
+                <div className="bg-[#121216]/50 border border-white/[0.04] rounded-xl p-3 flex items-center justify-between mt-2 text-[10px] text-zinc-500 font-medium">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4.5 h-4.5 bg-emerald-500/20 border border-emerald-500/35 flex items-center justify-center text-emerald-400 rounded-full shrink-0">
+                      <CheckCircle2 className="w-3 h-3" />
+                    </div>
+                    <span>Verificação concluída</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-zinc-500" />
+                    <span className="font-mono text-[9px]">Turnstile</span>
+                  </div>
+                </div>
+
+                {/* Botão de Cadastro */}
+                <Button
+                  type="submit"
+                  className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold rounded-xl cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Criando sua pousada...</>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4.5 h-4.5" />
+                      Criar minha pousada
+                    </>
+                  )}
+                </Button>
+              </form>
+
+              <p className="text-center text-zinc-500 text-sm mt-8">
+                Já tem uma conta?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('login');
+                    setShowPassword(false);
+                  }}
+                  className="text-emerald-400 hover:underline font-semibold"
+                >
+                  Fazer login
+                </button>
+              </p>
+            </div>
+          )}
+
+          {/* Rodapé Direto */}
+          <div className="border-t border-white/[0.04] pt-6 mt-10 text-center">
+            <p className="text-zinc-600 text-[10px]">
+              © 2026 SEU ZÉLLA — O zelador da sua pousada.
+            </p>
+          </div>
+
+        </div>
       </div>
     </div>
   );

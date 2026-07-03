@@ -9,6 +9,7 @@ const registerSchema = z.object({
   password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
   phone: z.string().optional(),
   pousadaName: z.string().min(2, 'Nome da pousada é obrigatório'),
+  cnpjOrCpf: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
