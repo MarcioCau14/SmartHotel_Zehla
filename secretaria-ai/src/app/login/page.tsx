@@ -147,11 +147,11 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-[#0a0a0d] text-white select-none">
+    <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2 bg-[#0a0a0d] text-white select-none">
       <Toaster position="top-center" richColors />
 
-      {/* COLUNA ESQUERDA: PAINEL DE DESTAQUE (Exatamente 50% largura no desktop) */}
-      <div className="hidden lg:flex bg-[#121216] border-r border-white/[0.04] p-8 sm:p-16 lg:p-20 flex-col justify-between relative">
+      {/* COLUNA ESQUERDA: PAINEL DE DESTAQUE (Garante estar no lado ESQUERDO e com altura da tela fixa) */}
+      <div className="hidden lg:flex lg:order-1 lg:col-start-1 lg:col-end-2 bg-[#121216] border-r border-white/[0.04] p-12 lg:p-20 flex-col justify-between h-screen sticky top-0 overflow-hidden">
         {/* Header da Marca */}
         <div className="flex items-center gap-3">
           <div>
@@ -166,13 +166,13 @@ function LoginForm() {
 
         {/* Copy Principal */}
         <div className="my-auto space-y-8 max-w-md">
-          <h2 className="text-3xl font-extrabold text-white leading-tight tracking-tight font-serif">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-white leading-tight tracking-tight font-serif">
             Tudo o que você precisa para colocar o assistente da sua pousada no ar.
           </h2>
 
           <div className="space-y-6">
             <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-lg bg-[#1a1a24] border border-white/[0.06] flex items-center justify-center text-emerald-400 shrink-0 animate-pulse">
+              <div className="w-8 h-8 rounded-lg bg-[#1a1a24] border border-white/[0.06] flex items-center justify-center text-emerald-400 shrink-0">
                 <Zap className="w-4 h-4" />
               </div>
               <div>
@@ -215,12 +215,12 @@ function LoginForm() {
         </p>
       </div>
 
-      {/* COLUNA DIREITA: FORMULÁRIO COMPACTO DE ALTA DENSIDADE (Exatamente 50% largura no desktop) */}
-      <div className="flex flex-col justify-center p-8 sm:p-16 lg:p-20 overflow-y-auto min-h-screen bg-[#0a0a0d]">
-        <div className="w-full max-w-xl mx-auto">
+      {/* COLUNA DIREITA: FORMULÁRIO COMPACTO DE ALTA DENSIDADE (Garante estar no lado DIREITO e com rolagem própria) */}
+      <div className="flex flex-col lg:order-2 lg:col-start-2 lg:col-end-3 min-h-screen lg:h-screen lg:overflow-y-auto bg-[#0a0a0d] p-8 sm:p-12 lg:p-16">
+        <div className="w-full max-w-xl mx-auto my-auto py-6 flex flex-col justify-center">
           
           {mode === 'login' ? (
-            <div className="space-y-6 max-w-md mx-auto">
+            <div className="space-y-6 max-w-md w-full mx-auto py-8">
               <div>
                 <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                   Acesse sua conta
@@ -298,7 +298,7 @@ function LoginForm() {
               </p>
             </div>
           ) : (
-            <div className="space-y-5">
+            <div className="space-y-5 w-full">
               <div>
                 <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                   Crie sua pousada
