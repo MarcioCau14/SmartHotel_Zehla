@@ -158,20 +158,9 @@ export function DDCHeader({
 
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <motion.div
-              className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 via-cyan-500 to-blue-500 flex items-center justify-center shadow-lg shadow-emerald-500/20"
-              animate={{
-                boxShadow: pulseActive
-                  ? '0 0 30px rgba(16, 185, 129, 0.3)'
-                  : '0 0 10px rgba(16, 185, 129, 0.1)'
-              }}
-              transition={{ duration: 1 }}
-            >
-              <Brain className="w-6 h-6 text-white" />
-            </motion.div>
             <div>
               <h1 className="text-base font-bold text-white tracking-tight">
-                ZEHLA <span className="text-emerald-400">COMMAND</span>
+                Seu Zélla <span className="text-emerald-400">COMMAND</span>
               </h1>
               <div className="flex items-center gap-2">
                 <p className="text-[10px] text-white/40 font-mono uppercase tracking-wider">

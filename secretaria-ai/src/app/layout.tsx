@@ -7,30 +7,30 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'ZEHLA SmartHotel — IA Cognitiva para Pousadas e Hotéis',
+  title: 'Seu Zélla — IA Cognitiva para Pousadas e Hotéis',
   description:
     'Plataforma SaaS B2B com IA autônoma que responde hóspedes 24/7, converte leads em reservas, otimiza ocupação e reduz custos operacionais. Comece grátis por 14 dias.',
   keywords: [
-    'ZEHLA', 'SmartHotel', 'IA para pousadas', 'IA para hotéis',
+    'Seu Zélla', 'ZEHLA', 'SmartHotel', 'IA para pousadas', 'IA para hotéis',
     'chatbot hotelaria', 'automação hoteleira', 'reservas IA',
     'cognitive OS', 'hospitalidade inteligente', 'DDC command center',
     'pousada Brasil',
   ],
-  authors: [{ name: 'ZEHLA SmartHotel', url: 'https://zehla.com.br' }],
-  creator: 'ZEHLA SmartHotel',
+  authors: [{ name: 'Seu Zélla', url: 'https://zehla.com.br' }],
+  creator: 'Seu Zélla',
   metadataBase: new URL('https://zehla.com.br'),
   openGraph: {
     type: 'website',
     locale: 'pt_BR',
     url: 'https://zehla.com.br',
-    siteName: 'ZEHLA SmartHotel',
-    title: 'ZEHLA SmartHotel — IA Cognitiva para Pousadas e Hotéis',
+    siteName: 'Seu Zélla',
+    title: 'Seu Zélla — IA Cognitiva para Pousadas e Hotéis',
     description: 'IA autônoma que responde hóspedes 24/7, converte leads em reservas e otimiza sua ocupação. Comece grátis.',
-    images: [{ url: '/og-image.png', width: 1344, height: 768, alt: 'ZEHLA SmartHotel — Plataforma Cognitiva para Hospitalidade' }],
+    images: [{ url: '/og-image.png', width: 1344, height: 768, alt: 'Seu Zélla — Plataforma Cognitiva para Hospitalidade' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ZEHLA SmartHotel — IA Cognitiva para Pousadas',
+    title: 'Seu Zélla — IA Cognitiva para Pousadas',
     description: 'Responda hóspedes 24/7 com IA. Converte leads, otimiza ocupação. 14 dias grátis.',
     images: ['/og-image.png'],
   },
