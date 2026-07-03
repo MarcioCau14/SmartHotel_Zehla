@@ -19,6 +19,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { getNeuroRouter } from '@/lib/ai/zaos-neuro-router';
+import { retrieveRelevantKnowledge, formatRAGContext } from '@/lib/ai/semantic-rag';
 import { requireMaxPlan } from '@/lib/ddc/require-max-plan';
 import { checkZelladorRateLimit } from '@/lib/ddc/rate-limiter';
 import {
@@ -195,18 +196,39 @@ export async function POST(request: NextRequest) {
   const tenantName = tenant?.name || 'Pousada';
 
   // ──────────────────────────────────────────────────────────────────────────
-  // CAMADA 5: Chamada ao LLM via ZaosNeuroRouter (Tier 3 — Premium)
+  // CAMADA 5: Chamada ao LLM via ZaosNeuroRouter enriquecido com RAG Semântico (Fase 2)
   // IMPORTANTE: Chamar via import direto, NÃO via fetch para /api/brain
-  // (V7 da auditoria: /api/brain não tem autenticação)
   // ──────────────────────────────────────────────────────────────────────────
-  const systemPrompt = buildZelladorSystemPrompt(tenantName, 'max');
+  
+  // Buscar conhecimento relevante para enriquecer o prompt do suporte técnico
+  let ragContext = '';
+  try {
+    const ragResult = await retrieveRelevantKnowledge(tenantId, message);
+    if (ragResult.entries && ragResult.entries.length > 0) {
+      ragContext = formatRAGContext(ragResult);
+    }
+  } catch (error) {
+    console.error('[gerente-ia RAG] Error retrieving knowledge entries:', error);
+  }
 
-  // Formatar o contexto como uma única string para o router
+  // Construir o system prompt blindado com informações da base de conhecimento da pousada (RAG)
+  const baseSystemPrompt = buildZelladorSystemPrompt(tenantName, 'max');
+  const systemPrompt = ragContext
+    ? `${baseSystemPrompt}\n\n=== BASE DE CONHECIMENTO DA POUSADA (RAG) ===\nUse as informações abaixo para ajudar a responder às dúvidas de suporte do usuário:\n${ragContext}`
+    : baseSystemPrompt;
+
+  // Formatar o contexto histórico
   const formattedContext = contextMessages
-    .map((m) => `${m.role === 'user' ? 'Hóspede' : 'Zellador'}: ${m.content}`)
+    .map((m) => `${m.role === 'user' ? 'Usuário' : 'Zellador'}: ${m.content}`)
     .join('\n\n');
 
-  const fullPrompt = `${formattedContext}\n\nHóspede: ${message}`;
+  const fullPrompt = `${formattedContext}\n\nUsuário: ${message}`;
+
+  let rawResponse = '';
+  let providerName = 'mock';
+  let latencyMs = 0;
+  let tier = 3;
+  let costUsd = 0.001;
 
   const router = await getNeuroRouter();
   const llmResult = await router.generate({
@@ -216,7 +238,11 @@ export async function POST(request: NextRequest) {
     noCache: true, // Nunca cachear respostas do Zellador
   });
 
-  const rawResponse = llmResult.response;
+  rawResponse = llmResult.response;
+  providerName = llmResult.providerName;
+  tier = llmResult.tier;
+  latencyMs = llmResult.latencyMs;
+  costUsd = llmResult.costUsd;
 
   // ──────────────────────────────────────────────────────────────────────────
   // CAMADA 6: Filtragem de Output
@@ -257,10 +283,10 @@ export async function POST(request: NextRequest) {
     data: {
       conversationId: convId,
       response: finalResponse,
-      provider: llmResult.providerName,
-      tier: llmResult.tier,
-      latencyMs: llmResult.latencyMs,
-      costUsd: llmResult.costUsd,
+      provider: providerName,
+      tier: tier,
+      latencyMs: latencyMs,
+      costUsd: costUsd,
       outputWasFiltered: outputResult.fullyBlocked || outputResult.blockCount > 0,
     },
   });

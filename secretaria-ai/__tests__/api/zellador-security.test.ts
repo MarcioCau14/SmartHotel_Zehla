@@ -44,6 +44,9 @@ vi.mock('@/lib/db', () => ({
     securityAlert: {
       create: vi.fn().mockResolvedValue({ id: 'alert-1' }),
     },
+    knowledgeEntry: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
   },
 }));
 
