@@ -32,6 +32,7 @@ import {
 import {
   Settings,
   MessageSquare,
+  Terminal,
   Building2,
   Smartphone,
   CreditCard,
@@ -433,315 +434,358 @@ export default function DDCDashboardPage() {
     // ── OVERVIEW (Dashboard) ──────────────────────────────────
     if (activeTab === 'overview') {
       return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {/* LEFT PANEL — 1/3 width */}
-          <div className="space-y-4">
-            <AnimatePresence>
-              {showOnboarding && (
-                <motion.div
-                  initial={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.25, ease: 'easeOut' }}
-                  className="bg-gradient-to-b from-[#121216]/90 to-[#0a0a0f]/90 border border-white/[0.06] rounded-xl overflow-hidden shadow-2xl backdrop-blur-md"
-                >
-                  {/* Header */}
-                  <div className="px-4 pt-4 pb-3 border-b border-white/[0.04]">
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">🚀</span>
-                        <span className="text-xs font-extrabold text-white uppercase tracking-wider">Ativação do Trial</span>
-                        <span className="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1 rounded font-bold uppercase">7 dias grátis</span>
-                      </div>
-                      <button
-                        onClick={() => { setShowOnboarding(false); toast.info('Painel de trial ocultado.'); }}
-                        className="p-1 rounded hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 transition-colors"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div className="space-y-1">
-                      <div className="flex justify-between items-center text-[10px]">
-                        <span className="text-zinc-400 font-bold">{getCompletedCount()} de 4 etapas concluídas</span>
-                        <span className="text-emerald-400 font-extrabold font-mono">{progressPercentage}%</span>
-                      </div>
-                      <div className="w-full h-1.5 bg-white/[0.04] rounded-full overflow-hidden border border-white/[0.02]">
-                        <motion.div
-                          className="h-full bg-gradient-to-r from-emerald-500 to-teal-400"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${progressPercentage}%` }}
-                          transition={{ duration: 0.4, ease: 'easeOut' }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Steps Checklist */}
-                  <div className="p-4 space-y-3.5">
-                    {/* Step 1: Tom de Voz */}
-                    <div className="flex items-start gap-3 group">
-                      <button
-                        onClick={() => markOnboardingStep('voiceTone', !onboardingChecked.voiceTone)}
-                        className={`w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer mt-0.5 shrink-0 ${
-                          onboardingChecked.voiceTone
-                            ? 'bg-emerald-500 border-emerald-500 text-white'
-                            : 'border-zinc-700 hover:border-zinc-500 bg-transparent'
-                        }`}
-                      >
-                        {onboardingChecked.voiceTone && <CheckCircle2 className="w-3.5 h-3.5 text-black stroke-[3px]" />}
-                      </button>
-                      <div className="min-w-0 flex-1">
+        <div className="space-y-5">
+          {/* Top Column Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            {/* LEFT PANEL — 1/3 width */}
+            <div className="space-y-4">
+              <AnimatePresence>
+                {showOnboarding && (
+                  <motion.div
+                    initial={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                    className="bg-gradient-to-b from-[#121216]/90 to-[#0a0a0f]/90 border border-white/[0.06] rounded-xl overflow-hidden shadow-2xl backdrop-blur-md"
+                  >
+                    {/* Header */}
+                    <div className="px-4 pt-4 pb-3 border-b border-white/[0.04]">
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">🚀</span>
+                          <span className="text-xs font-extrabold text-white uppercase tracking-wider">Ativação do Trial</span>
+                          <span className="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1 rounded font-bold uppercase">7 dias grátis</span>
+                        </div>
                         <button
-                          onClick={() => {
-                            setActiveTab('settings');
-                            setSubTab('geral');
-                            markOnboardingStep('voiceTone', true);
-                            toast.info('Personalize o Tom de Voz nas configurações da IA.');
-                          }}
-                          className="text-left font-bold text-xs text-white hover:text-emerald-400 transition-colors block"
+                          onClick={() => { setShowOnboarding(false); toast.info('Painel de trial ocultado.'); }}
+                          className="p-1 rounded hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 transition-colors"
                         >
-                          1. Definir tom de voz da IA
+                          <X className="w-3.5 h-3.5" />
                         </button>
-                        <span className="text-[10px] text-zinc-500 block mt-0.5 leading-relaxed">
-                          Escolha a personalidade do Zélla (ex: simpático, formal ou direto).
-                        </span>
                       </div>
-                    </div>
 
-                    {/* Step 2: Indexar FAQ */}
-                    <div className="flex items-start gap-3 group border-t border-white/[0.03] pt-3">
-                      <button
-                        onClick={() => markOnboardingStep('faq', !onboardingChecked.faq)}
-                        className={`w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer mt-0.5 shrink-0 ${
-                          onboardingChecked.faq
-                            ? 'bg-emerald-500 border-emerald-500 text-white'
-                            : 'border-zinc-700 hover:border-zinc-500 bg-transparent'
-                        }`}
-                      >
-                        {onboardingChecked.faq && <CheckCircle2 className="w-3.5 h-3.5 text-black stroke-[3px]" />}
-                      </button>
-                      <div className="min-w-0 flex-1">
-                        <button
-                          onClick={() => {
-                            setActiveTab('training');
-                            markOnboardingStep('faq', true);
-                            toast.info('Indexe regras no Centro de Treinamento.');
-                          }}
-                          className="text-left font-bold text-xs text-white hover:text-emerald-400 transition-colors block"
-                        >
-                          2. Indexar regras & FAQ da pousada
-                        </button>
-                        <span className="text-[10px] text-zinc-500 block mt-0.5 leading-relaxed">
-                          Ensine políticas de pets, horários de check-in e comodidades.
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Step 3: Link-in-Bio */}
-                    <div className="flex items-start gap-3 group border-t border-white/[0.03] pt-3">
-                      <button
-                        onClick={() => markOnboardingStep('linkinbio', !onboardingChecked.linkinbio)}
-                        className={`w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer mt-0.5 shrink-0 ${
-                          onboardingChecked.linkinbio
-                            ? 'bg-emerald-500 border-emerald-500 text-white'
-                            : 'border-zinc-700 hover:border-zinc-500 bg-transparent'
-                        }`}
-                      >
-                        {onboardingChecked.linkinbio && <CheckCircle2 className="w-3.5 h-3.5 text-black stroke-[3px]" />}
-                      </button>
-                      <div className="min-w-0 flex-1">
-                        <button
-                          onClick={() => {
-                            setActiveTab('settings');
-                            setSubTab('linkinbio');
-                            markOnboardingStep('linkinbio', true);
-                            toast.info('Personalize o seu Link-in-Bio.');
-                          }}
-                          className="text-left font-bold text-xs text-white hover:text-emerald-400 transition-colors block"
-                        >
-                          3. Customizar página Link-in-Bio
-                        </button>
-                        <span className="text-[10px] text-zinc-500 block mt-0.5 leading-relaxed">
-                          Sua vitrine virtual de reservas para o Instagram ou WhatsApp.
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Step 4: Conectar WhatsApp */}
-                    <div className="flex items-start gap-3 group border-t border-white/[0.03] pt-3">
-                      <button
-                        onClick={() => markOnboardingStep('simulator', !onboardingChecked.simulator)}
-                        className={`w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer mt-0.5 shrink-0 ${
-                          onboardingChecked.simulator
-                            ? 'bg-emerald-500 border-emerald-500 text-white'
-                            : 'border-zinc-700 hover:border-zinc-500 bg-transparent'
-                        }`}
-                      >
-                        {onboardingChecked.simulator && <CheckCircle2 className="w-3.5 h-3.5 text-black stroke-[3px]" />}
-                      </button>
-                      <div className="min-w-0 flex-1">
-                        <span className="font-bold text-xs text-white block">
-                          4. Vincular WhatsApp Oficial
-                        </span>
-                        <span className="text-[10px] text-zinc-500 block mt-0.5 leading-relaxed">
-                          Vincule o número da pousada via QR Code para que o Zélla comece a responder.
-                        </span>
-
-                        <div className="mt-3 bg-[#0a0a0f] p-3 rounded-lg border border-white/[0.04] space-y-3">
-                          {onboardingChecked.simulator ? (
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2 text-[10px] text-emerald-400 font-bold bg-emerald-500/5 border border-emerald-500/10 p-2 rounded">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                                WhatsApp Pareado: +55 (12) 99745-8120
-                              </div>
-                              <button
-                                onClick={() => {
-                                  markOnboardingStep('simulator', false);
-                                  toast.info('Instância do WhatsApp desconectada.');
-                                }}
-                                className="w-full h-7 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-[10px] rounded transition-colors active:scale-[0.98] cursor-pointer"
-                              >
-                                Desconectar Aparelho
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="space-y-3">
-                              {/* QR Code Container */}
-                              <div className="relative w-32 h-32 mx-auto bg-white rounded-lg p-2 flex items-center justify-center overflow-hidden group/qr">
-                                {isConnectingWhatsApp ? (
-                                  <div className="absolute inset-0 bg-black/90 backdrop-blur-[2px] flex flex-col items-center justify-center gap-1.5 p-2">
-                                    <Loader2 className="w-5 h-5 text-emerald-400 animate-spin" />
-                                    <span className="text-[8px] font-bold text-zinc-400 text-center">Conectando...</span>
-                                  </div>
-                                ) : (
-                                  <>
-                                    {/* Mock QR Code Pattern using SVG */}
-                                    <svg className="w-full h-full text-zinc-900" viewBox="0 0 100 100" fill="currentColor">
-                                      <path d="M0,0h25v8H8v17H0Z M75,0h25v25h-8V8H75Z M0,75h8v17h17v8H0Z M92,75h8v25H75v-8h17Z" />
-                                      <path d="M12,12h20v20H12Z M16,16h12v12H16Z M20,20h4v4h-4Z" />
-                                      <path d="M68,12h20v20H68Z M72,16h12v12H72Z M76,20h4v4h-4Z" />
-                                      <path d="M12,68h20v20H12Z M16,72h12v12H16Z M20,76h4v4h-4Z" />
-                                      <path d="M44,12h4v8h-4Z M52,16h8v4h-8Z M44,24h12v4H44Z M60,24h4v8h-4Z M12,44h8v4h-8Z M24,44h4v8h-4Z M44,40h8v4h-8Z M68,44h12v4H68Z M84,44h4v12h-4Z M44,52h4v8h-4Z M52,56h12v4H52Z M76,56h8v4h-8Z M68,68h8v4h-8Z M80,68h8v8h-8Z M44,76h12v4H44Z M60,76h4v8h-4Z M68,80h12v4H68Z M84,80h4v12h-4Z" />
-                                    </svg>
-                                    {/* Scanning glow light overlay */}
-                                    <div className="absolute inset-x-0 top-0 h-0.5 bg-emerald-400 opacity-60 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-[scan_2s_ease-in-out_infinite]" />
-                                  </>
-                                )}
-                              </div>
-                              
-                              <style jsx global>{`
-                                @keyframes scan {
-                                  0%, 100% { top: 4%; }
-                                  50% { top: 96%; }
-                                }
-                              `}</style>
-
-                              <div className="text-center text-[9px] text-zinc-500 leading-normal">
-                                Abra o WhatsApp no celular ➔ Aparelhos Conectados ➔ Conectar um Aparelho ➔ Escaneie o QR Code.
-                              </div>
-
-                              <Button
-                                onClick={() => {
-                                  setIsConnectingWhatsApp(true);
-                                  setTimeout(() => {
-                                    setIsConnectingWhatsApp(false);
-                                    markOnboardingStep('simulator', true);
-                                    toast.success('Dispositivo pareado com sucesso! Zélla está online no seu WhatsApp.');
-                                  }, 1800);
-                                }}
-                                className="w-full h-7 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] rounded flex items-center justify-center gap-1.5 cursor-pointer transition-colors active:scale-[0.98]"
-                              >
-                                <Smartphone className="w-3.5 h-3.5" /> Simular Pareamento
-                              </Button>
-                            </div>
-                          )}
+                      {/* Progress Bar */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center text-[10px]">
+                          <span className="text-zinc-400 font-bold">{getCompletedCount()} de 4 etapas concluídas</span>
+                          <span className="text-emerald-400 font-extrabold font-mono">{progressPercentage}%</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-white/[0.04] rounded-full overflow-hidden border border-white/[0.02]">
+                          <motion.div
+                            className="h-full bg-gradient-to-r from-emerald-500 to-teal-400"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progressPercentage}%` }}
+                            transition={{ duration: 0.4, ease: 'easeOut' }}
+                          />
                         </div>
                       </div>
                     </div>
 
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Status do Agente + Notificações — single unified card */}
-            <div className="bg-[#121216] border border-white/[0.05] rounded-xl overflow-hidden">
-              {/* Agent status row */}
-              <div className="px-4 pt-4 pb-3 border-b border-white/[0.04]">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-white">Agente IA</span>
-                  <div className="flex items-center gap-1.5">
-                    <div className={`w-1.5 h-1.5 rounded-full ${aiStatusLocal === 'online' ? 'bg-emerald-500 animate-pulse' : aiStatusLocal === 'processing' ? 'bg-violet-500 animate-pulse' : aiStatusLocal === 'error' ? 'bg-red-500' : 'bg-zinc-600'}`} />
-                    <span className="text-[10px] text-zinc-400 capitalize">{aiStatusLocal}</span>
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="text-center">
-                    <div className="text-base font-extrabold text-white font-mono">{aiStatus?.activeConversations ?? 12}</div>
-                    <div className="text-[9px] text-zinc-600 mt-0.5">Ativas</div>
-                  </div>
-                  <div className="text-center border-x border-white/[0.04]">
-                    <div className="text-base font-extrabold text-white font-mono">{metrics?.today?.aiAttended ?? 45}</div>
-                    <div className="text-[9px] text-zinc-600 mt-0.5">Hoje</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-base font-extrabold text-white font-mono">{aiStatus?.averageResponseTime ?? 2.3}s</div>
-                    <div className="text-[9px] text-zinc-600 mt-0.5">Resposta</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Notifications section */}
-              <div className="px-4 py-3">
-                <div className="flex items-center justify-between mb-2.5">
-                  <span className="text-xs font-bold text-white">Notificações</span>
-                  {unreadCount > 0 && (
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded">{unreadCount} novas</span>
-                  )}
-                </div>
-                <div className="space-y-1.5">
-                  {notifications.slice(0, 3).map(notif => (
-                    <div
-                      key={notif.id}
-                      className={`flex items-start gap-2 p-2 rounded-lg cursor-pointer transition-all hover:bg-white/[0.02] ${notif.status === 'unread' ? 'bg-emerald-500/[0.03]' : ''}`}
-                      onClick={() => { markAsRead(notif.id); toast.info(notif.title); }}
-                    >
-                      <div className={`w-1.5 h-1.5 rounded-full shrink-0 mt-1.5 ${notif.priority === 'urgent' ? 'bg-red-500 animate-pulse' : notif.priority === 'high' ? 'bg-amber-500' : 'bg-blue-500'}`} />
-                      <div className="min-w-0">
-                        <div className="text-[11px] font-semibold text-white truncate">{notif.title}</div>
-                        <div className="text-[10px] text-zinc-600 truncate">{notif.message}</div>
+                    {/* Steps Checklist */}
+                    <div className="p-4 space-y-3.5">
+                      {/* Step 1: Tom de Voz */}
+                      <div className="flex items-start gap-3 group">
+                        <button
+                          onClick={() => markOnboardingStep('voiceTone', !onboardingChecked.voiceTone)}
+                          className={`w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer mt-0.5 shrink-0 ${
+                            onboardingChecked.voiceTone
+                              ? 'bg-emerald-500 border-emerald-500 text-white'
+                              : 'border-zinc-700 hover:border-zinc-500 bg-transparent'
+                          }`}
+                        >
+                          {onboardingChecked.voiceTone && <CheckCircle2 className="w-3.5 h-3.5 text-black stroke-[3px]" />}
+                        </button>
+                        <div className="min-w-0 flex-1">
+                          <button
+                            onClick={() => {
+                              setActiveTab('settings');
+                              setSubTab('geral');
+                              markOnboardingStep('voiceTone', true);
+                              toast.info('Personalize o Tom de Voz nas configurações da IA.');
+                            }}
+                            className="text-left font-bold text-xs text-white hover:text-emerald-400 transition-colors block"
+                          >
+                            1. Definir tom de voz da IA
+                          </button>
+                          <span className="text-[10px] text-zinc-500 block mt-0.5 leading-relaxed">
+                            Escolha a personalidade do Zélla (ex: simpático, formal ou direto).
+                          </span>
+                        </div>
                       </div>
+
+                      {/* Step 2: Indexar FAQ */}
+                      <div className="flex items-start gap-3 group border-t border-white/[0.03] pt-3">
+                        <button
+                          onClick={() => markOnboardingStep('faq', !onboardingChecked.faq)}
+                          className={`w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer mt-0.5 shrink-0 ${
+                            onboardingChecked.faq
+                              ? 'bg-emerald-500 border-emerald-500 text-white'
+                              : 'border-zinc-700 hover:border-zinc-500 bg-transparent'
+                          }`}
+                        >
+                          {onboardingChecked.faq && <CheckCircle2 className="w-3.5 h-3.5 text-black stroke-[3px]" />}
+                        </button>
+                        <div className="min-w-0 flex-1">
+                          <button
+                            onClick={() => {
+                              setActiveTab('training');
+                              markOnboardingStep('faq', true);
+                              toast.info('Indexe regras no Centro de Treinamento.');
+                            }}
+                            className="text-left font-bold text-xs text-white hover:text-emerald-400 transition-colors block"
+                          >
+                            2. Indexar regras & FAQ da pousada
+                          </button>
+                          <span className="text-[10px] text-zinc-500 block mt-0.5 leading-relaxed">
+                            Ensine políticas de pets, horários de check-in e comodidades.
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Step 3: Link-in-Bio */}
+                      <div className="flex items-start gap-3 group border-t border-white/[0.03] pt-3">
+                        <button
+                          onClick={() => markOnboardingStep('linkinbio', !onboardingChecked.linkinbio)}
+                          className={`w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer mt-0.5 shrink-0 ${
+                            onboardingChecked.linkinbio
+                              ? 'bg-emerald-500 border-emerald-500 text-white'
+                              : 'border-zinc-700 hover:border-zinc-500 bg-transparent'
+                          }`}
+                        >
+                          {onboardingChecked.linkinbio && <CheckCircle2 className="w-3.5 h-3.5 text-black stroke-[3px]" />}
+                        </button>
+                        <div className="min-w-0 flex-1">
+                          <button
+                            onClick={() => {
+                              setActiveTab('settings');
+                              setSubTab('linkinbio');
+                              markOnboardingStep('linkinbio', true);
+                              toast.info('Personalize o seu Link-in-Bio.');
+                            }}
+                            className="text-left font-bold text-xs text-white hover:text-emerald-400 transition-colors block"
+                          >
+                            3. Customizar página Link-in-Bio
+                          </button>
+                          <span className="text-[10px] text-zinc-500 block mt-0.5 leading-relaxed">
+                            Sua vitrine virtual de reservas para o Instagram ou WhatsApp.
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Step 4: Conectar WhatsApp */}
+                      <div className="flex items-start gap-3 group border-t border-white/[0.03] pt-3">
+                        <button
+                          onClick={() => markOnboardingStep('simulator', !onboardingChecked.simulator)}
+                          className={`w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer mt-0.5 shrink-0 ${
+                            onboardingChecked.simulator
+                              ? 'bg-emerald-500 border-emerald-500 text-white'
+                              : 'border-zinc-700 hover:border-zinc-500 bg-transparent'
+                          }`}
+                        >
+                          {onboardingChecked.simulator && <CheckCircle2 className="w-3.5 h-3.5 text-black stroke-[3px]" />}
+                        </button>
+                        <div className="min-w-0 flex-1">
+                          <span className="font-bold text-xs text-white block">
+                            4. Vincular WhatsApp Oficial
+                          </span>
+                          <span className="text-[10px] text-zinc-500 block mt-0.5 leading-relaxed">
+                            Vincule o número da pousada via QR Code para que o Zélla comece a responder.
+                          </span>
+
+                          <div className="mt-3 bg-[#0a0a0f] p-3 rounded-lg border border-white/[0.04] space-y-3">
+                            {onboardingChecked.simulator ? (
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-[10px] text-emerald-400 font-bold bg-emerald-500/5 border border-emerald-500/10 p-2 rounded">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                                  WhatsApp Pareado: +55 (12) 99745-8120
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    markOnboardingStep('simulator', false);
+                                    toast.info('Instância do WhatsApp desconectada.');
+                                  }}
+                                  className="w-full h-7 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-[10px] rounded transition-colors active:scale-[0.98] cursor-pointer"
+                                >
+                                  Desconectar Aparelho
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="space-y-3">
+                                {/* QR Code Container */}
+                                <div className="relative w-32 h-32 mx-auto bg-white rounded-lg p-2 flex items-center justify-center overflow-hidden group/qr">
+                                  {isConnectingWhatsApp ? (
+                                    <div className="absolute inset-0 bg-black/90 backdrop-blur-[2px] flex flex-col items-center justify-center gap-1.5 p-2">
+                                      <Loader2 className="w-5 h-5 text-emerald-400 animate-spin" />
+                                      <span className="text-[8px] font-bold text-zinc-400 text-center">Conectando...</span>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      {/* Mock QR Code Pattern using SVG */}
+                                      <svg className="w-full h-full text-zinc-900" viewBox="0 0 100 100" fill="currentColor">
+                                        <path d="M0,0h25v8H8v17H0Z M75,0h25v25h-8V8H75Z M0,75h8v17h17v8H0Z M92,75h8v25H75v-8h17Z" />
+                                        <path d="M12,12h20v20H12Z M16,16h12v12H16Z M20,20h4v4h-4Z" />
+                                        <path d="M68,12h20v20H68Z M72,16h12v12H72Z M76,20h4v4h-4Z" />
+                                        <path d="M12,68h20v20H12Z M16,72h12v12H16Z M20,76h4v4h-4Z" />
+                                        <path d="M44,12h4v8h-4Z M52,16h8v4h-8Z M44,24h12v4H44Z M60,24h4v8h-4Z M12,44h8v4h-8Z M24,44h4v8h-4Z M44,40h8v4h-8Z M68,44h12v4H68Z M84,44h4v12h-4Z M44,52h4v8h-4Z M52,56h12v4H52Z M76,56h8v4h-8Z M68,68h8v4h-8Z M80,68h8v8h-8Z M44,76h12v4H44Z M60,76h4v8h-4Z M68,80h12v4H68Z M84,80h4v12h-4Z" />
+                                      </svg>
+                                      {/* Scanning glow light overlay */}
+                                      <div className="absolute inset-x-0 top-0 h-0.5 bg-emerald-400 opacity-60 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-[scan_2s_ease-in-out_infinite]" />
+                                    </>
+                                  )}
+                                </div>
+                                
+                                <style jsx global>{`
+                                  @keyframes scan {
+                                    0%, 100% { top: 4%; }
+                                    50% { top: 96%; }
+                                  }
+                                `}</style>
+
+                                <div className="text-center text-[9px] text-zinc-500 leading-normal">
+                                  Abra o WhatsApp no celular ➔ Aparelhos Conectados ➔ Conectar um Aparelho ➔ Escaneie o QR Code.
+                                </div>
+
+                                <Button
+                                  onClick={() => {
+                                    setIsConnectingWhatsApp(true);
+                                    setTimeout(() => {
+                                      setIsConnectingWhatsApp(false);
+                                      markOnboardingStep('simulator', true);
+                                      toast.success('Dispositivo pareado com sucesso! Zélla está online no seu WhatsApp.');
+                                    }, 1800);
+                                  }}
+                                  className="w-full h-7 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] rounded flex items-center justify-center gap-1.5 cursor-pointer transition-colors active:scale-[0.98]"
+                                >
+                                  <Smartphone className="w-3.5 h-3.5" /> Simular Pareamento
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
                     </div>
-                  ))}
-                  {notifications.length === 0 && (
-                    <p className="text-[10px] text-zinc-600 text-center py-3">Sem notificações.</p>
-                  )}
-                  <button
-                    onClick={() => setActiveTab('notifications')}
-                    className="w-full text-center text-[10px] text-emerald-400 hover:text-emerald-300 font-semibold pt-1.5 transition-colors"
-                  >
-                    Ver todas →
-                  </button>
-                </div>
-              </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* RIGHT PANEL — 2/3 width */}
+            <div className="lg:col-span-2 space-y-5">
+              <motion.div variants={fadeIn} initial="hidden" animate="visible">
+                <RevenueMetrics metrics={adaptRevenueMetrics(metrics) || mockRevenueMetrics} />
+              </motion.div>
+              <motion.div variants={fadeIn} initial="hidden" animate="visible">
+                <AILiveFeed
+                  conversations={conversations}
+                  isConnected={true}
+                  onReply={(cId, msg) => sendMessage(cId, msg)}
+                  onEscalate={(cId) => escalateConversation(cId)}
+                  onViewDetails={(cId) => selectConversation(cId)}
+                />
+              </motion.div>
             </div>
           </div>
 
-          {/* RIGHT PANEL — 2/3 width */}
-          <div className="lg:col-span-2 space-y-5">
-            <motion.div variants={fadeIn} initial="hidden" animate="visible">
-              <RevenueMetrics metrics={adaptRevenueMetrics(metrics) || mockRevenueMetrics} />
-            </motion.div>
-            <motion.div variants={fadeIn} initial="hidden" animate="visible">
-              <AILiveFeed
-                conversations={conversations}
-                isConnected={true}
-                onReply={(cId, msg) => sendMessage(cId, msg)}
-                onEscalate={(cId) => escalateConversation(cId)}
-                onViewDetails={(cId) => selectConversation(cId)}
-              />
-            </motion.div>
+          {/* FULL WIDTH BOTTOM PANEL — Terminal de Processamento Cognitivo do Zélla */}
+          <div className="w-full">
+            <div className="bg-[#050508] border border-white/[0.08] rounded-xl overflow-hidden shadow-2xl font-mono">
+              {/* Terminal Header */}
+              <div className="flex items-center justify-between px-4 py-2.5 bg-[#0d0d12] border-b border-white/[0.05]">
+                <div className="flex items-center gap-2">
+                  <Terminal className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                  <span className="text-[10px] font-bold text-zinc-300 tracking-wide uppercase">zella_brain_console v2.4.0</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
+                  <span className="text-[8px] text-emerald-400 font-bold">LIVE_FEED_STREAM</span>
+                </div>
+              </div>
+
+              {/* Terminal Monitor Stats */}
+              <div className="px-4 py-2 bg-black/40 border-b border-white/[0.03] grid grid-cols-3 gap-1 text-[9px] text-zinc-500">
+                <div>[STATUS: <span className="text-emerald-400 capitalize">{aiStatusLocal}</span>]</div>
+                <div className="text-center border-x border-white/[0.04]">[ATENDIDOS: <span className="text-white font-bold">{metrics?.today?.aiAttended ?? 45}</span>]</div>
+                <div className="text-right">[SPEED: <span className="text-white font-bold">{aiStatus?.averageResponseTime ?? 2.3}s</span>]</div>
+              </div>
+
+              {/* Terminal Body Console log lines */}
+              <div className="p-3 max-h-[360px] overflow-y-auto space-y-2 select-none scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+                {(() => {
+                  // Sort conversations: active ones first, resolved/closed ones later
+                  const sortedLogs = [...conversations].sort((a, b) => {
+                    const timeA = new Date(a.messages && a.messages.length > 0 ? a.messages[a.messages.length - 1].createdAt || a.updatedAt || a.createdAt || 0 : 0).getTime();
+                    const timeB = new Date(b.messages && b.messages.length > 0 ? b.messages[b.messages.length - 1].createdAt || b.updatedAt || b.createdAt || 0 : 0).getTime();
+                    return timeA - timeB;
+                  });
+
+                  if (sortedLogs.length === 0) {
+                    return (
+                      <div className="text-zinc-600 text-center py-8 text-[10px] leading-relaxed">
+                        &gt; [INIT_ZELADOR_SYSTEM]... OK<br />
+                        &gt; [AWAITING_INCOMING_WHATSAPP_CONNECTIONS]...<br />
+                        &gt; [NENHUMA CONVERSA ATIVA NO LOG DO TERMINAL]
+                      </div>
+                    );
+                  }
+
+                  return sortedLogs.map(c => {
+                    const lastMsg = c.messages && c.messages.length > 0 ? c.messages[c.messages.length - 1] : null;
+                    const lastMsgTime = lastMsg?.createdAt || c.updatedAt || c.createdAt;
+                    
+                    const timeStr = lastMsgTime ? new Date(lastMsgTime).toLocaleTimeString('pt-BR', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit'
+                    }) : '17:00:00';
+
+                    const dateStr = lastMsgTime ? new Date(lastMsgTime).toLocaleDateString('pt-BR', {
+                      day: '2-digit',
+                      month: '2-digit'
+                    }) : '03/07';
+
+                    const isOpen = c.status !== 'closed' && c.status !== 'resolved';
+                    const isUser = lastMsg?.role === 'user' || lastMsg?.from === 'user';
+                    const senderTag = isUser ? 'GUEST_IN' : 'ZELLA_OUT';
+
+                    return (
+                      <div
+                        key={c.id}
+                        onClick={() => {
+                          setActiveTab('messages');
+                          selectConversation(c.id);
+                          toast.success(`Console: abrindo chat com ${c.guestName}`);
+                        }}
+                        className="p-2 rounded bg-black/60 hover:bg-emerald-950/20 border border-white/[0.02] hover:border-emerald-500/20 transition-all cursor-pointer group flex flex-col gap-1"
+                      >
+                        <div className="flex items-center justify-between text-[9px]">
+                          <div className="flex items-center gap-1.5 text-zinc-500">
+                            <span>[{dateStr} {timeStr}]</span>
+                            <span className={isUser ? 'text-teal-400 font-bold' : 'text-violet-400 font-bold'}>
+                              [{senderTag}]
+                            </span>
+                          </div>
+                          <span className={`text-[8px] font-bold px-1 rounded-sm ${isOpen ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 animate-pulse' : 'bg-zinc-800 text-zinc-500 border border-zinc-700/50'}`}>
+                            {isOpen ? 'ABERTO' : 'RESOLVIDO'}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-zinc-300 group-hover:text-emerald-300 transition-colors leading-relaxed truncate">
+                          <span className="text-white font-extrabold">{c.guestName}:</span>{' '}
+                          <span className="text-zinc-400 font-mono text-[9.5px]">
+                            {lastMsg?.content ? `"${lastMsg.content}"` : '(conversa iniciada)'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+
+              {/* Terminal Footer */}
+              <div className="bg-[#0d0d12] px-4 py-2 border-t border-white/[0.05] flex items-center justify-between text-[9px] text-zinc-500">
+                <span className="animate-pulse">&gt;_ Console de Acompanhamento</span>
+                <span className="text-zinc-600 font-bold uppercase">Zella_OS v2.4</span>
+              </div>
+            </div>
           </div>
         </div>
       );
