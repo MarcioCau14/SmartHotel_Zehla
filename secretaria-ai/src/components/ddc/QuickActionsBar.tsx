@@ -19,10 +19,11 @@ import {
 
 interface QuickActionsBarProps {
   onActionClick: (action: string) => void;
+  onQuickActionClick?: (actionId: string) => void;
   activeAction?: string;
 }
 
-export function QuickActionsBar({ onActionClick, activeAction }: QuickActionsBarProps) {
+export function QuickActionsBar({ onActionClick, onQuickActionClick, activeAction }: QuickActionsBarProps) {
   const actions = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'messages', label: 'Mensagens', icon: MessageCircle, count: 12 },
@@ -88,7 +89,7 @@ export function QuickActionsBar({ onActionClick, activeAction }: QuickActionsBar
           return (
             <button
               key={action.id}
-              onClick={() => onActionClick(action.id)}
+              onClick={() => onQuickActionClick?.(action.id)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold border transition-all cursor-pointer hover:brightness-110 active:scale-[0.98] shrink-0 ${action.color}`}
             >
               <Icon className="w-3.5 h-3.5" />

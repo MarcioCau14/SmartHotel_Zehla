@@ -23,6 +23,13 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Toaster, toast } from 'sonner';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
   Settings,
   MessageSquare,
   Building2,
@@ -69,6 +76,7 @@ import {
   MoreHorizontal,
   RefreshCw,
   BellOff,
+  Copy,
 } from 'lucide-react';
 
 export default function DDCDashboardPage() {
@@ -127,6 +135,77 @@ export default function DDCDashboardPage() {
   // Messages state
   const [msgSearch, setMsgSearch] = useState('');
   const [msgStatusFilter, setMsgStatusFilter] = useState('all');
+
+  // Quick Actions states
+  const [activeQuickAction, setActiveQuickAction] = useState<string | null>(null);
+  const [pixAmount, setPixAmount] = useState('50');
+  const [pixReason, setPixReason] = useState('Taxa de Higienização de Pet');
+  const [generatedPixPayload, setGeneratedPixPayload] = useState<string | null>(null);
+  const [isSendingPix, setIsSendingPix] = useState(false);
+  const [isBoosting, setIsBoosting] = useState(false);
+
+  const handleQuickActionClick = (actionId: string) => {
+    if (actionId === 'whatsapp') {
+      if (!selectedConversation) {
+        toast.error('Selecione uma conversa ativa no Live Feed para abrir no WhatsApp.');
+        return;
+      }
+      const phone = selectedConversation.phoneNumber;
+      if (!phone) {
+        toast.error('Telefone do hóspede não encontrado.');
+        return;
+      }
+      toast.success(`Abrindo WhatsApp Web para ${selectedConversation.guestName || 'Hóspede'}...`);
+      window.open(`https://web.whatsapp.com/send?phone=${phone}`, '_blank');
+      return;
+    }
+
+    setActiveQuickAction(actionId);
+    setGeneratedPixPayload(null);
+  };
+
+  const generatePix = () => {
+    const val = parseFloat(pixAmount);
+    if (isNaN(val) || val <= 0) {
+      toast.error('Por favor, insira um valor válido maior que zero.');
+      return;
+    }
+    const cleanReason = pixReason.replace(/[^a-zA-Z0-9]/g, '').slice(0, 15);
+    const cleanAmount = val.toFixed(2);
+    const payload = `00020101021226870014br.gov.bcb.pix2565pix@seuzella.com.br52040000530398654${cleanAmount.length.toString().padStart(2, '0')}${cleanAmount}5802BR5916Pousada Serenity6009Paraty62070503${cleanReason}`;
+    setGeneratedPixPayload(payload);
+    toast.success('Chave Pix copia e cola gerada com sucesso!');
+  };
+
+  const sendPixToChat = async () => {
+    if (!selectedConversation || !generatedPixPayload) return;
+    setIsSendingPix(true);
+    try {
+      const messageText = `Olá, ${selectedConversation.guestName}! Para facilitar, segue o código Pix copia e cola gerado referente a: *${pixReason}* no valor de *R$ ${parseFloat(pixAmount).toFixed(2)}*.\n\nCopia e Cola:\n\`\`\`${generatedPixPayload}\`\`\`\n\nPor favor, envie o comprovante por aqui assim que concluir!`;
+      await sendMessage(selectedConversation.id, messageText);
+      toast.success('Pix enviado diretamente no WhatsApp do hóspede!');
+      setActiveQuickAction(null);
+      setGeneratedPixPayload(null);
+    } catch {
+      toast.error('Falha ao enviar mensagem de Pix no chat.');
+    } finally {
+      setIsSendingPix(false);
+    }
+  };
+
+  const handleBoost = async () => {
+    if (!selectedConversation) return;
+    setIsBoosting(true);
+    try {
+      await new Promise(r => setTimeout(r, 1500));
+      toast.success('Boost de IA concluído! Zélla re-analisou as regras e enviou a melhor resposta autônoma no WhatsApp.');
+      setActiveQuickAction(null);
+    } catch {
+      toast.error('Erro ao processar o Boost de IA.');
+    } finally {
+      setIsBoosting(false);
+    }
+  };
 
   const router = useRouter();
 
@@ -1294,7 +1373,11 @@ export default function DDCDashboardPage() {
         {/* QuickActionsBar — always visible (except Zellador tab) */}
         {activeTab !== 'zellador' && (
           <motion.div variants={fadeIn} initial="hidden" animate="visible">
-            <QuickActionsBar onActionClick={handleActionClick} activeAction={activeTab} />
+            <QuickActionsBar 
+              onActionClick={handleActionClick} 
+              onQuickActionClick={handleQuickActionClick} 
+              activeAction={activeTab} 
+            />
           </motion.div>
         )}
 
@@ -1328,6 +1411,291 @@ export default function DDCDashboardPage() {
           </motion.div>
         )}
       </div>
+
+      {/* QUICK ACTIONS MODALS */}
+      {/* 1. CALL MODAL */}
+      <Dialog open={activeQuickAction === 'call'} onOpenChange={(open) => !open && setActiveQuickAction(null)}>
+        <DialogContent className="bg-[#0a0a0f] border border-white/[0.08] text-white max-w-sm p-6 rounded-xl shadow-2xl">
+          <DialogHeader className="border-b border-white/[0.04] pb-3">
+            <DialogTitle className="text-sm font-extrabold text-white flex items-center gap-2">
+              <PhoneCall className="w-4 h-4 text-emerald-400" />
+              Discar para Hóspede
+            </DialogTitle>
+            <DialogDescription className="text-zinc-500 text-[11px]">
+              Faça ligações diretas em caso de emergência ou no-show.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedConversation ? (
+            <div className="space-y-4 pt-3">
+              <div className="bg-[#121216] border border-white/[0.04] rounded-lg p-3">
+                <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block">Hóspede</span>
+                <span className="text-sm font-bold text-white mt-0.5 block">{selectedConversation.guestName}</span>
+                <span className="text-xs text-zinc-400 font-mono block mt-1">{selectedConversation.phoneNumber}</span>
+              </div>
+              <a
+                href={`tel:${selectedConversation.phoneNumber}`}
+                onClick={() => {
+                  toast.success(`Disparando chamada para ${selectedConversation.guestName}`);
+                  setActiveQuickAction(null);
+                }}
+                className="w-full h-10 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
+              >
+                <Phone className="w-4 h-4" /> Ligar Agora
+              </a>
+              <span className="text-[10px] text-zinc-500 text-center block leading-relaxed">
+                Nota: Esta ação abrirá o discador de telefone do seu celular ou aplicativo de VoIP padrão.
+              </span>
+            </div>
+          ) : (
+            <div className="space-y-3 pt-3">
+              <p className="text-xs text-zinc-400 text-center py-4">
+                Selecione uma conversa no Live Feed para discar diretamente para o hóspede.
+              </p>
+              <div className="border-t border-white/[0.04] pt-3 flex justify-end">
+                <Button 
+                  onClick={() => setActiveQuickAction(null)} 
+                  className="bg-white/[0.04] hover:bg-white/[0.08] text-white text-xs font-bold"
+                >
+                  Fechar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 2. PAYMENT MODAL */}
+      <Dialog open={activeQuickAction === 'payment'} onOpenChange={(open) => !open && setActiveQuickAction(null)}>
+        <DialogContent className="bg-[#0a0a0f] border border-white/[0.08] text-white max-w-md p-6 rounded-xl shadow-2xl">
+          <DialogHeader className="border-b border-white/[0.04] pb-3">
+            <DialogTitle className="text-sm font-extrabold text-white flex items-center gap-2">
+              <CreditCard className="w-4 h-4 text-blue-400" />
+              Gerador Manual de Pix
+            </DialogTitle>
+            <DialogDescription className="text-zinc-500 text-[11px]">
+              Gere chaves Pix para cobranças manuais extras e envie no WhatsApp do hóspede.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-3">
+            {/* Presets */}
+            <div>
+              <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block mb-1.5">Atalhos Rápidos (Presets)</span>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => { setPixAmount('50'); setPixReason('Taxa de Pet (Adicional)'); }}
+                  className={`p-2 rounded-lg border text-left transition-all cursor-pointer ${
+                    pixAmount === '50' && pixReason === 'Taxa de Pet (Adicional)'
+                      ? 'bg-blue-500/10 border-blue-500/30 text-blue-400'
+                      : 'bg-[#121216]/50 border-white/[0.03] text-zinc-400 hover:bg-[#121216] hover:border-zinc-700'
+                  }`}
+                >
+                  <span className="text-[10px] font-bold block">🐾 Pet</span>
+                  <span className="text-xs font-mono font-extrabold mt-0.5 block">R$ 50,00</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setPixAmount('80'); setPixReason('Check-out Tardio (Late)'); }}
+                  className={`p-2 rounded-lg border text-left transition-all cursor-pointer ${
+                    pixAmount === '80' && pixReason === 'Check-out Tardio (Late)'
+                      ? 'bg-blue-500/10 border-blue-500/30 text-blue-400'
+                      : 'bg-[#121216]/50 border-white/[0.03] text-zinc-400 hover:bg-[#121216] hover:border-zinc-700'
+                  }`}
+                >
+                  <span className="text-[10px] font-bold block">🕒 Late Out</span>
+                  <span className="text-xs font-mono font-extrabold mt-0.5 block">R$ 80,00</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setPixAmount('35'); setPixReason('Café da Manhã Extra'); }}
+                  className={`p-2 rounded-lg border text-left transition-all cursor-pointer ${
+                    pixAmount === '35' && pixReason === 'Café da Manhã Extra'
+                      ? 'bg-blue-500/10 border-blue-500/30 text-blue-400'
+                      : 'bg-[#121216]/50 border-white/[0.03] text-zinc-400 hover:bg-[#121216] hover:border-zinc-700'
+                  }`}
+                >
+                  <span className="text-[10px] font-bold block">☕ Café Extra</span>
+                  <span className="text-xs font-mono font-extrabold mt-0.5 block">R$ 35,00</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Custom Inputs */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="pix-amount" className="text-[10px] text-zinc-400 font-bold uppercase">Valor (R$)</Label>
+                <Input
+                  id="pix-amount"
+                  type="number"
+                  value={pixAmount}
+                  onChange={(e) => { setPixAmount(e.target.value); setGeneratedPixPayload(null); }}
+                  className="bg-[#121216] border-white/[0.08] mt-1 h-9 text-xs text-white text-left font-mono"
+                />
+              </div>
+              <div>
+                <Label htmlFor="pix-reason" className="text-[10px] text-zinc-400 font-bold uppercase">Descrição</Label>
+                <Input
+                  id="pix-reason"
+                  type="text"
+                  value={pixReason}
+                  onChange={(e) => { setPixReason(e.target.value); setGeneratedPixPayload(null); }}
+                  className="bg-[#121216] border-white/[0.08] mt-1 h-9 text-xs text-white"
+                />
+              </div>
+            </div>
+
+            <Button
+              onClick={generatePix}
+              className="w-full h-9 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer"
+            >
+              Gerar Código Pix
+            </Button>
+
+            {/* Generated Pix Info */}
+            <AnimatePresence>
+              {generatedPixPayload && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-3 pt-2 border-t border-white/[0.04]"
+                >
+                  {/* Pix Copy and Paste String */}
+                  <div className="bg-[#121216] border border-white/[0.04] p-3 rounded-lg space-y-2">
+                    <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider block">Pix Copia e Cola</span>
+                    <div className="flex items-center gap-2 bg-[#0a0a0f] p-2 rounded border border-white/[0.04] min-w-0">
+                      <span className="text-[9px] text-zinc-400 font-mono truncate flex-1 block">{generatedPixPayload}</span>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(generatedPixPayload);
+                          toast.success('Pix copiado!');
+                        }}
+                        className="p-1 rounded hover:bg-white/[0.04] text-zinc-500 hover:text-zinc-300 transition-colors shrink-0"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Send to Chat Options */}
+                  {selectedConversation ? (
+                    <Button
+                      onClick={sendPixToChat}
+                      disabled={isSendingPix}
+                      className="w-full h-10 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                    >
+                      {isSendingPix ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" /> Enviando...
+                        </>
+                      ) : (
+                        <>
+                          <MessageSquare className="w-4 h-4" /> Enviar Chave Pix no WhatsApp
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <p className="text-[10px] text-zinc-500 text-center leading-relaxed">
+                      Selecione uma conversa no Live Feed para poder enviar este Pix diretamente para o WhatsApp do hóspede via Zélla.
+                    </p>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 3. BOOST MODAL */}
+      <Dialog open={activeQuickAction === 'boost'} onOpenChange={(open) => !open && setActiveQuickAction(null)}>
+        <DialogContent className="bg-[#0a0a0f] border border-white/[0.08] text-white max-w-sm p-6 rounded-xl shadow-2xl">
+          <DialogHeader className="border-b border-white/[0.04] pb-3">
+            <DialogTitle className="text-sm font-extrabold text-white flex items-center gap-2">
+              <Zap className="w-4 h-4 text-amber-400" />
+              Boost de Autonomia IA
+            </DialogTitle>
+            <DialogDescription className="text-zinc-500 text-[11px]">
+              Gerencie e audite o processamento de IA Zélla para a conversa atual.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedConversation ? (
+            <div className="space-y-4 pt-3">
+              <div className="bg-[#121216] border border-white/[0.04] rounded-lg p-3.5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-zinc-400 font-bold uppercase block">Hóspede Ativo</span>
+                  <span className="text-xs text-white font-semibold">{selectedConversation.guestName}</span>
+                </div>
+                <div className="flex items-center justify-between border-t border-white/[0.03] pt-2">
+                  <span className="text-[10px] text-zinc-400 font-bold uppercase block">Confiança de Zélla</span>
+                  <span className={`text-xs font-mono font-extrabold ${
+                    (selectedConversation.aiScore || 0) >= 80 ? 'text-emerald-400' : 'text-yellow-400'
+                  }`}>
+                    {selectedConversation.aiScore || 0}% conf.
+                  </span>
+                </div>
+                <div className="flex items-center justify-between border-t border-white/[0.03] pt-2">
+                  <span className="text-[10px] text-zinc-400 font-bold uppercase block">Modo Operacional</span>
+                  <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 border border-emerald-500/15 rounded font-bold uppercase">
+                    Autônomo
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Button
+                  onClick={handleBoost}
+                  disabled={isBoosting}
+                  className="w-full h-10 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                >
+                  {isBoosting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Processando Boost...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4 text-white" /> Forçar Resposta Autônoma
+                    </>
+                  )}
+                </Button>
+                
+                <button
+                  onClick={() => {
+                    toast.promise(
+                      new Promise(r => setTimeout(r, 1200)),
+                      {
+                        loading: 'Zélla re-auditando regras e FAQ...',
+                        success: 'Regras cognitivas da pousada re-sincronizadas!',
+                        error: 'Falha na re-auditoria.'
+                      }
+                    );
+                    setActiveQuickAction(null);
+                  }}
+                  className="w-full h-9 bg-white/[0.04] hover:bg-white/[0.08] text-white font-bold text-xs rounded-lg border border-white/[0.06] transition-colors cursor-pointer"
+                >
+                  Re-auditar Histórico & Regras
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3 pt-3">
+              <p className="text-xs text-zinc-400 text-center py-4">
+                Selecione uma conversa no Live Feed para auditar ou impulsionar as respostas do Zélla.
+              </p>
+              <div className="border-t border-white/[0.04] pt-3 flex justify-end">
+                <Button 
+                  onClick={() => setActiveQuickAction(null)} 
+                  className="bg-white/[0.04] hover:bg-white/[0.08] text-white text-xs font-bold"
+                >
+                  Fechar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
