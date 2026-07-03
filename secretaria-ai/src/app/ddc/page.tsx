@@ -267,13 +267,13 @@ export default function DDCDashboardPage() {
     // ── OVERVIEW (Dashboard) ──────────────────────────────────
     if (activeTab === 'overview') {
       return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* LEFT PANEL */}
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* LEFT PANEL — 2/3 width */}
+          <div className="lg:col-span-2 space-y-5">
             <motion.div variants={fadeIn} initial="hidden" animate="visible">
               <RevenueMetrics metrics={adaptRevenueMetrics(metrics) || mockRevenueMetrics} />
             </motion.div>
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <motion.div variants={fadeIn} initial="hidden" animate="visible">
               <AILiveFeed
                 conversations={conversations}
                 isConnected={true}
@@ -284,172 +284,154 @@ export default function DDCDashboardPage() {
             </motion.div>
           </div>
 
-          {/* RIGHT PANEL */}
-          <div className="space-y-6">
+          {/* RIGHT PANEL — 1/3 width */}
+          <div className="space-y-4">
             <AnimatePresence>
               {showOnboarding && (
                 <motion.div
                   initial={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="bg-[#121216] border border-white/[0.04] rounded-xl p-4 overflow-hidden"
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="bg-[#121216] border border-white/[0.05] rounded-xl overflow-hidden"
                 >
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs">🚀</span>
-                      <span className="text-xs font-extrabold text-white tracking-wide uppercase">Onboarding Seu Zélla</span>
+                  <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3 border-b border-white/[0.04]">
+                    <div className="flex items-center gap-2">
+                      <span>🚀</span>
+                      <span className="text-xs font-bold text-white">Primeiros passos</span>
                     </div>
                     <button
-                      onClick={() => { setShowOnboarding(false); toast.info('Guia de onboarding ocultado.'); }}
-                      className="p-1 rounded hover:bg-white/[0.04] text-zinc-500 hover:text-zinc-300 transition-colors"
+                      onClick={() => { setShowOnboarding(false); toast.info('Guia ocultado.'); }}
+                      className="p-1 rounded hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 transition-colors"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  <div className="space-y-2.5">
-                    <div className="flex items-start gap-2.5 bg-[#0a0a0f]/40 p-2.5 rounded-lg border border-white/[0.02]">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <div className="p-4 space-y-2">
+                    <div className="flex items-center gap-2.5 py-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                       <div>
-                        <h4 className="text-[11px] font-bold text-white">1. Carga de FAQ Concluída</h4>
-                        <p className="text-zinc-500 text-[10px] leading-relaxed mt-0.5">As regras de hospedagem e respostas da pousada foram indexadas.</p>
+                        <p className="text-xs font-semibold text-white">FAQ da pousada indexado</p>
+                        <p className="text-zinc-500 text-[10px] mt-0.5">Regras e respostas prontas para a IA.</p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-2.5 bg-[#0a0a0f]/40 p-2.5 rounded-lg border border-white/[0.02]">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <div className="flex items-center gap-2.5 py-2 border-t border-white/[0.03]">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                       <div>
-                        <h4 className="text-[11px] font-bold text-white">2. Provedor Conectado</h4>
-                        <p className="text-zinc-500 text-[10px] leading-relaxed mt-0.5">O fluxo de mensagens com o WhatsApp está ativo.</p>
+                        <p className="text-xs font-semibold text-white">WhatsApp conectado</p>
+                        <p className="text-zinc-500 text-[10px] mt-0.5">Fluxo de mensagens ativo.</p>
                       </div>
                     </div>
                     <button
                       onClick={() => { setActiveTab('settings'); setSubTab('linkinbio'); }}
-                      className="w-full text-left flex items-start gap-2.5 bg-emerald-500/[0.02] hover:bg-emerald-500/[0.04] p-2.5 rounded-lg border border-dashed border-emerald-500/20 hover:border-emerald-500/35 transition-all cursor-pointer group"
+                      className="w-full border-t border-white/[0.03] flex items-center justify-between gap-2 pt-3 text-left group cursor-pointer"
                     >
-                      <div className="w-4 h-4 rounded-full border border-zinc-700 flex items-center justify-center text-zinc-500 shrink-0 mt-0.5 group-hover:border-emerald-500/30 group-hover:text-emerald-400 transition-colors">
-                        <span className="text-[8px] font-bold font-mono">3</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-1">
-                          <h4 className="text-[11px] font-bold text-white group-hover:text-emerald-400 transition-colors">3. Customizar Link-in-Bio</h4>
-                          <ChevronRight className="w-3.5 h-3.5 text-zinc-600 group-hover:text-emerald-400 transition-colors" />
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-4 h-4 rounded-full border border-zinc-700 flex items-center justify-center text-zinc-500 group-hover:border-emerald-500/40 group-hover:text-emerald-400 transition-colors shrink-0">
+                          <span className="text-[8px] font-bold">3</span>
                         </div>
-                        <p className="text-zinc-500 text-[10px] leading-relaxed mt-0.5">Personalize os canais de atendimento e links para o Instagram.</p>
+                        <p className="text-xs font-semibold text-zinc-400 group-hover:text-emerald-400 transition-colors">Customizar Link-in-Bio</p>
                       </div>
+                      <ChevronRight className="w-3.5 h-3.5 text-zinc-700 group-hover:text-emerald-400 transition-colors shrink-0" />
                     </button>
-                    <div className="h-px bg-white/[0.04] my-2" />
-                    {/* Guest Simulator */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider">Simulador de Hóspede</span>
-                        <Badge className="bg-emerald-500/10 text-emerald-400 border-0 text-[8px] scale-90">Instantâneo</Badge>
-                      </div>
-                      <p className="text-zinc-400 text-[10px] leading-relaxed">
-                        Simule um hóspede enviando uma mensagem no WhatsApp para ver a IA responder e integrá-lo ao CRM ao vivo!
-                      </p>
-                      <div className="space-y-2 bg-[#0a0a0f]/50 p-2.5 rounded-lg border border-white/[0.03]">
-                        <select
-                          id="simulation-msg"
-                          className="w-full bg-[#121216] border border-white/[0.08] rounded-md p-1.5 text-[10px] text-zinc-300 focus:outline-none focus:ring-1 focus:ring-emerald-500/30"
-                          defaultValue="casal"
-                        >
-                          <option value="casal">Reservas: &quot;Tem quarto de casal para amanhã?&quot;</option>
-                          <option value="pets">Pets: &quot;Vocês aceitam animais de estimação?&quot;</option>
-                          <option value="rules">Check-in: &quot;Qual o horário do check-in e tem Wi-Fi?&quot;</option>
-                          <option value="pool">Lazer: &quot;Quais as opções de piscina e estacionamento?&quot;</option>
-                        </select>
-                        <Button
-                          onClick={async () => {
-                            const selectEl = document.getElementById('simulation-msg') as HTMLSelectElement;
-                            const value = selectEl?.value;
-                            let message = 'Olá, tem quarto de casal disponível para amanhã? Qual o valor?';
-                            if (value === 'pets') message = 'Olá! Vocês aceitam animais de estimação (pets)?';
-                            else if (value === 'rules') message = 'Qual o horário do check-in e check-out de vocês? Tem Wi-Fi?';
-                            else if (value === 'pool') message = 'Boa tarde, queria saber se tem estacionamento incluso e piscina.';
-                            toast.promise(
-                              fetch('/api/ddc/simulate-message', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ message }),
-                              }).then(async r => { if (!r.ok) throw new Error(); return r.json(); }),
-                              {
-                                loading: 'Enviando mensagem de teste via WhatsApp...',
-                                success: 'Mensagem simulada! Veja o feed ao lado atualizar.',
-                                error: 'Falha ao simular mensagem de teste.',
-                              }
-                            );
-                          }}
-                          className="w-full py-1.5 h-auto bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-[10px] rounded-md flex items-center justify-center gap-1 cursor-pointer transition-colors active:scale-[0.98]"
-                        >
-                          <Zap className="w-3 h-3 text-white" />
-                          Disparar Mensagem Simulada
-                        </Button>
-                      </div>
+
+                    <div className="pt-3 border-t border-white/[0.03]">
+                      <p className="text-[11px] font-semibold text-emerald-400 mb-2">Teste ao vivo</p>
+                      <select
+                        id="simulation-msg"
+                        className="w-full bg-[#0a0a0f] border border-white/[0.07] rounded-lg p-1.5 text-[10px] text-zinc-300 focus:outline-none focus:border-emerald-500/30 mb-2"
+                        defaultValue="casal"
+                      >
+                        <option value="casal">Reservas: quarto de casal para amanhã?</option>
+                        <option value="pets">Pets: vocês aceitam animais?</option>
+                        <option value="rules">Check-in: horários e Wi-Fi?</option>
+                        <option value="pool">Lazer: piscina e estacionamento?</option>
+                      </select>
+                      <Button
+                        onClick={async () => {
+                          const selectEl = document.getElementById('simulation-msg') as HTMLSelectElement;
+                          const value = selectEl?.value;
+                          let message = 'Olá, tem quarto de casal disponível para amanhã? Qual o valor?';
+                          if (value === 'pets') message = 'Olá! Vocês aceitam animais de estimação (pets)?';
+                          else if (value === 'rules') message = 'Qual o horário do check-in e check-out de vocês? Tem Wi-Fi?';
+                          else if (value === 'pool') message = 'Boa tarde, queria saber se tem estacionamento incluso e piscina.';
+                          toast.promise(
+                            fetch('/api/ddc/simulate-message', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ message }),
+                            }).then(async r => { if (!r.ok) throw new Error(); return r.json(); }),
+                            { loading: 'Enviando...', success: 'Mensagem simulada com sucesso!', error: 'Falha ao simular.' }
+                          );
+                        }}
+                        className="w-full py-2 h-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] rounded-lg flex items-center justify-center gap-1.5 cursor-pointer transition-colors active:scale-[0.98]"
+                      >
+                        <Zap className="w-3 h-3" /> Simular Hóspede
+                      </Button>
                     </div>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* AI Status card */}
-            <div className="bg-[#121216] border border-white/[0.04] rounded-xl p-4">
-              <div className="flex items-center justify-between mb-3.5">
-                <h3 className="text-[10px] font-extrabold text-white uppercase tracking-wider">Status do Agente</h3>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[9px] text-zinc-400 font-bold capitalize">{aiStatusLocal}</span>
-                  <div className={`w-2 h-2 rounded-full ${aiStatusLocal === 'online' ? 'bg-emerald-500' : aiStatusLocal === 'processing' ? 'bg-violet-500' : aiStatusLocal === 'error' ? 'bg-red-500' : 'bg-gray-500'} animate-pulse`} />
+            {/* Status do Agente + Notificações — single unified card */}
+            <div className="bg-[#121216] border border-white/[0.05] rounded-xl overflow-hidden">
+              {/* Agent status row */}
+              <div className="px-4 pt-4 pb-3 border-b border-white/[0.04]">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold text-white">Agente IA</span>
+                  <div className="flex items-center gap-1.5">
+                    <div className={`w-1.5 h-1.5 rounded-full ${aiStatusLocal === 'online' ? 'bg-emerald-500 animate-pulse' : aiStatusLocal === 'processing' ? 'bg-violet-500 animate-pulse' : aiStatusLocal === 'error' ? 'bg-red-500' : 'bg-zinc-600'}`} />
+                    <span className="text-[10px] text-zinc-400 capitalize">{aiStatusLocal}</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="text-center">
+                    <div className="text-base font-extrabold text-white font-mono">{aiStatus?.activeConversations ?? 12}</div>
+                    <div className="text-[9px] text-zinc-600 mt-0.5">Ativas</div>
+                  </div>
+                  <div className="text-center border-x border-white/[0.04]">
+                    <div className="text-base font-extrabold text-white font-mono">{metrics?.today?.aiAttended ?? 45}</div>
+                    <div className="text-[9px] text-zinc-600 mt-0.5">Hoje</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-base font-extrabold text-white font-mono">{aiStatus?.averageResponseTime ?? 2.3}s</div>
+                    <div className="text-[9px] text-zinc-600 mt-0.5">Resposta</div>
+                  </div>
                 </div>
               </div>
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between border-b border-white/[0.03] pb-2">
-                  <span className="text-xs text-zinc-400">Conversas Ativas</span>
-                  <span className="text-xs font-bold text-white font-mono">{aiStatus?.activeConversations || 12}</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-white/[0.03] pb-2">
-                  <span className="text-xs text-zinc-400">Atendimentos Hoje</span>
-                  <span className="text-xs font-bold text-white font-mono">{metrics?.today?.aiAttended || 45}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-zinc-400">Tempo de Resposta</span>
-                  <span className="text-xs font-bold text-white font-mono">{aiStatus?.averageResponseTime || 2.3}s</span>
-                </div>
-              </div>
-            </div>
 
-            {/* Notifications preview */}
-            <div className="bg-[#121216] border border-white/[0.04] rounded-xl p-4">
-              <div className="flex items-center justify-between mb-3.5">
-                <h3 className="text-[10px] font-extrabold text-white uppercase tracking-wider">Notificações</h3>
-                {unreadCount > 0 && (
-                  <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-                    <span className="text-[9px] font-bold text-white">{unreadCount}</span>
-                  </div>
-                )}
-              </div>
-              <div className="space-y-2">
-                {notifications.slice(0, 3).map(notif => (
-                  <div
-                    key={notif.id}
-                    className={`p-2.5 rounded-lg border transition-all cursor-pointer hover:bg-white/[0.01] ${notif.status === 'unread' ? 'bg-emerald-500/5 border-emerald-500/10' : 'bg-[#0a0a0f]/40 border-white/[0.04]'}`}
-                    onClick={() => { markAsRead(notif.id); toast.info(`Notificação: ${notif.title}`); }}
-                  >
-                    <div className="flex items-start justify-between gap-2">
+              {/* Notifications section */}
+              <div className="px-4 py-3">
+                <div className="flex items-center justify-between mb-2.5">
+                  <span className="text-xs font-bold text-white">Notificações</span>
+                  {unreadCount > 0 && (
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded">{unreadCount} novas</span>
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  {notifications.slice(0, 3).map(notif => (
+                    <div
+                      key={notif.id}
+                      className={`flex items-start gap-2 p-2 rounded-lg cursor-pointer transition-all hover:bg-white/[0.02] ${notif.status === 'unread' ? 'bg-emerald-500/[0.03]' : ''}`}
+                      onClick={() => { markAsRead(notif.id); toast.info(notif.title); }}
+                    >
+                      <div className={`w-1.5 h-1.5 rounded-full shrink-0 mt-1.5 ${notif.priority === 'urgent' ? 'bg-red-500 animate-pulse' : notif.priority === 'high' ? 'bg-amber-500' : 'bg-blue-500'}`} />
                       <div className="min-w-0">
-                        <div className="text-xs font-bold text-white truncate">{notif.title}</div>
-                        <div className="text-[10px] text-zinc-500 truncate mt-0.5">{notif.message}</div>
+                        <div className="text-[11px] font-semibold text-white truncate">{notif.title}</div>
+                        <div className="text-[10px] text-zinc-600 truncate">{notif.message}</div>
                       </div>
-                      <div className={`w-1.5 h-1.5 rounded-full shrink-0 mt-1 ${notif.priority === 'urgent' ? 'bg-red-500 animate-pulse' : notif.priority === 'high' ? 'bg-amber-500' : 'bg-blue-500'}`} />
                     </div>
-                  </div>
-                ))}
-                {notifications.length === 0 && (
-                  <p className="text-[11px] text-zinc-500 text-center py-4">Sem notificações.</p>
-                )}
-                <button
-                  onClick={() => setActiveTab('notifications')}
-                  className="w-full text-center text-[10px] text-emerald-400 hover:text-emerald-300 font-bold pt-1 transition-colors"
-                >
-                  Ver todas →
-                </button>
+                  ))}
+                  {notifications.length === 0 && (
+                    <p className="text-[10px] text-zinc-600 text-center py-3">Sem notificações.</p>
+                  )}
+                  <button
+                    onClick={() => setActiveTab('notifications')}
+                    className="w-full text-center text-[10px] text-emerald-400 hover:text-emerald-300 font-semibold pt-1.5 transition-colors"
+                  >
+                    Ver todas →
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1336,7 +1318,7 @@ export default function DDCDashboardPage() {
                 <span className="text-[10px] text-zinc-500 font-mono">Propriedade: {propertyName}</span>
                 <div className="hidden sm:block h-4 w-px bg-white/[0.06]" />
                 <span className="text-[10px] text-zinc-500 font-mono">
-                  {allGuests.length} leads • {conversations.length} conversas ativas
+                  {allGuests.length} hóspedes • {conversations.length} conversas ativas
                 </span>
               </div>
               <span className="text-[9px] text-emerald-400 font-semibold font-mono uppercase tracking-wider">
