@@ -1,5 +1,6 @@
 export function getBrainHealth() {
   return {
+    success: true,
     edge_latency: 12,
     brain_queue: 2,
     voice_swarm: 4,

@@ -523,3 +523,20 @@
   .pricing-grid { grid-template-columns: repeat(2, 1fr) !important; }
 }
 
+@media print {
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background-color: #0a0a0a !important;
+    color: #ffffff !important;
+  }
+  /* Anula as opacidades de entrada do Framer Motion para exportação estática em PDF */
+  div, section, p, h1, h2, h3, h4, h5, h6, span, img, svg, button, a {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+

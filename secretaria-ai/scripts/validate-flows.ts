@@ -69,8 +69,8 @@ async function testAuthRegister() {
       email: testTenantEmail,
       name: 'Flow Test User',
       password: 'TestPass123!',
-      pousada: 'Pousada FlowTest',
-      whatsapp: '+5511999999999',
+      pousadaName: 'Pousada FlowTest',
+      phone: '+5511999999999',
     }),
   });
 
@@ -85,7 +85,10 @@ let subscriptionId: string;
 async function testCheckoutCreate() {
   const res = await fetch(`${BASE_URL}/api/checkout/create`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer local_flow_test_token_2026'
+    },
     body: JSON.stringify({
       email: testTenantEmail,
       name: 'Flow Test User',
@@ -119,7 +122,7 @@ async function testPaymentWebhook() {
 async function testWhatsAppWebhook() {
   // GET verification
   const verifyRes = await fetch(
-    `${BASE_URL}/api/webhook-whatsapp?hub.mode=subscribe&hub.verify_token=test&hub.challenge=CHALLENGE_TEST`,
+    `${BASE_URL}/api/webhook-whatsapp?hub.mode=subscribe&hub.verify_token=zehla_whatsapp_verify_2024&hub.challenge=CHALLENGE_TEST`,
   );
   const verifyBody = await verifyRes.text();
   if (verifyBody !== 'CHALLENGE_TEST') {
@@ -135,6 +138,9 @@ async function testWhatsAppWebhook() {
       entry: [{
         changes: [{
           value: {
+            metadata: {
+              display_phone_number: '+5511999999999'
+            },
             messages: [{
               from: '5511999999999',
               id: 'flow-test-msg',
