@@ -21,8 +21,7 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
-  ShieldCheck,
-  FileText
+  ShieldCheck
 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -148,11 +147,11 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-[#0a0a0d] text-white select-none">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-[#0a0a0d] text-white select-none">
       <Toaster position="top-center" richColors />
 
-      {/* COLUNA ESQUERDA: PAINEL DE DESTAQUE (40% largura no desktop) */}
-      <div className="hidden lg:flex lg:col-span-5 bg-[#121216] border-r border-white/[0.04] p-12 flex-col justify-between relative">
+      {/* COLUNA ESQUERDA: PAINEL DE DESTAQUE (Exatamente 50% largura no desktop) */}
+      <div className="hidden lg:flex bg-[#121216] border-r border-white/[0.04] p-8 sm:p-16 lg:p-20 flex-col justify-between relative">
         {/* Header da Marca */}
         <div className="flex items-center gap-3">
           <div>
@@ -166,14 +165,14 @@ function LoginForm() {
         </div>
 
         {/* Copy Principal */}
-        <div className="my-auto space-y-8 max-w-sm">
+        <div className="my-auto space-y-8 max-w-md">
           <h2 className="text-3xl font-extrabold text-white leading-tight tracking-tight font-serif">
             Tudo o que você precisa para colocar o assistente da sua pousada no ar.
           </h2>
 
           <div className="space-y-6">
             <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-lg bg-[#1a1a24] border border-white/[0.06] flex items-center justify-center text-emerald-400 shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-[#1a1a24] border border-white/[0.06] flex items-center justify-center text-emerald-400 shrink-0 animate-pulse">
                 <Zap className="w-4 h-4" />
               </div>
               <div>
@@ -216,9 +215,9 @@ function LoginForm() {
         </p>
       </div>
 
-      {/* COLUNA DIREITA: FORMULÁRIO DE LOGIN OU CADASTRO COMPACTO (60% largura no desktop) */}
-      <div className="lg:col-span-7 flex flex-col justify-center items-center p-6 sm:p-12 overflow-y-auto min-h-screen relative">
-        <div className="w-full max-w-2xl py-6">
+      {/* COLUNA DIREITA: FORMULÁRIO COMPACTO DE ALTA DENSIDADE (Exatamente 50% largura no desktop) */}
+      <div className="flex flex-col justify-center p-8 sm:p-16 lg:p-20 overflow-y-auto min-h-screen bg-[#0a0a0d]">
+        <div className="w-full max-w-xl mx-auto">
           
           {mode === 'login' ? (
             <div className="space-y-6 max-w-md mx-auto">
@@ -299,17 +298,17 @@ function LoginForm() {
               </p>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-5">
               <div>
                 <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                   Crie sua pousada
                 </h3>
               </div>
 
-              <form onSubmit={handleRegister} className="space-y-6">
+              <form onSubmit={handleRegister} className="space-y-4">
                 
-                {/* GRID DE CAMPOS: DENSIDADE DE INFORMAÇÃO IGUAL AO PRINT DA SHOPIRA */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                {/* GRID DE CAMPOS: DENSIDADE MÁXIMA DE INFORMAÇÃO */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
                   
                   {/* Nome Completo */}
                   <div className="space-y-1.5 col-span-1">
@@ -317,7 +316,7 @@ function LoginForm() {
                     <Input
                       id="reg-name"
                       placeholder="Seu nome completo"
-                      className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2.5"
+                      className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2"
                       value={registerData.name}
                       onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
                       required
@@ -331,7 +330,7 @@ function LoginForm() {
                       id="reg-email"
                       type="email"
                       placeholder="seu@email.com"
-                      className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2.5"
+                      className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2"
                       value={registerData.email}
                       onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
                       required
@@ -346,7 +345,7 @@ function LoginForm() {
                         id="reg-password"
                         type={showPassword ? 'text' : 'password'}
                         placeholder="Mínimo 8 caracteres"
-                        className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2.5 pr-10"
+                        className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2 pr-10"
                         value={registerData.password}
                         onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
                         required
@@ -369,7 +368,7 @@ function LoginForm() {
                         id="reg-confirm-password"
                         type={showConfirmPassword ? 'text' : 'password'}
                         placeholder="Repita a senha"
-                        className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2.5 pr-10"
+                        className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2 pr-10"
                         value={registerData.confirmPassword}
                         onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
                         required
@@ -385,7 +384,7 @@ function LoginForm() {
                   </div>
 
                   {/* Separador de Seção "SUA POUSADA" */}
-                  <div className="col-span-2 pt-2 pb-1">
+                  <div className="col-span-2 pt-1">
                     <div className="relative flex items-center">
                       <div className="flex-grow border-t border-white/[0.06]"></div>
                       <span className="flex-shrink mx-4 text-[9px] text-zinc-500 font-bold tracking-widest uppercase">
@@ -395,13 +394,13 @@ function LoginForm() {
                     </div>
                   </div>
 
-                  {/* Nome da Pousada (Ocupa a largura inteira (2 cols) exatamente como no print "Nome da sua loja") */}
+                  {/* Nome da Pousada (Largura total/col-span 2) */}
                   <div className="space-y-1.5 col-span-2">
                     <Label htmlFor="reg-pousada" className="text-zinc-300 text-xs font-semibold">Nome da sua pousada *</Label>
                     <Input
                       id="reg-pousada"
                       placeholder="Minha Pousada Premium"
-                      className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2.5 w-full"
+                      className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2 w-full"
                       value={registerData.pousadaName}
                       onChange={(e) => setRegisterData({ ...registerData, pousadaName: e.target.value })}
                       required
@@ -414,7 +413,7 @@ function LoginForm() {
                     <Input
                       id="reg-cnpj"
                       placeholder="CNPJ ou CPF"
-                      className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2.5"
+                      className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2"
                       value={registerData.cnpjOrCpf}
                       onChange={(e) => setRegisterData({ ...registerData, cnpjOrCpf: e.target.value })}
                       required
@@ -427,7 +426,7 @@ function LoginForm() {
                     <Input
                       id="reg-phone"
                       placeholder="(11) 99999-9999"
-                      className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2.5"
+                      className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2"
                       value={registerData.phone}
                       onChange={(e) => setRegisterData({ ...registerData, phone: e.target.value })}
                       required
@@ -435,12 +434,12 @@ function LoginForm() {
                   </div>
 
                   {/* Explicador de Dados (Largura Inteira) */}
-                  <p className="text-[11px] text-zinc-500 leading-relaxed col-span-2">
+                  <p className="text-[11px] text-zinc-500 leading-normal col-span-2">
                     Seu nome, e-mail e telefone são usados para criar e proteger o acesso à sua conta — não usamos esses dados para outra finalidade sem te avisar.
                   </p>
 
                   {/* Checkbox Termos de Uso (Col-span 1 no desktop) */}
-                  <div className="flex items-start gap-3 mt-1 col-span-1">
+                  <div className="flex items-start gap-3 mt-1.5 col-span-1">
                     <input
                       id="terms-checkbox"
                       type="checkbox"
@@ -448,13 +447,13 @@ function LoginForm() {
                       onChange={(e) => setAgreedTerms(e.target.checked)}
                       className="w-4.5 h-4.5 mt-0.5 rounded border-white/[0.08] bg-[#121216] text-emerald-500 focus:ring-emerald-500/20"
                     />
-                    <Label htmlFor="terms-checkbox" className="text-zinc-400 text-xs leading-relaxed font-normal cursor-pointer select-none">
+                    <Label htmlFor="terms-checkbox" className="text-zinc-400 text-[11px] leading-snug font-normal cursor-pointer select-none">
                       Concordo com os <a href="#" className="text-emerald-400 hover:underline">Termos de Uso</a> e a <a href="#" className="text-emerald-400 hover:underline">Política de Privacidade</a>.
                     </Label>
                   </div>
 
-                  {/* Cloudflare Turnstile Mock (Col-span 1 no desktop - Lado a lado com os termos!) */}
-                  <div className="bg-[#121216]/60 border border-white/[0.06] rounded-xl p-3 flex items-center justify-between col-span-1 text-[10px] text-zinc-400 font-medium h-fit shrink-0">
+                  {/* Cloudflare Turnstile Mock (Col-span 1 no desktop - Lado a lado com os termos) */}
+                  <div className="bg-[#121216]/60 border border-white/[0.06] rounded-lg p-2.5 flex items-center justify-between col-span-1 text-[10px] text-zinc-400 font-medium h-fit shrink-0">
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 rounded-full shrink-0">
                         <CheckCircle2 className="w-3.5 h-3.5" />
@@ -468,10 +467,10 @@ function LoginForm() {
                   </div>
 
                   {/* Botão de Envio (Largura Inteira) */}
-                  <div className="col-span-2 pt-2">
+                  <div className="col-span-2 pt-1">
                     <Button
                       type="submit"
-                      className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold rounded-lg cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                      className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold rounded-lg cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
                       disabled={isLoading}
                     >
                       {isLoading ? (
@@ -488,7 +487,7 @@ function LoginForm() {
                 </div>
               </form>
 
-              <p className="text-center text-zinc-500 text-sm mt-6">
+              <p className="text-center text-zinc-500 text-sm mt-5">
                 Já tem uma conta?{' '}
                 <button
                   type="button"
@@ -505,7 +504,7 @@ function LoginForm() {
           )}
 
           {/* Rodapé Final */}
-          <div className="border-t border-white/[0.04] pt-6 mt-8 text-center">
+          <div className="border-t border-white/[0.04] pt-4 mt-6 text-center">
             <p className="text-zinc-600 text-[10px]">
               © 2026 SEU ZÉLLA — O zelador da sua pousada.
             </p>
