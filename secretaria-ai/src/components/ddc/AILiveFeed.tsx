@@ -118,6 +118,83 @@ export function AILiveFeed({
     }
   };
 
+  const getMessageBadge = (content: string, from: string) => {
+    if (from !== 'ai') return null;
+    const txt = content.toLowerCase();
+    if (txt.includes('pix') || txt.includes('comprovante') || txt.includes('pagamento') || txt.includes('r$') || txt.includes('valor')) {
+      return (
+        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+          ⚡ Pix & Reservas
+        </span>
+      );
+    }
+    if (txt.includes('praia') || txt.includes('turis') || txt.includes('centro') || txt.includes('passeio') || txt.includes('restaurante') || txt.includes('caiçara') || txt.includes('gastronom')) {
+      return (
+        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
+          🗺️ Dicas & Turismo
+        </span>
+      );
+    }
+    if (txt.includes('pet') || txt.includes('animais') || txt.includes('wi-fi') || txt.includes('wifi') || txt.includes('check-in') || txt.includes('check-out') || txt.includes('taxa')) {
+      return (
+        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shrink-0">
+          🏠 Políticas & FAQ
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-zinc-500/10 text-zinc-400 border border-zinc-500/20 shrink-0">
+        🤖 Zélla Assistente
+      </span>
+    );
+  };
+
+  const getContextBanner = () => {
+    if (!selectedConversation) return null;
+    const name = selectedConversation.guestName || '';
+    if (name.includes('Carlos')) {
+      return (
+        <div className="bg-emerald-500/[0.03] border-b border-white/[0.04] px-4 py-2 flex items-center justify-between shrink-0">
+          <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1">
+            💸 Fechamento Automático Pix Ativo
+          </span>
+          <span className="text-[9px] text-zinc-500 font-mono">Chave: pix@pousadaserenity.com.br</span>
+        </div>
+      );
+    }
+    if (name.includes('Mariana')) {
+      return (
+        <div className="bg-amber-500/[0.03] border-b border-white/[0.04] px-4 py-2 flex items-center justify-between shrink-0">
+          <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider flex items-center gap-1">
+            🗺️ Guiamento de Turismo e Lazer Local
+          </span>
+          <span className="text-[9px] text-zinc-500 font-mono">Foco: Centro Histórico, Castelhanos</span>
+        </div>
+      );
+    }
+    if (name.includes('Ricardo')) {
+      return (
+        <div className="bg-indigo-500/[0.03] border-b border-white/[0.04] px-4 py-2 flex items-center justify-between shrink-0">
+          <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider flex items-center gap-1">
+            🏠 FAQ Pousada: Políticas e Comodidades
+          </span>
+          <span className="text-[9px] text-zinc-500 font-mono">Foco: Pet-friendly e Wi-Fi Fibra</span>
+        </div>
+      );
+    }
+    if (selectedConversation.status === 'escalated') {
+      return (
+        <div className="bg-red-500/[0.03] border-b border-white/[0.04] px-4 py-2 flex items-center justify-between shrink-0">
+          <span className="text-[10px] text-red-400 font-bold uppercase tracking-wider flex items-center gap-1 animate-pulse">
+            ⚠️ Escalonado para Operação Humana
+          </span>
+          <span className="text-[9px] text-zinc-500 font-mono">Ação: Reagendamento de Reserva</span>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <Card className="bg-white/[0.02] border border-white/[0.06] h-full flex flex-col">
       <CardHeader className="pb-3 border-b border-white/[0.06]">
@@ -289,7 +366,10 @@ export function AILiveFeed({
                   </div>
                 </div>
               </div>
- 
+
+              {/* Context Banner */}
+              {getContextBanner()}
+
               {/* Messages Area */}
               <ScrollArea className="flex-1 p-4">
                 <div className="space-y-4">
@@ -314,11 +394,14 @@ export function AILiveFeed({
                                 : 'bg-violet-500/20 text-white border border-violet-500/20 rounded-tr-none'
                             }`}
                           >
-                            <div className="flex items-center gap-2 mb-1">
-                              {msgFrom === 'guest' && <User className="w-3 h-3 text-white/60" />}
-                              {msgFrom === 'ai' && <Bot className="w-3 h-3 text-emerald-400" />}
-                              {msgFrom === 'human' && <span className="text-[9px] text-violet-400">Você</span>}
-                              <span className="text-[9px] text-white/40">
+                            <div className="flex items-center justify-between gap-4 mb-1">
+                              <div className="flex items-center gap-1.5">
+                                {msgFrom === 'guest' && <User className="w-3 h-3 text-white/60" />}
+                                {msgFrom === 'ai' && <Bot className="w-3 h-3 text-emerald-400 shrink-0" />}
+                                {msgFrom === 'human' && <span className="text-[9px] text-violet-400 font-bold shrink-0">Você</span>}
+                                {getMessageBadge(message.content, msgFrom)}
+                              </div>
+                              <span className="text-[9px] text-white/40 shrink-0">
                                 {new Date(msgTime).toLocaleTimeString('pt-BR', {
                                   hour: '2-digit',
                                   minute: '2-digit'

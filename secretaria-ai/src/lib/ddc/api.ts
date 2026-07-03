@@ -263,13 +263,18 @@ export async function markAllNotificationsAsRead(): Promise<ApiResponse<void>> {
 // LIVE FEED (SSE)
 // ============================================================================
 
-export function connectToLiveFeed(onMessage: (conversation: ConversationLog) => void): EventSource {
+export function connectToLiveFeed(onMessage: (envelope: { type: 'initial' | 'update'; data: any }) => void): EventSource {
   const eventSource = new EventSource(`${API_BASE}/live-feed`);
 
   eventSource.addEventListener('message', (event) => {
     try {
-      const conversation: ConversationLog = JSON.parse(event.data);
-      onMessage(conversation);
+      const payload = JSON.parse(event.data);
+      if (payload.type && (payload.type === 'initial' || payload.type === 'update')) {
+        onMessage(payload);
+      } else {
+        // Fallback for raw ConversationLog payloads
+        onMessage({ type: 'update', data: payload });
+      }
     } catch (error) {
       console.error('Error parsing live feed message:', error);
     }

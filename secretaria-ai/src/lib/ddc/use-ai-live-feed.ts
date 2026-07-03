@@ -54,33 +54,51 @@ export function useAILiveFeed(): UseAILiveFeedReturn {
   useEffect(() => {
     const connect = () => {
       try {
-        const eventSource = connectToLiveFeed((newConversation) => {
-          setConversations(prev => {
-            const exists = prev.find(c => c.id === newConversation.id);
+        const eventSource = connectToLiveFeed((payload) => {
+          if (payload.type === 'initial') {
+            const list = payload.data || [];
+            setConversations(list);
+            setSelectedConversation(prev => {
+              if (!prev && list.length > 0) return list[0];
+              if (prev) {
+                const fresh = list.find((c: any) => c.id === prev.id);
+                return fresh || prev;
+              }
+              return null;
+            });
+            // Dispatch custom event for other components
+            window.dispatchEvent(
+              new CustomEvent('ddc:new-message', { detail: list })
+            );
+          } else if (payload.type === 'update') {
+            const newConversation = payload.data;
+            setConversations(prev => {
+              const exists = prev.find(c => c.id === newConversation.id);
 
-            if (exists) {
-              // Update existing conversation
-              return prev.map(c =>
-                c.id === newConversation.id ? newConversation : c
-              );
-            } else {
-              // Add new conversation at the beginning
-              return [newConversation, ...prev];
-            }
-          });
+              if (exists) {
+                // Update existing conversation
+                return prev.map(c =>
+                  c.id === newConversation.id ? newConversation : c
+                );
+              } else {
+                // Add new conversation at the beginning
+                return [newConversation, ...prev];
+              }
+            });
 
-          // Update selected if it's the one being updated
-          setSelectedConversation(prev => {
-            if (prev?.id === newConversation.id) {
-              return newConversation;
-            }
-            return prev;
-          });
+            // Update selected if it's the one being updated
+            setSelectedConversation(prev => {
+              if (prev?.id === newConversation.id) {
+                return newConversation;
+              }
+              return prev;
+            });
 
-          // Dispatch custom event for other components
-          window.dispatchEvent(
-            new CustomEvent('ddc:new-message', { detail: newConversation })
-          );
+            // Dispatch custom event for other components
+            window.dispatchEvent(
+              new CustomEvent('ddc:new-message', { detail: newConversation })
+            );
+          }
         });
 
         eventSource.addEventListener('open', () => {
@@ -111,7 +129,7 @@ export function useAILiveFeed(): UseAILiveFeedReturn {
         eventSourceRef.current.close();
       }
     };
-  }, [refreshConversations]);
+  }, [refreshConversations, selectedConversation]);
 
   // Select a conversation
   const selectConversation = useCallback((conversationId: string) => {
