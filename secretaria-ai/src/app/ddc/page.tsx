@@ -145,6 +145,34 @@ export default function DDCDashboardPage() {
         onOpenNotifications={handleNotificationClick}
       />
 
+      {/* Banner de Período de Teste Grátis (7 Dias) */}
+      {currentPlan === 'trial' && (
+        <div className="bg-gradient-to-r from-emerald-950/40 via-zinc-900 to-[#0a0a0f] border-b border-emerald-500/10 px-6 py-2.5 flex items-center justify-between gap-4 flex-wrap select-none">
+          <div className="flex items-center gap-2">
+            <span className="flex h-2 w-2 relative shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <p className="text-[11px] text-zinc-300">
+              Você está no **Período de Teste Grátis de 7 Dias**. Teste a inteligência artificial do Seu Zélla enviando uma mensagem simulada!
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const el = document.getElementById('simulation-msg');
+                el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el?.classList.add('ring-2', 'ring-emerald-500/50');
+                setTimeout(() => el?.classList.remove('ring-2', 'ring-emerald-500/50'), 1500);
+              }}
+              className="px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-md text-[10px] font-bold cursor-pointer transition-colors active:scale-95"
+            >
+              Simular Hóspede Agora ⚡
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Main Tab Controller - Header Navigation Bar (Flat & Minimalist) */}
       <div className="flex items-center gap-1.5 px-6 pt-4 max-w-[1920px] mx-auto select-none border-b border-white/[0.02] pb-2">
         <button
@@ -559,6 +587,64 @@ export default function DDCDashboardPage() {
                             <p className="text-zinc-500 text-[10px] leading-relaxed mt-0.5">Personalize os canais de atendimento e links para o Instagram da pousada.</p>
                           </div>
                         </button>
+
+                        {/* Divisor */}
+                        <div className="h-px bg-white/[0.04] my-2" />
+
+                        {/* Test AI Simulation Block */}
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider">Simulador de Hóspede</span>
+                            <Badge className="bg-emerald-500/10 text-emerald-400 border-0 text-[8px] scale-90">Instantâneo</Badge>
+                          </div>
+                          <p className="text-zinc-400 text-[10px] leading-relaxed">
+                            Simule um hóspede enviando uma mensagem no WhatsApp para ver a IA responder e integrá-lo ao CRM ao vivo!
+                          </p>
+                          
+                          <div className="space-y-2 bg-[#0a0a0f]/50 p-2.5 rounded-lg border border-white/[0.03]">
+                            <select
+                              id="simulation-msg"
+                              className="w-full bg-[#121216] border border-white/[0.08] rounded-md p-1.5 text-[10px] text-zinc-300 focus:outline-none focus:ring-1 focus:ring-emerald-500/30"
+                              defaultValue="casal"
+                            >
+                              <option value="casal">Reservas: "Tem quarto de casal para amanhã?"</option>
+                              <option value="pets">Pets: "Vocês aceitam animais de estimação?"</option>
+                              <option value="rules">Check-in: "Qual o horário do check-in e tem Wi-Fi?"</option>
+                              <option value="pool">Lazer: "Quais as opções de piscina e estacionamento?"</option>
+                            </select>
+
+                            <Button
+                              onClick={async () => {
+                                const selectEl = document.getElementById('simulation-msg') as HTMLSelectElement;
+                                const value = selectEl?.value;
+                                let message = 'Olá, tem quarto de casal disponível para amanhã? Qual o valor?';
+                                if (value === 'pets') message = 'Olá! Vocês aceitam animais de estimação (pets)?';
+                                else if (value === 'rules') message = 'Qual o horário do check-in e check-out de vocês? Tem Wi-Fi?';
+                                else if (value === 'pool') message = 'Boa tarde, queria saber se tem estacionamento incluso e piscina.';
+
+                                toast.promise(
+                                  fetch('/api/ddc/simulate-message', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ message }),
+                                  }).then(async (r) => {
+                                    if (!r.ok) throw new Error();
+                                    return r.json();
+                                  }),
+                                  {
+                                    loading: 'Enviando mensagem de teste via WhatsApp...',
+                                    success: 'Mensagem simulada! Veja o feed ao lado atualizar.',
+                                    error: 'Falha ao simular mensagem de teste.',
+                                  }
+                                );
+                              }}
+                              className="w-full py-1.5 h-auto bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-[10px] rounded-md flex items-center justify-center gap-1 cursor-pointer transition-colors active:scale-[0.98]"
+                            >
+                              <Zap className="w-3 h-3 text-white" />
+                              Disparar Mensagem Simulada
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </motion.div>
                   )}
