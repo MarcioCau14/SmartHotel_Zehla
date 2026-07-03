@@ -16,7 +16,7 @@ const steps = [
     num: '01',
     icon: UserPlus,
     title: 'Cadastre sua pousada em 5 minutos',
-    desc: 'Informe nome, e-mail, CNPJ (opcional), WhatsApp, endereço e quantidade de quartos. Pronto — o ZÉLLA já começa a montar seu perfil inteligente e calibrar a IA com o tom da sua marca. Sem técnico, sem configuração complexa.',
+    desc: 'Informe nome, e-mail, WhatsApp, endereço e quantidade de quartos. Pronto — o ZÉLLA já cria o perfil da sua hospedagem e personaliza as respostas com as regras da sua pousada. Sem complicação ou necessidade de TI.',
     color: 'emerald',
     fields: ['Nome da pousada', 'E-mail principal', 'CNPJ (opcional)', 'WhatsApp oficial', 'Endereço completo', 'Quantidade de quartos'],
   },

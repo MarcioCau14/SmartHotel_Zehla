@@ -38,11 +38,10 @@ export function DashboardPreviewSection() {
               </span>
             </h2>
 
-            {/* Texto Descritivo */}
             <p className="text-zinc-400 text-base sm:text-lg leading-relaxed">
-              O Diário de Conversas (DDC) dá controle absoluto sobre o cérebro ZÉLLA. 
-              Monitore o atendimento, visualize a intenção exata de cada hóspede e assuma 
-              o controle instantaneamente se quiser manter o toque humano personalizado.
+              O Diário de Conversas dá controle absoluto sobre o atendimento. 
+              Monitore as conversas em tempo real, veja o que o hóspede precisa e assuma 
+              o chat com apenas um clique para manter o toque humano personalizado.
             </p>
 
             {/* Blocos de Solução de Dores */}
@@ -53,9 +52,9 @@ export function DashboardPreviewSection() {
                   <Activity className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-white font-bold text-sm sm:text-base">Live Feed com Precisão da IA</h4>
+                  <h4 className="text-white font-bold text-sm sm:text-base">Acompanhamento ao Vivo</h4>
                   <p className="text-zinc-500 text-xs sm:text-sm mt-0.5">
-                    Saiba exatamente o que a IA responde com nível de confiança (ex: 98%). Transparência operacional sem margem para erros.
+                    Acompanhe as respostas automáticas em tempo real. Veja com clareza a segurança do assistente e garanta um atendimento livre de falhas.
                   </p>
                 </div>
               </div>
@@ -119,7 +118,7 @@ export function DashboardPreviewSection() {
                     <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
                     <span className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
                   </div>
-                  <span className="text-[10px] text-zinc-400 font-bold tracking-wider ml-2">DIÁRIO DE CONVERSAS (DDC) — SEU ZÉLLA</span>
+                  <span className="text-[10px] text-zinc-400 font-bold tracking-wider ml-2">PAINEL DE CONTROLE DE RESERVAS — SEU ZÉLLA</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-emerald-400 font-medium text-[10px]">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
@@ -189,7 +188,7 @@ export function DashboardPreviewSection() {
                         Olá, Bernardo! A diária do Quarto Casal Premium para o feriado de 7 de Setembro é R$ 447. Temos disponibilidade! Deseja que eu gere o link de reserva PIX?
                       </div>
                       <span className="text-[7px] text-emerald-500/70 font-semibold tracking-wide mt-0.5">
-                        ⚡ Roteador Cognitivo: RAG Semântico / disponibilidade: OK
+                        ⚡ Ações do ZÉLLA: Verificando disponibilidade no calendário da pousada... OK
                       </span>
                     </div>
 

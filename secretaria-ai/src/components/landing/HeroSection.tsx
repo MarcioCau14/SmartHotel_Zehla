@@ -49,9 +49,8 @@ export function HeroSection() {
               O zelador da sua <span className="gradient-text-royal font-bold">pousada 24/7</span>.
             </h1>
 
-            {/* Sub */}
             <p className="text-lg text-neutral-400 leading-relaxed mb-8 max-w-xl">
-              O ZÉLLA é um <span className="text-white font-semibold">Sistema Operacional Cognitivo inteligente</span>, capaz de cuidar do seus maiores ativos, seu tempo e seu negócio. Responde suas mensagens no WhatsApp, conquista reservas, ajusta preços e faz seu negócio crescer enquanto você descansa ou curte a família. Comece grátis por 7 dias. Ganhe tempo!
+              O ZÉLLA é um <span className="text-white font-semibold">assistente virtual inteligente para WhatsApp</span>, capaz de cuidar dos seus maiores ativos: seu tempo e seu negócio. Ele responde seus clientes instantaneamente, conquista reservas, tira dúvidas e automatiza o faturamento da sua pousada 24h por dia. Comece grátis por 7 dias.
             </p>
 
             {/* CTAs */}
