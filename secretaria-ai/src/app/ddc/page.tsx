@@ -385,23 +385,7 @@ export default function DDCDashboardPage() {
     if (activeTab === 'overview') {
       return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {/* LEFT PANEL — 2/3 width */}
-          <div className="lg:col-span-2 space-y-5">
-            <motion.div variants={fadeIn} initial="hidden" animate="visible">
-              <RevenueMetrics metrics={adaptRevenueMetrics(metrics) || mockRevenueMetrics} />
-            </motion.div>
-            <motion.div variants={fadeIn} initial="hidden" animate="visible">
-              <AILiveFeed
-                conversations={conversations}
-                isConnected={true}
-                onReply={(cId, msg) => sendMessage(cId, msg)}
-                onEscalate={(cId) => escalateConversation(cId)}
-                onViewDetails={(cId) => selectConversation(cId)}
-              />
-            </motion.div>
-          </div>
-
-          {/* RIGHT PANEL — 1/3 width */}
+          {/* LEFT PANEL — 1/3 width */}
           <div className="space-y-4">
             <AnimatePresence>
               {showOnboarding && (
@@ -664,6 +648,22 @@ export default function DDCDashboardPage() {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* RIGHT PANEL — 2/3 width */}
+          <div className="lg:col-span-2 space-y-5">
+            <motion.div variants={fadeIn} initial="hidden" animate="visible">
+              <RevenueMetrics metrics={adaptRevenueMetrics(metrics) || mockRevenueMetrics} />
+            </motion.div>
+            <motion.div variants={fadeIn} initial="hidden" animate="visible">
+              <AILiveFeed
+                conversations={conversations}
+                isConnected={true}
+                onReply={(cId, msg) => sendMessage(cId, msg)}
+                onEscalate={(cId) => escalateConversation(cId)}
+                onViewDetails={(cId) => selectConversation(cId)}
+              />
+            </motion.div>
           </div>
         </div>
       );
