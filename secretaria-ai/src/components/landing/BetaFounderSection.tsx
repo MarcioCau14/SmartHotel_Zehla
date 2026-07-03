@@ -56,18 +56,18 @@ export function BetaFounderSection() {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="relative rounded-3xl overflow-hidden p-[1px] bg-white/[0.04]"
         >
-          {/* Efeito Overdrive: Raio de luz rotativo na borda */}
+          {/* Efeito Overdrive: Raio de luz rotativo na borda com aceleração de hardware */}
           {isInView && (
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
-              className="absolute inset-[-200%] bg-[conic-gradient(from_0deg,transparent_40%,#f59e0b_50%,transparent_60%)] opacity-70 pointer-events-none"
+              className="absolute inset-[-100%] bg-[conic-gradient(from_0deg,transparent_40%,#f59e0b_50%,transparent_60%)] opacity-70 pointer-events-none will-change-transform"
               style={{ originX: '50%', originY: '50%' }}
             />
           )}
 
-          {/* Fundo do Card */}
-          <div className="relative rounded-[23px] overflow-hidden bg-[#0c0c0f]/95 backdrop-blur-xl p-8 sm:p-12 lg:p-16">
+          {/* Fundo do Card - Sem backdrop-blur para evitar sobrecarga de GPU e CPU no Safari */}
+          <div className="relative rounded-[23px] overflow-hidden bg-[#0c0c0f] p-8 sm:p-12 lg:p-16">
             
             {/* Top Badges */}
             <div className="flex flex-wrap items-center gap-3 mb-8">
