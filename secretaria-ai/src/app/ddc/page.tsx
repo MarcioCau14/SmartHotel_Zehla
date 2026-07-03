@@ -143,6 +143,55 @@ export default function DDCDashboardPage() {
   const [generatedPixPayload, setGeneratedPixPayload] = useState<string | null>(null);
   const [isSendingPix, setIsSendingPix] = useState(false);
 
+  // New Chat modal states
+  const [isNewChatOpen, setIsNewChatOpen] = useState(false);
+  const [newChatName, setNewChatName] = useState('');
+  const [newChatPhone, setNewChatPhone] = useState('');
+  const [newChatMsg, setNewChatMsg] = useState('Olá! Gostaria de saber mais sobre as diárias.');
+  const [isConnectingWhatsApp, setIsConnectingWhatsApp] = useState(false);
+
+  const handleCreateNewChat = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newChatName.trim() || !newChatPhone.trim()) {
+      toast.error('Preencha o nome e o telefone do hóspede.');
+      return;
+    }
+    const cleanPhone = newChatPhone.replace(/[^0-9]/g, '');
+    if (cleanPhone.length < 10) {
+      toast.error('Insira um telefone válido com DDD.');
+      return;
+    }
+
+    toast.promise(
+      fetch('/api/ddc/simulate-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: newChatMsg,
+          guestName: newChatName.trim(),
+          guestPhone: cleanPhone
+        }),
+      }).then(async r => {
+        if (!r.ok) throw new Error();
+        const res = await r.json();
+        // Se a conversa foi criada com sucesso, seleciona ela e atualiza a UI
+        if (res?.data?.conversationId) {
+          selectConversation(res.data.conversationId);
+        }
+        return res;
+      }),
+      {
+        loading: 'Enviando mensagem inicial e conectando...',
+        success: 'Nova conversa criada! Zélla assumiu o atendimento no WhatsApp.',
+        error: 'Erro ao iniciar conversa.'
+      }
+    );
+
+    setIsNewChatOpen(false);
+    setNewChatName('');
+    setNewChatPhone('');
+  };
+
   // Trial Onboarding states
   const [onboardingChecked, setOnboardingChecked] = useState<{
     voiceTone: boolean;
@@ -519,7 +568,7 @@ export default function DDCDashboardPage() {
                       </div>
                     </div>
 
-                    {/* Step 4: Simulador */}
+                    {/* Step 4: Conectar WhatsApp */}
                     <div className="flex items-start gap-3 group border-t border-white/[0.03] pt-3">
                       <button
                         onClick={() => markOnboardingStep('simulator', !onboardingChecked.simulator)}
@@ -533,51 +582,80 @@ export default function DDCDashboardPage() {
                       </button>
                       <div className="min-w-0 flex-1">
                         <span className="font-bold text-xs text-white block">
-                          4. Testar atendimento (Simulador)
+                          4. Vincular WhatsApp Oficial
                         </span>
                         <span className="text-[10px] text-zinc-500 block mt-0.5 leading-relaxed">
-                          Envie uma mensagem simulada de hóspede e veja o Zélla respondendo.
+                          Vincule o número da pousada via QR Code para que o Zélla comece a responder.
                         </span>
 
-                        <div className="mt-3 bg-[#0a0a0f] p-2.5 rounded-lg border border-white/[0.04] space-y-2">
-                          <select
-                            id="simulation-msg"
-                            className="w-full bg-[#121216] border border-white/[0.08] rounded p-1.5 text-[10px] text-zinc-300 focus:outline-none focus:border-emerald-500/30"
-                            defaultValue="casal"
-                          >
-                            <option value="casal">Reservas: quarto de casal para amanhã?</option>
-                            <option value="pets">Pets: vocês aceitam animais?</option>
-                            <option value="rules">Check-in: horários e Wi-Fi?</option>
-                            <option value="pool">Lazer: piscina e estacionamento?</option>
-                          </select>
-                          <Button
-                            onClick={async () => {
-                              const selectEl = document.getElementById('simulation-msg') as HTMLSelectElement;
-                              const value = selectEl?.value;
-                              let message = 'Olá, tem quarto de casal disponível para amanhã? Qual o valor?';
-                              if (value === 'pets') message = 'Olá! Vocês aceitam animais de estimação (pets)?';
-                              else if (value === 'rules') message = 'Qual o horário do check-in e check-out de vocês? Tem Wi-Fi?';
-                              else if (value === 'pool') message = 'Boa tarde, queria saber se tem estacionamento incluso e piscina.';
+                        <div className="mt-3 bg-[#0a0a0f] p-3 rounded-lg border border-white/[0.04] space-y-3">
+                          {onboardingChecked.simulator ? (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2 text-[10px] text-emerald-400 font-bold bg-emerald-500/5 border border-emerald-500/10 p-2 rounded">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                                WhatsApp Pareado: +55 (12) 99745-8120
+                              </div>
+                              <button
+                                onClick={() => {
+                                  markOnboardingStep('simulator', false);
+                                  toast.info('Instância do WhatsApp desconectada.');
+                                }}
+                                className="w-full h-7 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-[10px] rounded transition-colors active:scale-[0.98] cursor-pointer"
+                              >
+                                Desconectar Aparelho
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              {/* QR Code Container */}
+                              <div className="relative w-32 h-32 mx-auto bg-white rounded-lg p-2 flex items-center justify-center overflow-hidden group/qr">
+                                {isConnectingWhatsApp ? (
+                                  <div className="absolute inset-0 bg-black/90 backdrop-blur-[2px] flex flex-col items-center justify-center gap-1.5 p-2">
+                                    <Loader2 className="w-5 h-5 text-emerald-400 animate-spin" />
+                                    <span className="text-[8px] font-bold text-zinc-400 text-center">Conectando...</span>
+                                  </div>
+                                ) : (
+                                  <>
+                                    {/* Mock QR Code Pattern using SVG */}
+                                    <svg className="w-full h-full text-zinc-900" viewBox="0 0 100 100" fill="currentColor">
+                                      <path d="M0,0h25v8H8v17H0Z M75,0h25v25h-8V8H75Z M0,75h8v17h17v8H0Z M92,75h8v25H75v-8h17Z" />
+                                      <path d="M12,12h20v20H12Z M16,16h12v12H16Z M20,20h4v4h-4Z" />
+                                      <path d="M68,12h20v20H68Z M72,16h12v12H72Z M76,20h4v4h-4Z" />
+                                      <path d="M12,68h20v20H12Z M16,72h12v12H16Z M20,76h4v4h-4Z" />
+                                      <path d="M44,12h4v8h-4Z M52,16h8v4h-8Z M44,24h12v4H44Z M60,24h4v8h-4Z M12,44h8v4h-8Z M24,44h4v8h-4Z M44,40h8v4h-8Z M68,44h12v4H68Z M84,44h4v12h-4Z M44,52h4v8h-4Z M52,56h12v4H52Z M76,56h8v4h-8Z M68,68h8v4h-8Z M80,68h8v8h-8Z M44,76h12v4H44Z M60,76h4v8h-4Z M68,80h12v4H68Z M84,80h4v12h-4Z" />
+                                    </svg>
+                                    {/* Scanning glow light overlay */}
+                                    <div className="absolute inset-x-0 top-0 h-0.5 bg-emerald-400 opacity-60 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-[scan_2s_ease-in-out_infinite]" />
+                                  </>
+                                )}
+                              </div>
                               
-                              markOnboardingStep('simulator', true);
-
-                              toast.promise(
-                                fetch('/api/ddc/simulate-message', {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ message }),
-                                }).then(async r => { if (!r.ok) throw new Error(); return r.json(); }),
-                                {
-                                  loading: 'Simulando hóspede enviando mensagem...',
-                                  success: 'Mensagem enviada! Veja o Zélla respondendo no Live Feed.',
-                                  error: 'Falha ao simular mensagem.'
+                              <style jsx global>{`
+                                @keyframes scan {
+                                  0%, 100% { top: 4%; }
+                                  50% { top: 96%; }
                                 }
-                              );
-                            }}
-                            className="w-full py-1.5 h-7 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] rounded flex items-center justify-center gap-1.5 cursor-pointer transition-colors active:scale-[0.98]"
-                          >
-                            <Zap className="w-3 h-3" /> Simular Mensagem
-                          </Button>
+                              `}</style>
+
+                              <div className="text-center text-[9px] text-zinc-500 leading-normal">
+                                Abra o WhatsApp no celular ➔ Aparelhos Conectados ➔ Conectar um Aparelho ➔ Escaneie o QR Code.
+                              </div>
+
+                              <Button
+                                onClick={() => {
+                                  setIsConnectingWhatsApp(true);
+                                  setTimeout(() => {
+                                    setIsConnectingWhatsApp(false);
+                                    markOnboardingStep('simulator', true);
+                                    toast.success('Dispositivo pareado com sucesso! Zélla está online no seu WhatsApp.');
+                                  }, 1800);
+                                }}
+                                className="w-full h-7 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] rounded flex items-center justify-center gap-1.5 cursor-pointer transition-colors active:scale-[0.98]"
+                              >
+                                <Smartphone className="w-3.5 h-3.5" /> Simular Pareamento
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -705,10 +783,10 @@ export default function DDCDashboardPage() {
                   <option value="resolved">Resolvido</option>
                 </select>
                 <button
-                  onClick={() => toast.promise(fetch('/api/ddc/simulate-message', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'Olá, gostaria de informações sobre reserva.' }) }).then(r => r.json()), { loading: 'Simulando...', success: 'Mensagem simulada!', error: 'Erro' })}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 text-xs font-bold rounded-lg transition-all cursor-pointer"
+                  onClick={() => setIsNewChatOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-zinc-950 text-xs font-bold rounded-lg transition-all cursor-pointer active:scale-[0.98]"
                 >
-                  <Zap className="w-3.5 h-3.5" /> Simular
+                  <Plus className="w-3.5 h-3.5" /> Nova Conversa
                 </button>
               </>
             }
@@ -1756,6 +1834,76 @@ export default function DDCDashboardPage() {
               )}
             </AnimatePresence>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog: Nova Conversa */}
+      <Dialog open={isNewChatOpen} onOpenChange={setIsNewChatOpen}>
+        <DialogContent className="bg-[#0a0a0f] border border-white/[0.08] text-white max-w-md p-6 rounded-xl shadow-2xl">
+          <DialogHeader className="border-b border-white/[0.04] pb-3">
+            <DialogTitle className="text-sm font-extrabold text-white flex items-center gap-2">
+              <MessageSquare className="w-4 h-4 text-emerald-400" /> Iniciar Nova Conversa
+            </DialogTitle>
+            <DialogDescription className="text-zinc-500 text-[11px]">
+              Insira os dados do hóspede e a mensagem de início para que o Zélla inicie a conversa no WhatsApp.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleCreateNewChat} className="space-y-4 pt-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-zinc-300">Nome do Hóspede</label>
+              <Input
+                type="text"
+                placeholder="Ex: Carlos Silva"
+                value={newChatName}
+                onChange={e => setNewChatName(e.target.value)}
+                className="bg-[#121216] border-white/[0.08] rounded-lg text-xs text-white"
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-zinc-300">Telefone (WhatsApp)</label>
+              <Input
+                type="text"
+                placeholder="Ex: 12997458120"
+                value={newChatPhone}
+                onChange={e => setNewChatPhone(e.target.value)}
+                className="bg-[#121216] border-white/[0.08] rounded-lg text-xs text-white"
+                required
+              />
+              <span className="text-[9px] text-zinc-500 block leading-tight">
+                Insira apenas números com código de área (DDD). Exemplo: 12997458120.
+              </span>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-zinc-300">Mensagem de Abertura</label>
+              <textarea
+                placeholder="Ex: Olá Carlos, tudo bem? Aqui é o Zélla..."
+                value={newChatMsg}
+                onChange={e => setNewChatMsg(e.target.value)}
+                className="w-full bg-[#121216] border border-white/[0.08] rounded-lg p-2.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-500/30 min-h-[70px] resize-none"
+                required
+              />
+            </div>
+
+            <div className="pt-2 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsNewChatOpen(false)}
+                className="px-4 py-2 rounded-lg text-xs font-bold bg-transparent border border-white/[0.06] hover:bg-white/[0.02] text-zinc-400 hover:text-zinc-200 transition-all cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <Button
+                type="submit"
+                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold text-xs rounded-lg flex items-center gap-1.5 cursor-pointer transition-colors active:scale-[0.98]"
+              >
+                <Plus className="w-3.5 h-3.5" /> Iniciar Chat
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
 

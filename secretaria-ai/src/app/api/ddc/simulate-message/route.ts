@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
   const tenantId = session.user.tenantId;
 
-  let body: { message?: string } = {};
+  let body: { message?: string; guestName?: string; guestPhone?: string } = {};
   try {
     body = await request.json();
   } catch {
@@ -32,8 +32,8 @@ export async function POST(request: NextRequest) {
   // Sorteia uma mensagem se não for especificada
   const messageContent = body.message?.trim() || TEST_MESSAGES[Math.floor(Math.random() * TEST_MESSAGES.length)];
   const randomSuffix = Math.floor(Math.random() * 9000) + 1000;
-  const guestPhone = `551199999${randomSuffix}`;
-  const guestName = `Hóspede de Teste #${randomSuffix}`;
+  const guestPhone = body.guestPhone?.trim() || `551199999${randomSuffix}`;
+  const guestName = body.guestName?.trim() || `Hóspede de Teste #${randomSuffix}`;
 
   try {
     // Dispara a pipeline de processamento do Zélla Brain
