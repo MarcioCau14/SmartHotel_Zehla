@@ -18,110 +18,178 @@ export function BetaFounderSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} id="oferta-parceiro" className="py-24 sm:py-32 relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute inset-0 bg-gradient-to-b from-amber-500/[0.03] via-amber-500/[0.06] to-transparent" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-10 blur-[100px] bg-gradient-to-br from-amber-500 to-orange-600" />
+    <section ref={ref} id="oferta-parceiro" className="py-24 sm:py-32 relative overflow-hidden bg-[#060608]">
+      {/* OVERDRIVE: Orbes e Vetores de Luz Pulsantes de Fundo */}
+      <motion.div 
+        animate={{ 
+          y: [0, -30, 0], 
+          scale: [1, 1.15, 1],
+          opacity: [0.08, 0.14, 0.08]
+        }}
+        transition={{ 
+          duration: 8, 
+          repeat: Infinity, 
+          ease: "easeInOut" 
+        }}
+        className="absolute top-10 left-10 w-[500px] h-[500px] rounded-full pointer-events-none blur-[130px] bg-gradient-to-br from-amber-500 to-amber-700" 
+      />
+      <motion.div 
+        animate={{ 
+          y: [-20, 20, -20], 
+          scale: [1.1, 0.95, 1.1],
+          opacity: [0.06, 0.12, 0.06]
+        }}
+        transition={{ 
+          duration: 10, 
+          repeat: Infinity, 
+          ease: "easeInOut" 
+        }}
+        className="absolute bottom-10 right-10 w-[450px] h-[450px] rounded-full pointer-events-none blur-[120px] bg-gradient-to-br from-orange-600 to-amber-900" 
+      />
 
-      <div className="relative z-10 max-w-5xl mx-auto px-4">
+      <div className="relative z-10 max-w-5xl mx-auto px-6">
+        
+        {/* CARD PRINCIPAL COM BORDA GRADIENTE GIRATÓRIA */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7 }}
-          className="relative rounded-3xl overflow-hidden border border-amber-500/20"
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="relative rounded-3xl overflow-hidden p-[1px] bg-white/[0.04]"
         >
-          {/* Card Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-orange-600/5" />
-          <div className="absolute inset-0 bg-[#0a0a0a]/80 backdrop-blur-sm" />
+          {/* Efeito Overdrive: Raio de luz rotativo na borda */}
+          {isInView && (
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-[-200%] bg-[conic-gradient(from_0deg,transparent_40%,#f59e0b_50%,transparent_60%)] opacity-70 pointer-events-none"
+              style={{ originX: '50%', originY: '50%' }}
+            />
+          )}
 
-          <div className="relative p-8 sm:p-12 lg:p-16">
-            {/* Top Badge */}
+          {/* Fundo do Card */}
+          <div className="relative rounded-[23px] overflow-hidden bg-[#0c0c0f]/95 backdrop-blur-xl p-8 sm:p-12 lg:p-16">
+            
+            {/* Top Badges */}
             <div className="flex flex-wrap items-center gap-3 mb-8">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/30">
-                <Flame className="w-3.5 h-3.5 text-amber-400" />
-                <span className="text-amber-300 text-xs font-bold uppercase tracking-wider">Oferta Parceiro</span>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30">
+                <Flame className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                <span className="text-amber-400 text-xs font-bold uppercase tracking-wider">Oferta Parceiro</span>
               </div>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/20 border border-red-500/30">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-500/10 border border-red-500/30">
                 <Clock className="w-3.5 h-3.5 text-red-400" />
-                <span className="text-red-300 text-xs font-bold">Vagas Limitadas — 100 pousadas</span>
+                <span className="text-red-400 text-xs font-bold">Vagas Limitadas — 100 pousadas</span>
               </div>
             </div>
 
-            {/* Title */}
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
+            {/* Title (Simplificação de jargão + Nome da marca corrigido) */}
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6 leading-[1.1] tracking-tight">
               Programa Beta:
               <br />
-              <span className="text-amber-400">Seja um Parceiro do ZÉLLA</span>
+              <span className="gradient-text-royal font-extrabold">Seja um Parceiro do SEU ZÉLLA</span>
             </h2>
 
-            <p className="text-neutral-400 text-lg max-w-2xl mb-10 leading-relaxed">
-              Você foi escolhido para o seleto grupo exclusivo de <strong className="text-white">100 pousadas parceiras</strong> em todo o Brasil. Como agradecimento, oferecemos condições que nunca mais serão repetidas. Esta é a sua chance de entrar no nível PRO pagando o mínimo possível — e manter esse preço para sempre com o pacote PRO. Assim que completarmos 100 parceiros vamos fechar esse grupo seleto!
+            <p className="text-zinc-400 text-base sm:text-lg max-w-2xl mb-10 leading-relaxed">
+              Você foi escolhido para o seleto grupo de <strong className="text-white">100 pousadas parceiras</strong> pioneiras no Brasil. Como agradecimento por nos ajudar a crescer, oferecemos uma condição única: use todas as funções do plano PRO pagando o valor do plano LITE, com preço congelado para sempre. Assim que preenchermos as vagas, o grupo será fechado definitivamente.
             </p>
 
-            {/* Benefits Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
-              <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-900/10 flex items-center justify-center">
+            {/* BENEFITS GRID WITH 3D HOVER AND GLOWS */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+              
+              {/* Card Benefício 1 */}
+              <motion.div 
+                whileHover={{ scale: 1.02, y: -4 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-amber-500/30 hover:bg-white/[0.03] transition-all duration-300 group"
+              >
+                <div className="flex items-center gap-3.5 mb-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center group-hover:bg-amber-500/20 group-hover:scale-110 transition-all duration-300">
                     <DollarSign className="w-5 h-5 text-amber-400" />
                   </div>
                   <div>
-                    <h4 className="text-white font-bold text-sm">Primeiro Mês GRÁTIS</h4>
-                    <span className="text-amber-400 text-xs font-medium">R$0,00 durante o período de validação</span>
+                    <h4 className="text-white font-bold text-sm sm:text-base">Primeiro Mês GRÁTIS</h4>
+                    <span className="text-amber-400 text-xs font-semibold">R$ 0,00 na fase de validação</span>
                   </div>
                 </div>
-                <p className="text-neutral-500 text-xs leading-relaxed">
-                  Comece a usar o ZÉLLA sem pagar nada no primeiro mês. Aproveite para configurar tudo, testar a IA e ver resultados reais antes de qualquer cobrança.
+                <p className="text-zinc-500 text-xs leading-relaxed group-hover:text-zinc-400 transition-colors">
+                  Comece a atender seus clientes e fechar reservas sem pagar absolutamente nada no primeiro mês. Valide na prática antes do seu primeiro faturamento.
                 </p>
-              </div>
+              </motion.div>
 
-              <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-900/10 flex items-center justify-center">
+              {/* Card Benefício 2 */}
+              <motion.div 
+                whileHover={{ scale: 1.02, y: -4 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-emerald-500/30 hover:bg-white/[0.03] transition-all duration-300 group"
+              >
+                <div className="flex items-center gap-3.5 mb-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center group-hover:bg-emerald-500/20 group-hover:scale-110 transition-all duration-300">
                     <Crown className="w-5 h-5 text-emerald-400" />
                   </div>
                   <div>
-                    <h4 className="text-white font-bold text-sm">Preço Vitalício</h4>
-                    <span className="text-emerald-400 text-xs font-medium">R$197,00/mês — para sempre</span>
+                    <h4 className="text-white font-bold text-sm sm:text-base">Preço Vitalício Congelado</h4>
+                    <span className="text-emerald-400 text-xs font-semibold">R$ 197,00/mês para sempre</span>
                   </div>
                 </div>
-                <p className="text-neutral-500 text-xs leading-relaxed">
-                  Após o período de validação, sua mensalidade congela em R$197/mês (equivalente ao plano LITE) mas com acesso a funcionalidades do PRO. Para sempre, sem reajuste.
+                <p className="text-zinc-500 text-xs leading-relaxed group-hover:text-zinc-400 transition-colors">
+                  Garanta acesso às funcionalidades exclusivas do plano PRO pelo preço fixo do plano LITE. Sem letras miúdas, sem reajustes futuros por inflação.
                 </p>
-              </div>
+              </motion.div>
+
             </div>
 
-            {/* Extra perks */}
+            {/* Perks */}
             <div className="flex flex-wrap gap-3 mb-10">
               {[
-                'Status PARCEIRO no sistema',
-                'Acesso antecipado a todos os recursos',
-                'Feedback direto com o fundador',
-                'Onboarding personalizado',
-                'Badge exclusivo de Parceiro',
-                'Suporte VIP desde o dia 1',
+                'Status de Fundador no sistema',
+                'Acesso antecipado a novos recursos',
+                'Contato direto com os desenvolvedores',
+                'Treinamento e onboarding personalizado',
+                'Selo exclusivo de Parceiro no DDC',
+                'Suporte prioritário VIP 24h',
               ].map((perk) => (
-                <div key={perk} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06]">
+                <div key={perk} className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/[0.03] border border-white/[0.05] hover:border-white/10 transition-all">
                   <Check className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="text-neutral-300 text-xs font-medium">{perk}</span>
+                  <span className="text-zinc-300 text-xs font-medium">{perk}</span>
                 </div>
               ))}
             </div>
 
-            {/* CTA */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <button className="group flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl hover:from-amber-400 hover:to-orange-400 transition-all duration-300 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 cursor-pointer">
+            {/* CTA BUTTON WITH METALLIC SHINE EFFECT */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+              <button 
+                onClick={() => {
+                  const el = document.querySelector('#precos');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="group relative overflow-hidden px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl hover:from-amber-400 hover:to-orange-400 transition-all duration-300 shadow-xl shadow-amber-500/20 hover:shadow-amber-500/35 cursor-pointer flex items-center gap-2 text-base active:scale-95"
+              >
+                {/* Linha de brilho metálico rotativa/passando */}
+                <motion.div 
+                  initial={{ x: '-100%' }}
+                  animate={{ x: '100%' }}
+                  transition={{ 
+                    repeat: Infinity, 
+                    repeatDelay: 3, 
+                    duration: 1.2, 
+                    ease: 'linear' 
+                  }}
+                  className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 pointer-events-none"
+                />
+
                 <Sparkles className="w-5 h-5" />
                 Quero ser Parceiro
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
-              <p className="text-neutral-600 text-xs">
-                <Users className="w-3 h-3 inline mr-1" />
-                Restam poucas vagas. Aproveite antes que esgote.
-              </p>
+              
+              <div className="flex items-center gap-2 text-zinc-500 text-xs font-medium">
+                <Users className="w-3.5 h-3.5 text-amber-500/80" />
+                <span>Poucas vagas disponíveis para este grupo de fundadores.</span>
+              </div>
             </div>
+
           </div>
         </motion.div>
+
       </div>
     </section>
   );
