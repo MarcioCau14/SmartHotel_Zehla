@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { DDCHeader } from '@/components/ddc/DDCHeader';
 import { RevenueMetrics } from '@/components/ddc/RevenueMetrics';
 import { AILiveFeed } from '@/components/ddc/AILiveFeed';
@@ -18,6 +18,9 @@ import { adaptRevenueMetrics } from '@/lib/ddc/ddc-mapper';
 import type { AIStatus } from '@/types/ddc';
 import { ZelladorChat } from '@/components/ddc/ZelladorChat';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { Toaster, toast } from 'sonner';
 import {
   Settings,
@@ -34,7 +37,11 @@ import {
   ShieldCheck,
   Save,
   Loader2,
-  Info
+  Info,
+  X,
+  Zap,
+  Phone,
+  Compass
 } from 'lucide-react';
 
 export default function DDCDashboardPage() {
@@ -51,6 +58,7 @@ export default function DDCDashboardPage() {
   const [subTab, setSubTab] = useState('geral');
   const [showRecargaMock, setShowRecargaMock] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(true);
   
   // Settings edit states
   const [editPropertyName, setEditPropertyName] = useState('');
@@ -111,7 +119,7 @@ export default function DDCDashboardPage() {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { duration: 0.5, ease: 'easeOut' as const }
+      transition: { duration: 0.4, ease: 'easeOut' as const }
     }
   } as const;
 
@@ -120,13 +128,13 @@ export default function DDCDashboardPage() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
+        staggerChildren: 0.08
       }
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
+    <div className="min-h-screen bg-[#0a0a0f] text-white antialiased font-sans">
       <Toaster position="top-center" richColors />
 
       {/* Header */}
@@ -137,30 +145,29 @@ export default function DDCDashboardPage() {
         onOpenNotifications={handleNotificationClick}
       />
 
-      {/* Tab Navigation */}
-      <div className="flex items-center gap-2 px-6 pt-4 max-w-[1920px] mx-auto mb-2 select-none">
+      {/* Main Tab Controller - Header Navigation Bar (Flat & Minimalist) */}
+      <div className="flex items-center gap-1.5 px-6 pt-4 max-w-[1920px] mx-auto select-none border-b border-white/[0.02] pb-2">
         <button
           onClick={() => setActiveTab('overview')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
             activeTab !== 'zellador'
-              ? 'bg-white/[0.06] text-white border-white/[0.08] shadow-sm'
-              : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-white/[0.03]'
+              ? 'bg-white/[0.04] text-white'
+              : 'text-zinc-500 hover:text-zinc-300'
           }`}
         >
-          <Settings className="w-3.5 h-3.5" />
-          Command Center
+          <Compass className="w-3.5 h-3.5" />
+          Dashboard Geral
         </button>
         <button
           onClick={() => setActiveTab('zellador')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'zellador'
-              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25 shadow-sm'
-              : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-white/[0.03]'
+              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+              : 'text-zinc-500 hover:text-zinc-300'
           }`}
         >
           <MessageSquare className="w-3.5 h-3.5" />
-          Zellador (Suporte IA)
-          <Badge className="bg-emerald-500/20 text-emerald-400 text-[8px] px-1.5 py-0 border-0 ml-1.5">MAX</Badge>
+          Zellador (Suporte)
         </button>
       </div>
 
@@ -168,7 +175,7 @@ export default function DDCDashboardPage() {
       {activeTab !== 'zellador' ? (
         <div className="p-6 max-w-[1920px] mx-auto space-y-6">
           
-          {/* Quick Actions Bar */}
+          {/* Quick Actions & Navigation Bar - Compact and Premium */}
           <motion.div
             variants={fadeIn}
             initial="hidden"
@@ -177,83 +184,6 @@ export default function DDCDashboardPage() {
             <QuickActionsBar onActionClick={handleActionClick} activeAction={activeTab} />
           </motion.div>
 
-          {/* ONBOARDING CHECKLIST SECTION (Impeccable Onboard) */}
-          {activeTab === 'overview' && (
-            <motion.div
-              variants={fadeIn}
-              initial="hidden"
-              animate="visible"
-              className="bg-[#121216] border border-white/[0.04] rounded-xl p-5"
-            >
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                <div>
-                  <h3 className="text-base font-extrabold text-white tracking-tight font-serif flex items-center gap-2">
-                    <span>🚀</span> Primeiros passos com o Seu Zélla
-                  </h3>
-                  <p className="text-zinc-400 text-xs mt-1">
-                    Conclua as etapas iniciais para colocar o assistente cognitivo da sua pousada para vender.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <div className="w-36 h-2 bg-white/[0.04] rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-500 rounded-full w-2/3" />
-                  </div>
-                  <span className="text-[10px] font-mono text-emerald-400 font-bold">2/3 CONCLUÍDOS</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Step 1 */}
-                <div className="bg-[#181820]/50 border border-white/[0.04] rounded-lg p-3.5 flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-white">1. Carga de FAQ</h4>
-                    <p className="text-zinc-500 text-[10px] mt-0.5 leading-normal">
-                      Regras de hospedagem e FAQs importadas com sucesso no banco de dados.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Step 2 */}
-                <div className="bg-[#181820]/50 border border-white/[0.04] rounded-lg p-3.5 flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-white">2. Conexão do Provedor</h4>
-                    <p className="text-zinc-500 text-[10px] mt-0.5 leading-normal">
-                      Configurações de IA prontas. Canal de WhatsApp mock/ativo conectado.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Step 3 (Pending) */}
-                <button
-                  onClick={() => {
-                    setActiveTab('settings');
-                    setSubTab('linkinbio');
-                  }}
-                  className="bg-[#181820]/50 hover:bg-[#1a1a24] border border-dashed border-zinc-700/60 hover:border-emerald-500/30 rounded-lg p-3.5 flex items-start gap-3 text-left transition-all cursor-pointer group"
-                >
-                  <div className="w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 shrink-0 mt-0.5 group-hover:border-emerald-500/30 group-hover:text-emerald-400 transition-colors">
-                    <Smartphone className="w-3 h-3" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-1">
-                      <h4 className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">3. Link-in-Bio Profissional</h4>
-                      <ChevronRight className="w-3.5 h-3.5 text-zinc-600 group-hover:text-emerald-400 transition-colors" />
-                    </div>
-                    <p className="text-zinc-500 text-[10px] mt-0.5 leading-normal">
-                      Configure os links e cores da sua página do Instagram para reservas.
-                    </p>
-                  </div>
-                </button>
-              </div>
-            </motion.div>
-          )}
-
           {activeTab === 'settings' ? (
             <motion.div
               variants={fadeIn}
@@ -261,8 +191,8 @@ export default function DDCDashboardPage() {
               animate="visible"
               className="bg-[#121216] border border-white/[0.04] rounded-xl p-6 sm:p-8"
             >
-              <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2 font-serif">
-                <Settings className="w-5 h-5 text-emerald-400" />
+              <h2 className="text-base font-extrabold text-white mb-6 flex items-center gap-2 uppercase tracking-wide">
+                <Settings className="w-4 h-4 text-emerald-400" />
                 Painel de Configurações da Pousada
               </h2>
               
@@ -310,7 +240,7 @@ export default function DDCDashboardPage() {
                   {subTab === 'geral' && (
                     <form onSubmit={handleSaveGeral} className="space-y-4">
                       <div>
-                        <h3 className="text-sm font-extrabold text-white font-serif">Configurações Gerais</h3>
+                        <h3 className="text-sm font-extrabold text-white">Configurações Gerais</h3>
                         <p className="text-zinc-400 text-xs mt-1">Ajuste o tom de voz do seu assistente cognitivo e as informações básicas da sua pousada.</p>
                       </div>
                       
@@ -359,13 +289,13 @@ export default function DDCDashboardPage() {
                   {subTab === 'linkinbio' && (
                     <div className="space-y-4">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <h3 className="text-sm font-extrabold text-white font-serif">Configuração do Link-in-Bio</h3>
+                        <h3 className="text-sm font-extrabold text-white">Configuração do Link-in-Bio</h3>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 w-fit">
                           Ativo (seuzella.com/pousada)
                         </span>
                       </div>
                       
-                      {/* Lógica de Trava LITE: Sóbria, Premium e Minimalista (Impeccable Quieter) */}
+                      {/* Lógica de Trava LITE: Sóbria, Premium e Minimalista */}
                       {currentPlan === 'lite' ? (
                         <div className="bg-[#121216] border border-white/[0.04] rounded-lg p-6 space-y-5">
                           <div className="flex items-start gap-4">
@@ -384,7 +314,7 @@ export default function DDCDashboardPage() {
                           </div>
 
                           <div className="bg-[#0a0a0f] rounded-lg p-4 border border-white/[0.04]">
-                            <p className="text-xs font-serif font-bold text-zinc-300 italic text-center">
+                            <p className="text-xs font-semibold text-zinc-300 italic text-center">
                               &ldquo;Aumente a conversão da sua pousada com o Link-in-Bio premium do Seu Zélla.&rdquo;
                             </p>
                           </div>
@@ -433,7 +363,7 @@ export default function DDCDashboardPage() {
                   {subTab === 'faturamento' && (
                     <div className="space-y-5">
                       <div>
-                        <h3 className="text-sm font-extrabold text-white font-serif">Faturamento & Consumo</h3>
+                        <h3 className="text-sm font-extrabold text-white">Faturamento & Consumo</h3>
                         <p className="text-zinc-400 text-xs mt-1">Gerencie a assinatura e acompanhe as cotas de mensagens mensais.</p>
                       </div>
                       
@@ -515,33 +445,131 @@ export default function DDCDashboardPage() {
               </div>
             </motion.div>
           ) : (
-            <motion.div
-              variants={staggerContainer}
-              initial="hidden"
-              animate="visible"
-              className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-            >
-              {/* Left Column - Revenue Metrics */}
-              <motion.div
-                variants={fadeIn}
-                className="lg:col-span-2"
-              >
-                <RevenueMetrics
-                  metrics={adaptRevenueMetrics(metrics) || mockRevenueMetrics}
-                />
-              </motion.div>
+            /* DUAL-COLUMN GRID LAYOUT (Operational Center - Above the Fold) */
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              {/* LEFT OPERATIONAL PANEL (2/3 Width) - metrics, chats, and CRM */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* 1. Revenue and Conversion Metrics Summary */}
+                <motion.div
+                  variants={fadeIn}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <RevenueMetrics
+                    metrics={adaptRevenueMetrics(metrics) || mockRevenueMetrics}
+                  />
+                </motion.div>
 
-              {/* Right Column - Quick Stats */}
-              <motion.div
-                variants={fadeIn}
-                className="space-y-6"
-              >
-                {/* AI Status Card */}
+                {/* 2. Interactive Operational Grid: Chats & CRM (Instantly Visible) */}
+                <motion.div
+                  variants={staggerContainer}
+                  initial="hidden"
+                  animate="visible"
+                  className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+                >
+                  <AILiveFeed
+                    conversations={conversations}
+                    isConnected={true}
+                    onReply={(conversationId, message) => sendMessage(conversationId, message)}
+                    onEscalate={(conversationId) => escalateConversation(conversationId)}
+                    onViewDetails={(conversationId) => selectConversation(conversationId)}
+                  />
+                  <GuestCRMPipeline
+                    pipeline={pipeline}
+                    allGuests={allGuests}
+                    onStatusChange={updateGuestStatus}
+                    onFilterChange={setFilters}
+                  />
+                </motion.div>
+
+                {/* 3. Training Center Section */}
+                <motion.div
+                  variants={fadeIn}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <TrainingCenter />
+                </motion.div>
+              </div>
+
+              {/* RIGHT UTILITIES PANEL (1/3 Width) - onboarding, status, notifications */}
+              <div className="space-y-6">
+                
+                {/* 1. Onboarding Checklist Widget (Colapsável) */}
+                <AnimatePresence>
+                  {showOnboarding && (
+                    <motion.div
+                      initial={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="bg-[#121216] border border-white/[0.04] rounded-xl p-4.5 overflow-hidden"
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs">🚀</span>
+                          <span className="text-xs font-extrabold text-white tracking-wide uppercase">Onboarding Seu Zélla</span>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            setShowOnboarding(false);
+                            toast.info('Guia de onboarding ocultado.');
+                          }}
+                          className="p-1 rounded hover:bg-white/[0.04] text-zinc-500 hover:text-zinc-300 transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      <div className="space-y-2.5">
+                        {/* Step 1 */}
+                        <div className="flex items-start gap-2.5 bg-[#0a0a0f]/40 p-2.5 rounded-lg border border-white/[0.02]">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                          <div>
+                            <h4 className="text-[11px] font-bold text-white">1. Carga de FAQ Concluída</h4>
+                            <p className="text-zinc-500 text-[10px] leading-relaxed mt-0.5">As regras de hospedagem e respostas da pousada foram indexadas.</p>
+                          </div>
+                        </div>
+
+                        {/* Step 2 */}
+                        <div className="flex items-start gap-2.5 bg-[#0a0a0f]/40 p-2.5 rounded-lg border border-white/[0.02]">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                          <div>
+                            <h4 className="text-[11px] font-bold text-white">2. Provedor Conectado</h4>
+                            <p className="text-zinc-500 text-[10px] leading-relaxed mt-0.5">O fluxo de mensagens com o WhatsApp está ativo.</p>
+                          </div>
+                        </div>
+
+                        {/* Step 3 (Pending) */}
+                        <button
+                          onClick={() => {
+                            setActiveTab('settings');
+                            setSubTab('linkinbio');
+                          }}
+                          className="w-full text-left flex items-start gap-2.5 bg-emerald-500/[0.02] hover:bg-emerald-500/[0.04] p-2.5 rounded-lg border border-dashed border-emerald-500/20 hover:border-emerald-500/35 transition-all cursor-pointer group"
+                        >
+                          <div className="w-4 h-4 rounded-full border border-zinc-700 flex items-center justify-center text-zinc-500 shrink-0 mt-0.5 group-hover:border-emerald-500/30 group-hover:text-emerald-400 transition-colors">
+                            <span className="text-[8px] font-bold font-mono">3</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-1">
+                              <h4 className="text-[11px] font-bold text-white group-hover:text-emerald-400 transition-colors">3. Customizar Link-in-Bio</h4>
+                              <ChevronRight className="w-3.5 h-3.5 text-zinc-600 group-hover:text-emerald-400 transition-colors" />
+                            </div>
+                            <p className="text-zinc-500 text-[10px] leading-relaxed mt-0.5">Personalize os canais de atendimento e links para o Instagram da pousada.</p>
+                          </div>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* 2. AI Monitoring Status Card */}
                 <div className="bg-[#121216] border border-white/[0.04] rounded-xl p-4">
                   <div className="flex items-center justify-between mb-3.5">
-                    <h3 className="text-xs font-extrabold text-white uppercase tracking-wider">Status da IA</h3>
+                    <h3 className="text-[10px] font-extrabold text-white uppercase tracking-wider">Status do Agente</h3>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] text-zinc-400 font-bold capitalize">{aiStatusLocal}</span>
+                      <span className="text-[9px] text-zinc-400 font-bold capitalize">{aiStatusLocal}</span>
                       <div className={`w-2 h-2 rounded-full ${
                         aiStatusLocal === 'online' ? 'bg-emerald-500' :
                         aiStatusLocal === 'processing' ? 'bg-violet-500' :
@@ -566,10 +594,10 @@ export default function DDCDashboardPage() {
                   </div>
                 </div>
 
-                {/* Notifications Preview */}
+                {/* 3. Notifications Preview Card */}
                 <div className="bg-[#121216] border border-white/[0.04] rounded-xl p-4">
                   <div className="flex items-center justify-between mb-3.5">
-                    <h3 className="text-xs font-extrabold text-white uppercase tracking-wider">Notificações</h3>
+                    <h3 className="text-[10px] font-extrabold text-white uppercase tracking-wider">Notificações</h3>
                     {unreadCount > 0 && (
                       <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center border border-[#121216]">
                         <span className="text-[9px] font-bold text-white">{unreadCount}</span>
@@ -604,33 +632,10 @@ export default function DDCDashboardPage() {
                       </div>  
                     ))}  
                   </div>  
-                </div>  
-              </motion.div>
+                </div>
 
-              {/* CRM Pipeline & Live Feed Section */}
-              <motion.div variants={fadeIn} className="lg:col-span-3">  
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">  
-                  <AILiveFeed  
-                    conversations={conversations}  
-                    isConnected={true}  
-                    onReply={(conversationId, message) => sendMessage(conversationId, message)}  
-                    onEscalate={(conversationId) => escalateConversation(conversationId)}  
-                    onViewDetails={(conversationId) => selectConversation(conversationId)}  
-                  />  
-                  <GuestCRMPipeline
-                    pipeline={pipeline}
-                    allGuests={allGuests}
-                    onStatusChange={updateGuestStatus}
-                    onFilterChange={setFilters}
-                  />  
-                </div>  
-              </motion.div>
-
-              {/* Training Center Section */}
-              <motion.div variants={fadeIn} className="lg:col-span-3">  
-                <TrainingCenter />  
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
           )}
 
           {/* Bottom Status Bar */}
@@ -650,7 +655,7 @@ export default function DDCDashboardPage() {
                 </div>  
                 <div className="hidden sm:block h-4 w-px bg-white/[0.06]" />  
                 <span className="text-[10px] text-zinc-500 font-mono">  
-                  Property: {propertyName}  
+                  Propriedade: {propertyName}  
                 </span>  
                 <div className="hidden sm:block h-4 w-px bg-white/[0.06]" />  
                 <span className="text-[10px] text-zinc-500 font-mono">  
@@ -659,7 +664,7 @@ export default function DDCDashboardPage() {
               </div>  
               <div className="flex items-center gap-2">  
                 <span className="text-[9px] text-emerald-400 font-semibold font-mono uppercase tracking-wider">  
-                  Sistemas Operacionais 100% online  
+                  Sistemas operacionais 100% ativos  
                 </span>  
               </div>  
             </div>  
