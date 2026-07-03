@@ -44,15 +44,27 @@ async function checkEndpoint(endpoint: unknown) {
 
 async function runTests() {
   try {
-  let passed = 0;
-  
-  for (const ep of endpoints) {
-    const success = await checkEndpoint(ep);
-    if (success) passed++;
-  }
-  
-  if (passed === endpoints.length) {
-  } else {
+    let passed = 0;
+    
+    console.log('--- Iniciando Testes ZCC Backend ---');
+    for (const ep of endpoints) {
+      const success = await checkEndpoint(ep);
+      if (success) {
+        passed++;
+        console.log(`  ✅ Endpoint ${ep.name} (${ep.path}) OK`);
+      } else {
+        console.log(`  ❌ Endpoint ${ep.name} (${ep.path}) Falhou`);
+      }
+    }
+    
+    console.log('-----------------------------------');
+    if (passed === endpoints.length) {
+      console.log('✅ Todos os endpoints do ZCC passaram com sucesso!');
+    } else {
+      console.log(`❌ Alguns endpoints falharam (${passed}/${endpoints.length} OK)`);
+    }
+  } catch (error) {
+    console.error('Erro na execução dos testes ZCC:', error);
   }
 }
 
