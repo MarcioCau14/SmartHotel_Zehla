@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { DDCHeader } from '@/components/ddc/DDCHeader';
 import { RevenueMetrics } from '@/components/ddc/RevenueMetrics';
 import { AILiveFeed } from '@/components/ddc/AILiveFeed';
-import { GuestCRMPipeline } from '@/components/ddc/GuestCRMPipeline';
+
 import { TrainingCenter } from '@/components/ddc/TrainingCenter';
 import { QuickActionsBar } from '@/components/ddc/QuickActionsBar';
 import { useDDCMetrics } from '@/lib/ddc/use-ddc-metrics';
@@ -75,7 +75,7 @@ export default function DDCDashboardPage() {
   // Custom hooks
   const { metrics, aiStatus, isLoading } = useDDCMetrics('today', true);
   const { conversations, selectedConversation, selectConversation, sendMessage, escalateConversation } = useAILiveFeed();
-  const { pipeline, allGuests, updateGuestStatus, setFilters } = useGuestPipeline();
+  const { allGuests } = useGuestPipeline();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useDDCNotifications(true);
 
   // Local state — navigation
@@ -281,7 +281,6 @@ export default function DDCDashboardPage() {
                 onEscalate={(cId) => escalateConversation(cId)}
                 onViewDetails={(cId) => selectConversation(cId)}
               />
-              <GuestCRMPipeline pipeline={pipeline} allGuests={allGuests} onStatusChange={updateGuestStatus} onFilterChange={setFilters} />
             </motion.div>
           </div>
 
@@ -686,8 +685,6 @@ export default function DDCDashboardPage() {
             )}
           </div>
 
-          {/* CRM pipeline embedded */}
-          <GuestCRMPipeline pipeline={pipeline} allGuests={allGuests} onStatusChange={updateGuestStatus} onFilterChange={setFilters} />
         </motion.div>
       );
     }
