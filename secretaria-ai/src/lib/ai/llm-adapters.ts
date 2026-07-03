@@ -42,6 +42,7 @@ export async function callOpenAICompatible(params: {
   temperature: number;
   maxTokens: number;
   isOpenRouter?: boolean;
+  jsonMode?: boolean;
 }): Promise<AdapterResponse> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -53,12 +54,18 @@ export async function callOpenAICompatible(params: {
     headers['X-Title'] = 'ZEHLA SmartHotel';
   }
 
-  const body = JSON.stringify({
+  const payload: any = {
     model: params.model,
     messages: params.messages,
     temperature: params.temperature,
     max_tokens: params.maxTokens,
-  });
+  };
+
+  if (params.jsonMode) {
+    payload.response_format = { type: 'json_object' };
+  }
+
+  const body = JSON.stringify(payload);
 
   const url = `${params.baseUrl.replace(/\/$/, '')}/chat/completions`;
   const response = await fetchWithRetry(url, {
@@ -139,6 +146,7 @@ export async function callGemini(params: {
   messages: AdapterMessage[];
   temperature: number;
   maxTokens: number;
+  jsonMode?: boolean;
 }): Promise<AdapterResponse> {
   const systemMessage = params.messages.find(m => m.role === 'system');
   const otherMessages = params.messages.filter(m => m.role !== 'system');
@@ -148,12 +156,18 @@ export async function callGemini(params: {
     parts: [{ text: m.content }],
   }));
 
+  const generationConfig: any = {
+    temperature: params.temperature,
+    maxOutputTokens: params.maxTokens,
+  };
+
+  if (params.jsonMode) {
+    generationConfig.responseMimeType = 'application/json';
+  }
+
   const body: any = {
     contents,
-    generationConfig: {
-      temperature: params.temperature,
-      maxOutputTokens: params.maxTokens,
-    },
+    generationConfig,
   };
 
   if (systemMessage) {

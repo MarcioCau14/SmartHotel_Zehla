@@ -70,15 +70,20 @@ const FAQ_INTENT_PATTERNS: Array<{ regex: RegExp; keywords: string[]; confidence
 
 const INTENT_CLASSIFIER_PROMPT = `Você é um classificador de intenção de mensagens de hóspedes de pousada via WhatsApp.
 
-Classifique EXCLUSIVAMENTE em UMA destas três intenções:
+Você deve responder obrigatoriamente com um objeto JSON válido contendo as seguintes propriedades:
+- "intent": "duvida_geral" | "cotacao_reserva" | "human_handover"
+- "confidence": número entre 0 e 1 indicando a confiança da classificação
 
-1. "duvida_geral" — Perguntas sobre a pousada (horários, serviços, localização, políticas, recomendações). Qualquer pergunta que NÃO envolva datas específicas ou cotação.
+Diretrizes de Classificação:
+1. "duvida_geral" — Perguntas gerais sobre a pousada (como Wi-Fi, horário do café da manhã, se aceita pet, voltagem das tomadas, política de cancelamento) que não definem ou perguntam sobre datas específicas.
+2. "cotacao_reserva" — Perguntas sobre valores, cotações, orçamentos, disponibilidade, ou intenção de fechar reserva para datas específicas, fins de semana, ou meses detalhados.
+3. "human_handover" — Pedidos para falar com atendentes humanos, reclamações graves, situações de urgência ou emergência, uso de palavrões, ou contatos jurídicos/Procon.
 
-2. "cotacao_reserva" — O hóspede quer saber preço, disponibilidade para datas específicas, fazer reserva, ou está mencionando datas e número de pessoas.
-
-3. "human_handover" — Situações de emergência, insatisfação grave, solicitação de falar com humano, ameaças, ou questões legais.
-
-Responda APENAS com o nome da intenção, nada mais. Exemplo de resposta: cotacao_reserva`;
+Exemplo de resposta JSON:
+{
+  "intent": "cotacao_reserva",
+  "confidence": 0.95
+}`;
 
 // ── Funções ──────────────────────────────────────────────────────────
 
@@ -144,22 +149,23 @@ export async function classifyIntent(message: string): Promise<IntentResult> {
       tier: 1,  
       noCache: true,  
       maxLatencyMs: 500,  
+      jsonMode: true,
     });
 
-    const llmIntent = result.response.trim().toLowerCase();  
+    const parsed = JSON.parse(result.response);
     const validIntents: GuestIntent[] = ['duvida_geral', 'cotacao_reserva', 'human_handover'];  
-    const matchedIntent = validIntents.find(i => llmIntent.includes(i));
-
-    if (matchedIntent) {  
+    
+    if (parsed && validIntents.includes(parsed.intent)) {
       return {  
-        intent: matchedIntent,  
-        confidence: 0.78,  
+        intent: parsed.intent as GuestIntent,  
+        confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.85,  
         method: 'llm',  
         matchedKeywords: [],  
         timestamp: new Date(),  
       };  
     }  
-  } catch {  
+  } catch (error) {  
+    console.error('[IntentRouter] LLM classifier parsing error:', error);
     // LLM falhou — fallback para duvida_geral (mais seguro)  
   }
 

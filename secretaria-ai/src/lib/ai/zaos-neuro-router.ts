@@ -67,6 +67,8 @@ export interface LLMRequest {
   params?: Record<string, unknown>;
   /** Skip cache for this request */
   noCache?: boolean;
+  /** Enable JSON Mode for structured output */
+  jsonMode?: boolean;
 }
 
 /** LLM Response from the router */
@@ -907,7 +909,7 @@ export class ZaosNeuroRouter {
       isSuccess = true;
     } else {
       try {
-        const result = await this.callRealLLM(provider, finalPrompt, request.systemPrompt);
+        const result = await this.callRealLLM(provider, finalPrompt, request.systemPrompt, request.jsonMode);
         responseText = result.content;
         calculatedInputTokens = result.inputTokens;
         calculatedOutputTokens = result.outputTokens;
@@ -1070,6 +1072,7 @@ export class ZaosNeuroRouter {
     provider: RouterProviderState,
     prompt: string,
     systemPrompt?: string,
+    jsonMode?: boolean,
   ): Promise<{ content: string; inputTokens: number; outputTokens: number }> {
     const providerId = provider.registration.id;
     const baseUrl = provider.registration.baseUrl || '';
@@ -1085,7 +1088,7 @@ export class ZaosNeuroRouter {
 
     if (providerId.includes('gemini')) {
       const apiKey = process.env.GEMINI_API_KEY || '';
-      return callGemini({ apiKey, model: providerId, messages, temperature: temp, maxTokens });
+      return callGemini({ apiKey, model: providerId, messages, temperature: temp, maxTokens, jsonMode });
     } else if (providerId.includes('anthropic')) {
       const apiKey = process.env.ANTHROPIC_API_KEY || '';
       return callAnthropic({ apiKey, model: providerId, messages, temperature: temp, maxTokens });
@@ -1123,6 +1126,7 @@ export class ZaosNeuroRouter {
         temperature: temp,
         maxTokens,
         isOpenRouter: providerId.includes('openrouter'),
+        jsonMode,
       });
     }
   }

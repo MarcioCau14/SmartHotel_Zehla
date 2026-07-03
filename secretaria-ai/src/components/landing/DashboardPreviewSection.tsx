@@ -11,9 +11,6 @@ export function DashboardPreviewSection() {
 
   return (
     <section ref={ref} className="relative py-24 sm:py-32 bg-[#08080a] overflow-hidden border-t border-white/[0.02]">
-      {/* Glow de fundo */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-emerald-500/[0.03] blur-[130px] pointer-events-none" />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           
@@ -33,7 +30,7 @@ export function DashboardPreviewSection() {
             {/* Título Principal */}
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
               Veja cada reserva acontecer, <br className="hidden sm:inline" />
-              <span className="gradient-text-royal font-bold">
+              <span className="text-[#6488ff] font-bold">
                 em tempo real.
               </span>
             </h2>
@@ -90,7 +87,7 @@ export function DashboardPreviewSection() {
             <div className="pt-6">
               <Link
                 href="#precos"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-emerald-500/20 text-sm sm:text-base cursor-pointer hover:translate-x-1"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold rounded-xl transition-all duration-200 shadow-lg shadow-emerald-500/10 text-sm sm:text-base cursor-pointer hover:translate-x-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
               >
                 Quero ter esse controle
                 <span className="text-base">→</span>
@@ -98,16 +95,12 @@ export function DashboardPreviewSection() {
             </div>
           </motion.div>
 
-          {/* LADO DIREITO: INTERFACE MOCKUP DO DIÁRIO DE CONVERSAS */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="w-full relative"
           >
-            {/* Elemento decorativo de brilho lateral */}
-            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-emerald-500/20 to-purple-500/20 opacity-30 blur-lg pointer-events-none" />
-
             <div className="relative bg-[#111] border border-white/[0.08] rounded-2xl overflow-hidden shadow-2xl flex flex-col h-[480px] w-full text-xs font-sans select-none">
               
               {/* Header do Mockup */}

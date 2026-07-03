@@ -19,54 +19,16 @@ export function BetaFounderSection() {
 
   return (
     <section ref={ref} id="oferta-parceiro" className="py-24 sm:py-32 relative overflow-hidden bg-[#060608]">
-      {/* OVERDRIVE: Orbes e Vetores de Luz Pulsantes de Fundo */}
-      <motion.div 
-        animate={{ 
-          y: [0, -30, 0], 
-          scale: [1, 1.15, 1],
-          opacity: [0.08, 0.14, 0.08]
-        }}
-        transition={{ 
-          duration: 8, 
-          repeat: Infinity, 
-          ease: "easeInOut" 
-        }}
-        className="absolute top-10 left-10 w-[500px] h-[500px] rounded-full pointer-events-none blur-[130px] bg-gradient-to-br from-amber-500 to-amber-700" 
-      />
-      <motion.div 
-        animate={{ 
-          y: [-20, 20, -20], 
-          scale: [1.1, 0.95, 1.1],
-          opacity: [0.06, 0.12, 0.06]
-        }}
-        transition={{ 
-          duration: 10, 
-          repeat: Infinity, 
-          ease: "easeInOut" 
-        }}
-        className="absolute bottom-10 right-10 w-[450px] h-[450px] rounded-full pointer-events-none blur-[120px] bg-gradient-to-br from-orange-600 to-amber-900" 
-      />
-
       <div className="relative z-10 max-w-5xl mx-auto px-6">
         
-        {/* CARD PRINCIPAL COM BORDA GRADIENTE GIRATÓRIA */}
+        {/* CARD PRINCIPAL COM BORDA LIMPA */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="relative rounded-3xl overflow-hidden p-[1px] bg-white/[0.04]"
+          className="relative rounded-3xl overflow-hidden p-[1px] bg-white/[0.08]"
         >
-          {/* Efeito Overdrive: Raio de luz rotativo na borda com aceleração de hardware */}
-          {isInView && (
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
-              className="absolute inset-[-100%] bg-[conic-gradient(from_0deg,transparent_40%,#f59e0b_50%,transparent_60%)] opacity-70 pointer-events-none will-change-transform"
-              style={{ originX: '50%', originY: '50%' }}
-            />
-          )}
-
-          {/* Fundo do Card - Sem backdrop-blur para evitar sobrecarga de GPU e CPU no Safari */}
+          {/* Fundo do Card */}
           <div className="relative rounded-[23px] overflow-hidden bg-[#0c0c0f] p-8 sm:p-12 lg:p-16">
             
             {/* Top Badges */}
@@ -85,7 +47,7 @@ export function BetaFounderSection() {
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6 leading-[1.1] tracking-tight">
               Programa Beta:
               <br />
-              <span className="gradient-text-royal font-extrabold">Seja um Parceiro do SEU ZÉLLA</span>
+              <span className="text-[#6488ff] font-extrabold">Seja um Parceiro do SEU ZÉLLA</span>
             </h2>
 
             <p className="text-zinc-400 text-base sm:text-lg max-w-2xl mb-10 leading-relaxed">
@@ -154,28 +116,15 @@ export function BetaFounderSection() {
               ))}
             </div>
 
-            {/* CTA BUTTON WITH METALLIC SHINE EFFECT */}
+            {/* CTA BUTTON */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
               <button 
                 onClick={() => {
                   const el = document.querySelector('#precos');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="group relative overflow-hidden px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl hover:from-amber-400 hover:to-orange-400 transition-all duration-300 shadow-xl shadow-amber-500/20 hover:shadow-amber-500/35 cursor-pointer flex items-center gap-2 text-base active:scale-95"
+                className="group relative overflow-hidden px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-950 font-bold rounded-xl hover:from-amber-400 hover:to-orange-400 transition-all duration-300 shadow-xl shadow-amber-500/10 cursor-pointer flex items-center gap-2 text-base active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500"
               >
-                {/* Linha de brilho metálico rotativa/passando */}
-                <motion.div 
-                  initial={{ x: '-100%' }}
-                  animate={{ x: '100%' }}
-                  transition={{ 
-                    repeat: Infinity, 
-                    repeatDelay: 3, 
-                    duration: 1.2, 
-                    ease: 'linear' 
-                  }}
-                  className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 pointer-events-none"
-                />
-
                 <Sparkles className="w-5 h-5" />
                 Quero ser Parceiro
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
