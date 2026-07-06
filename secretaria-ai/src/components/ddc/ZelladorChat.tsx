@@ -314,7 +314,7 @@ function UpgradePrompt({ currentPlan }: { currentPlan: string }) {
       </Button>
 
       <p className="text-[10px] text-white/30 mt-3">
-        A partir de R$ 697/mês · Cancelamento a qualquer momento
+        A partir de R$ 797/mês · Cancelamento a qualquer momento
       </p>
     </motion.div>
   );

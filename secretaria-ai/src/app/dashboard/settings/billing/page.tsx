@@ -34,6 +34,7 @@ export default function BillingPage() {
 
   const handleUpgrade = async () => {
     if (!selectedPlan) return;
+    if (!tenantId) { alert('Erro: sessão expirada. Faça login novamente.'); return; }
     setLoading(true);
     try {
       const activeMethod = selectedPlan === 'lite' ? paymentMethod : 'cartao';
@@ -41,7 +42,7 @@ export default function BillingPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          tenantId: tenantId || 'prop-001',
+          tenantId,
           newPlanType: selectedPlan,
           paymentMethod: activeMethod
         })
@@ -64,13 +65,14 @@ export default function BillingPage() {
 
   const handleDowngrade = async () => {
     if (!selectedPlan) return;
+    if (!tenantId) { alert('Erro: sessão expirada. Faça login novamente.'); return; }
     setLoading(true);
     try {
       const res = await fetch('/api/checkout/downgrade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          tenantId: tenantId || 'prop-001',
+          tenantId,
           newPlanType: selectedPlan
         })
       });

@@ -256,6 +256,7 @@ async function logSecurityAlert(
   try {
     await db.securityAlert.create({
       data: {
+        tenantId,
         type,
         severity,
         description: `[Zellador] ${description}`,

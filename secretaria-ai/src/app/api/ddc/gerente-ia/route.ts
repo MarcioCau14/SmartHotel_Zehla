@@ -132,6 +132,7 @@ export async function POST(request: NextRequest) {
   }
 
   const { message, conversationId } = body;
+  const convId = conversationId || `conv-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
   if (!message || typeof message !== 'string') {
     return NextResponse.json(
@@ -153,7 +154,6 @@ export async function POST(request: NextRequest) {
   const sanitization: SanitizationResult = sanitizeZelladorInput(message, tenantId, ip, userAgent);
   if (!sanitization.safe) {
     // Persistir a tentativa bloqueada como mensagem do usuário
-    const convId = conversationId || `conv-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     await db.zelladorMessage.create({
       data: {
         tenantId,
@@ -177,7 +177,6 @@ export async function POST(request: NextRequest) {
   // ──────────────────────────────────────────────────────────────────────────
   // Preparar contexto: histórico + mensagem atual
   // ──────────────────────────────────────────────────────────────────────────
-  const convId = conversationId || `conv-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const history = conversationId
     ? await getConversationHistory(tenantId, convId)
     : [];

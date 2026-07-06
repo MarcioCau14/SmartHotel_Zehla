@@ -19,17 +19,15 @@ export class CostLogger {
   private buffer: LLMCostLogEntry[] = [];
   private readonly FLUSH_INTERVAL_MS = 30_000;
   private readonly MAX_BUFFER_SIZE = 100;
-  private flushTimer: ReturnType<typeof setTimeout> | null = null;
-
-  constructor() {
-    this.startAutoFlush();
-  }
+  private lastFlushAt: number = Date.now();
 
   log(entry: LLMCostLogEntry): void {
     this.buffer.push(entry);
 
-    if (this.buffer.length >= this.MAX_BUFFER_SIZE) {
-      this.flush();
+    // Flush when buffer is full OR when enough time has passed since last flush
+    const elapsed = Date.now() - this.lastFlushAt;
+    if (this.buffer.length >= this.MAX_BUFFER_SIZE || elapsed >= this.FLUSH_INTERVAL_MS) {
+      void this.flush();
     }
   }
 
@@ -37,6 +35,7 @@ export class CostLogger {
     if (this.buffer.length === 0) return;
 
     const batch = this.buffer.splice(0, this.buffer.length);
+    this.lastFlushAt = Date.now();
 
     try {
       const now = new Date();
@@ -74,17 +73,9 @@ export class CostLogger {
     return this.buffer.length;
   }
 
-  private startAutoFlush(): void {
-    if (typeof setInterval !== 'undefined') {
-      this.flushTimer = setInterval(() => this.flush(), this.FLUSH_INTERVAL_MS);
-    }
-  }
-
   stop(): void {
-    if (this.flushTimer) {
-      clearInterval(this.flushTimer);
-      this.flushTimer = null;
-    }
+    // Flush remaining buffer on shutdown
+    void this.flush();
   }
 
   private async calculateCostForPeriod(period: 'day' | 'month', tenantId?: string): Promise<number> {
