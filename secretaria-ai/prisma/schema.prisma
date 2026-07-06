@@ -620,11 +620,20 @@ model Guest {
   notes             String?
   conversationCount Int       @default(0)
   metadata          String    @default("{}") // JSON
+  
+  // Novos campos para LGPD e BSUID
+  realPhone      String?   // Telefone real capturado
+  realEmail      String?   // Email real capturado
+  leadCapturedAt DateTime? // Data de captura de dados reais
+  optInAt        DateTime? // Consentimento de marketing
+  optInMethod    String?   // "whatsapp_cta" | "web_form" | "manual"
+  optOutAt       DateTime? // Revogação do consentimento
 
-  tenant       Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  reservations Reservation[]
-  bookings     Booking[]
-  messages     GuestMessage[]
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  reservations  Reservation[]
+  bookings      Booking[]
+  messages      GuestMessage[]
+  bsuidMappings BsuidMapping[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1087,4 +1096,34 @@ model CalendarSync {
   @@unique([roomId, otaName]) // Um canal por quarto
   @@index([tenantId, status]) // Busca eficiente por tenant
   @@map("calendar_syncs")
+}
+
+// ===== BSUID MAPPING =====
+model BsuidMapping {
+  id        String   @id @default(cuid())
+  bsuid     String   @unique // Business Scoped User ID da Meta
+  guestId   String
+  createdAt DateTime @default(now())
+
+  guest Guest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@index([guestId])
+  @@map("bsuid_mappings")
+}
+
+// ===== CONSENT LOG =====
+model ConsentLog {
+  id        String   @id @default(cuid())
+  tenantId  String
+  guestId   String
+  type      String   // "opt_in" | "opt_out"
+  channel   String   // "whatsapp" | "web" | "manual"
+  ip        String?
+  userAgent String?
+  evidence  String   @default("{}") // Payload original / texto
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, guestId])
+  @@index([type])
+  @@map("consent_logs")
 }

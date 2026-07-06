@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 export default function BillingPage() {
   const router = useRouter();
   const [currentPlan, setCurrentPlan] = useState('pro');
+  const [tenantId, setTenantId] = useState('');
   const [loading, setLoading] = useState(false);
   const [upgradeModal, setUpgradeModal] = useState(false);
   const [downgradeModal, setDowngradeModal] = useState(false);
@@ -18,6 +19,7 @@ export default function BillingPage() {
       .then(r => r.json())
       .then(d => {
         if (d.plan) setCurrentPlan(d.plan);
+        if (d.tenantId) setTenantId(d.tenantId);
       })
       .catch(() => {});
   }, []);
@@ -39,7 +41,7 @@ export default function BillingPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          tenantId: 'prop-001',
+          tenantId: tenantId || 'prop-001',
           newPlanType: selectedPlan,
           paymentMethod: activeMethod
         })
@@ -68,7 +70,7 @@ export default function BillingPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          tenantId: 'prop-001',
+          tenantId: tenantId || 'prop-001',
           newPlanType: selectedPlan
         })
       });

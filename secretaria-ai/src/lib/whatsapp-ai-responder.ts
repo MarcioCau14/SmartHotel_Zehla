@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import { mapConversation } from '@/lib/ddc/ddc-mapper';
 import { executeCognitivePipeline } from './ai/cognitive-router';
 import { formatIntentLog } from './ai/intent-router';
+import { getEffectivePlan } from './plan-resolver';
 
 /**
  * Global helper to notify active SSE DDC connections about new message events.
@@ -76,20 +77,36 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
   const startTime = Date.now();
   const { tenantId, guestPhone, guestName, messageContent } = params;
 
-  // 1. Fetch or create Guest
-  let guest = await db.guest.findFirst({
-    where: {
-      tenantId,
-      phone: guestPhone,
-    },
+  // 1. Fetch or resolve Guest (supporting BSUID mappings)
+  let guest = null;
+  const bsuidMap = await db.bsuidMapping.findUnique({
+    where: { bsuid: guestPhone }
   });
+
+  if (bsuidMap) {
+    guest = await db.guest.findUnique({
+      where: { id: bsuidMap.guestId }
+    });
+  }
+
+  if (!guest) {
+    guest = await db.guest.findFirst({
+      where: {
+        tenantId,
+        phone: guestPhone,
+      },
+    });
+  }
+
+  const isBsuid = guestPhone.startsWith('meta-') || guestPhone.length > 20 || /^[a-zA-Z]/.test(guestPhone);
 
   if (!guest) {
     guest = await db.guest.create({
       data: {
         tenantId,
         name: guestName || `Hóspede — ${guestPhone}`,
-        phone: guestPhone,
+        phone: isBsuid ? null : guestPhone,
+        realPhone: isBsuid ? null : guestPhone,
         status: 'new',
         source: params.messageFrom || 'whatsapp',
         conversationCount: 1,
@@ -104,6 +121,16 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
         conversationCount: { increment: 1 },
         lastContact: new Date(),
       },
+    });
+  }
+
+  // Create BSUID mapping if it is a BSUID and doesn't exist yet
+  if (isBsuid && !bsuidMap) {
+    await db.bsuidMapping.create({
+      data: {
+        bsuid: guestPhone,
+        guestId: guest.id
+      }
     });
   }
 
@@ -130,10 +157,52 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
     });
   }
 
+  const conversationId = conversation.id;
+
+  // 2.1. LGPD Opt-In/Opt-Out Interceptor
+  const cleanMsg = messageContent.trim().toUpperCase();
+  const optOutKeywords = ['SAIR', 'STOP', 'PARAR', 'CANCELAR'];
+  
+  if (optOutKeywords.includes(cleanMsg)) {
+    const { registerOptOut } = await import('./lgpd-consent');
+    await registerOptOut({
+      tenantId,
+      guestId: guest.id,
+      channel: 'whatsapp',
+      evidence: messageContent
+    });
+
+    const responseText = "Você foi removido das nossas comunicações de marketing. Ainda pode nos contatar a qualquer momento para dúvidas sobre a pousada.";
+    await db.conversationMessage.create({
+      data: { conversationId, from: 'ai', content: responseText }
+    });
+    await broadcastConversationUpdate(tenantId, conversationId);
+    return { conversationId, aiResponse: responseText, guestId: guest.id };
+  }
+
+  if (cleanMsg === 'SIM' && !guest.optInAt && !guest.optOutAt) {
+    const { registerOptIn } = await import('./lgpd-consent');
+    await registerOptIn({
+      tenantId,
+      guestId: guest.id,
+      channel: 'whatsapp',
+      evidence: messageContent
+    });
+
+    const responseText = "Obrigado! Seu consentimento para receber ofertas e novidades foi registrado com sucesso. Para sair, basta enviar SAIR a qualquer momento.";
+    await db.conversationMessage.create({
+      data: { conversationId, from: 'ai', content: responseText }
+    });
+    await broadcastConversationUpdate(tenantId, conversationId);
+    return { conversationId, aiResponse: responseText, guestId: guest.id };
+  }
+
+
+
   // 3. Save incoming guest message
   await db.conversationMessage.create({
     data: {
-      conversationId: conversation.id,
+      conversationId,
       from: 'guest',
       content: messageContent,
       metadata: '{}',
@@ -141,7 +210,7 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
   });
 
   // Notify DDC about the guest's message
-  await broadcastConversationUpdate(tenantId, conversation.id);
+  await broadcastConversationUpdate(tenantId, conversationId);
 
   // 4. Load context dynamically from Prisma
   const [tenant, property, trainingPrompts, recentMessages] = await Promise.all([
@@ -149,16 +218,16 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
     db.property.findFirst({ where: { tenantId } }),
     db.trainingPrompt.findMany({ where: { tenantId, isActive: true } }),
     db.conversationMessage.findMany({
-      where: { conversationId: conversation.id },
+      where: { conversationId },
       orderBy: { timestamp: 'asc' },
       take: 10,
     }),
   ]);
 
   // 4.1. Validar cota de mensagens e hóspedes do tenant baseado no seu plano
-  const planType = tenant?.plan || 'trial';
+  const planType = await getEffectivePlan(tenantId);
 
-  if (planType === 'trial' || planType === 'gratuito') {
+  if (planType === 'trial') {
     // Limite de 5 hóspedes nos últimos 7 dias
     const guestLimit = 5;
     const guestsCount = await db.guest.count({
@@ -171,10 +240,10 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
     if (guestsCount > guestLimit) {
       const responseText = "[IA Silenciada: Limite de hóspedes atendidos no plano Gratuito excedido (máximo 5)]";
       await db.conversationMessage.create({
-        data: { conversationId: conversation.id, from: 'ai', content: responseText }
+        data: { conversationId, from: 'ai', content: responseText }
       });
-      await broadcastConversationUpdate(tenantId, conversation.id);
-      return { conversationId: conversation.id, aiResponse: responseText, guestId: guest.id };
+      await broadcastConversationUpdate(tenantId, conversationId);
+      return { conversationId, aiResponse: responseText, guestId: guest.id };
     }
 
     // Limite de 100 mensagens nos últimos 7 dias
@@ -190,10 +259,10 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
     if (messagesCount >= messageLimit) {
       const responseText = "[IA Silenciada: Limite de mensagens do plano Gratuito excedido (máximo 100)]";
       await db.conversationMessage.create({
-        data: { conversationId: conversation.id, from: 'ai', content: responseText }
+        data: { conversationId, from: 'ai', content: responseText }
       });
-      await broadcastConversationUpdate(tenantId, conversation.id);
-      return { conversationId: conversation.id, aiResponse: responseText, guestId: guest.id };
+      await broadcastConversationUpdate(tenantId, conversationId);
+      return { conversationId, aiResponse: responseText, guestId: guest.id };
     }
   } else if (planType === 'lite') {
     // Limite de 50 hóspedes nos últimos 30 dias
@@ -208,10 +277,10 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
     if (guestsCount > guestLimit) {
       const responseText = "[IA Silenciada: Limite de hóspedes atendidos no plano LITE excedido (máximo 50). Faça upgrade para o plano PRO.]";
       await db.conversationMessage.create({
-        data: { conversationId: conversation.id, from: 'ai', content: responseText }
+        data: { conversationId, from: 'ai', content: responseText }
       });
-      await broadcastConversationUpdate(tenantId, conversation.id);
-      return { conversationId: conversation.id, aiResponse: responseText, guestId: guest.id };
+      await broadcastConversationUpdate(tenantId, conversationId);
+      return { conversationId, aiResponse: responseText, guestId: guest.id };
     }
 
     // Limite de 500 mensagens + recargas nos últimos 30 dias
@@ -243,10 +312,10 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
     if (messagesCount >= messageLimit) {
       const responseText = "[IA Silenciada: Limite de mensagens do plano LITE excedido. Adquira recargas adicionais no painel.]";
       await db.conversationMessage.create({
-        data: { conversationId: conversation.id, from: 'ai', content: responseText }
+        data: { conversationId, from: 'ai', content: responseText }
       });
-      await broadcastConversationUpdate(tenantId, conversation.id);
-      return { conversationId: conversation.id, aiResponse: responseText, guestId: guest.id };
+      await broadcastConversationUpdate(tenantId, conversationId);
+      return { conversationId, aiResponse: responseText, guestId: guest.id };
     }
   }
 
@@ -299,7 +368,7 @@ Descrição/Tom: ${property?.description || 'Um refúgio tranquilo e acolhedor.'
     cognitiveRes = await executeCognitivePipeline({
       message: messageContent,
       tenantId,
-      sessionId: conversation.id,
+      sessionId: conversationId,
       systemPrompt,
     });
     aiResponseText = cognitiveRes.response;
@@ -313,7 +382,7 @@ Descrição/Tom: ${property?.description || 'Um refúgio tranquilo e acolhedor.'
   // 7. Save the AI response
   const aiMessage = await db.conversationMessage.create({
     data: {
-      conversationId: conversation.id,
+      conversationId,
       from: 'ai',
       content: aiResponseText,
       metadata: JSON.stringify({
@@ -337,7 +406,7 @@ Descrição/Tom: ${property?.description || 'Um refúgio tranquilo e acolhedor.'
     : 'active';
 
   await db.conversationLog.update({
-    where: { id: conversation.id },
+    where: { id: conversationId },
     data: {
       lastUpdate: new Date(),
       status: nextStatus,
@@ -385,10 +454,10 @@ Descrição/Tom: ${property?.description || 'Um refúgio tranquilo e acolhedor.'
   ]);
 
   // 10. Notify DDC about the AI's response
-  await broadcastConversationUpdate(tenantId, conversation.id);
+  await broadcastConversationUpdate(tenantId, conversationId);
 
   return {
-    conversationId: conversation.id,
+    conversationId,
     aiResponse: aiResponseText,
     guestId: guest.id,
   };

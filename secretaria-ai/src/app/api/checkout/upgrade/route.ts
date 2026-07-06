@@ -26,6 +26,10 @@ export async function POST(request: NextRequest) {
       return createError(400, 'MISSING_FIELDS', 'Missing tenantId or newPlanType');
     }
 
+    if (tenantId !== session.user.tenantId) {
+      return createError(403, 'FORBIDDEN', 'Cannot perform upgrade for another tenant');
+    }
+
     if (!PLAN_ORDER.includes(newPlanType as PlanType)) {
       return createError(400, 'INVALID_PLAN', `Invalid plan: ${newPlanType}. Valid: ${PLAN_ORDER.join(', ')}`);
     }

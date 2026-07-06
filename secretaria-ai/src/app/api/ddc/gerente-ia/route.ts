@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
   // ──────────────────────────────────────────────────────────────────────────
   // CAMADA 3: Rate Limiting
   // ──────────────────────────────────────────────────────────────────────────
-  const rateLimit = checkZelladorRateLimit(tenantId);
+  const rateLimit = await checkZelladorRateLimit(tenantId);
   if (!rateLimit.allowed) {
     const response = NextResponse.json(
       {

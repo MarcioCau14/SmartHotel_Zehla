@@ -1,30 +1,29 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { resolveTenantId } from '@/lib/ddc/auth-utils';
+import { getEffectivePlan } from '@/lib/plan-resolver';
 
 export async function GET() {
   try {
     const tenantId = await resolveTenantId();
     if (!tenantId) {
-      return NextResponse.json({ name: 'Minha Pousada' });
+      return NextResponse.json({ name: 'Minha Pousada', plan: 'trial', tenantId: '' });
     }
 
     const property = await db.property.findFirst({
       where: { tenantId }
     });
 
-    const tenant = await db.tenant.findUnique({
-      where: { id: tenantId },
-      select: { plan: true }
-    });
+    const effectivePlan = await getEffectivePlan(tenantId);
 
     return NextResponse.json({
       name: property?.name || 'Minha Pousada',
-      plan: tenant?.plan || 'trial'
+      plan: effectivePlan,
+      tenantId
     });
   } catch (error) {
     console.error('[property-name GET] Error:', error);
-    return NextResponse.json({ name: 'Minha Pousada', plan: 'trial' });
+    return NextResponse.json({ name: 'Minha Pousada', plan: 'trial', tenantId: '' });
   }
 }
 
