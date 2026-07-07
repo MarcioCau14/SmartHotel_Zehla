@@ -100,28 +100,46 @@ model Property {
   registrationNumber   String?              @unique
   supplierContact      String?
   whatsappChannelType  WhatsappChannelType  @default(GUESTS_ONLY)
+  /// @deprecated use stripe relation
   cancelAtPeriodEnd    Boolean              @default(false)
+  /// @deprecated use stripe relation
   currentPeriodEnd     DateTime?
+  /// @deprecated use stripe relation
   stripeCustomerId     String?              @unique
+  /// @deprecated use stripe relation
   stripePriceId        String?
+  /// @deprecated use stripe relation
   stripeSubscriptionId String?              @unique
   currencyCode         String               @default("BRL")
   locale               String               @default("pt-BR")
   timezone             String               @default("America/Sao_Paulo")
+  /// @deprecated use utm relation
   refSource            String?
+  /// @deprecated use utm relation
   utmCampaign          String?
+  /// @deprecated use utm relation
   utmContent           String?
+  /// @deprecated use utm relation
   utmMedium            String?
+  /// @deprecated use utm relation
   utmSource            String?
+  /// @deprecated use utm relation
   utmTerm              String?
+  /// @deprecated use cadasturRef relation
   cadastur             String?              @unique
+  /// @deprecated use cadasturRef relation
   cadasturStatus       String?              @default("VALID")
+  /// @deprecated use cadasturRef relation
   cadasturExpiry       DateTime?
+  /// @deprecated use cadasturRef relation
   fnrhEnabled          Boolean              @default(false)
+  /// @deprecated use cadasturRef relation
   fnrhManagerCpf       String?
   checkInWindow        Int                  @default(24)
   cleaningWindow       Int                  @default(3)
+  /// @deprecated use voiceBudget relation
   voiceTokensUsed      Int                  @default(0)
+  /// @deprecated use voiceBudget relation
   voiceTokensLimit     Int                  @default(100000)
 
   // Domain-driven JSON columns (added during refactoring)
@@ -173,9 +191,71 @@ model Property {
   taxProfile           TaxProfile?
   voiceDNA             VoiceDNA?
 
+  /// Relacoes opcionais one-to-one (refatoracao de campos)
+  stripe      PropertyStripe?
+  utm         PropertyUtm?
+  cadasturRef PropertyCadastur?
+  voiceBudget PropertyVoice?
+
   @@map("properties")
 }
 
+/// Dados de pagamento Stripe (one-to-one com Property)
+model PropertyStripe {
+  id                  String @id @default(cuid())
+  propertyId          String @unique
+  property            Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  stripeCustomerId    String? @unique
+  stripePriceId       String?
+  stripeSubscriptionId String? @unique
+  cancelAtPeriodEnd   Boolean @default(false)
+  currentPeriodEnd    DateTime?
+
+  @@map("property_stripe")
+}
+
+/// Dados de tracking UTM (one-to-one com Property)
+model PropertyUtm {
+  id         String @id @default(cuid())
+  propertyId String @unique
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  refSource  String?
+  utmCampaign String?
+  utmContent  String?
+  utmMedium   String?
+  utmSource   String?
+  utmTerm     String?
+
+  @@map("property_utm")
+}
+
+/// Dados do CADASTUR e FNRH (one-to-one com Property)
+model PropertyCadastur {
+  id            String @id @default(cuid())
+  propertyId    String @unique
+  property      Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  cadastur      String? @unique
+  cadasturStatus String? @default("VALID")
+  cadasturExpiry DateTime?
+  fnrhEnabled   Boolean @default(false)
+  fnrhManagerCpf String?
+
+  @@map("property_cadastur")
+}
+
+/// Orcamento de voz (one-to-one com Property)
+model PropertyVoice {
+  id              String @id @default(cuid())
+  propertyId      String @unique
+  property        Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  voiceTokensUsed Int @default(0)
+  voiceTokensLimit Int @default(100000)
+
+  @@map("property_voice")
+}
+
+/// DUPLICADO: coexiste com QuartoHosp (modulo hospitalidade). Room e o modelo
+/// canonico atual (22 refs no codigo vs 5 de QuartoHosp). Consolidacao pendente.
 model Room {
   id           String        @id @default(cuid())
   number       String
@@ -199,6 +279,7 @@ model Room {
   @@map("rooms")
 }
 
+/// DUPLICADO: coexiste com ServicoHosp (modulo hospitalidade). Consolidacao pendente.
 model Service {
   id          String   @id @default(cuid())
   name        String
@@ -213,6 +294,8 @@ model Service {
   @@map("services")
 }
 
+/// DUPLICADO: coexiste com ReservaHosp (modulo hospitalidade). Reservation e o
+/// modelo canonico atual (31 refs no codigo vs 9 de ReservaHosp). Consolidacao pendente.
 model Reservation {
   id                String              @id @default(cuid())
   code              String              @unique
@@ -397,6 +480,8 @@ model TrialBlacklist {
   @@map("trial_blacklist")
 }
 
+/// SISTEMA CRM CANONICO: Lead e o modelo principal do funil comercial (79 refs).
+/// Coexiste com CrmPipeline/CrmContact/CrmDeal (CRM v2, adocao parcial). Nao remover.
 model Lead {
   id                    String          @id @default(cuid())
   name                  String
@@ -689,6 +774,7 @@ model ConnectMedia {
   @@map("connect_media")
 }
 
+/// CRM v2 (adocao parcial). O sistema canonico atual e o modelo Lead. Consolidacao pendente.
 model CrmPipeline {
   id         String    @id @default(cuid())
   name       String
@@ -2075,6 +2161,7 @@ model Hospede {
   @@map("hospedes")
 }
 
+/// DUPLICADO: variante do modulo hospitalidade de Room. Consolidacao pendente.
 model QuartoHosp {
   id                    String    @id @default(cuid())
   nome                  String
@@ -2094,6 +2181,7 @@ model QuartoHosp {
   @@map("quartos_hospitalidade")
 }
 
+/// DUPLICADO: variante do modulo hospitalidade de Reservation. Consolidacao pendente.
 model ReservaHosp {
   id                 String    @id @default(cuid())
   hospedeId          String
@@ -2119,6 +2207,7 @@ model ReservaHosp {
   @@map("reservas_hospitalidade")
 }
 
+/// DUPLICADO: variante do modulo hospitalidade de Service. Consolidacao pendente.
 model ServicoHosp {
   id         String   @id @default(cuid())
   nome       String
