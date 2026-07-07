@@ -18,12 +18,14 @@ function KanbanColumn({
   onQualifyLead,
   onEditLead,
   isOver,
+  onSetDragOver,
 }: {
   column: KanbanColumnView
   onLeadDrop?: (leadId: string, grupo: GrupoFunil) => void
   onQualifyLead?: (leadId: string) => void
   onEditLead?: (leadId: string) => void
   isOver: boolean
+  onSetDragOver?: (grupo: GrupoFunil | null) => void
 }) {
   const meta = GRUPO_META[column.grupo]
 
@@ -31,13 +33,26 @@ function KanbanColumn({
     e.preventDefault()
   }, [])
 
+  const handleDragEnter = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      onSetDragOver?.(column.grupo)
+    },
+    [column.grupo, onSetDragOver],
+  )
+
+  const handleDragLeave = useCallback(() => {
+    onSetDragOver?.(null)
+  }, [onSetDragOver])
+
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault()
       const leadId = e.dataTransfer.getData('text/lead-id')
       if (leadId) onLeadDrop?.(leadId, column.grupo)
+      onSetDragOver?.(null)
     },
-    [column.grupo, onLeadDrop],
+    [column.grupo, onLeadDrop, onSetDragOver],
   )
 
   return (
@@ -48,6 +63,8 @@ function KanbanColumn({
         isOver ? 'shadow-lg ring-2 ring-primary/30' : ''
       }`}
       onDragOver={handleDragOver}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
       <div className={`flex items-center justify-between border-l-4 ${meta.cor} pl-2`}>
@@ -83,7 +100,7 @@ export function KanbanBoard({
   onQualifyLead,
   onEditLead,
 }: KanbanBoardProps) {
-  const [dragOverColumn] = useState<string | null>(null)
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null)
 
   return (
     <div
@@ -98,6 +115,7 @@ export function KanbanBoard({
           onQualifyLead={onQualifyLead}
           onEditLead={onEditLead}
           isOver={dragOverColumn === column.grupo}
+          onSetDragOver={setDragOverColumn}
         />
       ))}
     </div>

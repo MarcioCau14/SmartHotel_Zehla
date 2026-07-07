@@ -48,5 +48,11 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/api/property/:path*", "/api/leads/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/zcc/:path*",
+    // Protege todas as APIs exceto: rotas do next-auth (/api/auth), webhooks
+    // publicos (Meta, Stripe, etc.) e endpoints de saude (health/readiness)
+    "/api/((?!auth|webhook|health|readiness).)*:path*",
+  ],
 };

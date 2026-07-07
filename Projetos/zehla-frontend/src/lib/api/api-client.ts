@@ -1,16 +1,18 @@
 import axios, { AxiosError, type AxiosInstance, type AxiosRequestConfig } from 'axios'
 import { Result } from '@/types/result'
 
-const SESSION_STORAGE_KEY = 'zcc_token'
+// Token persistido em localStorage (nao session storage - persiste entre abas/fechamentos)
+// TODO(seguranca): migrar para httpOnly cookies via next-auth session strategy (protecao XSS)
+const AUTH_TOKEN_KEY = 'zcc_token'
 
 function getToken(): string | null {
   if (typeof window === 'undefined') return null
-  return localStorage.getItem(SESSION_STORAGE_KEY)
+  return localStorage.getItem(AUTH_TOKEN_KEY)
 }
 
 function clearSession(): void {
   if (typeof window === 'undefined') return
-  localStorage.removeItem(SESSION_STORAGE_KEY)
+  localStorage.removeItem(AUTH_TOKEN_KEY)
   window.location.href = '/zcc-login'
 }
 

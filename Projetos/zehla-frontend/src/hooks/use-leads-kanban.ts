@@ -22,7 +22,7 @@ export function useLeadsKanban() {
 
   const moveLead = useMutation({
     mutationFn: async ({ leadId, newStage }: { leadId: string; newStage: string }) => {
-      const result = await apiPatch<{ id: string; stage: string }>(API.CRM.LEADS, { leadId, stage: newStage })
+      const result = await apiPatch<{ id: string; stage: string }>(API.CRM.MOVE_LEAD, { leadId, stage: newStage })
       if (result.isFail) throw result.error
       return result.getOrThrow()
     },
@@ -74,7 +74,7 @@ export function useLeadsKanban() {
 
   const qualifyLead = useMutation({
     mutationFn: async (leadId: string) => {
-      const result = await apiPatch<{ id: string; stage: string }>(API.CRM.LEADS, { leadId, stage: 'QUALIFICACAO' })
+      const result = await apiPatch<{ id: string; stage: string }>(API.CRM.MOVE_LEAD, { leadId, stage: 'QUALIFICACAO' })
       if (result.isFail) throw result.error
       return result.getOrThrow()
     },
