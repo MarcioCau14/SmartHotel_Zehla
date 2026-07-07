@@ -24,3 +24,7 @@ __pycache__/
 .env*
 !.env.example
 !.env.example.staging
+
+# Docker compose env com credenciais reais — nunca commitar
+docker-compose.env
+!docker-compose.env.example
