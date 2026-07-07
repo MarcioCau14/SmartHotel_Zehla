@@ -19,7 +19,7 @@ import { buildGet, buildPost, parseResponse } from '../../helpers/http-test'
 import { GET, PATCH } from '../../../app/api/reservations/route'
 
 async function seedReservation(repo: InMemoryReservationRepository): Promise<Reservation> {
-  const periodResult = DateRange.create(new Date('2026-07-01'), new Date('2026-07-03'))
+  const periodResult = DateRange.create(new Date('2026-08-01'), new Date('2026-08-03'))
   const period = periodResult.value
   const guestResult = GuestInfo.create({ name: 'Ana', phone: '11999999999' })
   const guest = guestResult.value

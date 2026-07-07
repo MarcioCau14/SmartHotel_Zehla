@@ -104,8 +104,8 @@ describe('CreateReservationUseCase', () => {
       guestName: 'João Silva',
       guestPhone: '5511999999999',
       guestCount: 2,
-      checkIn: '2026-07-01',
-      checkOut: '2026-07-05',
+      checkIn: '2026-08-01',
+      checkOut: '2026-08-05',
       source: 'WHATSAPP',
     })
 
@@ -123,8 +123,8 @@ describe('CreateReservationUseCase', () => {
       guestName: 'João',
       guestPhone: '5511999999999',
       guestCount: 1,
-      checkIn: '2026-07-01',
-      checkOut: '2026-07-05',
+      checkIn: '2026-08-01',
+      checkOut: '2026-08-05',
     })
 
     expect(result.isFail).toBe(true)
@@ -148,8 +148,8 @@ describe('CreateReservationUseCase', () => {
       guestName: 'João',
       guestPhone: '5511999999999',
       guestCount: 1,
-      checkIn: '2026-07-01',
-      checkOut: '2026-07-05',
+      checkIn: '2026-08-01',
+      checkOut: '2026-08-05',
     })
 
     expect(result.isFail).toBe(true)
@@ -163,8 +163,8 @@ describe('CreateReservationUseCase', () => {
       guestName: 'João',
       guestPhone: '5511999999999',
       guestCount: 10,
-      checkIn: '2026-07-01',
-      checkOut: '2026-07-05',
+      checkIn: '2026-08-01',
+      checkOut: '2026-08-05',
     })
 
     expect(result.isFail).toBe(true)
@@ -179,14 +179,14 @@ describe('CreateReservationUseCase', () => {
       guestPhone: '5511999999999',
       guestCount: 1,
       checkIn: 'invalid',
-      checkOut: '2026-07-05',
+      checkOut: '2026-08-05',
     })
 
     expect(result.isFail).toBe(true)
   })
 
   it('should fail when room is unavailable', async () => {
-    const period = DateRange.createFromStrings('2026-07-01', '2026-07-05').value
+    const period = DateRange.createFromStrings('2026-08-01', '2026-08-05').value
     availabilityService.block('room-1', period)
 
     const result = await useCase.execute({
@@ -195,8 +195,8 @@ describe('CreateReservationUseCase', () => {
       guestName: 'João',
       guestPhone: '5511999999999',
       guestCount: 1,
-      checkIn: '2026-07-01',
-      checkOut: '2026-07-05',
+      checkIn: '2026-08-01',
+      checkOut: '2026-08-05',
     })
 
     expect(result.isFail).toBe(true)
@@ -210,8 +210,8 @@ describe('CreateReservationUseCase', () => {
       guestName: 'João Silva',
       guestPhone: '5511999999999',
       guestCount: 1,
-      checkIn: '2026-07-01',
-      checkOut: '2026-07-05',
+      checkIn: '2026-08-01',
+      checkOut: '2026-08-05',
     })
 
     expect(eventBus.events.length).toBeGreaterThanOrEqual(1)
@@ -225,8 +225,8 @@ describe('CreateReservationUseCase', () => {
       guestName: 'A',
       guestPhone: '5511999999999',
       guestCount: 1,
-      checkIn: '2026-07-01',
-      checkOut: '2026-07-05',
+      checkIn: '2026-08-01',
+      checkOut: '2026-08-05',
     })
 
     expect(result.isFail).toBe(true)

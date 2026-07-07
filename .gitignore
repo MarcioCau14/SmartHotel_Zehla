@@ -22,6 +22,10 @@
 
 # Allow the unified dependency versions reference
 !/VERSIONS.md
+
+# Allow the opencode ECC plugin configuration
+!/.opencode/
+!/.opencode/**
 __pycache__/
 .vercel
 .env*

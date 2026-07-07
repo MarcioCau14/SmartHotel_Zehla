@@ -16,7 +16,7 @@ function makeValidReservationProps() {
     email: 'joao@test.com',
   }).value
   const guestCount = GuestCount.create(2).value
-  const period = DateRange.createFromStrings('2026-07-01', '2026-07-05').value
+  const period = DateRange.createFromStrings('2026-08-01', '2026-08-05').value
   const pricing = PricingBreakdown.create({
     roomPrice: Money.create(200).value,
     nights: period.nights,
