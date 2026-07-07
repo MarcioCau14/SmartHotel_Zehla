@@ -1,11 +1,19 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
+const PUBLIC_API_PREFIXES = ["/api/auth", "/api/webhook", "/api/health", "/api/readiness"];
+
 export default withAuth(
   function middleware(req) {
+    // Ignorar rotas publicas (next-auth, webhooks, saude)
+    const pathname = req.nextUrl.pathname;
+    if (PUBLIC_API_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+      return NextResponse.next();
+    }
+
     const token = req.nextauth.token;
     const isAuth = !!token;
-    const isAuthPage = req.nextUrl.pathname.startsWith("/login") || req.nextUrl.pathname.startsWith("/zcc-login");
+    const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/zcc-login");
 
     if (isAuthPage) {
       if (isAuth) {
@@ -15,7 +23,7 @@ export default withAuth(
     }
 
     if (!isAuth) {
-      let from = req.nextUrl.pathname;
+      let from = pathname;
       if (req.nextUrl.search) {
         from += req.nextUrl.search;
       }
@@ -24,8 +32,8 @@ export default withAuth(
         new URL(`/login?from=${encodeURIComponent(from)}`, req.url)
       );
     }
-    
-    // Injetar o tenantId no header para que o backend possa ler se necessário
+
+    // Injetar o tenantId no header
     const requestHeaders = new Headers(req.headers);
     if (token.tenantId) {
       requestHeaders.set("x-tenant-id", token.tenantId as string);
@@ -40,7 +48,6 @@ export default withAuth(
   {
     callbacks: {
       async authorized() {
-        // Isso permite que o middleware acima gerencie a lógica de redirecionamento
         return true;
       },
     },
@@ -48,11 +55,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: [
-    "/dashboard/:path*",
-    "/zcc/:path*",
-    // Protege todas as APIs exceto: rotas do next-auth (/api/auth), webhooks
-    // publicos (Meta, Stripe, etc.) e endpoints de saude (health/readiness)
-    "/api/((?!auth|webhook|health|readiness).)*:path*",
-  ],
+  matcher: ["/dashboard/:path*", "/zcc/:path*", "/api/:path*"],
 };

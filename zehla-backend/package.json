@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/build.mjs",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
@@ -74,7 +74,7 @@
     "leaflet": "^1.9.4",
     "lucide-react": "^0.525.0",
     "mercadopago": "^3.1.0",
-    "next": "16.2.7",
+    "next": "16.2.4",
     "next-auth": "^4.24.14",
     "next-intl": "^4.3.4",
     "next-themes": "^0.4.6",

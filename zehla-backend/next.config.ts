@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 
+// workaround: processo de build via scripts/build.mjs para contornar
+// bug do Next.js 16.x com output:standalone + Edge middleware que nao
+// gera middleware.js/middleware.js.nft.json (ENOENT na finalizacao)
 const nextConfig: NextConfig = {
   output: 'standalone',
   turbopack: {
