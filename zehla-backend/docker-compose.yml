@@ -34,6 +34,22 @@ services:
       timeout: 5s
       retries: 5
 
+  evolution-db:
+    image: postgres:16-alpine
+    container_name: zehla-evolution-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: evolution
+      POSTGRES_PASSWORD: ${EVOLUTION_DB_PASSWORD}
+      POSTGRES_DB: evolution_db
+    volumes:
+      - evolution_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U evolution -d evolution_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   evolution-api:
     image: atendai/evolution-api:latest
     container_name: zehla-evolution
@@ -45,13 +61,13 @@ services:
       AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY}
       DATABASE_ENABLED: "true"
       DATABASE_PROVIDER: "postgresql"
-      DATABASE_CONNECTION_URI: postgresql://${POSTGRES_USER:-zehla}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-zehla_db}?schema=evolution
+      DATABASE_CONNECTION_URI: postgresql://evolution:${EVOLUTION_DB_PASSWORD}@evolution-db:5432/evolution_db?schema=evolution
       CACHE_REDIS_ENABLED: "true"
       CACHE_REDIS_URI: redis://redis:6379/0
       DATABASE_SAVE_DATA_INSTANCE: "true"
       DATABASE_SAVE_MESSAGE_UPDATE: "true"
     depends_on:
-      - postgres
+      - evolution-db
     volumes:
       - evolution_data:/evolution/instances
 
@@ -130,6 +146,7 @@ volumes:
   postgres_data:
   redis_data:
   evolution_data:
+  evolution_db_data:
   prometheus_data:
   grafana_data:
   headroom_data:

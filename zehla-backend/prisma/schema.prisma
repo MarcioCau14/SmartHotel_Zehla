@@ -845,6 +845,8 @@ model agents {
 
   @@index([email])
   @@index([status])
+
+  @@map("agents")
 }
 
 model api_keys {
@@ -869,6 +871,8 @@ model api_keys {
   @@index([isActive])
   @@index([keyPrefix])
   @@index([propertyId])
+
+  @@map("api_keys")
 }
 
 model auto_config_logs {
@@ -884,6 +888,8 @@ model auto_config_logs {
 
   @@index([propertyId, createdAt])
   @@index([propertyId, status])
+
+  @@map("auto_config_logs")
 }
 
 model billing_logs {
@@ -898,6 +904,8 @@ model billing_logs {
 
   @@index([propertyId, createdAt])
   @@index([propertyId, type, createdAt])
+
+  @@map("billing_logs")
 }
 
 model cadastur_records {
@@ -913,6 +921,8 @@ model cadastur_records {
   properties     Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@index([status])
+
+  @@map("cadastur_records")
 }
 
 model channel_mappings {
@@ -929,6 +939,8 @@ model channel_mappings {
 
   @@unique([propertyId, channel, externalId, type])
   @@index([propertyId, channel])
+
+  @@map("channel_mappings")
 }
 
 model channel_sync_logs {
@@ -944,6 +956,8 @@ model channel_sync_logs {
 
   @@index([propertyId, channel, createdAt])
   @@index([status, createdAt])
+
+  @@map("channel_sync_logs")
 }
 
 model connect_affiliates {
@@ -964,6 +978,8 @@ model connect_affiliates {
 
   @@index([affiliateSlug])
   @@index([profileId])
+
+  @@map("connect_affiliates")
 }
 
 model connect_messages {
@@ -978,6 +994,8 @@ model connect_messages {
 
   @@index([fromSlug, createdAt])
   @@index([toSlug, isRead])
+
+  @@map("connect_messages")
 }
 
 model connect_visitors {
@@ -995,6 +1013,8 @@ model connect_visitors {
 
   @@index([profileId, visitedAt])
   @@index([source, visitedAt])
+
+  @@map("connect_visitors")
 }
 
 model credit_accounts {
@@ -1010,6 +1030,8 @@ model credit_accounts {
   credit_transactions credit_transactions[]
 
   @@index([propertyId])
+
+  @@map("credit_accounts")
 }
 
 model credit_transactions {
@@ -1025,6 +1047,8 @@ model credit_transactions {
 
   @@index([accountId, createdAt])
   @@index([type, createdAt])
+
+  @@map("credit_transactions")
 }
 
 model fiscal_invoices {
@@ -1062,6 +1086,8 @@ model fiscal_invoices {
   @@index([propertyId, createdAt])
   @@index([propertyId, status])
   @@index([reservationId])
+
+  @@map("fiscal_invoices")
 }
 
 model funnel_events {
@@ -1081,6 +1107,8 @@ model funnel_events {
   @@index([email, createdAt])
   @@index([eventType, createdAt])
   @@index([leadId, createdAt])
+
+  @@map("funnel_events")
 }
 
 model guest_memories {
@@ -1107,6 +1135,8 @@ model guest_memories {
   @@index([propertyId, guestName])
   @@index([propertyId, tags])
   @@index([visitCount])
+
+  @@map("guest_memories")
 }
 
 model mal_profiles {
@@ -1124,6 +1154,8 @@ model mal_profiles {
   properties    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@index([propertyId, agentName])
+
+  @@map("mal_profiles")
 }
 
 model push_subscriptions {
@@ -1142,6 +1174,8 @@ model push_subscriptions {
 
   @@index([propertyId])
   @@index([userId])
+
+  @@map("push_subscriptions")
 }
 
 model referrals {
@@ -1161,6 +1195,8 @@ model referrals {
   @@index([referredEmail])
   @@index([referrerId])
   @@index([status])
+
+  @@map("referrals")
 }
 
 model reservation_items {
@@ -1178,6 +1214,8 @@ model reservation_items {
 
   @@index([reservationId])
   @@index([serviceItemId])
+
+  @@map("reservation_items")
 }
 
 model revenue_pricing_logs {
@@ -1196,6 +1234,8 @@ model revenue_pricing_logs {
 
   @@index([propertyId, createdAt])
   @@index([propertyId, reason])
+
+  @@map("revenue_pricing_logs")
 }
 
 model revenue_settings {
@@ -1212,6 +1252,8 @@ model revenue_settings {
   createdAt             DateTime @default(now())
 
   @@index([propertyId])
+
+  @@map("revenue_settings")
 }
 
 model service_items {
@@ -1229,6 +1271,8 @@ model service_items {
 
   @@index([propertyId, category])
   @@index([propertyId, isActive])
+
+  @@map("service_items")
 }
 
 model TaxProfile {
@@ -1266,6 +1310,8 @@ model transaction_logs {
   @@index([propertyId, createdAt])
   @@index([propertyId, type])
   @@index([status, createdAt])
+
+  @@map("transaction_logs")
 }
 
 model webhook_delivery_logs {
@@ -1289,6 +1335,8 @@ model webhook_delivery_logs {
   @@index([eventType, createdAt])
   @@index([propertyId, status])
   @@index([subscriptionId, createdAt])
+
+  @@map("webhook_delivery_logs")
 }
 
 model webhook_subscriptions {
@@ -1310,6 +1358,8 @@ model webhook_subscriptions {
   @@index([events])
   @@index([isActive])
   @@index([propertyId])
+
+  @@map("webhook_subscriptions")
 }
 
 enum Role {

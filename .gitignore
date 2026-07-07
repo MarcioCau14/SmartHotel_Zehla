@@ -19,6 +19,9 @@
 # Allow the secretaria-ai project (SmartHotel_Zehla)
 !/secretaria-ai/
 !/secretaria-ai/**
+
+# Allow the unified dependency versions reference
+!/VERSIONS.md
 __pycache__/
 .vercel
 .env*
