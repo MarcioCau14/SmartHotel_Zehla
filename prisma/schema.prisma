@@ -1,8 +1,9 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// =============================================================================
+// ZÉLLA — Schema do Banco de Dados
+// =============================================================================
+// Suporta DOIS modos de operação: Pousada e Airbnb
+// Compartilha infraestrutura, separa o cérebro (Strategy Pattern)
+// =============================================================================
 
 generator client {
   provider = "prisma-client-js"
@@ -13,20 +14,228 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// ── AUTH (NextAuth.js v4) ───────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
 }
 
-model Post {
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  emailVerified DateTime?
+  image         String?
+  password      String?                          // Hashed password for credentials auth
+  accounts      Account[]
+  sessions      Session[]
+  tenant        Tenant?
+}
+
+// ── TENANT & PLANOS ─────────────────────────────────────
+
+model Tenant {
+  id              String   @id @default(cuid())
+  name            String                           // Nome do negócio
+  mode            String                           // "pousada" | "airbnb"
+  planSlug        String    @default("pro")        // "pro" | "max"
+  whatsappNumber  String?                          // Número conectado
+  onboardingComplete Boolean @default(false)       // Completou o onboarding?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user         User           @relation(fields: [userId], references: [id])
+  userId       String         @unique
+  plan         Plan           @relation(fields: [planSlug], references: [slug])
+  properties   AirBProperty[]
+  conversations Conversation[]
+}
+
+model Plan {
+  id          String @id @default(cuid())
+  slug        String @unique                        // "pro" | "max"
+  name        String                                // "PRO" | "MAX"
+  priceCents  Int                                   // 39700 | 79700 (em centavos)
+  maxProperties Int                                 // 4 | 12
+  maxWhatsappNumbers Int @default(1)                // 1 | 3
+  hasAnalytics  Boolean @default(false)             // false | true
+  hasApi        Boolean @default(false)             // false | true
+  hasPrioritySupport Boolean @default(false)        // false | true
+  hasAbTesting  Boolean @default(false)             // false | true
+  hasCustomWebhooks Boolean @default(false)         // false | true
+  hasWeeklyReports  Boolean @default(false)          // false | true
+  description  String?
+
+  tenants Tenant[]
+}
+
+// ── IMÓVEL AIRBNB ───────────────────────────────────────
+
+model AirBProperty {
   id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // ── Identificação (Camada 1 - Auto via Scraping)
+  airbnbId        String                           // Código do anúncio Airbnb
+  listingUrl      String?                          // URL completa
+  name            String                           // Título do anúncio
+  description     String?                          // Descrição completa
+  propertyType    String?                          // entire_home, private_room, etc.
+
+  // ── Capacidade (Camada 1 - Auto)
+  accommodates    Int?
+  bedrooms        Int?
+  beds            Int?
+  bathrooms       Float?
+
+  // ── Localização (Camada 1 - Auto)
+  latitude        Float?
+  longitude       Float?
+  neighborhood    String?
+  city            String?
+  state           String?
+  country         String?
+  fullAddress     String?
+
+  // ── Avaliação (Camada 1 - Auto)
+  rating          Float?
+  reviewCount     Int?
+  reviewAccuracy  Float?
+  reviewCleanliness Float?
+  reviewCheckin   Float?
+  reviewCommunication Float?
+  reviewLocation  Float?
+  reviewValue     Float?
+
+  // ── Preço (Camada 1 - Auto)
+  basePrice       Float?
+  currency        String  @default("BRL")
+
+  // ── Amenidades (Camada 1 - Auto) — JSON array string
+  amenities       String?
+
+  // ── Mídia (Camada 1 - Auto) — JSON array: [{url, caption}]
+  photos          String?
+  photoCount      Int?
+
+  // ── Regras (Camada 1 - Auto)
+  houseRules      String?
+  checkInTime     String?
+  checkOutTime    String?
+
+  // ── Host info (Camada 1 - Auto)
+  hostName        String?
+  hostIsSuperhost Boolean @default(false)
+  hostResponseRate Float?
+  hostResponseTime String?
+
+  // ── AI Enriquecimento (Camada 2 - AI Extract) — JSON arrays/strings
+  aiSummary       String?                          // Resumo executivo
+  highlights      String?                          // JSON array: ["Vista mar", "Piscina"]
+  targetAudience  String?                          // JSON array: ["famílias", "casais"]
+  sellingPoints   String?                          // JSON array: pontos de venda
+  localTipsFromReviews String?                     // JSON array: dicas de reviews
+  reviewSentiment String?                          // "excellent" | "good" | "average"
+  keywords        String?                          // JSON array: palavras-chave
+
+  // ── Dados Privados (Camada 3 - Manual Host)
+  wifiName        String?
+  wifiPassword    String?
+  lockboxCode     String?
+  lockboxLocation String?
+  accessInstructions String?
+  emergencyContact String?
+  maintenanceContact String?
+  alarmCode       String?
+  gateCode        String?
+  parkingSpot     String?
+  personalLocalTips String?
+  favoriteRestaurants String?
+  supermarketLocation String?
+  additionalRules  String?
+  quietHoursStart  String?
+  quietHoursEnd    String?
+  customCheckInInstructions String?
+  customCheckOutInstructions String?
+  internalNotes    String?
+
+  // ── Metadados
+  scrapingStatus  String   @default("pending")     // "pending" | "scraping" | "enriched" | "complete"
+  lastScrapedAt   DateTime?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  conversations Conversation[]
+
+  @@unique([tenantId, airbnbId])
+}
+
+// ── CONVERSAS ───────────────────────────────────────────
+
+model Conversation {
+  id          String   @id @default(cuid())
+  tenantId    String
+  propertyId  String?
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  property    AirBProperty? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+
+  guestPhone    String?                        // Telefone do hóspede
+  guestName     String?                        // Nome do hóspede
+  conversationMode String @default("pre_booking") // "pre_booking" | "post_booking"
+  status        String   @default("active")    // "active" | "resolved" | "escalated"
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  messages    Message[]
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  direction      String                          // "inbound" | "outbound"
+  content        String                          // Conteúdo da mensagem
+  intent         String?                         // Intent classificado
+  isAiGenerated  Boolean  @default(false)        // Gerada por IA?
+  tokensUsed     Int?                            // Tokens consumidos
+  costCents      Int?                            // Custo em centavos
+
+  createdAt      DateTime @default(now())
 }

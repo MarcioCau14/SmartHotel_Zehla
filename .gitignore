@@ -52,3 +52,13 @@ prompt
 server.log
 # Skills directory
 /skills/
+# Tool results
+/tool-results/
+# Download dir
+/download/
+# Upload dir
+/upload/
+# DB file
+db/*.db
+# Worklog
+worklog.md
