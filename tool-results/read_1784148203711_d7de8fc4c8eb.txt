@@ -1,0 +1,555 @@
+     1→     1→'use client'
+     2→     2→
+     3→     3→import { useState, useCallback } from 'react'
+     4→     4→import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+     5→     5→import { Button } from '@/components/ui/button'
+     6→     6→import { Badge } from '@/components/ui/badge'
+     7→     7→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+     8→     8→import { ScrollArea } from '@/components/ui/scroll-area'
+     9→     9→import { Separator } from '@/components/ui/separator'
+    10→    10→
+    11→    11→// ── Types ──────────────────────────────────────────────────────────────────────
+    12→    12→
+    13→    13→interface ClassificationTest {
+    14→    14→  message: string
+    15→    15→  expectedIntent: string
+    16→    16→  classifiedIntent: string
+    17→    17→  confidence: number
+    18→    18→  method: string
+    19→    19→  correct: boolean
+    20→    20→}
+    21→    21→
+    22→    22→interface ProcessResult {
+    23→    23→  success: boolean
+    24→    24→  mode: string
+    25→    25→  input: string
+    26→    26→  classification: { intent: string; confidence: number }
+    27→    27→  prompts: { system: string; user: string }
+    28→    28→  toolResults: Array<{ tool: string; result: any }>
+    29→    29→  readyForLLM: boolean
+    30→    30→}
+    31→    31→
+    32→    32→interface TestData {
+    33→    33→  mode: string
+    34→    34→  shouldIncludeSalesCTA: boolean
+    35→    35→  sampleContext: {
+    36→    36→    name: string
+    37→    37→    type: string
+    38→    38→    city: string
+    39→    39→    hostKnowledgeCount: number
+    40→    40→    neighborhoodTipsCount: number
+    41→    41→    equipmentCount: number
+    42→    42→  }
+    43→    43→  classificationTests: ClassificationTest[]
+    44→    44→  accuracy: number
+    45→    45→}
+    46→    46→
+    47→    47→// ── Quick Test Messages ────────────────────────────────────────────────────────
+    48→    48→
+    49→    49→const QUICK_MESSAGES = [
+    50→    50→  { label: '🔑 Check-in', message: 'Cheguei! Como faço pra entrar?' },
+    51→    51→  { label: '📶 WiFi', message: 'Qual a senha do wifi?' },
+    52→    52→  { label: '📜 Regras', message: 'Posso ter visita? Posso fumar?' },
+    53→    53→  { label: '🔧 Equipamento', message: 'Como liga o ar do quarto?' },
+    54→    54→  { label: '🗺️ Bairro', message: 'Tem padaria perto? Onde comer?' },
+    55→    55→  { label: '🅿️ Estacionamento', message: 'Onde estaciono meu carro?' },
+    56→    56→  { label: '🚨 Emergência', message: 'Vazou água na cozinha!' },
+    57→    57→  { label: '👋 Saudação', message: 'Oi! Tudo bem?' },
+    58→    58→  { label: '📅 Estender', message: 'Posso ficar mais um dia?' },
+    59→    59→  { label: '🧹 Limpeza', message: 'Preciso de toalhas limpas' },
+    60→    60→  { label: '🔩 Manutenção', message: 'O chuveiro não esquenta' },
+    61→    61→  { label: '⭐ Dicas', message: 'O que fazer por aqui?' },
+    62→    62→  { label: '👤 Humano', message: 'Quero falar com o dono' },
+    63→    63→  { label: '💰 Preço (desconhecido!)', message: 'Quanto custa a diária?' },
+    64→    64→]
+    65→    65→
+    66→    66→// ── Comparison Data ────────────────────────────────────────────────────────────
+    67→    67→
+    68→    68→const COMPARISON = [
+    69→    69→  { dim: 'Papel', pousada: 'Secretária recepcionista', airb: 'O dono/anfitrião do imóvel' },
+    70→    70→  { dim: 'Objetivo', pousada: 'Vender quartos, fechar reserva', airb: 'Fazer o hóspede se sentir em casa' },
+    71→    71→  { dim: 'Tom', pousada: 'Profissional, hospitaleiro', airb: 'Pessoal, íntimo, amigo' },
+    72→    72→  { dim: 'CTA', pousada: '"Quer reservar? Mande o PIX!"', airb: '"Qualquer coisa me chama!"' },
+    73→    73→  { dim: 'Conhecimento', pousada: 'Tipos de quarto, preços', airb: 'Onde fica a chave, melhor padaria' },
+    74→    74→  { dim: 'Intenções', pousada: 'RESERVATION_CREATE, PRICE_INQUIRY', airb: 'CHECK_IN_GUIDE, HOUSE_RULES' },
+    75→    75→  { dim: 'Tools', pousada: 'zehla_sugerir_preco', airb: 'airb_get_checkin_guide' },
+    76→    76→  { dim: 'Prompt', pousada: '"…da pousada X"', airb: '"Você é o ANFITRIÃO de X"' },
+    77→    77→  { dim: 'Venda direta', pousada: 'SIM (PIX, link pagamento)', airb: 'NÃO — hóspede já reservou' },
+    78→    78→  { dim: 'Fechadura', pousada: 'Não suportado', airb: 'lockProvider + lockCode' },
+    79→    79→  { dim: 'Dicas do bairro', pousada: 'GENÉRICO ("seja entusiasta")', airb: 'ESPECÍFICO (padaria, 3 min)' },
+    80→    80→]
+    81→    81→
+    82→    82→// ── Component ──────────────────────────────────────────────────────────────────
+    83→    83→
+    84→    84→export default function Home() {
+    85→    85→  const [testData, setTestData] = useState<TestData | null>(null)
+    86→    86→  const [processResult, setProcessResult] = useState<ProcessResult | null>(null)
+    87→    87→  const [loading, setLoading] = useState(false)
+    88→    88→  const [message, setMessage] = useState('')
+    89→    89→  const [activeTab, setActiveTab] = useState('test')
+    90→    90→
+    91→    91→  const runTests = useCallback(async () => {
+    92→    92→    setLoading(true)
+    93→    93→    try {
+    94→    94→      const res = await fetch('/api/airb-test')
+    95→    95→      const data = await res.json()
+    96→    96→      setTestData(data)
+    97→    97→    } catch (err) {
+    98→    98→      console.error('Error running tests:', err)
+    99→    99→    } finally {
+   100→   100→      setLoading(false)
+   101→   101→    }
+   102→   102→  }, [])
+   103→   103→
+   104→   104→  const processMessage = useCallback(async (msg: string) => {
+   105→   105→    setLoading(true)
+   106→   106→    setMessage(msg)
+   107→   107→    try {
+   108→   108→      const res = await fetch('/api/airb-test', {
+   109→   109→        method: 'POST',
+   110→   110→        headers: { 'Content-Type': 'application/json' },
+   111→   111→        body: JSON.stringify({ message: msg }),
+   112→   112→      })
+   113→   113→      const data = await res.json()
+   114→   114→      setProcessResult(data)
+   115→   115→    } catch (err) {
+   116→   116→      console.error('Error processing message:', err)
+   117→   117→    } finally {
+   118→   118→      setLoading(false)
+   119→   119→    }
+   120→   120→  }, [])
+   121→   121→
+   122→   122→  return (
+   123→   123→    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+   124→   124→      {/* Header */}
+   125→   125→      <header className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-50">
+   126→   126→        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+   127→   127→          <div className="flex items-center gap-3">
+   128→   128→            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-lg">
+   129→   129→              Z
+   130→   130→            </div>
+   131→   131→            <div>
+   132→   132→              <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+   133→   133→                Zélla AirB <span className="text-emerald-500">Strategy</span>
+   134→   134→              </h1>
+   135→   135→              <p className="text-xs text-slate-500">Prova de Conceito — Anfitrião que Sabe Tudo</p>
+   136→   136→            </div>
+   137→   137→          </div>
+   138→   138→          <Badge variant="outline" className="text-emerald-600 border-emerald-300 bg-emerald-50">
+   139→   139→            POC ISOLADA
+   140→   140→          </Badge>
+   141→   141→        </div>
+   142→   142→      </header>
+   143→   143→
+   144→   144→      {/* Main Content */}
+   145→   145→      <main className="flex-1 container mx-auto px-4 py-6">
+   146→   146→        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+   147→   147→          <TabsList className="grid w-full grid-cols-4">
+   148→   148→            <TabsTrigger value="test">🧪 Teste Interativo</TabsTrigger>
+   149→   149→            <TabsTrigger value="classification">📊 Classificação</TabsTrigger>
+   150→   150→            <TabsTrigger value="compare">⚖️ Comparação</TabsTrigger>
+   151→   151→            <TabsTrigger value="architecture">🏗️ Arquitetura</TabsTrigger>
+   152→   152→          </TabsList>
+   153→   153→
+   154→   154→          {/* ── Tab: Teste Interativo ── */}
+   155→   155→          <TabsContent value="test" className="space-y-4">
+   156→   156→            <div className="grid md:grid-cols-2 gap-4">
+   157→   157→              {/* Input Panel */}
+   158→   158→              <Card>
+   159→   159→                <CardHeader>
+   160→   160→                  <CardTitle className="text-lg">💬 Simular Mensagem de Hóspede</CardTitle>
+   161→   161→                  <CardDescription>
+   162→   162→                    Envie uma mensagem como se fosse um hóspede Airbnb e veja como o Zélla AirB processa
+   163→   163→                  </CardDescription>
+   164→   164→                </CardHeader>
+   165→   165→                <CardContent className="space-y-4">
+   166→   166→                  {/* Quick messages */}
+   167→   167→                  <div>
+   168→   168→                    <p className="text-sm font-medium text-slate-600 mb-2">Mensagens rápidas:</p>
+   169→   169→                    <div className="flex flex-wrap gap-2">
+   170→   170→                      {QUICK_MESSAGES.map((qm, i) => (
+   171→   171→                        <Button
+   172→   172→                          key={i}
+   173→   173→                          variant="outline"
+   174→   174→                          size="sm"
+   175→   175→                          className="text-xs h-8"
+   176→   176→                          onClick={() => processMessage(qm.message)}
+   177→   177→                          disabled={loading}
+   178→   178→                        >
+   179→   179→                          {qm.label}
+   180→   180→                        </Button>
+   181→   181→                      ))}
+   182→   182→                    </div>
+   183→   183→                  </div>
+   184→   184→
+   185→   185→                  <Separator />
+   186→   186→
+   187→   187→                  {/* Custom message input */}
+   188→   188→                  <div>
+   189→   189→                    <p className="text-sm font-medium text-slate-600 mb-2">Ou digite sua mensagem:</p>
+   190→   190→                    <div className="flex gap-2">
+   191→   191→                      <input
+   192→   192→                        type="text"
+   193→   193→                        value={message}
+   194→   194→                        onChange={(e) => setMessage(e.target.value)}
+   195→   195→                        onKeyDown={(e) => e.key === 'Enter' && message.trim() && processMessage(message)}
+   196→   196→                        placeholder="Ex: Qual a senha do wifi?"
+   197→   197→                        className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+   198→   198→                      />
+   199→   199→                      <Button
+   200→   200→                        onClick={() => processMessage(message)}
+   201→   201→                        disabled={loading || !message.trim()}
+   202→   202→                        className="bg-emerald-600 hover:bg-emerald-700"
+   203→   203→                      >
+   204→   204→                        Enviar
+   205→   205→                      </Button>
+   206→   206→                    </div>
+   207→   207→                  </div>
+   208→   208→
+   209→   209→                  {/* Imóvel Context */}
+   210→   210→                  <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-xs">
+   211→   211→                    <p className="font-medium text-slate-700 dark:text-slate-300 mb-1">📍 Imóvel de Teste:</p>
+   212→   212→                    <p className="text-slate-600 dark:text-slate-400">Apartamento Vista Mar — Jurerê Internacional, Florianópolis/SC</p>
+   213→   213→                    <p className="text-slate-500 dark:text-slate-500">Lockbox: 4521 | WiFi: VistaMar_5G / jurere2024 | Vaga: 14</p>
+   214→   214→                  </div>
+   215→   215→                </CardContent>
+   216→   216→              </Card>
+   217→   217→
+   218→   218→              {/* Result Panel */}
+   219→   219→              <Card>
+   220→   220→                <CardHeader>
+   221→   221→                  <CardTitle className="text-lg">📋 Resultado do Processamento</CardTitle>
+   222→   222→                  <CardDescription>
+   223→   223→                    Intenção detectada, prompts gerados e tools executados
+   224→   224→                  </CardDescription>
+   225→   225→                </CardHeader>
+   226→   226→                <CardContent>
+   227→   227→                  {processResult ? (
+   228→   228→                    <ScrollArea className="h-[500px] pr-4">
+   229→   229→                      <div className="space-y-4">
+   230→   230→                        {/* Classification */}
+   231→   231→                        <div className="bg-emerald-50 dark:bg-emerald-950 rounded-lg p-3">
+   232→   232→                          <p className="font-medium text-emerald-800 dark:text-emerald-300 text-sm">
+   233→   233→                            Intenção: {processResult.classification.intent}
+   234→   234→                          </p>
+   235→   235→                          <p className="text-emerald-600 dark:text-emerald-400 text-xs">
+   236→   236→                            Confiança: {(processResult.classification.confidence * 100).toFixed(1)}%
+   237→   237→                          </p>
+   238→   238→                          <p className="text-emerald-600 dark:text-emerald-400 text-xs">
+   239→   239→                            CTA de Venda: {processResult.mode === 'airbnb' ? 'NÃO ❌ (correto!)' : 'SIM'}
+   240→   240→                          </p>
+   241→   241→                        </div>
+   242→   242→
+   243→   243→                        {/* Tool Results */}
+   244→   244→                        {processResult.toolResults.length > 0 && (
+   245→   245→                          <div>
+   246→   246→                            <p className="font-medium text-sm text-slate-700 dark:text-slate-300 mb-2">
+   247→   247→                              🔧 Tools Executadas ({processResult.toolResults.length}):
+   248→   248→                            </p>
+   249→   249→                            {processResult.toolResults.map((tr, i) => (
+   250→   250→                              <div key={i} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-2 mb-2">
+   251→   251→                                <p className="font-mono text-xs text-emerald-600">{tr.tool}</p>
+   252→   252→                                <pre className="text-xs text-slate-600 dark:text-slate-400 mt-1 whitespace-pre-wrap">
+   253→   253→                                  {JSON.stringify(tr.result, null, 2)}
+   254→   254→                                </pre>
+   255→   255→                              </div>
+   256→   256→                            ))}
+   257→   257→                          </div>
+   258→   258→                        )}
+   259→   259→
+   260→   260→                        {/* System Prompt Preview */}
+   261→   261→                        <div>
+   262→   262→                          <p className="font-medium text-sm text-slate-700 dark:text-slate-300 mb-2">
+   263→   263→                            📝 System Prompt (primeiras 800 chars):
+   264→   264→                          </p>
+   265→   265→                          <pre className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-xs text-slate-600 dark:text-slate-400 whitespace-pre-wrap">
+   266→   266→                            {processResult.prompts.system.slice(0, 800)}...
+   267→   267→                          </pre>
+   268→   268→                        </div>
+   269→   269→
+   270→   270→                        {/* User Prompt */}
+   271→   271→                        <div>
+   272→   272→                          <p className="font-medium text-sm text-slate-700 dark:text-slate-300 mb-2">
+   273→   273→                            👤 User Prompt:
+   274→   274→                          </p>
+   275→   275→                          <pre className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-xs text-slate-600 dark:text-slate-400 whitespace-pre-wrap">
+   276→   276→                            {processResult.prompts.user}
+   277→   277→                          </pre>
+   278→   278→                        </div>
+   279→   279→                      </div>
+   280→   280→                    </ScrollArea>
+   281→   281→                  ) : (
+   282→   282→                    <div className="h-[500px] flex items-center justify-center text-slate-400">
+   283→   283→                      <div className="text-center">
+   284→   284→                        <p className="text-4xl mb-3">🏨</p>
+   285→   285→                        <p className="text-sm">Envie uma mensagem para ver o resultado</p>
+   286→   286→                        <p className="text-xs mt-1">O Zélla AirB vai classificar a intenção e gerar os prompts</p>
+   287→   287→                      </div>
+   288→   288→                    </div>
+   289→   289→                  )}
+   290→   290→                </CardContent>
+   291→   291→              </Card>
+   292→   292→            </div>
+   293→   293→          </TabsContent>
+   294→   294→
+   295→   295→          {/* ── Tab: Classification Tests ── */}
+   296→   296→          <TabsContent value="classification" className="space-y-4">
+   297→   297→            <Card>
+   298→   298→              <CardHeader>
+   299→   299→                <div className="flex items-center justify-between">
+   300→   300→                  <div>
+   301→   301→                    <CardTitle className="text-lg">📊 Testes de Classificação de Intenção</CardTitle>
+   302→   302→                    <CardDescription>
+   303→   303→                      Teste automático: 15 mensagens de exemplo classificadas pelo Zélla AirB
+   304→   304→                    </CardDescription>
+   305→   305→                  </div>
+   306→   306→                  <Button onClick={runTests} disabled={loading} className="bg-emerald-600 hover:bg-emerald-700">
+   307→   307→                    {loading ? 'Executando...' : '▶ Executar Testes'}
+   308→   308→                  </Button>
+   309→   309→                </div>
+   310→   310→              </CardHeader>
+   311→   311→              <CardContent>
+   312→   312→                {testData ? (
+   313→   313→                  <div className="space-y-4">
+   314→   314→                    {/* Accuracy */}
+   315→   315→                    <div className="bg-emerald-50 dark:bg-emerald-950 rounded-lg p-4 flex items-center justify-between">
+   316→   316→                      <div>
+   317→   317→                        <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
+   318→   318→                          {(testData.accuracy * 100).toFixed(0)}%
+   319→   319→                        </p>
+   320→   320→                        <p className="text-sm text-emerald-600 dark:text-emerald-400">
+   321→   321→                          Acurácia da classificação heurística
+   322→   322→                        </p>
+   323→   323→                      </div>
+   324→   324→                      <div className="text-right">
+   325→   325→                        <p className="text-sm text-slate-600 dark:text-slate-400">
+   326→   326→                          CTA de venda: <span className="font-bold text-red-500">{testData.shouldIncludeSalesCTA ? 'SIM' : 'NÃO'}</span>
+   327→   327→                        </p>
+   328→   328→                        <p className="text-sm text-slate-600 dark:text-slate-400">
+   329→   329→                          Modo: <span className="font-bold text-emerald-600">{testData.mode}</span>
+   330→   330→                        </p>
+   331→   331→                      </div>
+   332→   332→                    </div>
+   333→   333→
+   334→   334→                    {/* Results Table */}
+   335→   335→                    <div className="border rounded-lg overflow-hidden">
+   336→   336→                      <table className="w-full text-sm">
+   337→   337→                        <thead className="bg-slate-50 dark:bg-slate-800">
+   338→   338→                          <tr>
+   339→   339→                            <th className="px-3 py-2 text-left">Mensagem</th>
+   340→   340→                            <th className="px-3 py-2 text-left">Esperado</th>
+   341→   341→                            <th className="px-3 py-2 text-left">Classificado</th>
+   342→   342→                            <th className="px-3 py-2 text-center">Confiança</th>
+   343→   343→                            <th className="px-3 py-2 text-center">✓</th>
+   344→   344→                          </tr>
+   345→   345→                        </thead>
+   346→   346→                        <tbody>
+   347→   347→                          {testData.classificationTests.map((test, i) => (
+   348→   348→                            <tr key={i} className={test.correct ? 'bg-green-50/50 dark:bg-green-950/20' : 'bg-red-50/50 dark:bg-red-950/20'}>
+   349→   349→                              <td className="px-3 py-2 border-t text-slate-700 dark:text-slate-300">
+   350→   350→                                &ldquo;{test.message}&rdquo;
+   351→   351→                              </td>
+   352→   352→                              <td className="px-3 py-2 border-t">
+   353→   353→                                <Badge variant="outline" className="text-xs">{test.expectedIntent}</Badge>
+   354→   354→                              </td>
+   355→   355→                              <td className="px-3 py-2 border-t">
+   356→   356→                                <Badge variant="outline" className={`text-xs ${test.correct ? 'text-emerald-600 border-emerald-300' : 'text-red-600 border-red-300'}`}>
+   357→   357→                                  {test.classifiedIntent}
+   358→   358→                                </Badge>
+   359→   359→                              </td>
+   360→   360→                              <td className="px-3 py-2 border-t text-center">
+   361→   361→                                {(test.confidence * 100).toFixed(0)}%
+   362→   362→                              </td>
+   363→   363→                              <td className="px-3 py-2 border-t text-center">
+   364→   364→                                {test.correct ? '✅' : '❌'}
+   365→   365→                              </td>
+   366→   366→                            </tr>
+   367→   367→                          ))}
+   368→   368→                        </tbody>
+   369→   369→                      </table>
+   370→   370→                    </div>
+   371→   371→                  </div>
+   372→   372→                ) : (
+   373→   373→                  <div className="h-60 flex items-center justify-center text-slate-400">
+   374→   374→                    <div className="text-center">
+   375→   375→                      <p className="text-4xl mb-3">📊</p>
+   376→   376→                      <p className="text-sm">Clique em &quot;Executar Testes&quot; para ver os resultados</p>
+   377→   377→                    </div>
+   378→   378→                  </div>
+   379→   379→                )}
+   380→   380→              </CardContent>
+   381→   381→            </Card>
+   382→   382→          </TabsContent>
+   383→   383→
+   384→   384→          {/* ── Tab: Comparison ── */}
+   385→   385→          <TabsContent value="compare" className="space-y-4">
+   386→   386→            <Card>
+   387→   387→              <CardHeader>
+   388→   388→                <CardTitle className="text-lg">⚖️ Zélla Pousada vs Zélla AirB</CardTitle>
+   389→   389→                <CardDescription>
+   390→   390→                  Comparação direta dos dois modos de operação
+   391→   391→                </CardDescription>
+   392→   392→              </CardHeader>
+   393→   393→              <CardContent>
+   394→   394→                <div className="border rounded-lg overflow-hidden">
+   395→   395→                  <table className="w-full text-sm">
+   396→   396→                    <thead className="bg-slate-50 dark:bg-slate-800">
+   397→   397→                      <tr>
+   398→   398→                        <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">Dimensão</th>
+   399→   399→                        <th className="px-4 py-3 text-left font-medium text-blue-600 dark:text-blue-400">🏢 Zélla Pousada</th>
+   400→   400→                        <th className="px-4 py-3 text-left font-medium text-emerald-600 dark:text-emerald-400">🏠 Zélla AirB</th>
+   401→   401→                      </tr>
+   402→   402→                    </thead>
+   403→   403→                    <tbody>
+   404→   404→                      {COMPARISON.map((row, i) => (
+   405→   405→                        <tr key={i} className="border-t">
+   406→   406→                          <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">{row.dim}</td>
+   407→   407→                          <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{row.pousada}</td>
+   408→   408→                          <td className="px-4 py-3 text-emerald-700 dark:text-emerald-300 font-medium">{row.airb}</td>
+   409→   409→                        </tr>
+   410→   410→                      ))}
+   411→   411→                    </tbody>
+   412→   412→                  </table>
+   413→   413→                </div>
+   414→   414→
+   415→   415→                <div className="mt-6 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+   416→   416→                  <p className="font-medium text-amber-800 dark:text-amber-300 text-sm">⚠️ Pontos Críticos de Separação</p>
+   417→   417→                  <ul className="mt-2 space-y-1 text-xs text-amber-700 dark:text-amber-400">
+   418→   418→                    <li>• O PromptBuilder do Zélla Pousada diz &quot;incentivar a reserva direta&quot; — isso é TÓXICO no Airbnb</li>
+   419→   419→                    <li>• O intent-router classifica &quot;Quanto custa?&quot; como PRICE_INQUIRY — no AirB isso não existe</li>
+   420→   420→                    <li>• As tools do Zélla Pousada são de vendas (sugerir preço, analisar ocupação) — no AirB são de hospitalidade</li>
+   421→   421→                    <li>• O persona learner default é &quot;hospitalidade premium&quot; — no AirB precisa ser &quot;amigo que empresta a casa&quot;</li>
+   422→   422→                    <li>• O Property.tenantId tem @unique — impede múltiplos imóveis por anfitrião Airbnb</li>
+   423→   423→                  </ul>
+   424→   424→                </div>
+   425→   425→              </CardContent>
+   426→   426→            </Card>
+   427→   427→          </TabsContent>
+   428→   428→
+   429→   429→          {/* ── Tab: Architecture ── */}
+   430→   430→          <TabsContent value="architecture" className="space-y-4">
+   431→   431→            <Card>
+   432→   432→              <CardHeader>
+   433→   433→                <CardTitle className="text-lg">🏗️ Arquitetura da Strategy Pattern</CardTitle>
+   434→   434→                <CardDescription>
+   435→   435→                  Como o Zélla AirB se encaixa na infraestrutura existente sem tocar no código da pousada
+   436→   436→                </CardDescription>
+   437→   437→              </CardHeader>
+   438→   438→              <CardContent>
+   439→   439→                <ScrollArea className="h-[600px]">
+   440→   440→                  <div className="space-y-6">
+   441→   441→                    {/* Current Architecture */}
+   442→   442→                    <div>
+   443→   443→                      <p className="font-bold text-sm text-blue-600 dark:text-blue-400 mb-2">📦 ARQUITETURA ATUAL (Monolítica)</p>
+   444→   444→                      <pre className="bg-blue-50 dark:bg-blue-950 rounded-lg p-4 text-xs text-blue-800 dark:text-blue-300 whitespace-pre font-mono">
+   445→   445→{`Webhook WhatsApp
+   446→   446→    ↓
+   447→   447→resolveTenantByPhone()
+   448→   448→    ↓
+   449→   449→processIncomingMessage()  ← HARDCODED "pousada"
+   450→   450→    ↓
+   451→   451→classifyIntent()          ← Intents de pousada
+   452→   452→    ↓
+   453→   453→executeCognitivePipeline()
+   454→   454→    ├─ Guardrails
+   455→   455→    ├─ Intent Router      ← "classificador de hóspedes de pousada"
+   456→   456→    ├─ Tool Calling       ← zehla_sugerir_preco, zehla_analisar_ocupacao
+   457→   457→    └─ RAG + LLM          ← Prompt com CTA de venda`}
+   458→   458→                      </pre>
+   459→   459→                    </div>
+   460→   460→
+   461→   461→                    {/* Proposed Architecture */}
+   462→   462→                    <div>
+   463→   463→                      <p className="font-bold text-sm text-emerald-600 dark:text-emerald-400 mb-2">🏗️ ARQUITETURA PROPOSTA (Strategy Pattern)</p>
+   464→   464→                      <pre className="bg-emerald-50 dark:bg-emerald-950 rounded-lg p-4 text-xs text-emerald-800 dark:text-emerald-300 whitespace-pre font-mono">
+   465→   465→{`Webhook WhatsApp
+   466→   466→    ↓
+   467→   467→resolveTenantByPhone()
+   468→   468→    ↓
+   469→   469→getOperatingMode(tenantId)  ← NOVO: consulta Property.type / Tenant.mode
+   470→   470→    ↓
+   471→   471→    ├── mode === "pousada" → PousadaStrategy
+   472→   472→    │     ↓
+   473→   473→    │   classifyIntent()        ← Intents de pousada
+   474→   474→    │   buildSystemPrompt()     ← "…da pousada X, incentivar reserva direta"
+   475→   475→    │   getTools()              ← zehla_sugerir_preco, etc.
+   476→   476→    │   shouldIncludeSalesCTA() ← TRUE
+   477→   477→    │
+   478→   478→    └── mode === "airbnb"  → AirBStrategy
+   479→   479→          ↓
+   480→   480→        classifyIntent()        ← Intents Airbnb (CHECK_IN_GUIDE, HOUSE_RULES...)
+   481→   481→        buildSystemPrompt()     ← "Você é o ANFITRIÃO de X"
+   482→   482→        getTools()              ← airb_get_checkin_guide, etc.
+   483→   483→        shouldIncludeSalesCTA() ← FALSE
+   484→   484→
+   485→   485→COMPARTILHADO (não muda):
+   486→   486→  ✅ Webhook WhatsApp
+   487→   487→  ✅ Security Stack (HMAC, PII, Guardrails)
+   488→   488→  ✅ LLM Router (ZaosNeuroRouter)
+   489→   489→  ✅ Database + Prisma
+   490→   490→  ✅ iCal Service
+   491→   491→  ✅ Plan Features + Billing
+   492→   492→  ✅ Conversation Learner`}
+   493→   493→                      </pre>
+   494→   494→                    </div>
+   495→   495→
+   496→   496→                    {/* Files to Change */}
+   497→   497→                    <div>
+   498→   498→                      <p className="font-bold text-sm text-amber-600 dark:text-amber-400 mb-2">📁 ARQUIVOS A MODIFICAR (quando sair da POC)</p>
+   499→   499→                      <div className="bg-amber-50 dark:bg-amber-950 rounded-lg p-4 text-xs space-y-2">
+   500→   500→                        <div>
+   501→   501→                          <span className="font-bold text-amber-800 dark:text-amber-300">1. prisma/schema.prisma</span>
+   502→   502→                          <p className="text-amber-700 dark:text-amber-400">
+   503→   503→                            — Property.type: adicionar &quot;apartamento|casa|studio|loft&quot;<br/>
+   504→   504→                            — Property: adicionar operatingMode, airbnbListingId, lat/lng, checkInInstructions, houseRules, lockProvider, lockCode<br/>
+   505→   505→                            — Remover @unique de Property.tenantId (permitir 1:N)
+   506→   506→                          </p>
+   507→   507→                        </div>
+   508→   508→                        <div>
+   509→   509→                          <span className="font-bold text-amber-800 dark:text-amber-300">2. src/lib/whatsapp-ai-responder.ts</span>
+   510→   510→                          <p className="text-amber-700 dark:text-amber-400">
+   511→   511→                            — Linha 363: bifurcar prompt por OperatingMode<br/>
+   512→   512→                            — Linha 382-393: CTA de venda só para mode === &quot;pousada&quot;
+   513→   513→                          </p>
+   514→   514→                        </div>
+   515→   515→                        <div>
+   516→   516→                          <span className="font-bold text-amber-800 dark:text-amber-300">3. src/lib/ai/intent-router.ts</span>
+   517→   517→                          <p className="text-amber-700 dark:text-amber-400">
+   518→   518→                            — Receber OperatingMode e selecionar intents corretos
+   519→   519→                          </p>
+   520→   520→                        </div>
+   521→   521→                        <div>
+   522→   522→                          <span className="font-bold text-amber-800 dark:text-amber-300">4. src/lib/brain/agent-orchestrator.ts</span>
+   523→   523→                          <p className="text-amber-700 dark:text-amber-400">
+   524→   524→                            — Receber Strategy no construtor ou no process()
+   525→   525→                          </p>
+   526→   526→                        </div>
+   527→   527→                        <div>
+   528→   528→                          <span className="font-bold text-amber-800 dark:text-amber-300">5. NOVO: src/lib/strategies/</span>
+   529→   529→                          <p className="text-amber-700 dark:text-amber-400">
+   530→   530→                            — IZellaStrategy (interface)<br/>
+   531→   531→                            — PousadaStrategy (wrappa o código existente)<br/>
+   532→   532→                            — AirBStrategy (este arquivo, já validado)
+   533→   533→                          </p>
+   534→   534→                        </div>
+   535→   535→                      </div>
+   536→   536→                    </div>
+   537→   537→                  </div>
+   538→   538→                </ScrollArea>
+   539→   539→              </CardContent>
+   540→   540→            </Card>
+   541→   541→          </TabsContent>
+   542→   542→        </Tabs>
+   543→   543→      </main>
+   544→   544→
+   545→   545→      {/* Footer */}
+   546→   546→      <footer className="mt-auto border-t bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+   547→   547→        <div className="container mx-auto px-4 py-3 flex items-center justify-between text-xs text-slate-500">
+   548→   548→          <span>Zélla AirB Strategy — Prova de Conceito Isolada</span>
+   549→   549→          <span>Nenhum arquivo do Zélla Pousada foi modificado</span>
+   550→   550→        </div>
+   551→   551→      </footer>
+   552→   552→    </div>
+   553→   553→  )
+   554→   554→}
+   555→   555→
