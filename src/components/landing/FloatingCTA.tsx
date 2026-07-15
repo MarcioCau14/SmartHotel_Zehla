@@ -1,0 +1,48 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+
+export function FloatingCTA() {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Mostra a barra quando o usuário rolar mais de 450px
+      if (window.scrollY > 450) {
+        setIsVisible(true);
+      } else {
+        setIsVisible(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <div
+      className={`fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.04] bg-[#070709]/95 backdrop-blur-md transition-all duration-300 transform shadow-[0_-8px_30px_rgba(0,0,0,0.8)] ${
+        isVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-6">
+        {/* Texto da Esquerda */}
+        <div className="flex items-center gap-3">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+          <p className="text-zinc-200 text-sm sm:text-base font-medium text-center sm:text-left">
+            Teste grátis por 7 dias o zelador de sua pousada.
+          </p>
+        </div>
+
+        {/* Botão da Direita */}
+        <Link
+          href="#precos"
+          className="w-full sm:w-auto px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg text-center transition-all duration-200 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 text-sm cursor-pointer whitespace-nowrap active:scale-95"
+        >
+          Teste grátis 7 dias
+        </Link>
+      </div>
+    </div>
+  );
+}

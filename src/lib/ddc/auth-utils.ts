@@ -1,0 +1,41 @@
+/**
+ * ZEHLA DDC — Auth & Tenant Resolution Utility
+ * 
+ * Resolves tenantId from NextAuth session for DDC API routes.
+ * In development (BYPASS_MIDDLEWARE_AUTH=true), falls back to the first tenant.
+ * In production, returns null if no session — callers must handle this.
+ */
+
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { db } from '@/lib/db';
+
+export async function resolveTenantId(): Promise<string | null> {
+  try {
+    // Dev mode bypass: use first tenant from DB
+    if (process.env.BYPASS_MIDDLEWARE_AUTH === 'true') {
+      const firstTenant = await db.tenant.findFirst({ select: { id: true } });
+      return firstTenant?.id ?? null;
+    }
+
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.tenantId) {
+      return null;
+    }
+
+    return session.user.tenantId;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Strict version — throws if no tenant resolved.
+ */
+export async function requireDDCTenantId(): Promise<string> {
+  const tenantId = await resolveTenantId();
+  if (!tenantId) {
+    throw new Error('DDC_AUTH_REQUIRED: No tenant context found.');
+  }
+  return tenantId;
+}

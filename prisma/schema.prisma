@@ -1,10 +1,3 @@
-// =============================================================================
-// ZÉLLA — Schema do Banco de Dados
-// =============================================================================
-// Suporta DOIS modos de operação: Pousada e Airbnb
-// Compartilha infraestrutura, separa o cérebro (Strategy Pattern)
-// =============================================================================
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,228 +7,1293 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ── AUTH (NextAuth.js v4) ───────────────────────────────
-
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
+// ===== ENUMS (from backup) =====
+enum LeadStatus {
+  PROSPECT
+  QUALIFIED
+  TRIAL_STARTED
+  CONVERTED
+  BLACKLISTED
 }
 
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+enum Plan {
+  LITE
+  PRO
+  MAX
 }
 
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
+// ===== USER & POST (from backup) =====
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  emailVerified DateTime?
-  image         String?
-  password      String?                          // Hashed password for credentials auth
-  accounts      Account[]
-  sessions      Session[]
-  tenant        Tenant?
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  posts     Post[]
+  tenant    Tenant?
 }
 
-// ── TENANT & PLANOS ─────────────────────────────────────
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  author    User     @relation(fields: [authorId], references: [id])
+}
 
+// ===== TENANT (Pousada/Hotel) =====
 model Tenant {
-  id              String   @id @default(cuid())
-  name            String                           // Nome do negócio
-  mode            String                           // "pousada" | "airbnb"
-  planSlug        String    @default("pro")        // "pro" | "max"
-  whatsappNumber  String?                          // Número conectado
-  onboardingComplete Boolean @default(false)       // Completou o onboarding?
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String    @id @default(cuid())
+  name           String
+  email          String?   @unique
+  passwordHash   String?
+  phone          String?
+  phoneAlt       String? // WhatsApp atendimento ao hóspede
+  role           String    @default("owner") // owner | admin | staff
+  plan           String    @default("trial") // trial | starter | pro | business
+  status         String    @default("active") // active | suspended | churned
+  trialStart     DateTime?
+  trialEnd       DateTime?
+  subscriptionAt DateTime?
+
+  // From old Tenant
+  domain     String? @unique
+  clerkOrgId String? @unique
+
+  property      Property?
+  apiConfigs    ApiConfig[]
+  agentConfigs  AgentConfig[]
+  auditLogs     AuditLog[]
+  calendarSyncs CalendarSync[]
+  userId        String?        @unique
+  user          User?          @relation(fields: [userId], references: [id])
+
+  // Relations from old Tenant
+  rooms        Room[]
+  guests       Guest[]
+  reservations Reservation[]
+  transactions Transaction[]
+
+  // Tenant isolation (ZDR Phase 1)
+  leads        Lead[]
+  campaigns    Campaign[]
+  targets      Target[]
+
+  subscriptionId String?
+  subscriptions  Subscription[]
+
+  // Zélla AirB — Airbnb properties
+  airbProperties  AirBProperty[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tenants")
+}
+
+// ===== PROPERTY =====
+model Property {
+  id              String  @id @default(cuid())
+  tenantId        String  @unique
+  name            String
+  document        String? // CNPJ/CPF — MOCK: "12.345.678/0001-90"
+  street          String  @default("")
+  number          String  @default("")
+  neighborhood    String  @default("")
+  city            String  @default("")
+  state           String  @default("")
+  zipCode         String  @default("")
+  type            String  @default("pousada") // pousada | hotel | hostel | chalé | resort
+  website         String?
+  description     String  @default("")
+  services        String  @default("[]") // JSON array of service IDs
+  paymentMethods  String  @default("[]") // JSON array of payment method IDs
+  pixKey          String?
+  pixKeyType      String  @default("cpf") // cpf | email | phone | random
+  bankName        String?
+  bankAgency      String?
+  bankAccount     String?
+  bankAccountType String? // cc | cp
+  bankCpf         String?
+
+  // Link-in-Bio fields
+  slug                    String  @unique
+  linkinbioSubtitle       String  @default("")
+  linkinbioAvatarUrl      String?
+  linkinbioBackgroundUrl  String?
+  linkinbioAccentColor    String  @default("#10b981")
+  linkinbioInstagram      String?
+  linkinbioRating         Float   @default(0)
+  linkinbioReviewCount    Int     @default(0)
+  linkinbioIsActive       Boolean @default(true)
+  linkinbioPlanStart      DateTime?
+  linkinbioPlanExpires    DateTime?
+  linkinbioBetaEnd        DateTime?
+  linkinbioIsBetaPartner  Boolean @default(false)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rooms  Room[]
+  linkinbioLinks LinkInBioLink[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("properties")
+}
+
+// ===== ROOM =====
+model Room {
+  id         String @id @default(cuid())
+  propertyId String
+  name       String
+  type       String @default("standard") // standard | luxo | suite | chale
+  capacity   Int    @default(2)
+  price      Float  @default(150)
+  status     String @default("disponivel") // disponivel | ocupado | sujo | manutencao | reservado
+
+  property      Property       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  bookings      Booking[]
+  calendarSyncs CalendarSync[]
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  tenant       Tenant?       @relation(fields: [tenantId], references: [id])
+  tenantId     String?
+  reservations Reservation[]
+
+  @@map("rooms")
+}
+
+// ===== API CONFIG (AI Provider Keys) =====
+model ApiConfig {
+  id           String  @id @default(cuid())
+  tenantId     String
+  provider     String // gemini | openai | groq | huggingface | anthropic | zai_sdk
+  apiKey       String  @default("") // Encrypted key storage placeholder
+  apiSecret    String  @default("") // For providers with separate secrets
+  model        String  @default("") // Default model name
+  baseUrl      String  @default("") // Custom base URL (optional)
+  isActive     Boolean @default(false)
+  usageLimit   Int     @default(0) // 0 = unlimited
+  usageCurrent Int     @default(0)
+  notes        String  @default("")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, provider])
+  @@map("api_configs")
+}
+
+// ===== AGENT CONFIG (Per-tenant agent customization) =====
+model AgentConfig {
+  id              String  @id @default(cuid())
+  tenantId        String
+  agentId         String // agent-1 through agent-8
+  agentName       String // Recepcionista, Concierge, etc.
+  systemPrompt    String  @default("")
+  isActive        Boolean @default(true)
+  temperature     Float   @default(0.7)
+  maxTokens       Int     @default(2048)
+  customKnowledge String  @default("[]")
+  learnedPatterns Int     @default(0)
+  confidenceScore Float   @default(0)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, agentId])
+  @@map("agent_configs")
+}
+
+// ===== AUDIT LOG =====
+model AuditLog {
+  id        String  @id @default(cuid())
+  tenantId  String
+  action    String
+  details   String  @default("{}") // JSON
+  ipAddress String?
+  userAgent String?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+// ===== LEADS (Prospecção Lessie AI + LIS) =====
+model Lead {
+  id              String  @id @default(cuid())
+  tenantId        String?
+  empresa         String
+  decisor         String  @default("")
+  cargo           String  @default("")
+  email           String  @unique
+  whatsapp        String? // Removed @unique to avoid constraints violations on empty/null values, made optional
+  setor           String  @default("hospitalidade")
+  porte           String  @default("pequeno") // pequeno | medio | grande
+  status          String  @default("pending") // pending | verified | contacted | converted | lost
+  hook            String  @default("") // Script de e-mail/WhatsApp personalizado
+  socialFootprint String  @default("{}") // JSON
+  targetId        String?
+
+  // Old/Legacy fields
+  name         String  @default("")
+  phone        String? // Removed @unique
+  property     String?
+  category     String? @default("pousada")
+  city         String?
+  state        String? @default("SC")
+  region       String?
+  googleRating Float?
+  score        Int?    @default(0)
+  painPoints   String?
+  source       String  @default("SECRETARIA_AI")
+  latitude     Float?
+  longitude    Float?
+  scoreValid   Int     @default(0)
+  localPraia   String?
+  observacoes  String?
+
+  // DB Mirror / LIS / ZEHLA FISH Extensions
+  isCanary              Boolean   @default(false)
+  estimatedValues       String?
+  intentSignals         String?
+  location              String?
+  phoneSecondary        String?
+  qualification         String?
+  socialMedia           String    @default("{}")
+  site                  String?
+  validationScore       Float     @default(0)
+  validationStatus      String    @default("pendente")
+  conversionScore       Int       @default(0)
+  funnelStage           String    @default("NEUTRAL")
+  lastInteractionAt     DateTime?
+  behavioralProfile     String?
+  cluster               String    @default("COLD")
+  previousCluster       String?
+  lastSwipeAction       String?
+  lastSwipeUsedId       String?
+  tierConfidence        Float?
+  tierSugerido          String?
+  tierSugeridoEm        DateTime?
+  roomsCount            Int       @default(0)
+  instagramFollowers    Int       @default(0)
+  googleReviewsCount    Int       @default(0)
+  otaCommissionLost     Float     @default(0.0)
+  hasWebsite            Boolean   @default(false)
+  otaDependenceLevel    String    @default("MEDIUM")
+  buyingBehavior        String?
+  conversionProbability Float     @default(0.0)
+  objectKeywords        String?
+  recommendedPitch      String?
+  leadTier              String    @default("COLD")
+  metadata              String    @default("{}") // JSON com dados extras
+
+  // Tenant isolation
+  tenant          Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   // Relations
-  user         User           @relation(fields: [userId], references: [id])
-  userId       String         @unique
-  plan         Plan           @relation(fields: [planSlug], references: [slug])
-  properties   AirBProperty[]
-  conversations Conversation[]
+  emailTrackings EmailTracking[]
+  swipeUsages    SwipeUsage[]
+  funnelEvents   FunnelEvent[]
+  funnelScore    FunnelScore?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("leads")
 }
 
-model Plan {
-  id          String @id @default(cuid())
-  slug        String @unique                        // "pro" | "max"
-  name        String                                // "PRO" | "MAX"
-  priceCents  Int                                   // 39700 | 79700 (em centavos)
-  maxProperties Int                                 // 4 | 12
-  maxWhatsappNumbers Int @default(1)                // 1 | 3
-  hasAnalytics  Boolean @default(false)             // false | true
-  hasApi        Boolean @default(false)             // false | true
-  hasPrioritySupport Boolean @default(false)        // false | true
-  hasAbTesting  Boolean @default(false)             // false | true
-  hasCustomWebhooks Boolean @default(false)         // false | true
-  hasWeeklyReports  Boolean @default(false)          // false | true
-  description  String?
+// ===== EMAIL TRACKING =====
+model EmailTracking {
+  id         String   @id @default(cuid())
+  leadId     String
+  campaignId String?
+  openedAt   DateTime @default(now())
+  ip         String?
+  userAgent  String?
+  lead       Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
-  tenants Tenant[]
+  @@index([leadId])
+  @@index([campaignId])
+  @@map("email_tracking")
 }
 
-// ── IMÓVEL AIRBNB ───────────────────────────────────────
+// ===== TARGETS (Pousadas sob mira) =====
+model Target {
+  id       String  @id @default(cuid())
+  tenantId String?
+  name     String
+  domain   String
+  website  String?
+  city     String  @default("")
+  state    String  @default("")
+  status   String  @default("active") // active | pending | inactive | prospected
+  priority Int     @default(5) // 1-10
 
-model AirBProperty {
+  tenant    Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, domain])
+  @@index([tenantId])
+  @@map("targets")
+}
+
+// ===== AGENT LOG (Ações da IA) =====
+model AgentLog {
+  id        String   @id @default(cuid())
+  action    String
+  status    String   @default("success") // success | error | timeout
+  createdAt DateTime @default(now())
+
+  // New ZEHLA fields
+  agentId      String @default("lessie")
+  inputTokens  Int    @default(0)
+  outputTokens Int    @default(0)
+  latencyMs    Int    @default(0)
+  costUsd      Float  @default(0)
+  errorMsg     String @default("")
+  metadata     String @default("{}") // JSON
+
+  // Old fields
+  agentName  String?
+  intent     String?
+  confidence Float?
+  input      String?
+  output     String?
+  tokensUsed Int     @default(0)
+  cost       Float   @default(0)
+  duration   Int     @default(0)
+
+  @@index([agentName, createdAt])
+  @@map("agent_logs")
+}
+
+// ===== SECURITY ALERT =====
+model SecurityAlert {
+  id        String   @id @default(cuid())
+  severity  String   @default("medium") // low | medium | high | critical
+  createdAt DateTime @default(now())
+
+  // New ZEHLA fields
+  type        String? // injection | rls_violation | rate_limit | suspicious
+  description String    @default("")
+  source      String    @default("")
+  resolved    Boolean   @default(false)
+  resolvedAt  DateTime?
+
+  // Old fields
+  tenantId  String?
+  alertType String?
+  metadata  String?
+
+  @@index([tenantId, createdAt])
+  @@index([severity, createdAt])
+  @@map("security_alerts")
+}
+
+// ===== SWIPE TEMPLATE (Mensagens WhatsApp) =====
+model SwipeTemplate {
+  id        String   @id @default(cuid())
+  name      String   @default("") // ZEHLA expects name
+  title     String   @default("") // old expects title
+  content   String
+  variables String   @default("[]")
+  category  String   @default("prospecção")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ZEHLA fields
+  successRate Float @default(0)
+  usageCount  Int   @default(0)
+
+  // Old fields
+  channel            String    @default("whatsapp")
+  tone               String    @default("casual")
+  tier               String    @default("universal")
+  painType           String?
+  tags               String    @default("[]")
+  timesUsed          Int       @default(0)
+  conversions        Int       @default(0)
+  convRate           Float     @default(0)
+  lastUsedAt         DateTime?
+  isAiGenerated      Boolean   @default(false)
+  provenByConversion Boolean   @default(false)
+  createdBy          String?
+
+  usages SwipeUsage[]
+
+  @@map("swipe_templates")
+}
+
+// ===== SWIPE USAGE =====
+model SwipeUsage {
+  id             String        @id @default(cuid())
+  swipeId        String
+  leadId         String
+  wasUsed        Boolean
+  converted      Boolean?
+  agentId        String?
+  responseTimeMs Int?
+  feedback       String?
+  createdAt      DateTime      @default(now())
+  swipe          SwipeTemplate @relation(fields: [swipeId], references: [id], onDelete: Cascade)
+  lead           Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@unique([swipeId, leadId])
+  @@index([swipeId])
+  @@index([leadId])
+  @@index([converted])
+  @@index([createdAt])
+  @@map("swipe_usages")
+}
+
+// ===== CAMPAIGN (Orquestração multicanal) =====
+model Campaign {
+  id        String   @id @default(cuid())
+  tenantId  String?
+  name      String
+  type      String   @default("whatsapp") // whatsapp | email | ads | multi
+  status    String   @default("draft") // draft | active | paused | completed | cancelled
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Tenant isolation
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // From new schema
+  targetAudience  String    @default("all") // all | leads | verified | converted
+  messageTemplate String    @default("")
+  scheduledAt     DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  totalDelivered  Int       @default(0)
+  totalRead       Int       @default(0)
+  totalReplied    Int       @default(0)
+  metadata        String    @default("{}") // JSON
+
+  // From old schema
+  variant        String? // "financeira", "operacional", "ocupacao"
+  totalSent      Int     @default(0)
+  totalOpened    Int     @default(0)
+  totalClicked   Int     @default(0)
+  totalConverted Int     @default(0)
+  openRate       Float   @default(0)
+  clickRate      Float   @default(0)
+  conversionRate Float   @default(0)
+
+  // Relations
+  events      FunnelEvent[]
+  webhookLogs WebhookLog[]
+
+  @@index([tenantId])
+  @@map("campaigns")
+}
+
+// ===== TREND KEYWORD =====
+model TrendKeyword {
+  id                  String    @id @default(cuid())
+  keyword             String    @unique
+  category            String    @default("hotelaria")
+  geo                 String?
+  isActive            Boolean   @default(true)
+  tier                String    @default("pro")
+  checkFrequencyHours Int       @default(6)
+  lastCheckedAt       DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  // ZEHLA fields
+  source String @default("google_trends")
+  score  Float  @default(0)
+  trend  String @default("stable")
+
+  dataPoints TrendDataPoint[]
+
+  @@map("trend_keywords")
+}
+
+// ===== TREND DATA POINT =====
+model TrendDataPoint {
+  id        String   @id @default(cuid())
+  keywordId String
+  date      DateTime
+  source    String   @default("")
+  createdAt DateTime @default(now())
+
+  // New ZEHLA fields
+  value Float @default(0)
+
+  // Old fields
+  interestScore Int     @default(0)
+  interestDelta Float?
+  volume        Int?
+  geo           String?
+
+  keyword TrendKeyword @relation(fields: [keywordId], references: [id], onDelete: Cascade)
+
+  @@unique([keywordId, date, source])
+  @@index([date])
+  @@index([keywordId])
+  @@map("trend_data_points")
+}
+
+// ===== TREND SIGNAL =====
+model TrendSignal {
+  id             String    @id @default(cuid())
+  type           String
+  keyword        String
+  category       String
+  interestScore  Int
+  deltaPercent   Float
+  severity       String    @default("media")
+  geo            String?
+  dateDetected   DateTime
+  previousScore  Int?
+  agentsNotified String    @default("[]")
+  actionTaken    Boolean   @default(false)
+  actionDetails  String?
+  createdAt      DateTime  @default(now())
+  resolvedAt     DateTime?
+
+  @@index([type])
+  @@index([severity])
+  @@index([dateDetected])
+  @@index([category])
+  @@map("trend_signals")
+}
+
+// ===== ADAPTIVE FUNNEL — Event-Driven State Machine =====
+model FunnelEvent {
+  id          String    @id @default(cuid())
+  leadId      String
+  campaignId  String?
+  type        String // email_opened, email_clicked, whatsapp_replied, lp_visited, ray-x_requested, trial_started, converted
+  painCluster String? // financeira, operacional, ocupacao
+  score       Int       @default(0)
+  metadata    String? // JSON: ip, userAgent, utm, etc
+  createdAt   DateTime  @default(now())
+  lead        Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  campaign    Campaign? @relation(fields: [campaignId], references: [id])
+
+  @@index([leadId])
+  @@index([campaignId])
+  @@index([type])
+  @@index([painCluster])
+  @@index([createdAt])
+  @@map("funnel_events")
+}
+
+model FunnelScore {
+  id                String    @id @default(cuid())
+  leadId            String    @unique
+  totalScore        Int       @default(0)
+  engagementScore   Int       @default(0)
+  intentScore       Int       @default(0)
+  fitScore          Int       @default(0)
+  cluster           String    @default("COLD") // HOT, WARM, COLD
+  painCluster       String? // financeira, operacional, ocupacao
+  lastEventAt       DateTime?
+  lastClusterChange DateTime?
+  previousCluster   String?
+  updatedAt         DateTime  @updatedAt
+  createdAt         DateTime  @default(now())
+  lead              Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([cluster])
+  @@index([painCluster])
+  @@index([totalScore])
+  @@map("funnel_scores")
+}
+
+model WebhookLog {
+  id          String    @id @default(cuid())
+  campaignId  String?
+  source      String // resend, sendgrid, zapi, evolution, stripe, asaas
+  eventType   String // opened, clicked, replied, delivered, bounced, paid, failed
+  payload     String // JSON raw
+  processed   Boolean   @default(false)
+  processedAt DateTime?
+  error       String?
+  retries     Int       @default(0)
+  createdAt   DateTime  @default(now())
+  campaign    Campaign? @relation(fields: [campaignId], references: [id])
+
+  @@index([source])
+  @@index([eventType])
+  @@index([processed])
+  @@index([createdAt])
+  @@map("webhook_logs")
+}
+
+// ===== GUEST, RESERVATION & TRANSACTION (from backup and DDC) =====
+model Guest {
+  id                String    @id @default(cuid())
+  tenantId          String
+  name              String
+  phone             String?
+  email             String?
+  document          String? // CPF/Passaporte
+  status            String    @default("new") // new | warm | hot | booked | staying | checked_out | lost | inactive
+  avatar            String?
+  source            String    @default("whatsapp") // whatsapp | instagram | booking | airbnb | direct | referral
+  value             Float     @default(0)
+  lastContact       DateTime  @default(now())
+  checkIn           DateTime?
+  checkOut          DateTime?
+  room              String?
+  aiScore           Int       @default(50) // 0-100, lead quality score
+  notes             String?
+  conversationCount Int       @default(0)
+  metadata          String    @default("{}") // JSON
+  
+  // Novos campos para LGPD e BSUID
+  bsuid          String?   // Business Scoped User ID da Meta
+  realPhone      String?   // Telefone real capturado
+  realEmail      String?   // Email real capturado
+  leadCapturedAt DateTime? // Data de captura de dados reais
+  optInAt        DateTime? // Consentimento de marketing
+  optInMethod    String?   // "whatsapp_cta" | "web_form" | "manual"
+  optOutAt       DateTime? // Revogação do consentimento
+
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  reservations  Reservation[]
+  bookings      Booking[]
+  messages      GuestMessage[]
+  bsuidMappings BsuidMapping[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, source])
+  @@index([bsuid])
+  @@index([realPhone])
+  @@index([realEmail])
+  @@map("guests")
+}
+
+model Reservation {
+  id         String   @id @default(cuid())
+  tenantId   String
+  guestId    String
+  roomId     String
+  checkIn    DateTime
+  checkOut   DateTime
+  status     String   @default("CONFIRMED") // PENDING, CONFIRMED, CHECKED_IN, CHECKED_OUT, CANCELLED
+  totalPrice Float
+  source     String   @default("DIRECT") // DIRECT, BOOKING, EXPEDIA
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  guest  Guest  @relation(fields: [guestId], references: [id])
+  room   Room   @relation(fields: [roomId], references: [id])
+
+  transactions Transaction[]
+
+  @@index([tenantId])
+  @@index([guestId])
+  @@index([roomId])
+  @@map("reservations")
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  tenantId      String
+  reservationId String?
+  type          String // PAYMENT, REFUND, CHARGE
+  amount        Float
+  method        String // PIX, CREDIT_CARD, CASH
+  status        String   @default("COMPLETED")
+  createdAt     DateTime @default(now())
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  reservation Reservation? @relation(fields: [reservationId], references: [id])
+
+  @@index([tenantId])
+  @@index([reservationId])
+  @@map("transactions")
+}
+
+// ===== ZAOS ROUTER STATE =====
+model RouterProvider {
+  id               String    @id @default(cuid())
+  provider         String    @unique // openrouter | anthropic | ollama | groq | gemini
+  modelName        String
+  tier             String    @default("3") // 1=budget, 2=mid, 3=premium
+  alpha            Float     @default(1.0) // Thompson Sampling Beta posterior
+  beta             Float     @default(1.0)
+  circuitStatus    String    @default("closed") // closed | half_open | open
+  lastFailureAt    DateTime?
+  failureCount     Int       @default(0)
+  successCount     Int       @default(0)
+  avgLatencyMs     Int       @default(0)
+  costPer1kInput   Float     @default(0)
+  costPer1kOutput  Float     @default(0)
+  isActive         Boolean   @default(true)
+  supportsJson     Boolean   @default(false)
+  supportsTools    Boolean   @default(false)
+  maxContextTokens Int       @default(8192)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("router_providers")
+}
+
+// ===== BUDGET GUARD STATE =====
+model BudgetGuardState {
+  id               String @id @default(cuid())
+  date             String @unique // YYYY-MM-DD
+  dailySpendUsd    Float  @default(0)
+  dailyBudgetUsd   Float  @default(50)
+  monthlySpendUsd  Float  @default(0)
+  monthlyBudgetUsd Float  @default(1500)
+  criticalLevel    String @default("nominal") // nominal | warning | critical
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("budget_guard_state")
+}
+
+// ===== LLM COST LOG =====
+model CostLog {
+  id           String   @id @default(cuid())
+  tenantId     String?
+  provider     String
+  model        String
+  inputTokens  Int
+  outputTokens Int
+  costUsd      Float
+  tier         Int      @default(1)
+  bucket       String   @default("general")
+  cacheHit     Boolean  @default(false)
+  latencyMs    Int      @default(0)
+  circuitState String?
+  budgetLevel  String?
+  createdAt    DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([createdAt])
+  @@index([provider])
+  @@map("cost_logs")
+}
+
+// ===== MESSAGE (WhatsApp history) =====
+model Message {
+  id         String   @id @default(cuid())
+  propertyId String
+  direction  String // INBOUND | OUTBOUND
+  content    String
+  createdAt  DateTime @default(now())
+
+  @@map("messages")
+}
+
+// ===== SUBSCRIPTION (Payment & Plan Management) =====
+model Subscription {
+  id                 String    @id @default(cuid())
+  tenantId           String
+  planType           String // gratuito | lite | pro | max
+  status             String    @default("pending") // pending | active | canceled | expired
+  paymentMethod      String // pix | cartao
+  amount             Float
+  paymentId          String? // Mercado Pago/Stripe payment ID
+  paymentStatus      String? // pending | approved | rejected | refunded
+  checkoutUrl        String? // URL for payment checkout
+  trialStart         DateTime?
+  trialEnd           DateTime?
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean   @default(false)
+  lastProrateAmount  Float?
+  lastProrateDate    DateTime?
+  metadata           String    @default("{}")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("subscriptions")
+}
+
+// ===== PAYMENT TRANSACTION =====
+model PaymentTransaction {
+  id             String  @id @default(cuid())
+  subscriptionId String
+  amount         Float
+  status         String // pending | approved | rejected | refunded
+  paymentMethod  String // pix | cartao
+  type           String?
+  externalId     String? // Mercado Pago/Stripe transaction ID
+  metadata       String  @default("{}") // JSON
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("payment_transactions")
+}
+
+// ===== GUEST MESSAGE =====
+model GuestMessage {
+  id        String   @id @default(cuid())
+  guestId   String
+  from      String // guest | ai | human
+  content   String
+  timestamp DateTime @default(now())
+  type      String   @default("text") // text | image | audio | document
+  sentiment String? // positive | neutral | negative
+  intent    String? // booking | pricing | amenities | complaint
+  metadata  String   @default("{}") // JSON
+
+  guest Guest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([guestId])
+  @@index([timestamp])
+  @@map("guest_messages")
+}
+
+// ===== BOOKING (Reservas) =====
+model Booking {
+  id             String   @id @default(cuid())
+  tenantId       String
+  guestId        String?
+  guestName      String
+  roomName       String
+  roomId         String?
+  checkIn        DateTime
+  checkOut       DateTime
+  nights         Int
+  guests         Int
+  totalValue     Float
+  status         String   @default("pending") // pending | confirmed | checked_in | checked_out | cancelled | no_show | blocked
+  paymentMethod  String   @default("none") // pix | credit_card | debit_card | cash | bank_transfer | none
+  paymentStatus  String   @default("pending") // pending | paid | partial | overdue | none
+  source         String // whatsapp_ai | whatsapp_human | booking | airbnb | expedia | ical_import | direct
+  aiGenerated    Boolean  @default(false)
+  externalUid    String? // UID do evento iCal para deduplicação
+  externalSource String? // booking | airbnb | expedia — OTA de origem do sync
+  metadata       String   @default("{}") // JSON
+
+  guest Guest? @relation(fields: [guestId], references: [id])
+  room  Room?  @relation(fields: [roomId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, externalUid])
+  @@index([tenantId, status])
+  @@index([tenantId, checkIn])
+  @@index([guestId])
+  @@index([roomId])
+  @@map("bookings")
+}
+
+// ===== AI ACTIVITY LOG =====
+model AIActivityLog {
   id        String   @id @default(cuid())
   tenantId  String
-  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  type      String // message | booking | escalation | learning | alert
+  guestName String?
+  roomName  String?
+  message   String
+  timestamp DateTime @default(now())
+  status    String   @default("success") // success | warning | error | info
+  duration  Int? // milliseconds
+  metadata  String   @default("{}") // JSON
 
-  // ── Identificação (Camada 1 - Auto via Scraping)
-  airbnbId        String                           // Código do anúncio Airbnb
-  listingUrl      String?                          // URL completa
-  name            String                           // Título do anúncio
-  description     String?                          // Descrição completa
-  propertyType    String?                          // entire_home, private_room, etc.
+  createdAt DateTime @default(now())
 
-  // ── Capacidade (Camada 1 - Auto)
-  accommodates    Int?
-  bedrooms        Int?
-  beds            Int?
-  bathrooms       Float?
+  @@index([tenantId, timestamp])
+  @@index([type])
+  @@map("ai_activity_logs")
+}
 
-  // ── Localização (Camada 1 - Auto)
-  latitude        Float?
-  longitude       Float?
-  neighborhood    String?
-  city            String?
-  state           String?
-  country         String?
-  fullAddress     String?
+// ===== CONVERSATION LOG =====
+model ConversationLog {
+  id           String   @id @default(cuid())
+  tenantId     String
+  guestId      String
+  guestName    String
+  guestPhone   String
+  status       String   @default("active") // active | resolved | escalated | abandoned
+  lastUpdate   DateTime @default(now())
+  aiConfidence Float    @default(0) // 0-100
+  metadata     String   @default("{}") // JSON
 
-  // ── Avaliação (Camada 1 - Auto)
-  rating          Float?
-  reviewCount     Int?
-  reviewAccuracy  Float?
-  reviewCleanliness Float?
-  reviewCheckin   Float?
-  reviewCommunication Float?
-  reviewLocation  Float?
-  reviewValue     Float?
+  messages ConversationMessage[]
 
-  // ── Preço (Camada 1 - Auto)
-  basePrice       Float?
-  currency        String  @default("BRL")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  // ── Amenidades (Camada 1 - Auto) — JSON array string
-  amenities       String?
+  @@index([tenantId, status])
+  @@index([guestId])
+  @@map("conversation_logs")
+}
 
-  // ── Mídia (Camada 1 - Auto) — JSON array: [{url, caption}]
-  photos          String?
-  photoCount      Int?
+// ===== CONVERSATION MESSAGE =====
+model ConversationMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  from           String // guest | ai | human
+  content        String
+  timestamp      DateTime @default(now())
+  read           Boolean  @default(false)
+  metadata       String   @default("{}") // JSON
 
-  // ── Regras (Camada 1 - Auto)
-  houseRules      String?
-  checkInTime     String?
-  checkOutTime    String?
+  conversation ConversationLog @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
-  // ── Host info (Camada 1 - Auto)
-  hostName        String?
-  hostIsSuperhost Boolean @default(false)
-  hostResponseRate Float?
-  hostResponseTime String?
+  createdAt DateTime @default(now())
 
-  // ── AI Enriquecimento (Camada 2 - AI Extract) — JSON arrays/strings
-  aiSummary       String?                          // Resumo executivo
-  highlights      String?                          // JSON array: ["Vista mar", "Piscina"]
-  targetAudience  String?                          // JSON array: ["famílias", "casais"]
-  sellingPoints   String?                          // JSON array: pontos de venda
-  localTipsFromReviews String?                     // JSON array: dicas de reviews
-  reviewSentiment String?                          // "excellent" | "good" | "average"
-  keywords        String?                          // JSON array: palavras-chave
+  @@index([conversationId])
+  @@index([timestamp])
+  @@map("conversation_messages")
+}
 
-  // ── Dados Privados (Camada 3 - Manual Host)
+// ===== KNOWLEDGE ENTRY =====
+model KnowledgeEntry {
+  id            String    @id @default(cuid())
+  tenantId      String
+  category      String // pricing | rooms | amenities | policies | location | activities | food | custom
+  question      String
+  answer        String
+  priority      String    @default("medium") // low | medium | high | critical
+  usage         Int       @default(0)
+  effectiveness Float     @default(0) // 0-100
+  createdFor    String    @default("both") // ai | human | both
+  lastUsed      DateTime?
+  /** TF-IDF embedding vector stored as JSON array of numbers */
+  embeddingJson String    @default("[]")
+  metadata      String    @default("{}") // JSON
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId, category])
+  @@index([priority])
+  @@map("knowledge_entries")
+}
+
+// ===== TRAINING PROMPT =====
+model TrainingPrompt {
+  id          String    @id @default(cuid())
+  tenantId    String
+  name        String
+  type        String // persona | response | escalation | proactive
+  content     String
+  variables   String    @default("[]") // JSON array
+  isActive    Boolean   @default(true)
+  successRate Float     @default(0) // 0-100
+  usageCount  Int       @default(0)
+  lastUsed    DateTime?
+  metadata    String    @default("{}") // JSON
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId, type])
+  @@index([isActive])
+  @@map("training_prompts")
+}
+
+// ===== NOTIFICATION =====
+model Notification {
+  id          String  @id @default(cuid())
+  tenantId    String
+  type        String // booking | payment | escalation | system | alert | achievement
+  priority    String  @default("medium") // low | medium | high | urgent
+  title       String
+  message     String
+  actionUrl   String?
+  actionLabel String?
+  read        Boolean @default(false)
+  metadata    String  @default("{}") // JSON
+
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, read])
+  @@index([priority])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ===== PERFORMANCE METRICS SNAPSHOT =====
+model PerformanceSnapshot {
+  id                String @id @default(cuid())
+  tenantId          String
+  date              String @unique // YYYY-MM-DD
+  aiResponseTime    Float // avg seconds
+  conversionRate    Float // percentage
+  guestSatisfaction Float // 0-5
+  occupancyRate     Float // percentage
+  revenueGrowth     Float // percentage
+  aiAutonomy        Float // percentage
+  totalRevenue      Float
+  totalBookings     Int
+  aiConversations   Int
+  metadata          String @default("{}") // JSON
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId, date])
+  @@map("performance_snapshots")
+}
+
+// ===== QUICK ACTION (Custom actions per tenant) =====
+model QuickAction {
+  id                   String  @id @default(cuid())
+  tenantId             String
+  category             String // booking | communication | analytics | settings | emergency
+  label                String
+  icon                 String
+  action               String
+  shortcut             String?
+  requiresConfirmation Boolean @default(false)
+  isActive             Boolean @default(true)
+  order                Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId, category])
+  @@index([isActive])
+  @@map("quick_actions")
+}
+
+// ===== FEEDBACK (Guest and admin ratings of AI messages) =====
+model Feedback {
+  id             String   @id @default(cuid())
+  tenantId       String
+  conversationId String // Relacionamento com logs de conversa
+  messageId      String // ID da ConversationMessage avaliada
+  rating         Int // Nota de 1 a 5 estrelas
+  notes          String? // Comentário opcional do atendente
+  source         String   @default("ddc") // ddc | whatsapp | auto
+  metadata       String   @default("{}") // JSON
+  createdAt      DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([conversationId])
+  @@index([messageId])
+  @@index([tenantId, createdAt])
+  @@map("feedbacks")
+}
+
+// ===== ZELLADOR MESSAGE (Conversas do Gerente de Treinamento IA) =====
+model ZelladorMessage {
+  id             String  @id @default(cuid())
+  tenantId       String
+  conversationId String // Agrupa mensagens da mesma sessão de chat
+  role           String // user | assistant
+  content        String
+  blocked        Boolean @default(false) // true se a mensagem foi bloqueada por segurança
+  blockReason    String? // Motivo do bloqueio (injection, output_filtered, etc.)
+
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, conversationId])
+  @@index([conversationId, createdAt])
+  @@map("zellador_messages")
+}
+
+// ===== CALENDAR SYNC (iCal Integration) =====
+model CalendarSync {
+  id           String    @id @default(cuid())
+  tenantId     String
+  roomId       String
+  otaName      String // booking | airbnb | expedia
+  syncUrl      String
+  syncToken    String    @unique // hash SHA-256 público para acesso ao feed iCal
+  lastSync     DateTime?
+  status       String    @default("active") // active | error | paused
+  errorMessage String    @default("")
+  syncCount    Int       @default(0)
+  metadata     String    @default("{}") // JSON
+
+  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([roomId, otaName]) // Um canal por quarto
+  @@index([tenantId, status]) // Busca eficiente por tenant
+  @@map("calendar_syncs")
+}
+
+// ===== BSUID MAPPING =====
+model BsuidMapping {
+  id        String   @id @default(cuid())
+  bsuid     String   @unique // Business Scoped User ID da Meta
+  guestId   String
+  createdAt DateTime @default(now())
+
+  guest Guest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@index([guestId])
+  @@map("bsuid_mappings")
+}
+
+// ===== CONSENT LOG =====
+model ConsentLog {
+  id        String   @id @default(cuid())
+  tenantId  String
+  guestId   String
+  type      String   // "opt_in" | "opt_out"
+  channel   String   // "whatsapp" | "web" | "manual"
+  ip        String?
+  userAgent String?
+  evidence  String   @default("{}") // Payload original / texto
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, guestId])
+  @@index([type])
+  @@map("consent_logs")
+}
+
+// ===== META COST LOG =====
+model MetaCostLog {
+  id             String   @id @default(cuid())
+  tenantId       String
+  conversationId String
+  messageId      String?
+  guestId        String?
+  costUsd        Float
+  messageType    String   // "service_reply" | "marketing_template" | "utility_template"
+  intent         String?  // "cotacao_reserva" | "suporte" | "info_geral" etc.
+  metadata       String   @default("{}") // JSON: response_tokens, provider, latency
+  createdAt      DateTime @default(now())
+
+  @@index([tenantId, createdAt])
+  @@index([conversationId])
+  @@map("meta_cost_logs")
+}
+
+// ===== LINK-IN-BIO LINK =====
+model LinkInBioLink {
+  id          String @id @default(cuid())
+  propertyId  String
+  label       String
+  url         String
+  icon        String @default("🔗")
+  isHighlight Boolean @default(false)
+  order       Int    @default(0)
+  isActive    Boolean @default(true)
+
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([propertyId])
+  @@map("linkinbio_links")
+}
+
+// ===== ZÉLLA AIRB — Airbnb Property Management =====
+
+model AirBProperty {
+  id              String   @id @default(cuid())
+  tenantId        String
+  airbnbId        String?              // Airbnb listing ID (e.g. "18584298")
+  airbnbUrl       String?              // Full Airbnb URL
+  name            String               // Property title from Airbnb
+  description     String   @default("")
+  propertyType    String   @default("apartment") // apartment | house | loft | studio | chalet | villa
+  city            String   @default("")
+  state           String   @default("")
+  neighborhood    String   @default("")
+  address         String   @default("")
+  bedrooms        Int      @default(1)
+  bathrooms       Int      @default(1)
+  maxGuests       Int      @default(2)
+  amenities       String   @default("[]")       // JSON array of amenities
+  houseRules      String   @default("[]")       // JSON array of house rules
+  checkinTime     String   @default("15:00")
+  checkoutTime    String   @default("11:00")
   wifiName        String?
   wifiPassword    String?
-  lockboxCode     String?
-  lockboxLocation String?
-  accessInstructions String?
-  emergencyContact String?
-  maintenanceContact String?
-  alarmCode       String?
-  gateCode        String?
-  parkingSpot     String?
-  personalLocalTips String?
-  favoriteRestaurants String?
-  supermarketLocation String?
-  additionalRules  String?
-  quietHoursStart  String?
-  quietHoursEnd    String?
-  customCheckInInstructions String?
-  customCheckOutInstructions String?
-  internalNotes    String?
+  lockProvider    String?              // smartlock provider
+  lockCode        String?              // smartlock code
+  hostKnowledge   String   @default("[]")       // JSON: host tips & knowledge
+  neighborhoodTips String  @default("[]")       // JSON: nearby tips
+  emergencyContacts String  @default("[]")      // JSON: emergency contacts
+  imageUrl        String?              // Main property image
+  pricePerNight   Float?
+  currency        String   @default("BRL")
+  status          String   @default("active")   // active | inactive | suspended
+  scrapedAt       DateTime?            // When data was last scraped from Airbnb
+  scrapingSource  String?              // "api" | "ai_extractor" | "manual"
 
-  // ── Metadados
-  scrapingStatus  String   @default("pending")     // "pending" | "scraping" | "enriched" | "complete"
-  lastScrapedAt   DateTime?
-  isActive        Boolean  @default(true)
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  conversations   AirBConversation[]
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  // Relations
-  conversations Conversation[]
-
-  @@unique([tenantId, airbnbId])
+  @@index([tenantId])
+  @@index([airbnbId])
+  @@map("airb_properties")
 }
 
-// ── CONVERSAS ───────────────────────────────────────────
+model AirBConversation {
+  id              String   @id @default(cuid())
+  tenantId        String
+  propertyId      String
+  guestName       String
+  guestPhone      String?
+  guestBsuid      String?              // Meta BSUID mapping
+  mode            String   @default("post_booking") // pre_booking | post_booking
+  status          String   @default("active")  // active | resolved | escalated
+  lastIntent      String?              // Last detected intent
+  lastMessageAt   DateTime?
+  messageCount    Int      @default(0)
 
-model Conversation {
-  id          String   @id @default(cuid())
-  tenantId    String
-  propertyId  String?
-  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  property    AirBProperty? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  property        AirBProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  messages        AirBMessage[]
 
-  guestPhone    String?                        // Telefone do hóspede
-  guestName     String?                        // Nome do hóspede
-  conversationMode String @default("pre_booking") // "pre_booking" | "post_booking"
-  status        String   @default("active")    // "active" | "resolved" | "escalated"
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  messages    Message[]
+  @@index([tenantId])
+  @@index([propertyId])
+  @@index([status])
+  @@map("airb_conversations")
 }
 
-model Message {
-  id             String   @id @default(cuid())
-  conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+model AirBMessage {
+  id              String   @id @default(cuid())
+  conversationId  String
+  direction       String   // "inbound" | "outbound"
+  content         String
+  intent          String?  // Detected intent
+  isAiGenerated   Boolean  @default(true)
+  costUsd         Float?   // WhatsApp message cost
 
-  direction      String                          // "inbound" | "outbound"
-  content        String                          // Conteúdo da mensagem
-  intent         String?                         // Intent classificado
-  isAiGenerated  Boolean  @default(false)        // Gerada por IA?
-  tokensUsed     Int?                            // Tokens consumidos
-  costCents      Int?                            // Custo em centavos
+  conversation    AirBConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
-  createdAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([conversationId])
+  @@index([createdAt])
+  @@map("airb_messages")
 }

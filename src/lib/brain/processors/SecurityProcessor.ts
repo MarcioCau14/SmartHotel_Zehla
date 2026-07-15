@@ -1,0 +1,32 @@
+import { db } from '@/lib/db';
+import { sanitizePrompt, scanAndMaskPII } from '../../security/pii-scanner';
+
+export class SecurityProcessor {
+  static async validate(message: string, propertyId: string) {
+    const sanitizedInput = sanitizePrompt(message);
+    const hasInjectionAttempt = sanitizedInput.includes('[REDACTED_ATTEMPT]');
+
+    if (hasInjectionAttempt) {
+      await db.securityAlert.create({
+        data: {
+          tenantId: propertyId,
+          alertType: 'PROMPT_INJECTION',
+          severity: 'HIGH',
+          metadata: JSON.stringify({ originalMessage: message })
+        }
+      });
+      return {
+        success: false,
+        error: 'Violação das políticas de segurança na mensagem.'
+      };
+    }
+
+    const piiResult = scanAndMaskPII(sanitizedInput);
+    return {
+      success: true,
+      safeMessage: piiResult.masked,
+      hasPII: piiResult.hasPII,
+      detectedTypes: piiResult.detectedTypes
+    };
+  }
+}

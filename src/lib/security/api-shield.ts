@@ -1,0 +1,282 @@
+/**
+ * ZEHLA — Global API Security Middleware (Zero Trust)
+ * 
+ * This is the central security gate for ALL API routes.
+ * It applies:
+ * 1. Payload size limits (prevent resource exhaustion)
+ * 2. Input sanitization (SQLi, XSS, Command Injection, Prototype Pollution)
+ * 3. Rate limiting (configurable per-route)
+ * 4. Security headers injection
+ * 5. Request ID tracking
+ * 6. Production-only route blocking (debug routes)
+ * 
+ * USAGE in any API route:
+ *   import { withSecurity } from '@/lib/security/api-shield';
+ *   export const POST = withSecurity(myHandler, { maxPayloadBytes: 500_000 });
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { sanitizeObject, validatePayloadSize, SanitizationResult } from './input-sanitizer';
+import { apiRatelimit, authRatelimit, RatelimitInstance } from '@/lib/rate-limit';
+
+// ── Configuration ──
+
+const DEFAULT_MAX_PAYLOAD_BYTES = 1_000_000; // 1MB default
+const STRICT_MAX_PAYLOAD_BYTES = 100_000;    // 100KB for auth/sensitive routes
+
+/** Routes completely blocked in production */
+const PROD_BLOCKED_ROUTES = [
+  '/api/debug-agent',
+  '/api/debug-agent/github',
+  '/api/debug-agent/knowledge',
+  '/api/proxy',
+  '/api/diagnose',
+  '/api/readiness',
+];
+
+/** Routes that require auth but currently have none */
+const AUTH_REQUIRED_ROUTES = [
+  '/api/leads',
+  '/api/targets',
+  '/api/campaigns',
+  '/api/swipe-templates',
+  '/api/roi',
+  '/api/hunt',
+  '/api/hunt-stream',
+  '/api/export',
+  '/api/bulk-whatsapp',
+  '/api/zcc',
+  '/api/brain',
+  '/api/agents',
+  '/api/agent-logs',
+  '/api/tenants',
+  '/api/config',
+  '/api/router',
+  '/api/feedback',
+  '/api/feedback/stats',
+  '/api/v1',
+  '/api/channel-manager',
+  '/api/dashboard',
+  '/api/monitoring',
+  '/api/security',
+  '/api/knowledge',
+];
+
+/** Routes that are intentionally public */
+const PUBLIC_ROUTES = [
+  '/api/health',
+  '/api/auth',
+  '/api/webhook-whatsapp',
+  '/api/checkout/webhook',
+];
+
+export interface SecurityOptions {
+  /** Maximum payload size in bytes (default: 1MB) */
+  maxPayloadBytes?: number;
+  /** Custom rate limiter instance (default: apiRatelimit) */
+  rateLimiter?: RatelimitInstance;
+  /** Whether to sanitize input (default: true) */
+  sanitize?: boolean;
+  /** Whether to require authentication (default: auto-detected from path) */
+  requireAuth?: boolean;
+  /** Whether this is an auth route (uses stricter rate limit) */
+  isAuthRoute?: boolean;
+  /** Custom label for logging */
+  routeLabel?: string;
+}
+
+export interface SecurityContext {
+  requestId: string;
+  clientIp: string;
+  sanitizedBody: Record<string, unknown> | null;
+  sanitizationResult: SanitizationResult | null;
+  rateLimitResult: { success: boolean; remaining: number; reset: number } | null;
+}
+
+type ApiHandler = (request: NextRequest, context: SecurityContext) => Promise<NextResponse>;
+
+/**
+ * Wraps an API route handler with full Zero Trust security.
+ */
+export function withSecurity(
+  handler: ApiHandler,
+  options: SecurityOptions = {}
+): (request: NextRequest) => Promise<NextResponse> {
+  return async (request: NextRequest) => {
+    const pathname = new URL(request.url).pathname;
+    const requestId = request.headers.get('x-request-id')
+      || request.headers.get('x-vercel-id')
+      || `sec-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || request.headers.get('x-real-ip')
+      || 'unknown';
+
+    const ctx: SecurityContext = {
+      requestId,
+      clientIp,
+      sanitizedBody: null,
+      sanitizationResult: null,
+      rateLimitResult: null,
+    };
+
+    // ── 1. PROD BLOCKED ROUTES ──
+    if (process.env.NODE_ENV === 'production') {
+      if (PROD_BLOCKED_ROUTES.some(r => pathname.startsWith(r))) {
+        return NextResponse.json(
+          { error: 'ROUTE_DISABLED_IN_PRODUCTION', requestId },
+          { status: 404, headers: securityHeaders(requestId) }
+        );
+      }
+    }
+
+    // ── 2. RATE LIMITING ──
+    const limiter = options.rateLimiter
+      || (options.isAuthRoute ? authRatelimit : apiRatelimit);
+    const rateLimitKey = `${options.isAuthRoute ? 'auth' : 'api'}:${clientIp}:${pathname}`;
+    try {
+      const rlResult = await limiter.limit(rateLimitKey);
+      ctx.rateLimitResult = {
+        success: rlResult.success,
+        remaining: rlResult.remaining,
+        reset: rlResult.reset,
+      };
+
+      if (!rlResult.success) {
+        return NextResponse.json(
+          {
+            error: 'RATE_LIMITED',
+            message: 'Muitas requisições. Tente novamente em breve.',
+            retryAfter: Math.ceil((rlResult.reset - Date.now()) / 1000),
+            requestId,
+          },
+          {
+            status: 429,
+            headers: {
+              ...securityHeaders(requestId),
+              'Retry-After': String(Math.ceil((rlResult.reset - Date.now()) / 1000)),
+              'X-RateLimit-Limit': String(rlResult.limit),
+              'X-RateLimit-Remaining': '0',
+            },
+          }
+        );
+      }
+    } catch (rlError) {
+      // If rate limiter fails, allow request through (fail-open for availability)
+      console.error(`[API_SHIELD] Rate limit error for ${pathname}:`, rlError);
+    }
+
+    // ── 3. PAYLOAD SIZE LIMIT ──
+    if (request.method === 'POST' || request.method === 'PUT' || request.method === 'PATCH') {
+      const maxBytes = options.maxPayloadBytes
+        || (options.isAuthRoute ? STRICT_MAX_PAYLOAD_BYTES : DEFAULT_MAX_PAYLOAD_BYTES);
+
+      try {
+        const clone = request.clone();
+        const rawBody = await clone.text();
+        const { valid, sizeBytes } = validatePayloadSize(rawBody, maxBytes);
+
+        if (!valid) {
+          return NextResponse.json(
+            {
+              error: 'PAYLOAD_TOO_LARGE',
+              message: `Payload excede o limite de ${Math.round(maxBytes / 1024)}KB.`,
+              sizeBytes,
+              maxBytes,
+              requestId,
+            },
+            { status: 413, headers: securityHeaders(requestId) }
+          );
+        }
+
+        // ── 4. INPUT SANITIZATION ──
+        if (options.sanitize !== false && rawBody) {
+          try {
+            const parsed = JSON.parse(rawBody);
+            const { sanitized, isClean, threats } = sanitizeObject(parsed);
+            ctx.sanitizedBody = sanitized;
+            ctx.sanitizationResult = {
+              sanitized: JSON.stringify(sanitized),
+              isClean,
+              threats,
+              threatTypes: [],
+            };
+
+            if (!isClean) {
+              console.log(JSON.stringify({
+                level: 'security',
+                event: 'API_INPUT_SANITIZED',
+                route: pathname,
+                threatCount: threats.length,
+                threats: threats.slice(0, 5),
+                clientIp,
+                requestId,
+                timestamp: new Date().toISOString(),
+              }));
+            }
+          } catch {
+            // Not JSON body — skip sanitization (could be form data, binary, etc.)
+          }
+        }
+      } catch {
+        // If we can't read the body, continue — the handler will deal with it
+      }
+    }
+
+    // ── 5. EXECUTE HANDLER ──
+    try {
+      const response = await handler(request, ctx);
+
+      // Inject security headers into response
+      const headers = securityHeaders(requestId);
+      if (ctx.rateLimitResult) {
+        headers['X-RateLimit-Remaining'] = String(ctx.rateLimitResult.remaining);
+      }
+      for (const [key, value] of Object.entries(headers)) {
+        response.headers.set(key, value);
+      }
+
+      return response;
+    } catch (error) {
+      console.error(`[API_SHIELD] Handler error on ${pathname}:`, error);
+      return NextResponse.json(
+        {
+          error: 'INTERNAL_ERROR',
+          message: 'Erro interno do servidor.',
+          requestId,
+        },
+        { status: 500, headers: securityHeaders(requestId) }
+      );
+    }
+  };
+}
+
+function securityHeaders(requestId: string): Record<string, string> {
+  return {
+    'X-Request-ID': requestId,
+    'X-Content-Type-Options': 'nosniff',
+    'X-XSS-Protection': '1; mode=block',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'camera=(), microphone=(self), geolocation=(), payment=()',
+    'X-Security-Shield': 'zero-trust-v1',
+  };
+}
+
+/**
+ * Helper: Check if a route should require authentication based on its pathname.
+ */
+export function routeRequiresAuth(pathname: string): boolean {
+  // Public routes are always allowed
+  if (PUBLIC_ROUTES.some(r => pathname.startsWith(r))) return false;
+
+  // Explicitly listed auth-required routes
+  if (AUTH_REQUIRED_ROUTES.some(r => pathname.startsWith(r))) return true;
+
+  // In production, default to requiring auth for all /api/ routes
+  // except health/webhooks
+  if (process.env.NODE_ENV === 'production') {
+    return pathname.startsWith('/api/');
+  }
+
+  return false;
+}

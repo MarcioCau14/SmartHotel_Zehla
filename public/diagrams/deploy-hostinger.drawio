@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile>
+  <diagram name="Deploy Hostinger" id="deploy-hostinger">
+    <mxGraphModel dx="0" dy="0" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- GitHub -->
+        <mxCell id="github" value="&lt;b&gt;🐙 GitHub&lt;/b&gt;&#10;SmartHotel_Zehla" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1b1b2f;fontColor=#ffffff;strokeColor=#0f0f23;" vertex="1" parent="1">
+          <mxGeometry x="60" y="20" width="200" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- GitHub Actions -->
+        <mxCell id="gh-actions" value="⚙️ GitHub Actions&#10;CI/CD Pipeline" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#16213e;fontColor=#ffffff;strokeColor=#0f3460;" vertex="1" parent="1">
+          <mxGeometry x="340" y="20" width="180" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow GitHub -> Actions -->
+        <mxCell id="arrow-gh-actions" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#ffffff;strokeWidth=2;" edge="1" parent="1" source="github" target="gh-actions">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow Actions -> Deploy -->
+        <mxCell id="arrow-actions-deploy" value="SSH Deploy" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#e9c46a;strokeWidth=2;" edge="1" parent="1" source="gh-actions" target="hostinger">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Hostinger VPS Container -->
+        <mxCell id="hostinger" value="&lt;b&gt;🌐 HOSTINGER VPS&lt;/b&gt;&#10;KVM 4 | 4GB RAM | 2 vCPU" style="swimlane;whiteSpace=wrap;html=1;fillColor=#2d6a4f;fontColor=#ffffff;strokeColor=#1b4332;startSize=40;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="620" y="20" width="440" height="800" as="geometry"/>
+        </mxCell>
+
+        <!-- DNS -->
+        <mxCell id="dns" value="📡 DNS: seuzella.com&#10;A Record → VPS IP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1b4332;fontColor=#ffffff;strokeColor=#0d1f14;" vertex="1" parent="hostinger">
+          <mxGeometry x="40" y="60" width="360" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Nginx -->
+        <mxCell id="nginx" value="🔒 Nginx Reverse Proxy&#10;━━━━━━━━━━━━━━━━&#10;Porta 80 → 443 (SSL Let's Encrypt)&#10;Proxy Pass → localhost:3000&#10;Static files /uploads/ etc." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6a040f;fontColor=#ffffff;strokeColor=#370617;" vertex="1" parent="hostinger">
+          <mxGeometry x="40" y="140" width="360" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow DNS -> Nginx -->
+        <mxCell id="arrow-dns-nginx" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#ffffff;strokeWidth=1;" edge="1" parent="hostinger" source="dns" target="nginx">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- PM2 -->
+        <mxCell id="pm2" value="⚡ PM2 Process Manager&#10;━━━━━━━━━━━━━━━━&#10;Cluster mode: 2 instâncias&#10;Auto-restart on crash&#10;Log rotation integrado" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f3460;fontColor=#ffffff;strokeColor=#16213e;" vertex="1" parent="hostinger">
+          <mxGeometry x="40" y="270" width="360" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow Nginx -> PM2 -->
+        <mxCell id="arrow-nginx-pm2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#e94560;strokeWidth=2;" edge="1" parent="hostinger" source="nginx" target="pm2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Next.js App -->
+        <mxCell id="nextjs-prod" value="📦 Next.js App (Standalone)&#10;━━━━━━━━━━━━━━━━&#10;Prisma Client + SQLite&#10;NextAuth v4 (JWT)&#10;React Query SSR&#10;Socket.IO Client" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#533483;fontColor=#ffffff;strokeColor=#3d2460;" vertex="1" parent="hostinger">
+          <mxGeometry x="40" y="400" width="360" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow PM2 -> Next.js -->
+        <mxCell id="arrow-pm2-next" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#e9c46a;strokeWidth=2;" edge="1" parent="hostinger" source="pm2" target="nextjs-prod">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Realtime Service -->
+        <mxCell id="realtime" value="🔌 Socket.IO Realtime&#10;Porta 3003&#10;WebSocket p/ DDC em tempo real" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e9c46a;fontColor=#000000;strokeColor=#d4a373;" vertex="1" parent="hostinger">
+          <mxGeometry x="40" y="540" width="360" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow Next -> Realtime -->
+        <mxCell id="arrow-next-rt" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#e9c46a;strokeWidth=1;" edge="1" parent="hostinger" source="nextjs-prod" target="realtime">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Database -->
+        <mxCell id="database" value="💾 SQLite (Prisma)&#10;━━━━━━━━━━━━━━&#10;secretaria.db&#10;Seed + Migrations&#10;Backup automático (cron)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#370617;fontColor=#ffffff;strokeColor=#24040e;" vertex="1" parent="hostinger">
+          <mxGeometry x="40" y="650" width="360" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow Next -> DB -->
+        <mxCell id="arrow-next-db" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#ffffff;strokeWidth=2;" edge="1" parent="hostinger" source="nextjs-prod" target="database">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- UFW Firewall -->
+        <mxCell id="ufw" value="🛡️ UFW Firewall&#10;Apenas: 22, 80, 443" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1b4332;fontColor=#ffffff;strokeColor=#0d1f14;arcSize=10;dashed=1;" vertex="1" parent="hostinger">
+          <mxGeometry x="40" y="60" width="130" height="50" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
