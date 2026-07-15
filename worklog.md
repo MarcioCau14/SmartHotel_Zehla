@@ -78,3 +78,35 @@ Stage Summary:
 - Plano de Implementação completo com 4 fases, 12 semanas, 25+ tarefas
 - Prisma Schema projetado com 7 modelos (User, Account, Session, Plan, Tenant, AirBProperty, Conversation, Message)
 - 13 itens pendentes de validação no checklist
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Implementar Zélla AirB completo no projeto Next.js
+
+Work Log:
+- Explorado projeto completo: Next.js 16, React 19, shadcn/ui (49 components), Prisma (SQLite), ZellaAirBStrategy.ts POC
+- Criado Prisma Schema completo: User, Account, Session, VerificationToken, Tenant, Plan, AirBProperty, Conversation, Message
+- Executado db:push com sucesso (7 modelos no banco)
+- Criado prisma/seed.ts com planos PRO/MAX e dados demo (propriedade, 2 conversas com mensagens)
+- Criado src/lib/features.ts — Feature Gates por plano (PRO vs MAX)
+- Criado src/lib/strategies/types.ts — IZellaStrategy interface, 21 AirB intents, tipos compartilhados
+- Criado src/lib/scraping/PropertyScrapingEngine.ts — Motor de raspagem 3 camadas com dados demo
+- Criado API routes: /api/scraping, /api/properties (CRUD + [id]), /api/conversations, /api/dashboard, /api/onboarding
+- Reescrito src/app/page.tsx — DDC completo com: Mode Selection, Onboarding Wizard, Dashboard, Properties, Conversations, Analytics, Settings
+- Criado src/components/ddc/ModeSelectionScreen.tsx e OnboardingScreen.tsx (componentes standalone)
+- Corrigido bug: componentes nested functions perdiam state (refatorado para standalone)
+- Corrigido bug: false "Limite atingido" warning (propStats null check)
+- Corrigido bug: db.tenant.findFirst em client component (substituído por API call)
+- Lint passou sem erros
+- Browser test: 12/12 passos funcionais
+- Commit e push para GitHub: MarcioCau14/zella-airb
+- Deploy na Vercel: https://my-project-swart-iota-52.vercel.app
+
+Stage Summary:
+- Aplicação completa Zélla AirB rodando em produção
+- DDC funcional com: seleção de modo (Pousadas/Airbnb), onboarding 3 passos, dashboard com stats, Magic Onboarding com scraping
+- Pacotes PRO (R$397) e MAX (R$797) com feature gates implementados
+- 3 imóveis demo disponíveis para scraping: 18584298, 9283741, 51928403
+- GitHub: https://github.com/MarcioCau14/zella-airb
+- Vercel: https://my-project-swart-iota-52.vercel.app
