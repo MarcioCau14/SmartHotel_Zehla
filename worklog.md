@@ -55,3 +55,26 @@ Stage Summary:
 - POC 100% funcional e isolada — nenhum arquivo do Zélla Pousada foi modificado
 - Acurácia da classificação heurística: 14/15 (93%) — 1 falha restante sendo corrigida
 - UI demonstra: tom de anfitrião, intents diferentes, tools diferentes, sem CTA de venda
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Pesquisa de mercado + precificação PRO/MAX + Plano de Implementação completo
+
+Work Log:
+- Pesquisa profunda de precificação de 30+ concorrentes (Hospitable, letbloom, HiJiffy, Enso Connect, HostBuddy AI, etc.)
+- Pesquisa de custos WhatsApp Business API no Brasil (Cloud API, BSPs, Meta Business Agent)
+- Pesquisa de mercado Airbnb Brasil (~619K listings, ~270K hosts, R$99.8B impacto)
+- Validação: SEM plano Free — só PRO e MAX
+- Proposta de precificação: PRO R$79/mês (3 imóveis), MAX R$149/mês (10 imóveis)
+- Documento completo criado em /home/z/my-project/docs/PLANO-IMPLEMENTACAO-ZELLA-AIRB.md
+- Documento de estrutura de dados Airbnb em /home/z/my-project/docs/airbnb-listing-data-structure.md
+- Relatórios de pesquisa salvos em /home/z/airbnb_host_tools_pricing_research.md, /home/z/whatsapp-business-api-cost-research-brazil.md, /home/z/zella_airb_market_research.md
+
+Stage Summary:
+- Precificação proposta: PRO R$79/mês (3 imóveis), MAX R$149/mês (10 imóveis), imóvel extra R$15/mês
+- Zélla AirB é 3-5x mais barato que concorrentes internacionais com funcionalidade similar
+- ZERO concorrentes combinam WhatsApp nativo + IA + foco Airbnb amador + PIX + BRL
+- Plano de Implementação completo com 4 fases, 12 semanas, 25+ tarefas
+- Prisma Schema projetado com 7 modelos (User, Account, Session, Plan, Tenant, AirBProperty, Conversation, Message)
+- 13 itens pendentes de validação no checklist
