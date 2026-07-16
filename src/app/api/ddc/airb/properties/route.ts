@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, isDatabaseAvailable } from '@/lib/db';
 import { resolveTenantId } from '@/lib/ddc/auth-utils';
+import { checkEntitlement } from '@/lib/airb/gatekeeper';
+import { generateDemoRegionalKnowledge } from '@/lib/airb/rag-pipeline';
 
 const demoProperties = [
   {
@@ -24,11 +26,18 @@ const demoProperties = [
     wifiPassword: 'praia2024',
     lockProvider: 'smart',
     lockCode: '4821',
+    latitude: -27.4407,
+    longitude: -48.4903,
+    amenities: '["Wi-Fi","Ar-condicionado","Cozinha","Estacionamento","Piscina","Churrasqueira"]',
+    houseRules: '["Proibido fumar","Não permite animais","Proibido festas","Silêncio após 22h"]',
+    hostKnowledge: '["A praia de Jurerê é a mais tranquila da região, ideal para crianças","O supermercado Bom Preço faz entrega, peça pelo app","O restaurante Marisqueira fecha às segundas","A farmácia Drogasil funciona 24h"]',
+    neighborhoodTips: '[]',
+    emergencyContacts: '[{"name":"SAMU","phone":"192","description":"Serviço de Atendimento Móvel de Urgência"},{"name":"Bombeiros","phone":"193","description":"Corpo de Bombeiros"}]',
     scrapingSource: 'demo',
     scrapedAt: new Date(Date.now() - 86400000).toISOString(),
     createdAt: new Date(Date.now() - 86400000).toISOString(),
     updatedAt: new Date(Date.now() - 86400000).toISOString(),
-    _count: { conversations: 3 },
+    _count: { conversations: 3, regionalKnowledge: generateDemoRegionalKnowledge('demo-airb-1', 'Jurerê Internacional').length },
   },
   {
     id: 'demo-airb-2',
@@ -51,11 +60,18 @@ const demoProperties = [
     wifiPassword: 'rio2024',
     lockProvider: 'nuki',
     lockCode: '1593',
+    latitude: -22.9711,
+    longitude: -43.1823,
+    amenities: '["Wi-Fi","Smart TV","Ar-condicionado","Cozinha americana","Elevador"]',
+    houseRules: '["Proibido fumar","Não permite animais","Proibido festas"]',
+    hostKnowledge: '["O metrô Cardeal Arcoverde é a 5 min de caminhada","A praia tem posto de salvavidas no posto 6","O Carrefour Express na esquina funciona 24h","Cuidado com celular na praia — área de risco de furto"]',
+    neighborhoodTips: '[]',
+    emergencyContacts: '[{"name":"SAMU","phone":"192"},{"name":"Polícia","phone":"190"}]',
     scrapingSource: 'demo',
     scrapedAt: new Date(Date.now() - 172800000).toISOString(),
     createdAt: new Date(Date.now() - 172800000).toISOString(),
     updatedAt: new Date(Date.now() - 172800000).toISOString(),
-    _count: { conversations: 1 },
+    _count: { conversations: 1, regionalKnowledge: generateDemoRegionalKnowledge('demo-airb-2', 'Copacabana').length },
   },
   {
     id: 'demo-airb-3',
@@ -78,11 +94,18 @@ const demoProperties = [
     wifiPassword: 'campos2024',
     lockProvider: 'august',
     lockCode: '7720',
+    latitude: -22.7388,
+    longitude: -45.5922,
+    amenities: '["Wi-Fi","Lareira","Piscina aquecida","Churrasqueira","Estacionamento","Cozinha completa","Máquina de lavar"]',
+    houseRules: '["Proibido fumar dentro da casa","Permite animais (até 2)","Proibido festas sem aviso prévio"]',
+    hostKnowledge: '["A piscina é aquecida a 28°C — pode usar mesmo no frio","A lareira já vem com lenha para a primeira queima, reposição no mercado","A padaria Suíça tem o melhor chocolate quente da cidade","O teleférico fecha às 17h no inverno"]',
+    neighborhoodTips: '[]',
+    emergencyContacts: '[{"name":"SAMU","phone":"192"},{"name":"Hospital Santa Cruz","phone":"(12) 3663-1234","description":"Hospital mais próximo, 5 min de carro"}]',
     scrapingSource: 'demo',
     scrapedAt: new Date(Date.now() - 259200000).toISOString(),
     createdAt: new Date(Date.now() - 259200000).toISOString(),
     updatedAt: new Date(Date.now() - 259200000).toISOString(),
-    _count: { conversations: 2 },
+    _count: { conversations: 2, regionalKnowledge: generateDemoRegionalKnowledge('demo-airb-3', 'Alto do Capivari').length },
   },
 ];
 
@@ -101,7 +124,7 @@ export async function GET() {
 
     const properties = await db.airBProperty.findMany({
       where: { tenantId },
-      include: { _count: { select: { conversations: true } } },
+      include: { _count: { select: { conversations: true, regionalKnowledge: true } } },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -125,33 +148,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { name, airbnbId, airbnbUrl, city, state, propertyType, bedrooms, bathrooms, maxGuests,
-            checkinTime, checkoutTime, wifiName, wifiPassword, lockProvider, lockCode, pricePerNight,
-            neighborhood, description } = body;
-
-    if (!name || !name.trim()) {
-      return NextResponse.json({ success: false, error: 'Property name is required' }, { status: 400 });
-    }
-
-    // Check plan limits
-    const tenant = await db.tenant.findUnique({
-      where: { id: tenantId },
-      include: { _count: { select: { airbProperties: true } } },
-    });
-
-    const currentPlan = tenant?.plan || 'trial';
-    const maxProps = currentPlan === 'max' ? 12 : currentPlan === 'pro' || currentPlan === 'business' ? 4 : 0;
-
-    if (tenant && tenant._count.airbProperties >= maxProps && maxProps > 0) {
+    // ── Gatekeeper: Check entitlement before creating ──
+    const entitlement = await checkEntitlement(tenantId, 'CREATE_PROPERTY');
+    if (!entitlement.allowed) {
       return NextResponse.json({
         success: false,
-        error: `Limite de ${maxProps} imóveis atingido para o plano ${currentPlan.toUpperCase()}. Faça upgrade para adicionar mais.`,
+        error: `Operação não permitida: ${entitlement.reason}. Limite: ${entitlement.maxAllowed} imóveis no plano ${entitlement.planType}.`,
       }, { status: 403 });
     }
 
-    if (maxProps === 0 && currentPlan !== 'pro' && currentPlan !== 'max' && currentPlan !== 'business') {
-      // For trial/lite plans, still allow creation for demo purposes
+    const body = await request.json();
+    const { name, airbnbId, airbnbUrl, city, state, propertyType, bedrooms, bathrooms, maxGuests,
+            checkinTime, checkoutTime, wifiName, wifiPassword, lockProvider, lockCode, pricePerNight,
+            neighborhood, description, latitude, longitude } = body;
+
+    if (!name || !name.trim()) {
+      return NextResponse.json({ success: false, error: 'Property name is required' }, { status: 400 });
     }
 
     const property = await db.airBProperty.create({
@@ -175,6 +187,8 @@ export async function POST(request: NextRequest) {
         lockProvider: lockProvider || null,
         lockCode: lockCode || null,
         pricePerNight: pricePerNight || null,
+        latitude: latitude ?? null,
+        longitude: longitude ?? null,
         scrapingSource: airbnbId ? 'magic_onboarding' : 'manual',
         scrapedAt: airbnbId ? new Date() : null,
       },
@@ -184,6 +198,58 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[AIRB] Error creating property:', error);
     return NextResponse.json({ success: false, error: 'Failed to create property' }, { status: 500 });
+  }
+}
+
+// PATCH /api/ddc/airb/properties — Update a property (host knowledge, etc.)
+export async function PATCH(request: NextRequest) {
+  try {
+    const dbAvailable = await isDatabaseAvailable();
+    if (!dbAvailable) {
+      // In demo mode, return success
+      return NextResponse.json({ success: true });
+    }
+
+    const tenantId = await resolveTenantId();
+    if (!tenantId) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { id, hostKnowledge, neighborhoodTips, emergencyContacts } = body;
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'Property ID is required' }, { status: 400 });
+    }
+
+    // Verify ownership
+    const property = await db.airBProperty.findFirst({
+      where: { id, tenantId },
+    });
+
+    if (!property) {
+      return NextResponse.json({ success: false, error: 'Property not found' }, { status: 404 });
+    }
+
+    // Build update data (only allow specific fields)
+    const updateData: Record<string, any> = {};
+    if (hostKnowledge !== undefined) updateData.hostKnowledge = hostKnowledge;
+    if (neighborhoodTips !== undefined) updateData.neighborhoodTips = neighborhoodTips;
+    if (emergencyContacts !== undefined) updateData.emergencyContacts = emergencyContacts;
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ success: false, error: 'No fields to update' }, { status: 400 });
+    }
+
+    const updated = await db.airBProperty.update({
+      where: { id },
+      data: updateData,
+    });
+
+    return NextResponse.json({ success: true, data: updated });
+  } catch (error) {
+    console.error('[AIRB] Error updating property:', error);
+    return NextResponse.json({ success: false, error: 'Failed to update property' }, { status: 500 });
   }
 }
 
@@ -215,6 +281,9 @@ export async function DELETE(request: NextRequest) {
     if (!property) {
       return NextResponse.json({ success: false, error: 'Property not found' }, { status: 404 });
     }
+
+    // Delete related regional knowledge first (cascade should handle it, but explicit for safety)
+    await db.airBRegionalKnowledge.deleteMany({ where: { propertyId: id } });
 
     await db.airBProperty.delete({ where: { id } });
 

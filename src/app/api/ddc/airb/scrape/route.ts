@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isDatabaseAvailable } from '@/lib/db';
+import { db, isDatabaseAvailable } from '@/lib/db';
 import { resolveTenantId } from '@/lib/ddc/auth-utils';
+import { checkEntitlement } from '@/lib/airb/gatekeeper';
+import { generateDemoRegionalKnowledge } from '@/lib/airb/rag-pipeline';
 
 // ── Demo scraping data (for Magic Onboarding demo) ─────────────────────────────
 
@@ -21,6 +23,8 @@ const DEMO_SCRAPES: Record<string, any> = {
     description: 'Apartamento com vista panorâmica para o mar em Jurerê Internacional. Wi-Fi rápido, ar-condicionado em todos os quartos, cozinha completa.',
     amenities: ['Wi-Fi', 'Ar-condicionado', 'Cozinha', 'Estacionamento', 'Piscina', 'Churrasqueira'],
     houseRules: ['Proibido fumar', 'Não permite animais', 'Proibido festas', 'Silêncio após 22h'],
+    latitude: -27.4407,
+    longitude: -48.4903,
   },
   '9283741': {
     airbnbId: '9283741',
@@ -38,6 +42,8 @@ const DEMO_SCRAPES: Record<string, any> = {
     description: 'Studio moderno a 2 quadras da praia de Copacabana. Perfeito para casais. Wi-Fi, smart TV, cozinha americana.',
     amenities: ['Wi-Fi', 'Smart TV', 'Ar-condicionado', 'Cozinha americana', 'Elevador'],
     houseRules: ['Proibido fumar', 'Não permite animais', 'Proibido festas'],
+    latitude: -22.9711,
+    longitude: -43.1823,
   },
   '51928403': {
     airbnbId: '51928403',
@@ -55,6 +61,8 @@ const DEMO_SCRAPES: Record<string, any> = {
     description: 'Casa aconchegante com lareira e piscina aquecida. Localizada no Alto do Capivari, próxima ao centro. Ideal para famílias.',
     amenities: ['Wi-Fi', 'Lareira', 'Piscina aquecida', 'Churrasqueira', 'Estacionamento', 'Cozinha completa', 'Máquina de lavar'],
     houseRules: ['Proibido fumar dentro da casa', 'Permite animais (até 2)', 'Proibido festas sem aviso prévio'],
+    latitude: -22.7388,
+    longitude: -45.5922,
   },
 };
 
@@ -76,17 +84,24 @@ function extractAirbnbId(url: string): string | null {
 
 // POST /api/ddc/airb/scrape — Scrape Airbnb listing data
 export async function POST(request: NextRequest) {
+  let jobId: string | null = null;
+
   try {
     const tenantId = await resolveTenantId();
     if (!tenantId) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const dbAvailable = await isDatabaseAvailable();
-    if (!dbAvailable) {
-      // Scrape route doesn't require DB for demo data, but check for consistency
-      // Allow the demo flow to continue even without DB
+    // ── Gatekeeper: Check entitlement before scraping ──
+    const entitlement = await checkEntitlement(tenantId, 'START_SCRAPING_JOB');
+    if (!entitlement.allowed) {
+      return NextResponse.json({
+        success: false,
+        error: `Operação não permitida: ${entitlement.reason}.`,
+      }, { status: 403 });
     }
+
+    const dbAvailable = await isDatabaseAvailable();
 
     const body = await request.json();
     const { url } = body;
@@ -104,47 +119,127 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
+    const airbnbUrl = `https://www.airbnb.com.br/rooms/${airbnbId}`;
+
+    // ── Create scraping job record if DB is available ──
+    if (dbAvailable) {
+      const idempotencyKey = `scrape-${tenantId}-${airbnbId}-${Date.now()}`;
+      try {
+        const job = await db.airBScrapingJob.create({
+          data: {
+            tenantId,
+            airbnbUrl,
+            status: 'running',
+            idempotencyKey,
+            scrapingSource: 'demo',
+            startedAt: new Date(),
+          },
+        });
+        jobId = job.id;
+      } catch (jobError) {
+        console.error('[AIRB] Error creating scraping job:', jobError);
+        // Continue even if job creation fails
+      }
+    }
+
     // Try demo data first
     const demoData = DEMO_SCRAPES[airbnbId];
     if (demoData) {
+      // Generate regional knowledge for demo
+      const regionalKnowledge = generateDemoRegionalKnowledge(`demo-${airbnbId}`, demoData.neighborhood);
+
+      // Update job status to completed if DB available
+      if (dbAvailable && jobId) {
+        try {
+          await db.airBScrapingJob.update({
+            where: { id: jobId },
+            data: {
+              status: 'completed',
+              result: JSON.stringify(demoData),
+              completedAt: new Date(),
+            },
+          });
+        } catch { /* non-critical */ }
+      }
+
       return NextResponse.json({
         success: true,
         data: {
           ...demoData,
-          airbnbUrl: `https://www.airbnb.com.br/rooms/${airbnbId}`,
+          airbnbUrl,
           scrapingSource: 'demo',
         },
-        meta: { source: 'demo', note: 'Dados de demonstração. Em produção, serão raspados do Airbnb.' },
+        regionalKnowledge,
+        meta: { source: 'demo', note: 'Dados de demonstração. Em produção, serão raspados do Airbnb.', jobId },
       });
     }
 
     // For non-demo IDs, return a simulated response
     // In production, this would use the 3-layer scraping engine (API → AI Extractor → Manual)
+    const simulatedData = {
+      airbnbId,
+      airbnbUrl,
+      name: `Imóvel Airbnb #${airbnbId}`,
+      city: '',
+      state: '',
+      neighborhood: '',
+      propertyType: 'apartment',
+      bedrooms: 1,
+      bathrooms: 1,
+      maxGuests: 2,
+      pricePerNight: null,
+      checkinTime: '15:00',
+      checkoutTime: '11:00',
+      description: '',
+      amenities: [],
+      houseRules: [],
+      latitude: null,
+      longitude: null,
+      scrapingSource: 'simulated',
+    };
+
+    // Generate generic regional knowledge
+    const regionalKnowledge = generateDemoRegionalKnowledge(`sim-${airbnbId}`, '');
+
+    // Update job status to completed if DB available
+    if (dbAvailable && jobId) {
+      try {
+        await db.airBScrapingJob.update({
+          where: { id: jobId },
+          data: {
+            status: 'completed',
+            result: JSON.stringify(simulatedData),
+            completedAt: new Date(),
+          },
+        });
+      } catch { /* non-critical */ }
+    }
+
     return NextResponse.json({
       success: true,
-      data: {
-        airbnbId,
-        airbnbUrl: `https://www.airbnb.com.br/rooms/${airbnbId}`,
-        name: `Imóvel Airbnb #${airbnbId}`,
-        city: '',
-        state: '',
-        neighborhood: '',
-        propertyType: 'apartment',
-        bedrooms: 1,
-        bathrooms: 1,
-        maxGuests: 2,
-        pricePerNight: null,
-        checkinTime: '15:00',
-        checkoutTime: '11:00',
-        description: '',
-        amenities: [],
-        houseRules: [],
-        scrapingSource: 'simulated',
-      },
-      meta: { source: 'simulated', note: 'Dados simulados. Em produção, a raspagem real será feita via StayingAPI/AirROI ou GPT-4o-mini.' },
+      data: simulatedData,
+      regionalKnowledge,
+      meta: { source: 'simulated', note: 'Dados simulados. Em produção, a raspagem real será feita via StayingAPI/AirROI ou GPT-4o-mini.', jobId },
     });
   } catch (error) {
     console.error('[AIRB] Error scraping:', error);
+
+    // Update job status to failed if we have a job ID
+    if (jobId) {
+      try {
+        const dbAvailable = await isDatabaseAvailable();
+        if (dbAvailable) {
+          await db.airBScrapingJob.update({
+            where: { id: jobId },
+            data: {
+              status: 'failed',
+              error: error instanceof Error ? error.message : 'Unknown error',
+            },
+          });
+        }
+      } catch { /* non-critical */ }
+    }
+
     return NextResponse.json({ success: false, error: 'Failed to scrape property data' }, { status: 500 });
   }
 }

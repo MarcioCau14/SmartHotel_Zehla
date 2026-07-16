@@ -87,6 +87,7 @@ model Tenant {
 
   // Zélla AirB — Airbnb properties
   airbProperties  AirBProperty[]
+  airbSubscriptions AirBSubscription[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1223,6 +1224,8 @@ model AirBProperty {
   state           String   @default("")
   neighborhood    String   @default("")
   address         String   @default("")
+  latitude        Float?              // Geolocation
+  longitude       Float?              // Geolocation
   bedrooms        Int      @default(1)
   bathrooms       Int      @default(1)
   maxGuests       Int      @default(2)
@@ -1240,12 +1243,14 @@ model AirBProperty {
   imageUrl        String?              // Main property image
   pricePerNight   Float?
   currency        String   @default("BRL")
-  status          String   @default("active")   // active | inactive | suspended
+  status          String   @default("active")   // active | inactive | suspended | scraping_pending | scraping_failed
   scrapedAt       DateTime?            // When data was last scraped from Airbnb
   scrapingSource  String?              // "api" | "ai_extractor" | "manual"
 
   tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   conversations   AirBConversation[]
+  regionalKnowledge AirBRegionalKnowledge[]
+  scrapingJobs    AirBScrapingJob[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -1262,6 +1267,7 @@ model AirBConversation {
   guestName       String
   guestPhone      String?
   guestBsuid      String?              // Meta BSUID mapping
+  platformContext String   @default("unknown") // airbnb_app | airbnb_web | direct | whatsapp | unknown
   mode            String   @default("post_booking") // pre_booking | post_booking
   status          String   @default("active")  // active | resolved | escalated
   lastIntent      String?              // Last detected intent
@@ -1296,4 +1302,105 @@ model AirBMessage {
   @@index([conversationId])
   @@index([createdAt])
   @@map("airb_messages")
+}
+
+// ===== Zélla AirB — Regional Knowledge =====
+model AirBRegionalKnowledge {
+  id            String   @id @default(cuid())
+  tenantId      String
+  propertyId    String
+  category      String   // beach | bakery | pharmacy | supermarket | tourism | restaurant | hospital | transport | atm | leisure | other
+  name          String
+  distance      Float?   // distance in km
+  walkingTimeMin Int?    // walking time in minutes
+  drivingTimeMin Int?    // driving time in minutes
+  address       String?
+  rating        Float?   // 1.0-5.0
+  googlePlaceId String?
+  description   String?
+  embeddingId   String?  // Reference to vector DB embedding (for future pgvector migration)
+
+  property      AirBProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([propertyId])
+  @@index([category])
+  @@map("airb_regional_knowledge")
+}
+
+// ===== Zélla AirB — Scraping Jobs =====
+model AirBScrapingJob {
+  id              String   @id @default(cuid())
+  tenantId        String
+  propertyId      String?  // Null until property is created from scrape
+  airbnbUrl       String
+  status          String   @default("queued") // queued | running | completed | failed | cancelled
+  result          String?  // JSON string of scraped data
+  error           String?
+  retryCount      Int      @default(0)
+  maxRetries      Int      @default(3)
+  idempotencyKey  String   @unique
+  scrapingSource  String?  // api | headless | ai_extractor | manual
+
+  property        AirBProperty? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+
+  scheduledAt     DateTime @default(now())
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([idempotencyKey])
+  @@map("airb_scraping_jobs")
+}
+
+// ===== Zélla AirB — Subscriptions =====
+model AirBSubscription {
+  id                  String   @id @default(cuid())
+  tenantId            String
+  planType            String   // airb_pro | airb_max (NEVER "pro" or "max" plain!)
+  status              String   @default("active") // active | past_due | cancelled | expired
+  propertyLimit       Int      // PRO=4, MAX=12
+  currentPropertyCount Int     @default(0) // Denormalized for fast queries
+  amount              Float    // 397.0 (PRO) | 797.0 (MAX)
+  paymentMethod       String?  // pix | cartao
+  currentPeriodStart  DateTime?
+  currentPeriodEnd    DateTime?
+  cancelAtPeriodEnd   Boolean  @default(false)
+
+  tenant              Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  transactions        AirBTransaction[]
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("airb_subscriptions")
+}
+
+// ===== Zélla AirB — Transactions =====
+model AirBTransaction {
+  id              String   @id @default(cuid())
+  tenantId        String
+  propertyId      String?
+  subscriptionId  String?
+  type            String   // subscription_payment | refund | adjustment
+  amount          Float
+  status          String   @default("pending") // pending | approved | rejected | refunded
+  externalId      String?  // Mercado Pago payment ID
+  description     String?
+
+  subscription    AirBSubscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  createdAt       DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([subscriptionId])
+  @@map("airb_transactions")
 }
