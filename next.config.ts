@@ -5,12 +5,13 @@ if (process.env.NEXTAUTH_URL === '') {
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   typescript: {
     ignoreBuildErrors: false,
   },
   reactStrictMode: true,
   productionBrowserSourceMaps: false,
-  serverExternalPackages: ["@prisma/client", "prisma"],
+  serverExternalPackages: ["@prisma/client", "prisma", "bcryptjs", "sharp"],
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },

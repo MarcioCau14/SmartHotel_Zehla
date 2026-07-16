@@ -1,0 +1,58 @@
+# ==============================================================================
+# SEU ZELLA — Docker Compose para VPS (Hostinger)
+# ==============================================================================
+# Subir:        docker compose up -d
+# Logs:         docker compose logs -f app
+# Restart:      docker compose restart app
+# Parar:        docker compose down
+# ==============================================================================
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: seuzella-app
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"   # Bind apenas localhost — Nginx faz o proxy
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+    volumes:
+      - seuzella-db:/app/db
+      - seuzella-uploads:/app/public/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+          cpus: "1.5"
+        reservations:
+          memory: 256M
+          cpus: "0.25"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - seuzella-net
+
+volumes:
+  seuzella-db:
+    driver: local
+  seuzella-uploads:
+    driver: local
+
+networks:
+  seuzella-net:
+    driver: bridge
