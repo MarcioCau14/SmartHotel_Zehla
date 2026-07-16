@@ -17,7 +17,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { db } from '@/lib/db';
+import { db, isDatabaseAvailable } from '@/lib/db';
 import { getNeuroRouter } from '@/lib/ai/zaos-neuro-router';
 import { retrieveRelevantKnowledge, formatRAGContext } from '@/lib/ai/semantic-rag';
 import { requireMaxPlan } from '@/lib/ddc/require-max-plan';
@@ -70,6 +70,15 @@ async function getConversationHistory(
 // ── POST Handler ───────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
+  // Check DB availability first (Vercel serverless compatibility)
+  const dbAvailable = await isDatabaseAvailable();
+  if (!dbAvailable) {
+    return NextResponse.json(
+      { error: 'DB_UNAVAILABLE', message: 'Banco de dados indisponível no momento. Tente novamente mais tarde.' },
+      { status: 503 },
+    );
+  }
+
   // ──────────────────────────────────────────────────────────────────────────
   // CAMADA 1: Autenticação (session NextAuth)
   // ──────────────────────────────────────────────────────────────────────────

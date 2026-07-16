@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db, isDatabaseAvailable } from '@/lib/db';
 import { resolveTenantId, mapConversation } from '@/lib/ddc/ddc-mapper';
 import { createError, apiSuccess } from '@/lib/error-handler';
 import { apiRatelimit } from '@/lib/rate-limit';
@@ -13,6 +13,11 @@ const messageSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const dbAvailable = await isDatabaseAvailable();
+    if (!dbAvailable) {
+      return createError(503, 'DB_UNAVAILABLE', 'Banco de dados indisponível no momento');
+    }
+
     const tenantId = await resolveTenantId();
     if (!tenantId || tenantId === 'client-001') return createError(401, 'UNAUTHORIZED', 'Não autorizado');
     const { success } = await apiRatelimit.limit(tenantId);
@@ -46,6 +51,32 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   const encoder = new TextEncoder();
+
+  // Check DB availability first
+  const dbAvailable = await isDatabaseAvailable();
+  if (!dbAvailable) {
+    const demoData = [
+      {
+        id: 'demo-conv-1', guestId: 'demo-g-1', guestName: 'Carlos Mendes',
+        phoneNumber: '5541988776655', status: 'in_progress' as const, aiScore: 96,
+        needsEscalation: false, metadata: {},
+        messages: [
+          { id: 'dm1', conversationId: 'demo-conv-1', role: 'user' as const, content: 'Olá, tem quarto disponível?', confidence: undefined, metadata: {}, createdAt: new Date().toISOString() },
+          { id: 'dm2', conversationId: 'demo-conv-1', role: 'assistant' as const, content: 'Sim! Temos a Suíte Vista Mar disponível. Deseja reservar?', confidence: undefined, metadata: {}, createdAt: new Date().toISOString() },
+        ],
+        propertyId: 'demo', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+      },
+    ];
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'initial', data: demoData })}\n\n`));
+        controller.close();
+      },
+    });
+    return new Response(stream, {
+      headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*' },
+    });
+  }
 
   const tenantId = await resolveTenantId();
   if (!tenantId || tenantId === 'client-001') {

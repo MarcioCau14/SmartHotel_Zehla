@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db, isDatabaseAvailable } from '@/lib/db';
 import { resolveTenantId, mapConversation } from '@/lib/ddc/ddc-mapper';
 import { apiRatelimit } from '@/lib/rate-limit';
 
@@ -187,8 +187,74 @@ async function seedDemoConversations(tenantId: string) {
   });
 }
 
+const now = new Date();
+
+const demoConversations = [
+  {
+    id: 'demo-conv-1',
+    guestId: 'demo-g-1',
+    guestName: 'Carlos Mendes',
+    phoneNumber: '5541988776655',
+    status: 'in_progress' as const,
+    aiScore: 96,
+    needsEscalation: false,
+    metadata: {},
+    messages: [
+      { id: 'demo-m-1a', conversationId: 'demo-conv-1', role: 'user' as const, content: 'Olá, tem quarto de casal disponível para este final de semana?', confidence: undefined, metadata: {}, createdAt: new Date(now.getTime() - 20 * 60000).toISOString() },
+      { id: 'demo-m-1b', conversationId: 'demo-conv-1', role: 'assistant' as const, content: 'Olá, Carlos! Sim, temos a Suíte Vista Mar disponível. O valor total fica em R$ 700,00 com café da manhã incluso. Deseja reservar?', confidence: undefined, metadata: {}, createdAt: new Date(now.getTime() - 18 * 60000).toISOString() },
+      { id: 'demo-m-1c', conversationId: 'demo-conv-1', role: 'user' as const, content: 'Quero sim! Como faço o pagamento?', confidence: undefined, metadata: {}, createdAt: new Date(now.getTime() - 15 * 60000).toISOString() },
+      { id: 'demo-m-1d', conversationId: 'demo-conv-1', role: 'assistant' as const, content: 'Ótimo! Você pode pagar via Pix. Chave: pix@pousadaserenity.com.br. Após pagar, envie o comprovante!', confidence: undefined, metadata: {}, createdAt: new Date(now.getTime() - 12 * 60000).toISOString() },
+    ],
+    propertyId: 'demo',
+    createdAt: new Date(now.getTime() - 30 * 60000).toISOString(),
+    updatedAt: new Date(now.getTime() - 9 * 60000).toISOString(),
+  },
+  {
+    id: 'demo-conv-2',
+    guestId: 'demo-g-2',
+    guestName: 'Mariana Souza',
+    phoneNumber: '5511977665544',
+    status: 'in_progress' as const,
+    aiScore: 94,
+    needsEscalation: false,
+    metadata: {},
+    messages: [
+      { id: 'demo-m-2a', conversationId: 'demo-conv-2', role: 'user' as const, content: 'Bom dia! O que tem para fazer perto da pousada?', confidence: undefined, metadata: {}, createdAt: new Date(now.getTime() - 30 * 60000).toISOString() },
+      { id: 'demo-m-2b', conversationId: 'demo-conv-2', role: 'assistant' as const, content: 'Bom dia, Mariana! Estamos a 5 min da Praia do Centro e 10 min do Centro Histórico. Recomendo a Praia dos Castelhanos para praias mais reservadas!', confidence: undefined, metadata: {}, createdAt: new Date(now.getTime() - 28 * 60000).toISOString() },
+    ],
+    propertyId: 'demo',
+    createdAt: new Date(now.getTime() - 35 * 60000).toISOString(),
+    updatedAt: new Date(now.getTime() - 2 * 60000).toISOString(),
+  },
+  {
+    id: 'demo-conv-3',
+    guestId: 'demo-g-3',
+    guestName: 'João Santos',
+    phoneNumber: '5521966554433',
+    status: 'escalated' as const,
+    aiScore: 65,
+    needsEscalation: true,
+    metadata: {},
+    messages: [
+      { id: 'demo-m-3a', conversationId: 'demo-conv-3', role: 'user' as const, content: 'Preciso remarcar minha reserva para a semana seguinte, é possível?', confidence: undefined, metadata: {}, createdAt: new Date(now.getTime() - 50 * 60000).toISOString() },
+      { id: 'demo-m-3b', conversationId: 'demo-conv-3', role: 'assistant' as const, content: 'Entendo, João! Vou chamar um atendente humano para ajudar com essa alteração. Só um momento!', confidence: undefined, metadata: {}, createdAt: new Date(now.getTime() - 48 * 60000).toISOString() },
+    ],
+    propertyId: 'demo',
+    createdAt: new Date(now.getTime() - 55 * 60000).toISOString(),
+    updatedAt: new Date(now.getTime() - 15 * 60000).toISOString(),
+  },
+];
+
 export async function GET(request: NextRequest) {
   try {
+    const dbAvailable = await isDatabaseAvailable();
+    if (!dbAvailable) {
+      return NextResponse.json({
+        success: true,
+        data: { items: demoConversations, total: demoConversations.length, page: 1, limit: demoConversations.length, totalPages: 1 },
+      });
+    }
+
     const tenantId = await resolveTenantId();
     if (!tenantId || tenantId === 'client-001') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

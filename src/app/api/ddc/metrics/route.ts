@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db, isDatabaseAvailable } from '@/lib/db';
 import { resolveTenantId } from '@/lib/ddc/auth-utils';
 import { apiRatelimit } from '@/lib/rate-limit';
 
@@ -32,8 +32,48 @@ const emptyMetrics = (period: string) => ({
   lastUpdated: new Date()
 });
 
+const demoMetrics: Record<string, any> = {
+  today: {
+    attendedToday: 24, attendedChange: 12.5,
+    bookingsClosed: 6, bookingsChange: 20.0,
+    revenue: 12450.00, revenueChange: 15.3,
+    occupancy: 82.0, occupancyChange: 5.0,
+    conversion: 38.5, conversionChange: 3.2,
+    aiScore: 94, aiScoreChange: 2,
+    lastUpdated: new Date(),
+  },
+  week: {
+    attendedToday: 156, attendedChange: 8.7,
+    bookingsClosed: 34, bookingsChange: 12.0,
+    revenue: 87230.00, revenueChange: 10.5,
+    occupancy: 78.5, occupancyChange: 3.2,
+    conversion: 35.2, conversionChange: 2.1,
+    aiScore: 92, aiScoreChange: 4,
+    lastUpdated: new Date(),
+  },
+  month: {
+    attendedToday: 620, attendedChange: 18.2,
+    bookingsClosed: 128, bookingsChange: 14.5,
+    revenue: 345670.00, revenueChange: 22.1,
+    occupancy: 75.8, occupancyChange: 6.3,
+    conversion: 33.7, conversionChange: 4.8,
+    aiScore: 91, aiScoreChange: 5,
+    lastUpdated: new Date(),
+  },
+};
+
 export async function GET(request: NextRequest) {
   try {
+    const dbAvailable = await isDatabaseAvailable();
+    if (!dbAvailable) {
+      const period = request.nextUrl.searchParams.get('period') || 'today';
+      return NextResponse.json({
+        success: true,
+        data: demoMetrics[period] || demoMetrics.today,
+        meta: { period, timestamp: new Date().toISOString(), source: 'demo' },
+      });
+    }
+
     const tenantId = await resolveTenantId();
     if (!tenantId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

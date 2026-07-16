@@ -14,18 +14,22 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Senha', type: 'password' },
       },
       async authorize(credentials) {
-        // === BYPASS 123/123 — Dev & Demo Quick Access ===
+        // === BYPASS 123/123 — Dev & Demo Quick Access (sem DB) ===
         if (credentials?.email === '123' && credentials?.password === '123') {
-          const firstTenant = await db.tenant.findFirst();
-          if (firstTenant) {
-            return {
-              id: firstTenant.id,
-              email: firstTenant.email,
-              name: firstTenant.name,
-              role: firstTenant.role || 'owner',
-              tenantId: firstTenant.id,
-              plan: firstTenant.plan || 'pro',
-            };
+          try {
+            const firstTenant = await db.tenant.findFirst();
+            if (firstTenant) {
+              return {
+                id: firstTenant.id,
+                email: firstTenant.email,
+                name: firstTenant.name,
+                role: firstTenant.role || 'owner',
+                tenantId: firstTenant.id,
+                plan: firstTenant.plan || 'pro',
+              };
+            }
+          } catch {
+            // DB not available (e.g. Vercel serverless) — use mock user
           }
           return {
             id: 'demo-tenant-id',

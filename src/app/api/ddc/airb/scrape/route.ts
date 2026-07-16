@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isDatabaseAvailable } from '@/lib/db';
 import { resolveTenantId } from '@/lib/ddc/auth-utils';
 
 // ── Demo scraping data (for Magic Onboarding demo) ─────────────────────────────
@@ -79,6 +80,12 @@ export async function POST(request: NextRequest) {
     const tenantId = await resolveTenantId();
     if (!tenantId) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const dbAvailable = await isDatabaseAvailable();
+    if (!dbAvailable) {
+      // Scrape route doesn't require DB for demo data, but check for consistency
+      // Allow the demo flow to continue even without DB
     }
 
     const body = await request.json();

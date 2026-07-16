@@ -4,18 +4,24 @@
  * Resolves tenantId from NextAuth session for DDC API routes.
  * In development (BYPASS_MIDDLEWARE_AUTH=true), falls back to the first tenant.
  * In production, returns null if no session — callers must handle this.
+ * If DB is unavailable (e.g. Vercel serverless without persistent SQLite),
+ * falls back to the session's tenantId without DB lookup.
  */
 
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { db } from '@/lib/db';
+import { db, isDatabaseAvailable } from '@/lib/db';
 
 export async function resolveTenantId(): Promise<string | null> {
   try {
-    // Dev mode bypass: use first tenant from DB
+    // Dev mode bypass: use first tenant from DB (if available)
     if (process.env.BYPASS_MIDDLEWARE_AUTH === 'true') {
-      const firstTenant = await db.tenant.findFirst({ select: { id: true } });
-      return firstTenant?.id ?? null;
+      const dbOk = await isDatabaseAvailable();
+      if (dbOk) {
+        const firstTenant = await db.tenant.findFirst({ select: { id: true } });
+        return firstTenant?.id ?? null;
+      }
+      return 'demo-tenant-id';
     }
 
     const session = await getServerSession(authOptions);
@@ -25,7 +31,13 @@ export async function resolveTenantId(): Promise<string | null> {
 
     return session.user.tenantId;
   } catch {
-    return null;
+    // Fallback: try to get tenantId from session without DB
+    try {
+      const session = await getServerSession(authOptions);
+      return session?.user?.tenantId ?? null;
+    } catch {
+      return null;
+    }
   }
 }
 

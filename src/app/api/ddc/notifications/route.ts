@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db, isDatabaseAvailable } from '@/lib/db';
 import { resolveTenantId, mapNotification } from '@/lib/ddc/ddc-mapper';
 import { apiRatelimit } from '@/lib/rate-limit';
 
+const demoNotifications = [
+  { id: 'demo-n-1', type: 'booking', title: 'Nova reserva confirmada', message: 'Carlos Mendes reservou a Suíte Vista Mar para o final de semana', status: 'unread' as const, priority: 'high' as const, userId: 'demo', propertyId: 'demo', createdAt: new Date(Date.now() - 900000).toISOString() },
+  { id: 'demo-n-2', type: 'payment', title: 'Pagamento recebido', message: 'Pix de R$ 1.500,00 confirmado para Maria Silva', status: 'unread' as const, priority: 'normal' as const, userId: 'demo', propertyId: 'demo', createdAt: new Date(Date.now() - 3600000).toISOString() },
+  { id: 'demo-n-3', type: 'escalation', title: 'Atenção necessária', message: 'João Santos solicitou remarcação — conversa escalonada para humano', status: 'unread' as const, priority: 'urgent' as const, userId: 'demo', propertyId: 'demo', createdAt: new Date(Date.now() - 7200000).toISOString() },
+  { id: 'demo-n-4', type: 'ai', title: 'IA aprendeu novo padrão', message: 'Novo padrão identificado: hóspedes perguntando sobre Wi-Fi', status: 'read' as const, priority: 'low' as const, userId: 'demo', propertyId: 'demo', readAt: new Date(Date.now() - 5400000).toISOString(), createdAt: new Date(Date.now() - 10800000).toISOString() },
+];
+
 export async function GET(request: NextRequest) {
   try {
+    const dbAvailable = await isDatabaseAvailable();
+    if (!dbAvailable) {
+      return NextResponse.json({ success: true, data: demoNotifications });
+    }
+
     const tenantId = await resolveTenantId();
     if (!tenantId || tenantId === 'client-001') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
