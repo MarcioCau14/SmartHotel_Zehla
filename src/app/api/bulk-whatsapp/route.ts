@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { apiRatelimit } from '@/lib/rate-limit';
+import { requireDDCTenantId } from '@/lib/ddc/auth-utils';
 
 export async function POST(request: Request) {
   const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
@@ -13,6 +14,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    const tenantId = await requireDDCTenantId();
     const body = await request.json();
     const { leadIds, templateId } = body;
 
@@ -63,6 +65,7 @@ export async function POST(request: Request) {
     // Log the bulk send action
     await db.agentLog.create({
       data: {
+        tenantId,
         agentId: 'lessie',
         action: 'bulk_whatsapp_sent',
         inputTokens: 0,

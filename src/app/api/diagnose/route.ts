@@ -188,6 +188,7 @@ async function postHandler(request: NextRequest, _ctx: any) {
     // Log the diagnosis action
     await db.agentLog.create({
       data: {
+        tenantId: lead.tenantId,
         agentId: 'lessie',
         action: 'diagnosis_generated',
         inputTokens: 0,
