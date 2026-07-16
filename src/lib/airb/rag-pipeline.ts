@@ -110,7 +110,7 @@ export async function queryRAG(
         regionalResults.forEach((r, i) => {
           r.relevance = Math.min(1, (r.relevance + scores[i]) / 2);
         });
-        regionalResults.sort((a, b) => b.relevance - a.relevance);
+        regionalResults.sort((a: RAGResult, b: RAGResult) => b.relevance - a.relevance);
         results.push(...regionalResults.slice(0, topK));
       }
     }
@@ -162,7 +162,7 @@ export async function queryRAG(
             const scores = keywordSearch(query, knowledgeTexts);
             const sorted = knowledgeTexts
               .map((t: string, i: number) => ({ text: t, score: scores[i] }))
-              .sort((a, b) => b.score - a.score)
+              .sort((a: { text: string; score: number }, b: { text: string; score: number }) => b.score - a.score)
               .slice(0, 3);
             for (const item of sorted) {
               if (item.score > 0) {
@@ -189,7 +189,7 @@ export async function queryRAG(
             const scores = keywordSearch(query, tipTexts);
             const sorted = tipTexts
               .map((t: string, i: number) => ({ text: t, score: scores[i] }))
-              .sort((a, b) => b.score - a.score)
+              .sort((a: { text: string; score: number }, b: { text: string; score: number }) => b.score - a.score)
               .slice(0, 3);
             for (const item of sorted) {
               if (item.score > 0) {
@@ -208,7 +208,7 @@ export async function queryRAG(
 
     // ── 3. Assemble context ──
     const assembledContext = results
-      .sort((a, b) => b.relevance - a.relevance)
+      .sort((a: RAGResult, b: RAGResult) => b.relevance - a.relevance)
       .slice(0, topK)
       .map(r => `[${r.sourceType}] ${r.content}`)
       .join('\n\n');
