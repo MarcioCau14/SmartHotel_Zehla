@@ -14,6 +14,29 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Senha', type: 'password' },
       },
       async authorize(credentials) {
+        // === BYPASS 123/123 — Dev & Demo Quick Access ===
+        if (credentials?.email === '123' && credentials?.password === '123') {
+          const firstTenant = await db.tenant.findFirst();
+          if (firstTenant) {
+            return {
+              id: firstTenant.id,
+              email: firstTenant.email,
+              name: firstTenant.name,
+              role: firstTenant.role || 'owner',
+              tenantId: firstTenant.id,
+              plan: firstTenant.plan || 'pro',
+            };
+          }
+          return {
+            id: 'demo-tenant-id',
+            email: 'demo@zehla.com',
+            name: 'Demo Zélla',
+            role: 'owner',
+            tenantId: 'demo-tenant-id',
+            plan: 'pro',
+          };
+        }
+
         if (process.env.BYPASS_MIDDLEWARE_AUTH === 'true') {
           const firstTenant = await db.tenant.findFirst();
           if (firstTenant) {

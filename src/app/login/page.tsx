@@ -66,17 +66,6 @@ function LoginForm() {
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
 
-    // === BYPASS 123/123 v4 — router.push (mais confiavel que window.location.replace) ===
-    const form = e.currentTarget as HTMLFormElement;
-    const inputs = form.querySelectorAll('input');
-    const v0 = (inputs[0]?.value || '').trim();
-    const v1 = (inputs[1]?.value || '').trim();
-    if (v0 === '123' && v1 === '123') {
-      // Nao precisa de cookie — middleware e DDC page nao verificam sessao
-      router.push('/ddc');
-      return;
-    }
-
     setIsLoading(true);
 
     try {
@@ -87,7 +76,7 @@ function LoginForm() {
         redirect: false,
       });
       if (result?.error) {
-        toast.error('Credenciais inválidas. Verifique seu email e senha.');
+        toast.error('Credenciais inválidas. Verifique seu login e senha.');
       } else {
         toast.success('Login realizado com sucesso!');
         router.push(callbackUrl);
