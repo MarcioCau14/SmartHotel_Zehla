@@ -240,28 +240,22 @@ export function HeroSection() {
             </div>
 
             {/* Headline */}
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-satoshi font-bold tracking-tight leading-[1.1] text-white mb-6">
-              <span className="whitespace-nowrap">O Zélla atende, vende e</span>
-              <br />
-              <span className="text-blue-500 font-bold whitespace-nowrap inline-flex items-baseline gap-2">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-satoshi font-bold tracking-tight leading-[1.15] text-white mb-6">
+              <span className="block">O Zélla atende, vende e</span>
+              <span className="block text-blue-500 font-bold">
                 reserva{' '}
-                <span
-                  className="inline-block relative overflow-hidden"
-                  style={{ minWidth: '14rem', height: '1.1em' }}
-                >
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={phraseIdx}
-                      initial={{ y: 32, opacity: 0, filter: 'blur(4px)' }}
-                      animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
-                      exit={{ y: -24, opacity: 0, filter: 'blur(4px)' }}
-                      transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
-                      className="absolute left-0 whitespace-nowrap"
-                    >
-                      {rotatingPhrases[phraseIdx]}
-                    </motion.span>
-                  </AnimatePresence>
-                </span>
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={phraseIdx}
+                    initial={{ opacity: 0, y: 18, filter: 'blur(6px)' }}
+                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    exit={{ opacity: 0, y: -14, filter: 'blur(6px)' }}
+                    transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                    className="inline-block"
+                  >
+                    {rotatingPhrases[phraseIdx]}
+                  </motion.span>
+                </AnimatePresence>
               </span>
             </h1>
 

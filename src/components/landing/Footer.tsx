@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import Link from 'next/link';
 import { motion, useInView } from 'framer-motion';
 import { Instagram, Youtube, Linkedin, Mail, Phone } from 'lucide-react';
-import { ZellaLogo } from '@/components/brand/ZellaLogo';
+import { ZellaLogoStatic } from '@/components/brand/ZellaLogo';
 
 export function Footer() {
   const ref = useRef<HTMLDivElement>(null);
@@ -50,7 +50,7 @@ export function Footer() {
           <div className="lg:col-span-4 space-y-5">
             {/* Brand Logo */}
           <div className="flex items-center gap-3">
-            <ZellaLogo size={40} showWordmark={true} staticOnly={true} />
+            <ZellaLogoStatic size={72} />
           </div>
             
             <p className="text-neutral-500 text-xs leading-relaxed max-w-sm">
