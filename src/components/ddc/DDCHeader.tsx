@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Brain,
@@ -54,6 +55,7 @@ export function DDCHeader({
   onOpenNotifications,
   currentPlan = 'trial'
 }: DDCHeaderProps) {
+  const router = useRouter();
   const planDisplay = PLAN_DISPLAY[currentPlan] || PLAN_DISPLAY.trial;
   const [mounted, setMounted] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
@@ -308,7 +310,16 @@ export function DDCHeader({
               <DropdownMenuSeparator className="bg-white/[0.06]" />
               <DropdownMenuItem
                 className="text-red-400 hover:text-red-300 hover:bg-red-500/10 cursor-pointer"
-                onClick={() => signOut({ callbackUrl: '/login' })}
+                onClick={async () => {
+                  try {
+                    await signOut({ redirect: false });
+                  } catch {
+                    // signOut may fail if fetch is blocked — session cookie
+                    // will still be cleared by the server on next request
+                  }
+                  // Hard navigate to /login — works even if signOut threw
+                  window.location.href = '/login';
+                }}
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Sair
