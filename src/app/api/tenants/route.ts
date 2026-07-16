@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { withSecurity } from '@/lib/security/api-shield';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 async function getHandler(_request: NextRequest, _ctx: any) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || (session.user as any).role !== 'admin') {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    }
     const tenants = await db.tenant.findMany({
       select: {
         id: true,

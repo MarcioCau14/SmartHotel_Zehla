@@ -28,8 +28,8 @@ export async function resolveTenantId(): Promise<string | null> {
   }
 
   try {
-    // Dev mode bypass: use first tenant from DB (if available)
-    if (process.env.BYPASS_MIDDLEWARE_AUTH === 'true') {
+    // Dev mode bypass: use first tenant from DB (if available) - dev/CI only
+    if (process.env.BYPASS_MIDDLEWARE_AUTH === 'true' && process.env.NODE_ENV !== 'production') {
       const dbOk = await isDatabaseAvailable();
       if (dbOk) {
         const firstTenant = await db.tenant.findFirst({ select: { id: true } });

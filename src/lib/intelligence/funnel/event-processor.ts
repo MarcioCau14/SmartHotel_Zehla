@@ -1,12 +1,10 @@
 // src/lib/intelligence/funnel/event-processor.ts
 // Processes funnel events, updates scores, and triggers next actions
 
-import { PrismaClient } from '@prisma/client';
+import { db as prisma } from '../../db';
 import { FunnelEventInput, NextAction } from './types';
 import { updateLeadScore } from './scorer';
 import { determineNextAction } from './next-action';
-
-const prisma = new PrismaClient();
 
 export async function processEvent(input: FunnelEventInput): Promise<{ eventId: string; nextAction: NextAction }> {
   const event = await prisma.funnelEvent.create({

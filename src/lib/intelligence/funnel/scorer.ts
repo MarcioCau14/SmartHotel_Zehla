@@ -1,10 +1,8 @@
 // src/lib/intelligence/funnel/scorer.ts
 // Dynamic scoring engine for funnel leads
 
-import { PrismaClient } from '@prisma/client';
+import { db as prisma } from '../../db';
 import { FunnelScoreUpdate, PainCluster } from './types';
-
-const prisma = new PrismaClient();
 
 export async function calculateScores(leadId: string): Promise<FunnelScoreUpdate> {
   const lead = await prisma.lead.findUnique({

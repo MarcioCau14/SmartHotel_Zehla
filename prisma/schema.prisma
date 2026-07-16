@@ -78,9 +78,11 @@ model Tenant {
   transactions Transaction[]
 
   // Tenant isolation (ZDR Phase 1)
-  leads        Lead[]
-  campaigns    Campaign[]
-  targets      Target[]
+  leads          Lead[]
+  campaigns      Campaign[]
+  targets        Target[]
+  swipeTemplates SwipeTemplate[]
+  agentLogs      AgentLog[]
 
   subscriptionId String?
   subscriptions  Subscription[]
@@ -233,7 +235,7 @@ model AuditLog {
 // ===== LEADS (Prospecção Lessie AI + LIS) =====
 model Lead {
   id              String  @id @default(cuid())
-  tenantId        String?
+  tenantId        String
   empresa         String
   decisor         String  @default("")
   cargo           String  @default("")
@@ -300,7 +302,7 @@ model Lead {
   metadata              String    @default("{}") // JSON com dados extras
 
   // Tenant isolation
-  tenant          Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   // Relations
   emailTrackings EmailTracking[]
@@ -333,7 +335,7 @@ model EmailTracking {
 // ===== TARGETS (Pousadas sob mira) =====
 model Target {
   id       String  @id @default(cuid())
-  tenantId String?
+  tenantId String
   name     String
   domain   String
   website  String?
@@ -342,7 +344,7 @@ model Target {
   status   String  @default("active") // active | pending | inactive | prospected
   priority Int     @default(5) // 1-10
 
-  tenant    Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant    Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -355,6 +357,8 @@ model Target {
 // ===== AGENT LOG (Ações da IA) =====
 model AgentLog {
   id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   action    String
   status    String   @default("success") // success | error | timeout
   createdAt DateTime @default(now())
@@ -379,6 +383,7 @@ model AgentLog {
   duration   Int     @default(0)
 
   @@index([agentName, createdAt])
+  @@index([tenantId])
   @@map("agent_logs")
 }
 
@@ -408,6 +413,8 @@ model SecurityAlert {
 // ===== SWIPE TEMPLATE (Mensagens WhatsApp) =====
 model SwipeTemplate {
   id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   name      String   @default("") // ZEHLA expects name
   title     String   @default("") // old expects title
   content   String
@@ -437,6 +444,7 @@ model SwipeTemplate {
 
   usages SwipeUsage[]
 
+  @@index([tenantId])
   @@map("swipe_templates")
 }
 
@@ -465,7 +473,7 @@ model SwipeUsage {
 // ===== CAMPAIGN (Orquestração multicanal) =====
 model Campaign {
   id        String   @id @default(cuid())
-  tenantId  String?
+  tenantId  String
   name      String
   type      String   @default("whatsapp") // whatsapp | email | ads | multi
   status    String   @default("draft") // draft | active | paused | completed | cancelled
@@ -473,7 +481,7 @@ model Campaign {
   updatedAt DateTime @updatedAt
 
   // Tenant isolation
-  tenant    Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   // From new schema
   targetAudience  String    @default("all") // all | leads | verified | converted

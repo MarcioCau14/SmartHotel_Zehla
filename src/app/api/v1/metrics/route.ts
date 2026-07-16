@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '../../../../../prisma/db';
+import { db as prisma } from '@/lib/db';
 import { requireTenant } from '../../../../lib/auth';
 import { withSecurity } from '@/lib/security/api-shield';
 

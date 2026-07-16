@@ -1,10 +1,8 @@
 // src/lib/intelligence/funnel/classifier.ts
 // Classifies leads into HOT/WARM/COLD clusters based on events and signals
 
-import { PrismaClient } from '@prisma/client';
+import { db as prisma } from '../../db';
 import { FunnelCluster, PainCluster, EventType } from './types';
-
-const prisma = new PrismaClient();
 
 const EVENT_WEIGHTS: Record<EventType, number> = {
   email_sent: 0,

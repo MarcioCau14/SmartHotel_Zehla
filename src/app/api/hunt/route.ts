@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { handleApiError } from '@/lib/error-handler';
 import { apiRatelimit } from '@/lib/rate-limit';
+import { requireTenantId } from '@/lib/security/tenant-context';
 
 const MOCK_DECISORES = [
   'Carlos Mendes', 'Ana Souza', 'Roberto Lima', 'Fernanda Oliveira',
@@ -59,6 +60,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    const tenantId = await requireTenantId();
     const body = await request.json();
     const { targetName } = body;
 
@@ -93,6 +95,7 @@ export async function POST(request: Request) {
 
       const lead = await db.lead.create({
         data: {
+          tenantId,
           empresa: `${targetName} ${i > 0 ? `- Unidade ${i + 1}` : ''}`.trim(),
           decisor,
           cargo,
@@ -127,6 +130,7 @@ export async function POST(request: Request) {
     // Log the hunt action
     await db.agentLog.create({
       data: {
+        tenantId,
         agentId: 'lessie',
         action: 'hunt_executed',
         inputTokens: 0,

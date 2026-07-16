@@ -2,7 +2,10 @@ import { db } from '@/lib/db';
 
 type TenantScopedModel = 'property' | 'guest' | 'booking' | 'conversationLog' | 'knowledgeEntry'
   | 'trainingPrompt' | 'apiConfig' | 'agentConfig' | 'subscription' | 'auditLog'
-  | 'notification' | 'performanceSnapshot' | 'aIActivityLog' | 'quickAction';
+  | 'notification' | 'performanceSnapshot' | 'aIActivityLog' | 'quickAction'
+  | 'lead' | 'target' | 'campaign' | 'swipeTemplate' | 'agentLog'
+  | 'airBProperty' | 'airBConversation' | 'airBRegionalKnowledge' | 'airBScrapingJob'
+  | 'airBSubscription' | 'airBTransaction';
 
 const TENANT_SCOPED: Record<TenantScopedModel, string> = {
   property: 'tenantId',
@@ -19,6 +22,17 @@ const TENANT_SCOPED: Record<TenantScopedModel, string> = {
   performanceSnapshot: 'tenantId',
   aIActivityLog: 'tenantId',
   quickAction: 'tenantId',
+  lead: 'tenantId',
+  target: 'tenantId',
+  campaign: 'tenantId',
+  swipeTemplate: 'tenantId',
+  agentLog: 'tenantId',
+  airBProperty: 'tenantId',
+  airBConversation: 'tenantId',
+  airBRegionalKnowledge: 'tenantId',
+  airBScrapingJob: 'tenantId',
+  airBSubscription: 'tenantId',
+  airBTransaction: 'tenantId',
 };
 
 type TenantDbProxy = {
@@ -50,7 +64,8 @@ export function withTenant(tenantId: string): TenantDbProxy {
         return (prismaModel.findMany as (...args: any[]) => any)(merged);
       },
       findUnique: (args: { where: Record<string, unknown>; include?: Record<string, unknown> }) => {
-        return (prismaModel.findUnique as (...args: any[]) => any)(args);
+        const mergedWhere = { ...args.where, [field]: tenantId };
+        return (prismaModel.findFirst as (...args: any[]) => any)({ ...args, where: mergedWhere });
       },
       findFirst: (args: Record<string, unknown>) => {
         const merged = { ...args };
@@ -67,10 +82,12 @@ export function withTenant(tenantId: string): TenantDbProxy {
         return (prismaModel.create as (...args: any[]) => any)({ ...args, data });
       },
       update: (args: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
-        return (prismaModel.update as (...args: any[]) => any)(args);
+        const mergedWhere = { ...args.where, [field]: tenantId };
+        return (prismaModel.updateMany as (...args: any[]) => any)({ ...args, where: mergedWhere, data: args.data });
       },
       delete: (args: { where: Record<string, unknown> }) => {
-        return (prismaModel.delete as (...args: any[]) => any)(args);
+        const mergedWhere = { ...args.where, [field]: tenantId };
+        return (prismaModel.deleteMany as (...args: any[]) => any)({ ...args, where: mergedWhere });
       },
       updateMany: (args: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
         const merged = { ...args };
@@ -82,8 +99,21 @@ export function withTenant(tenantId: string): TenantDbProxy {
         merged.where = { ...(merged.where as Record<string, unknown> || {}), [field]: tenantId };
         return (prismaModel.deleteMany as (...args: any[]) => any)(merged);
       },
-      upsert: (args: { where: Record<string, unknown>; create: Record<string, unknown>; update: Record<string, unknown> }) => {
-        return (prismaModel.upsert as (...args: any[]) => any)(args);
+      upsert: async (args: { where: Record<string, unknown>; create: Record<string, unknown>; update: Record<string, unknown> }) => {
+        const mergedWhere = { ...args.where, [field]: tenantId };
+        const existing = await (prismaModel.findFirst as (...args: any[]) => any)({ where: mergedWhere });
+        if (existing) {
+          const mergedUpdate = { ...args.update, [field]: tenantId };
+          return (prismaModel.update as (...args: any[]) => any)({
+            where: { id: (existing as any).id },
+            data: mergedUpdate,
+          });
+        } else {
+          const mergedCreate = { ...args.create, [field]: tenantId };
+          return (prismaModel.create as (...args: any[]) => any)({
+            data: mergedCreate,
+          });
+        }
       },
     };
   }
