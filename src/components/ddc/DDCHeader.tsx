@@ -33,6 +33,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import { signOut } from 'next-auth/react';
 
 import type { AIStatus } from '@/types/ddc';
 import type { PlanTier } from '@/lib/plan-features';
@@ -305,7 +306,10 @@ export function DDCHeader({
                 Suporte
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-white/[0.06]" />
-              <DropdownMenuItem className="text-red-400 hover:text-red-300 hover:bg-red-500/10">
+              <DropdownMenuItem
+                className="text-red-400 hover:text-red-300 hover:bg-red-500/10 cursor-pointer"
+                onClick={() => signOut({ callbackUrl: '/login' })}
+              >
                 <LogOut className="w-4 h-4 mr-2" />
                 Sair
               </DropdownMenuItem>

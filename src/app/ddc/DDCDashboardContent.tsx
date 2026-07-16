@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DDCHeader } from '@/components/ddc/DDCHeader';
 import { RevenueMetrics } from '@/components/ddc/RevenueMetrics';
@@ -82,6 +83,16 @@ import {
 } from 'lucide-react';
 
 export default function DDCDashboardContent() {
+  const router = useRouter();
+  const { data: session, status: sessionStatus } = useSession();
+
+  // Redirect to login if unauthenticated
+  useEffect(() => {
+    if (sessionStatus === 'unauthenticated') {
+      router.push('/login?callbackUrl=/ddc');
+    }
+  }, [sessionStatus, router]);
+
   // Custom hooks
   const { metrics, aiStatus, isLoading } = useDDCMetrics('today', true);
   const { conversations, selectedConversation, selectConversation, sendMessage, escalateConversation } = useAILiveFeed();
@@ -299,8 +310,6 @@ export default function DDCDashboardContent() {
       setIsSendingPix(false);
     }
   };
-
-  const router = useRouter();
 
   useEffect(() => {
     fetch('/api/ddc/property-name')
@@ -1635,6 +1644,18 @@ export default function DDCDashboardContent() {
   };
 
   // ─── RENDER ──────────────────────────────────────────────────
+  // Show loading while checking session
+  if (sessionStatus === 'loading') {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-zinc-400 text-sm">Verificando sessão...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white antialiased font-sans">
       <Toaster position="top-center" richColors />

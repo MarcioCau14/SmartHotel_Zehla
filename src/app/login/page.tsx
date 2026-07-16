@@ -40,7 +40,7 @@ export default function LoginPage() {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  const callbackUrl = searchParams.get('callbackUrl') || '/ddc';
 
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -66,6 +66,11 @@ function LoginForm() {
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
 
+    if (!loginData.email || !loginData.password) {
+      toast.error('Preencha o login e a senha.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -75,14 +80,20 @@ function LoginForm() {
         password: loginData.password,
         redirect: false,
       });
+
       if (result?.error) {
         toast.error('Credenciais inválidas. Verifique seu login e senha.');
-      } else {
+      } else if (result?.ok) {
         toast.success('Login realizado com sucesso!');
+        // Small delay to ensure session cookie is set
+        await new Promise(r => setTimeout(r, 300));
         router.push(callbackUrl);
         router.refresh();
+      } else {
+        toast.error('Erro inesperado ao fazer login.');
       }
-    } catch {
+    } catch (err) {
+      console.error('[Login] Error:', err);
       toast.error('Erro ao fazer login. Tente novamente.');
     } finally {
       setIsLoading(false);
