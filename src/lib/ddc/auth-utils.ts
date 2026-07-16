@@ -2,17 +2,31 @@
  * ZEHLA DDC — Auth & Tenant Resolution Utility
  * 
  * Resolves tenantId from NextAuth session for DDC API routes.
+ * On Vercel serverless (no SQLite), returns session's tenantId directly.
  * In development (BYPASS_MIDDLEWARE_AUTH=true), falls back to the first tenant.
  * In production, returns null if no session — callers must handle this.
- * If DB is unavailable (e.g. Vercel serverless without persistent SQLite),
- * falls back to the session's tenantId without DB lookup.
  */
 
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db, isDatabaseAvailable } from '@/lib/db';
 
+/** Check if we're running on Vercel (serverless — no persistent SQLite) */
+function isVercelServerless(): boolean {
+  return !!(process.env.VERCEL || process.env.VERCEL_ENV);
+}
+
 export async function resolveTenantId(): Promise<string | null> {
+  // On Vercel serverless, skip DB entirely — return from session
+  if (isVercelServerless()) {
+    try {
+      const session = await getServerSession(authOptions);
+      return session?.user?.tenantId ?? null;
+    } catch {
+      return null;
+    }
+  }
+
   try {
     // Dev mode bypass: use first tenant from DB (if available)
     if (process.env.BYPASS_MIDDLEWARE_AUTH === 'true') {

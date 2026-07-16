@@ -15,6 +15,11 @@ const DEMO_USER = {
   plan: 'pro' as const,
 };
 
+/** Check if we're running on Vercel (serverless — no persistent SQLite) */
+function isVercelServerless(): boolean {
+  return !!(process.env.VERCEL || process.env.VERCEL_ENV);
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -26,6 +31,10 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         // === BYPASS 123/123 — Dev & Demo Quick Access ===
         if (credentials?.email === '123' && credentials?.password === '123') {
+          // On Vercel serverless, skip DB entirely — SQLite file doesn't exist there
+          if (isVercelServerless()) {
+            return DEMO_USER;
+          }
           try {
             const dbOk = await isDatabaseAvailable();
             if (dbOk) {
@@ -48,6 +57,16 @@ export const authOptions: NextAuthOptions = {
         }
 
         if (process.env.BYPASS_MIDDLEWARE_AUTH === 'true') {
+          if (isVercelServerless()) {
+            return {
+              id: 'mock-tenant-id',
+              email: credentials?.email || 'admin@smarthotel.com',
+              name: 'Usuário Convidado',
+              role: 'owner',
+              tenantId: 'mock-tenant-id',
+              plan: 'pro',
+            };
+          }
           try {
             const dbOk = await isDatabaseAvailable();
             if (dbOk) {
@@ -77,6 +96,11 @@ export const authOptions: NextAuthOptions = {
         }
 
         if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        // On Vercel, no DB means no real authentication possible
+        if (isVercelServerless()) {
           return null;
         }
 
@@ -143,6 +167,12 @@ export const authOptions: NextAuthOptions = {
  * Retrieves the tenant ID of the authenticated user or redirects if unauthorized.
  */
 export async function requireTenant() {
+  // On Vercel serverless, return the demo/mock tenant
+  if (isVercelServerless()) {
+    const session = await getServerSession(authOptions);
+    return session?.user?.tenantId || 'demo-tenant-id';
+  }
+
   if (process.env.BYPASS_MIDDLEWARE_AUTH === 'true') {
     try {
       const dbOk = await isDatabaseAvailable();
