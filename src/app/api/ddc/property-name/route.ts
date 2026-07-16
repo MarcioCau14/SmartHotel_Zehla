@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db, isDatabaseAvailable } from '@/lib/db';
 import { resolveTenantId } from '@/lib/ddc/auth-utils';
 import { getEffectivePlan } from '@/lib/plan-resolver';
 
@@ -7,7 +7,12 @@ export async function GET() {
   try {
     const tenantId = await resolveTenantId();
     if (!tenantId) {
-      return NextResponse.json({ name: 'Minha Pousada', plan: 'trial', tenantId: '' });
+      return NextResponse.json({ name: 'Pousada Paraíso', plan: 'pro', tenantId: 'demo-tenant-id' });
+    }
+
+    const dbAvailable = await isDatabaseAvailable();
+    if (!dbAvailable) {
+      return NextResponse.json({ name: 'Pousada Paraíso', plan: 'pro', tenantId });
     }
 
     const property = await db.property.findFirst({
@@ -17,13 +22,13 @@ export async function GET() {
     const effectivePlan = await getEffectivePlan(tenantId);
 
     return NextResponse.json({
-      name: property?.name || 'Minha Pousada',
-      plan: effectivePlan,
+      name: property?.name || 'Pousada Paraíso',
+      plan: effectivePlan || 'pro',
       tenantId
     });
   } catch (error) {
     console.error('[property-name GET] Error:', error);
-    return NextResponse.json({ name: 'Minha Pousada', plan: 'trial', tenantId: '' });
+    return NextResponse.json({ name: 'Pousada Paraíso', plan: 'pro', tenantId: 'demo-tenant-id' });
   }
 }
 
