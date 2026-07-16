@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Seu Zélla — Arquitetura de Software & Topologia de Agentes",
+    "subtitle": "Visão geral multi-tenant do ecossistema Seu Zélla Pousadas & Airbnb — Renderizado por Archify",
+    "output": "seuzella-rendered.html"
+  },
+  "components": [
+    { "id": "users", "type": "external", "label": "SaaS Dashboard", "sublabel": "Browser / Mobile UI", "pos": [50, 120], "size": [135, 60] },
+    { "id": "wa_guest", "type": "external", "label": "WhatsApp Guest", "sublabel": "WhatsApp Messenger", "pos": [50, 300], "size": [135, 60] },
+    { "id": "ab_guest", "type": "external", "label": "Airbnb Guest", "sublabel": "Airbnb Chat Client", "pos": [50, 480], "size": [135, 60] },
+    { "id": "vercel", "type": "cloud", "label": "Vercel Edge", "sublabel": "Next.js Frontend/API", "pos": [260, 120], "size": [135, 60] },
+    { "id": "routing", "type": "cloud", "label": "Caddy / Nginx", "sublabel": "VPS Reverse Proxy", "pos": [260, 300], "size": [135, 60] },
+    { "id": "middleware", "type": "security", "label": "Next.js Guard", "sublabel": "Auth & Rate Limiting", "pos": [475, 120], "size": [135, 60] },
+    { "id": "with_tenant", "type": "security", "label": "tenant-extension", "sublabel": "Auto-inject tenantId", "pos": [475, 300], "size": [135, 60] },
+    { "id": "pix_gate", "type": "security", "label": "PIX Gatekeeper", "sublabel": "Filter PIX & Entitlements", "pos": [475, 480], "size": [135, 60] },
+    { "id": "finance_brain", "type": "security", "label": "Finance Swarm", "sublabel": "Jony, Maria & Tedd", "pos": [690, 120], "size": [145, 60], "tag": "PIX Reconciliation" },
+    { "id": "pousada_swarm", "type": "backend", "label": "Pousadas Swarm", "sublabel": "Receptionist & Reservas", "pos": [690, 300], "size": [145, 60], "tag": "WhatsApp Handler" },
+    { "id": "airbnb_swarm", "type": "backend", "label": "Airbnb Swarm", "sublabel": "Anfitrião & Concierge", "pos": [690, 480], "size": [145, 60], "tag": "Airbnb Responder" },
+    { "id": "db_postgres", "type": "database", "label": "PostgreSQL", "sublabel": "Zehla DB (Docker)", "pos": [910, 120], "size": [140, 60] },
+    { "id": "db_sqlite", "type": "database", "label": "SQLite", "sublabel": "custom.db (Local)", "pos": [910, 300], "size": [140, 60] },
+    { "id": "evolution_api", "type": "messagebus", "label": "Evolution API", "sublabel": "WhatsApp Gateway", "pos": [910, 480], "size": [140, 60] },
+    { "id": "redis_cache", "type": "database", "label": "Redis", "sublabel": "Cache (Docker)", "pos": [910, 210], "size": [140, 60] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Hostinger VPS (Docker Infrastructure)", "wraps": ["routing", "with_tenant", "pousada_swarm", "airbnb_swarm", "db_sqlite", "db_postgres", "evolution_api", "redis_cache"] },
+    { "kind": "security-group", "label": "Antigravity AI Agent Teams Core", "wraps": ["finance_brain", "pousada_swarm", "airbnb_swarm"] }
+  ],
+  "connections": [
+    { "from": "users", "to": "vercel", "label": "HTTPS", "variant": "emphasis" },
+    { "from": "vercel", "to": "middleware", "label": "resolve session" },
+    { "from": "middleware", "to": "db_postgres", "label": "validate JWT", "variant": "security", "fromSide": "top", "toSide": "top", "labelDy": -24 },
+    { "from": "wa_guest", "to": "routing", "label": "webhook" },
+    { "from": "routing", "to": "with_tenant", "label": "dispatch" },
+    { "from": "with_tenant", "to": "pousada_swarm", "label": "tenant scope" },
+    { "from": "ab_guest", "to": "pix_gate", "label": "chat incoming" },
+    { "from": "pix_gate", "to": "airbnb_swarm", "label": "sanitized msg", "variant": "security" },
+    { "from": "pousada_swarm", "to": "evolution_api", "label": "send WhatsApp" },
+    { "from": "pousada_swarm", "to": "finance_brain", "label": "verify checkouts", "variant": "dashed" },
+    { "from": "pousada_swarm", "to": "db_sqlite", "label": "SQLite logs" },
+    { "from": "airbnb_swarm", "to": "db_sqlite", "label": "SQLite logs" },
+    { "from": "airbnb_swarm", "to": "redis_cache", "label": "RAG lookups" },
+    { "from": "finance_brain", "to": "db_sqlite", "label": "PIX audit" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Ingress & Edge", "items": ["Vercel hospeda o dashboard administrativo Next.js", "Caddy / Nginx no VPS Hostinger atua como proxy reverso de entrada", "Evolution API gerencia a integração nativa com o WhatsApp no VPS"] },
+    { "dot": "emerald", "title": "Agentes Multi-Tenant", "items": ["Pousadas Swarm: Chain of Handlers para lidar com recepção, concierge e reservas", "Airbnb Swarm: Classificação automática de intenções de hóspedes e respostas inteligentes baseadas em RAG", "Finance Swarm: Robôs de verificação/conciliação de pagamentos Pix via banco"] },
+    { "dot": "rose", "title": "Segurança e Isolamento", "items": ["Next.js Guard: Validação JWT e bloqueio automático de IPs suspeitos (Rate Limiting)", "tenant-extension: Extensão Prisma personalizada que intercepta todas as queries injetando automaticamente o tenantId correspondente", "PIX Gatekeeper: Filtro de mensagens em tempo real para impedir o compartilhamento de chaves Pix no Airbnb, evitando punições de canais externos"] }
+  ]
+}
