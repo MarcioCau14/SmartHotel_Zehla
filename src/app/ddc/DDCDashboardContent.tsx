@@ -311,9 +311,23 @@ export default function DDCDashboardContent() {
     }
   };
 
+  // Use session plan as initial value, then refine from API
+  useEffect(() => {
+    // Set plan from session immediately if available
+    if (session?.user) {
+      const sessionPlan = (session.user as any)?.plan;
+      if (sessionPlan) {
+        setCurrentPlan(sessionPlan as PlanTier);
+      }
+    }
+  }, [session]);
+
   useEffect(() => {
     fetch('/api/ddc/property-name')
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then(d => {
         const name = d.name || 'Minha Pousada';
         setPropertyName(name);
@@ -323,9 +337,12 @@ export default function DDCDashboardContent() {
       .catch(() => {
         setPropertyName('Minha Pousada');
         setEditPropertyName('Minha Pousada');
-        setCurrentPlan('trial' as PlanTier);
+        // Keep session plan if available, otherwise default to trial
+        if (!(session?.user as any)?.plan) {
+          setCurrentPlan('trial' as PlanTier);
+        }
       });
-  }, []);
+  }, [session]);
 
   // Fetch bookings when tab is active
   useEffect(() => {

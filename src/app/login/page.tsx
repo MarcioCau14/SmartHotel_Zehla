@@ -74,27 +74,37 @@ function LoginForm() {
     setIsLoading(true);
 
     try {
+      // Dynamic import to avoid bundling next-auth (Prisma) on client
       const { signIn } = await import('next-auth/react');
+
       const result = await signIn('credentials', {
         email: loginData.email,
         password: loginData.password,
         redirect: false,
       });
 
+      console.log('[Login] signIn result:', { ok: result?.ok, error: result?.error, status: result?.status });
+
       if (result?.error) {
-        toast.error('Credenciais inválidas. Verifique seu login e senha.');
+        // NextAuth returns 'CredentialsSignin' for invalid credentials
+        if (result.error === 'CredentialsSignin') {
+          toast.error('Login ou senha incorretos.');
+        } else {
+          toast.error(`Erro no login: ${result.error}`);
+        }
       } else if (result?.ok) {
         toast.success('Login realizado com sucesso!');
-        // Small delay to ensure session cookie is set
-        await new Promise(r => setTimeout(r, 300));
+        // Wait for session cookie to propagate
+        await new Promise(r => setTimeout(r, 500));
         router.push(callbackUrl);
         router.refresh();
       } else {
-        toast.error('Erro inesperado ao fazer login.');
+        // result is null/undefined — unexpected
+        toast.error('Erro inesperado ao fazer login. Tente novamente.');
       }
     } catch (err) {
-      console.error('[Login] Error:', err);
-      toast.error('Erro ao fazer login. Tente novamente.');
+      console.error('[Login] Exception:', err);
+      toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
     } finally {
       setIsLoading(false);
     }

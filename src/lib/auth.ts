@@ -25,21 +25,27 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: 'credentials',
       credentials: {
-        email: { label: 'Email', type: 'email' },
+        email: { label: 'Login', type: 'text' },
         password: { label: 'Senha', type: 'password' },
       },
       async authorize(credentials) {
+        console.log('[auth] authorize() called — email:', credentials?.email, '| vercel:', isVercelServerless());
+
         // === BYPASS 123/123 — Dev & Demo Quick Access ===
         if (credentials?.email === '123' && credentials?.password === '123') {
+          console.log('[auth] 123/123 bypass activated');
           // On Vercel serverless, skip DB entirely — SQLite file doesn't exist there
           if (isVercelServerless()) {
+            console.log('[auth] Vercel serverless — returning DEMO_USER');
             return DEMO_USER;
           }
           try {
             const dbOk = await isDatabaseAvailable();
+            console.log('[auth] DB available:', dbOk);
             if (dbOk) {
               const firstTenant = await db.tenant.findFirst();
               if (firstTenant) {
+                console.log('[auth] Found tenant:', firstTenant.id, firstTenant.name);
                 return {
                   id: firstTenant.id,
                   email: firstTenant.email,
@@ -50,13 +56,16 @@ export const authOptions: NextAuthOptions = {
                 };
               }
             }
-          } catch {
-            // DB not available — fall through to demo user
+          } catch (err) {
+            console.error('[auth] DB error on 123/123 bypass:', err);
           }
+          console.log('[auth] No DB tenant found — returning DEMO_USER');
           return DEMO_USER;
         }
 
+        // === BYPASS_MIDDLEWARE_AUTH mode (dev/staging) ===
         if (process.env.BYPASS_MIDDLEWARE_AUTH === 'true') {
+          console.log('[auth] BYPASS_MIDDLEWARE_AUTH=true — accepting any credentials');
           if (isVercelServerless()) {
             return {
               id: 'mock-tenant-id',
@@ -96,11 +105,13 @@ export const authOptions: NextAuthOptions = {
         }
 
         if (!credentials?.email || !credentials?.password) {
+          console.log('[auth] Missing credentials — returning null');
           return null;
         }
 
         // On Vercel, no DB means no real authentication possible
         if (isVercelServerless()) {
+          console.log('[auth] Vercel serverless + no bypass — cannot authenticate');
           return null;
         }
 
@@ -116,6 +127,7 @@ export const authOptions: NextAuthOptions = {
           if (tenant && tenant.passwordHash) {
             const isValid = await bcrypt.compare(credentials.password, tenant.passwordHash);
             if (isValid) {
+              console.log('[auth] Tenant authenticated:', tenant.id, tenant.name);
               return {
                 id: tenant.id,
                 email: tenant.email,
@@ -126,8 +138,9 @@ export const authOptions: NextAuthOptions = {
               };
             }
           }
-        } catch {
-          // DB error — cannot authenticate
+          console.log('[auth] Invalid credentials for:', credentials.email);
+        } catch (err) {
+          console.error('[auth] DB error during auth:', err);
         }
 
         return null;
@@ -141,17 +154,17 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.tenantId = user.tenantId;
-        token.role = user.role;
-        token.plan = user.plan;
+        token.tenantId = (user as any).tenantId;
+        token.role = (user as any).role;
+        token.plan = (user as any).plan;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.tenantId = token.tenantId;
-        session.user.role = token.role;
-        session.user.plan = token.plan;
+        (session.user as any).tenantId = (token as any).tenantId;
+        (session.user as any).role = (token as any).role;
+        (session.user as any).plan = (token as any).plan;
       }
       return session;
     },
@@ -160,6 +173,7 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
   },
   secret: process.env.NEXTAUTH_SECRET || 'zehla-demo-secret-2026-prod',
+  debug: process.env.NODE_ENV === 'development',
 };
 
 /**
