@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db, isDatabaseAvailable } from '@/lib/db';
 import { resolveTenantId } from '@/lib/ddc/auth-utils';
+import { processAirBMessage } from '@/lib/airb';
 
 const demoConversations = [
   {
@@ -116,5 +117,50 @@ export async function GET() {
   } catch (error) {
     console.error('[AIRB] Error listing conversations:', error);
     return NextResponse.json({ success: false, error: 'Failed to list conversations' }, { status: 500 });
+  }
+}
+
+// POST /api/ddc/airb/conversations — Simulate sending/receiving a message in an Airbnb conversation
+export async function POST(request: Request) {
+  try {
+    const dbAvailable = await isDatabaseAvailable();
+    if (!dbAvailable) {
+      return NextResponse.json({ success: false, error: 'Banco de dados indisponível' }, { status: 503 });
+    }
+
+    const tenantId = await resolveTenantId();
+    if (!tenantId) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { conversationId, messageContent } = body;
+
+    if (!conversationId || !messageContent) {
+      return NextResponse.json({ success: false, error: 'conversationId and messageContent are required' }, { status: 400 });
+    }
+
+    // Verify conversation belongs to tenant
+    const conversation = await db.airBConversation.findFirst({
+      where: { id: conversationId, tenantId },
+    });
+
+    if (!conversation) {
+      return NextResponse.json({ success: false, error: 'Conversation not found or access denied' }, { status: 404 });
+    }
+
+    const result = await processAirBMessage({
+      tenantId,
+      conversationId,
+      messageContent,
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: result,
+    }, { status: 201 });
+  } catch (error) {
+    console.error('[AIRB] Error simulating message processing:', error);
+    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
   }
 }

@@ -155,8 +155,26 @@ class LoggingHandler extends AgentHandler {
   async process(ctx: ProcessContext): Promise<ProcessContext> {
     if (ctx.response && ctx.response.tokensUsed !== undefined) {
       try {
+        const property = await db.property.findUnique({
+          where: { id: ctx.request.propertyId },
+          select: { tenantId: true }
+        });
+        const tenantId = property?.tenantId || 'unknown';
+
         await db.agentLog.create({
-          data: { agentName: ctx.response.agent, action: 'RESPOND', intent: ctx.classified.intent, confidence: ctx.classified.confidence, input: ctx.request.message || '', output: ctx.response.response, tokensUsed: ctx.response.tokensUsed || 0, cost: ctx.response.cost || 0, duration: Date.now() - ctx.startTime, status: 'SUCCESS' }
+          data: {
+            tenantId,
+            agentName: ctx.response.agent,
+            action: 'RESPOND',
+            intent: ctx.classified.intent,
+            confidence: ctx.classified.confidence,
+            input: ctx.request.message || '',
+            output: ctx.response.response,
+            tokensUsed: ctx.response.tokensUsed || 0,
+            cost: ctx.response.cost || 0,
+            duration: Date.now() - ctx.startTime,
+            status: 'SUCCESS'
+          }
         });
       } catch (err) {
         console.error('[LoggingHandler] Failed to persist agent log:', err);

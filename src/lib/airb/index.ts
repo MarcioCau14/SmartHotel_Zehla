@@ -5,3 +5,4 @@ export { buildAirBSystemPrompt, AIRB_INTENTS, getAgentForIntent } from './system
 export type { SystemPromptParams, AirBIntent } from './system-prompt';
 export { queryRAG, generateDemoRegionalKnowledge } from './rag-pipeline';
 export type { RAGResult, RAGContext } from './rag-pipeline';
+export { processAirBMessage } from './ai-responder';
