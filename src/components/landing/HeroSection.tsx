@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect, useCallback } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight,
   Sparkles,
@@ -200,6 +200,20 @@ export function HeroSection() {
   });
   const mockupY = useTransform(scrollYProgress, [0, 1], [0, 60]);
 
+  // Rotating hero words
+  const rotatingPhrases = [
+    'pelo WhatsApp.',
+    'da sua pousada.',
+    'do seu imóvel.',
+  ];
+  const [phraseIdx, setPhraseIdx] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPhraseIdx((prev) => (prev + 1) % rotatingPhrases.length);
+    }, 2800);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section ref={ref} className="relative min-h-screen flex items-center overflow-hidden bg-[#0a0a0a]">
 
@@ -229,11 +243,30 @@ export function HeroSection() {
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-satoshi font-bold tracking-tight leading-[1.1] text-white mb-6">
               <span className="whitespace-nowrap">O Zélla atende, vende e</span>
               <br />
-              <span className="text-blue-500 font-bold whitespace-nowrap">reserva pelo WhatsApp.</span>
+              <span className="text-blue-500 font-bold whitespace-nowrap inline-flex items-baseline gap-2">
+                reserva{' '}
+                <span
+                  className="inline-block relative overflow-hidden"
+                  style={{ minWidth: '14rem', height: '1.1em' }}
+                >
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={phraseIdx}
+                      initial={{ y: 32, opacity: 0, filter: 'blur(4px)' }}
+                      animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
+                      exit={{ y: -24, opacity: 0, filter: 'blur(4px)' }}
+                      transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+                      className="absolute left-0 whitespace-nowrap"
+                    >
+                      {rotatingPhrases[phraseIdx]}
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
+              </span>
             </h1>
 
             <p className="text-lg sm:text-xl text-neutral-400 leading-relaxed mb-10 max-w-2xl mx-auto">
-              O zelador digital da sua pousada — 24h por dia, 7 dias por semana. Responde hóspedes com naturalidade, envia sua chave PIX para pagamento e aumenta suas reservas automaticamente. Feito para o mercado brasileiro.
+              O zelador digital que responde 24hs por 7. Atende os hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para pousadas e anfitriões de Airbnb.
             </p>
 
             {/* CTAs — two buttons side by side, centered */}

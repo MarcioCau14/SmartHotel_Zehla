@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ArrowRight } from 'lucide-react';
+import { ZellaLogo } from '@/components/brand/ZellaLogo';
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -43,11 +44,7 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         {/* Brand Logo & Name */}
         <Link href="/" className="flex items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-lg">
-          <img
-            src="/logo-zella-b01.png"
-            alt="Seu Zélla — Zelador Digital Inteligente"
-            className="h-7 sm:h-8 w-auto object-contain"
-          />
+          <ZellaLogo size={32} showWordmark={true} />
         </Link>
 
         {/* Desktop Navigation Links */}

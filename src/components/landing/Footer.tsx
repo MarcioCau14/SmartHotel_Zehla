@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import Link from 'next/link';
 import { motion, useInView } from 'framer-motion';
 import { Instagram, Youtube, Linkedin, Mail, Phone } from 'lucide-react';
+import { ZellaLogo } from '@/components/brand/ZellaLogo';
 
 export function Footer() {
   const ref = useRef<HTMLDivElement>(null);
@@ -47,13 +48,10 @@ export function Footer() {
           
           {/* Brand Column (spans 4) */}
           <div className="lg:col-span-4 space-y-5">
-            <div className="flex items-center gap-3">
-              <img
-                src="/logo-zella-b02.png"
-                alt="Seu Zélla — Zelador Digital Inteligente"
-                className="h-20 w-auto object-contain"
-              />
-            </div>
+            {/* Brand Logo */}
+          <div className="flex items-center gap-3">
+            <ZellaLogo size={40} showWordmark={true} staticOnly={true} />
+          </div>
             
             <p className="text-neutral-500 text-xs leading-relaxed max-w-sm">
               Plataforma inteligente de automação de reservas e atendimento 24/7 com inteligência artificial, feita especificamente para pousadas e hotéis boutique brasileiros. Converta mais hóspedes e impulsione seu negócio sem complicação.
