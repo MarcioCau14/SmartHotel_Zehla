@@ -6,7 +6,7 @@ import { apiRatelimit } from '@/lib/rate-limit';
 
 async function guard(): Promise<string | NextResponse> {
   const tenantId = await resolveTenantId();
-  if (!tenantId || tenantId === 'client-001') return createError(401, 'UNAUTHORIZED', 'Não autorizado');
+  if (!tenantId) return createError(401, 'UNAUTHORIZED', 'Não autorizado');
   const { success } = await apiRatelimit.limit(tenantId);
   if (!success) return createError(429, 'RATE_LIMITED', 'Muitas requisições');
   return tenantId;

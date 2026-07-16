@@ -6,7 +6,7 @@ import { apiRatelimit } from '@/lib/rate-limit';
 export async function PUT(request: NextRequest) {
   try {
     const tenantId = await resolveTenantId();
-    if (!tenantId || tenantId === 'client-001') {
+    if (!tenantId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const { success } = await apiRatelimit.limit(tenantId);

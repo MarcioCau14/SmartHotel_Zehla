@@ -10,7 +10,7 @@ export async function POST(
   try {
     const { id } = await params;
     const tenantId = await resolveTenantId();
-    if (!tenantId || tenantId === 'client-001') {
+    if (!tenantId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const { success } = await apiRatelimit.limit(tenantId);

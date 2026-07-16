@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     }
 
     const tenantId = await resolveTenantId();
-    if (!tenantId || tenantId === 'client-001') {
+    if (!tenantId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const { success } = await apiRatelimit.limit(tenantId);
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const tenantId = await resolveTenantId();
-    if (!tenantId || tenantId === 'client-001') {
+    if (!tenantId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const { success } = await apiRatelimit.limit(tenantId);
