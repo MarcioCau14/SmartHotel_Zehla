@@ -3,6 +3,16 @@
   "framework": "nextjs",
   "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "npx prisma generate && next build",
+  "functions": {
+    "src/app/api/webhook-whatsapp/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    },
+    "src/app/api/brain/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
+  },
 
   "regions": ["gru1"],  
   "headers": [  
