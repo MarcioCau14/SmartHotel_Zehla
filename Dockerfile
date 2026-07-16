@@ -9,8 +9,9 @@ FROM node:24-alpine AS deps
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
-RUN npm ci --omit=dev --ignore-scripts && \
+COPY package.json package-lock.json* bun.lock* ./
+COPY prisma ./prisma/
+RUN if [ -f package-lock.json ]; then npm ci --omit=dev --ignore-scripts; else npm install --omit=dev --ignore-scripts; fi && \
     npx prisma generate
 
 # ── STAGE 2: Build ────────────────────────────────────────────────────────────
@@ -27,8 +28,8 @@ ENV NEXTAUTH_SECRET="build-only-dummy-secret"
 ENV NEXTAUTH_URL="http://localhost:3000"
 ENV NODE_ENV="production"
 
-RUN prisma generate && \
-    next build
+RUN npx prisma generate && \
+    npx next build
 
 # ── STAGE 3: Runner (Produção) ───────────────────────────────────────────────
 FROM node:24-alpine AS runner
