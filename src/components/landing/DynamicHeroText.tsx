@@ -7,7 +7,7 @@ interface DynamicHeroTextProps {
   className?: string;
 }
 
-const phrases = ['pelo WhatsApp.', 'da sua pousada.', 'do seu imóvel.'];
+const phrases = ['pelo WhatsApp.', 'da sua pousada.', 'o seu imóvel.'];
 
 export function DynamicHeroText({ className }: DynamicHeroTextProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
