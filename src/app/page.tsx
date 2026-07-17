@@ -8,7 +8,6 @@ import { NicheSwitcherSection } from '@/components/landing/NicheSwitcherSection'
 import { PainPointsSection } from '@/components/landing/PainPointsSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
-import { DashboardPreviewSection } from '@/components/landing/DashboardPreviewSection';
 import { SuccessCasesSection } from '@/components/landing/SuccessCasesSection';
 import { SavingsCalculator } from '@/components/landing/SavingsCalculator';
 import { WhyZehlaSection } from '@/components/landing/WhyZehlaSection';
@@ -33,7 +32,6 @@ export default function LandingPage() {
         <PainPointsSection />
         <HowItWorksSection />
         <FeaturesSection />
-        <DashboardPreviewSection />
         <SuccessCasesSection />
         <SavingsCalculator />
         <WhyZehlaSection />
