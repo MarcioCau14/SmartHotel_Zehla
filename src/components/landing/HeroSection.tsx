@@ -55,7 +55,7 @@ export function HeroSection() {
             </div>
 
             {/* Headline */}
-            <h1 className="text-[1.5rem] sm:text-5xl md:text-[3.25rem] lg:text-[3.75rem] xl:text-[4.5rem] font-satoshi font-bold tracking-tight leading-[1.15] text-white mb-4 text-center">
+            <h1 className="text-[1.5rem] sm:text-4xl md:text-[2.75rem] lg:text-[3.25rem] xl:text-[4rem] font-satoshi font-bold tracking-tight leading-[1.15] text-white mb-3 text-center">
               <span className="block">O Zélla atende, vende e</span>
               <span className="block text-blue-500 font-bold">
                 reserva{' '}
@@ -79,20 +79,20 @@ export function HeroSection() {
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-5 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4 w-full sm:w-auto">
               <button
                 onClick={() => {
                   const el = document.querySelector('#precos');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-xl hover:from-emerald-400 hover:to-emerald-500 transition-all duration-200 shadow-xl shadow-emerald-500/30 cursor-pointer text-sm sm:text-base active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                className="group inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-xl hover:from-emerald-400 hover:to-emerald-500 transition-all duration-200 shadow-xl shadow-emerald-500/30 cursor-pointer text-sm active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 Grátis por 7 dias
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </button>
               <button
                 onClick={() => router.push('/parceiro')}
-                className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white/[0.04] border border-white/[0.12] text-white/90 font-bold rounded-xl hover:bg-white/[0.08] hover:border-white/[0.20] hover:text-white transition-all duration-200 cursor-pointer text-sm sm:text-base active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                className="group inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/[0.04] border border-white/[0.12] text-white/90 font-bold rounded-xl hover:bg-white/[0.08] hover:border-white/[0.20] hover:text-white transition-all duration-200 cursor-pointer text-sm active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 <Crown className="w-4 h-4 text-amber-400" />
                 Seja parceiro Zélla
@@ -101,7 +101,7 @@ export function HeroSection() {
             </div>
 
             {/* Social proof mini */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 text-sm text-neutral-400 font-medium mb-6">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 text-xs sm:text-sm text-neutral-400 font-medium mb-5">
               <div className="flex -space-x-2.5">
                 {[
                   { name: 'Pousada Serenity', img: '/avatar-serenity.jpg' },
