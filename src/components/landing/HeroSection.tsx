@@ -239,17 +239,20 @@ export function HeroSection() {
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
             </div>
 
-            {/* Headline — 2 lines: line 1 static, line 2 dynamic. All phrases kept in DOM for stable width. */}
-            <div className="mb-6 flex justify-center">
-              <h1 className="text-[1.5rem] sm:text-5xl md:text-[3.25rem] lg:text-[3.75rem] xl:text-[4.5rem] font-satoshi font-bold tracking-tight leading-[1.15] text-white grid justify-items-start text-left">
-                <span>O Zélla atende, vende e</span>
-                <span className="text-blue-500 font-bold relative">
-                  {/* Invisible measure layer — keeps grid width stable across all phrases */}
-                  <span className="invisible" aria-hidden="true">
-                    reserva {rotatingPhrases.reduce((a, b) => a.length > b.length ? a : b, '')}
-                  </span>
-                  {/* Visible animated phrase — absolutely positioned over the measure layer */}
-                  <span className="absolute inset-0">
+            {/* Headline — 2 lines left-aligned, centered on page. Hidden measure span locks width to longest phrase. */}
+            <div className="mb-6 text-center">
+              <h1 className="text-[1.5rem] sm:text-5xl md:text-[3.25rem] lg:text-[3.75rem] xl:text-[4.5rem] font-satoshi font-bold tracking-tight leading-[1.15] text-white inline-block text-left relative">
+                {/* Hidden measure — always renders the longest phrase to lock the h1 width */}
+                <span className="invisible block" aria-hidden="true">
+                  O Zélla atende, vende e
+                </span>
+                <span className="invisible block font-bold text-blue-500" aria-hidden="true">
+                  reserva {rotatingPhrases.reduce((a, b) => a.length > b.length ? a : b, '')}
+                </span>
+                {/* Visible content — absolutely positioned over the measure layer */}
+                <span className="absolute top-0 left-0 right-0">
+                  <span className="block">O Zélla atende, vende e</span>
+                  <span className="block text-blue-500 font-bold">
                     reserva{' '}
                     <AnimatePresence mode="wait">
                       <motion.span
