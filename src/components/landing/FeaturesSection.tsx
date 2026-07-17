@@ -226,16 +226,16 @@ export function FeaturesSection() {
   const features = content.features;
 
   return (
-    <section ref={ref} id="funcionalidades" className="py-24 sm:py-32 bg-[#0a0a0a]">
+    <section ref={ref} id="funcionalidades" className="py-28 sm:py-36 lg:py-44 bg-[#0a0a0a]">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-20"
+          className="text-center mb-24"
         >
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-6 tracking-tight">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-8 tracking-tight">
             Funcionalidades que <span className={isPousadas ? 'text-emerald-500 font-bold' : 'text-blue-500 font-bold'}>transformam</span>
           </h2>
           <AnimatePresence mode="wait">
@@ -263,7 +263,7 @@ export function FeaturesSection() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
-            className="space-y-24"
+            className="space-y-32"
           >
             {features.map((feature, i) => {
               const IconComponent = featureIconMap[feature.icon] || MessageSquare;
@@ -275,14 +275,14 @@ export function FeaturesSection() {
                   initial={{ opacity: 0, y: 30 }}
                   animate={isInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.6, delay: i * 0.1 }}
-                  className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center ${
+                  className={`grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center ${
                     feature.reverse ? 'lg:[direction:rtl]' : ''
                   }`}
                 >
                   {/* Text side */}
                   <div className={feature.reverse ? 'lg:[direction:ltr]' : ''}>
                     {/* Badge bar */}
-                    <div className="flex items-center gap-3 mb-7">
+                    <div className="flex items-center gap-3 mb-8">
                       <div className={`w-10 h-10 rounded-xl ${
                         isPousadas
                           ? 'bg-emerald-500/10 border border-emerald-500/20'
@@ -297,7 +297,7 @@ export function FeaturesSection() {
 
                     {/* Hero Stat */}
                     {'heroStat' in feature && (
-                      <div className="mb-5 relative">
+                      <div className="mb-6 relative">
                         <div className="flex items-end gap-3">
                           <motion.span
                             className={`text-6xl sm:text-7xl font-black tracking-tighter bg-gradient-to-br ${feature.heroStat.gradient} bg-clip-text text-transparent leading-none`}
@@ -322,19 +322,19 @@ export function FeaturesSection() {
                     )}
 
                     {/* Headline */}
-                    <h3 className="text-2xl sm:text-3xl font-extrabold text-white mb-2 tracking-tight leading-tight">
+                    <h3 className="text-2xl sm:text-3xl font-extrabold text-white mb-3 tracking-tight leading-tight">
                       {feature.headline}
                     </h3>
 
                     {/* Subtitle */}
-                    <p className="text-neutral-500 text-sm font-medium mb-5">{feature.subtitle}</p>
+                    <p className="text-neutral-500 text-sm font-medium mb-6">{feature.subtitle}</p>
 
                     {/* Description */}
-                    <p className="text-neutral-300 text-[15px] leading-relaxed mb-8">{feature.desc}</p>
+                    <p className="text-neutral-300 text-[15px] leading-relaxed mb-10">{feature.desc}</p>
 
                     {/* Secondary Stats */}
                     {'stats' in feature && (
-                      <div className="grid grid-cols-2 gap-3 mb-8">
+                      <div className="grid grid-cols-2 gap-4 mb-10">
                         {feature.stats.map((s, si: number) => {
                           const StatIcon = featureIconMap[s.icon] || Clock;
                           return (
@@ -343,7 +343,7 @@ export function FeaturesSection() {
                               initial={{ opacity: 0, y: 15 }}
                               animate={isInView ? { opacity: 1, y: 0 } : {}}
                               transition={{ duration: 0.4, delay: 0.3 + si * 0.1 }}
-                              className="relative p-4 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300 group/stat"
+                              className="relative p-5 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300 group/stat"
                             >
                               <StatIcon className={`w-4 h-4 ${isPousadas ? 'text-emerald-500/60' : 'text-blue-500/60'} mb-2.5 block`} />
                               <div className="text-2xl font-bold text-white tracking-tight">{s.val}</div>
@@ -359,7 +359,7 @@ export function FeaturesSection() {
 
                     {/* Pills */}
                     {'pills' in feature && (
-                      <div className="flex flex-wrap gap-2 mb-8">
+                      <div className="flex flex-wrap gap-2.5 mb-10">
                         {feature.pills.map((p, pi: number) => (
                           <motion.span
                             key={pi}

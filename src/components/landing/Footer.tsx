@@ -36,7 +36,7 @@ export function Footer() {
   ];
 
   return (
-    <footer ref={ref} className="border-t border-white/[0.04] bg-[#080808] pt-16 pb-8 px-4 sm:px-6 lg:px-8">
+    <footer ref={ref} className="border-t border-white/[0.04] bg-[#080808] pt-20 pb-10 px-4 sm:px-6 lg:px-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -44,10 +44,10 @@ export function Footer() {
         className="max-w-6xl mx-auto"
       >
         {/* Main Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-16">
           
           {/* Brand Column (spans 4) */}
-          <div className="lg:col-span-4 space-y-5">
+          <div className="lg:col-span-4 space-y-6">
             {/* Brand Logo */}
           <div className="flex items-center gap-3">
             <ZellaLogoStatic />
@@ -58,7 +58,7 @@ export function Footer() {
             </p>
 
             {/* Social Links */}
-            <div className="flex items-center gap-3 pt-1">
+            <div className="flex items-center gap-4 pt-2">
               {socialLinks.map((social) => {
                 const Icon = social.icon;
                 return (
@@ -77,7 +77,7 @@ export function Footer() {
             </div>
 
             {/* Contact info */}
-            <div className="flex flex-col gap-2 pt-1">
+            <div className="flex flex-col gap-3 pt-2">
               <a href="mailto:contato@zehla.com.br" className="flex items-center gap-2 text-neutral-500 hover:text-neutral-300 text-xs transition-colors">
                 <Mail className="w-3.5 h-3.5" />
                 contato@zehla.com.br
@@ -91,10 +91,10 @@ export function Footer() {
 
           {/* Navigation Links */}
           <div className="lg:col-span-3">
-            <h3 className="text-xs font-bold text-neutral-300 uppercase tracking-widest mb-4">
+            <h3 className="text-xs font-bold text-neutral-300 uppercase tracking-widest mb-5">
               Produto
             </h3>
-            <ul className="space-y-2.5">
+            <ul className="space-y-3">
               {navigationLinks.map((link) => (
                 <li key={link.label}>
                   <Link
@@ -110,10 +110,10 @@ export function Footer() {
 
           {/* Legal Links */}
           <div className="lg:col-span-2">
-            <h3 className="text-xs font-bold text-neutral-300 uppercase tracking-widest mb-4">
+            <h3 className="text-xs font-bold text-neutral-300 uppercase tracking-widest mb-5">
               Jurídico
             </h3>
-            <ul className="space-y-2.5">
+            <ul className="space-y-3">
               {legalLinks.map((link) => (
                 <li key={link.label}>
                   <Link
@@ -129,7 +129,7 @@ export function Footer() {
 
           {/* Trust Column */}
           <div className="lg:col-span-3">
-            <h3 className="text-xs font-bold text-neutral-300 uppercase tracking-widest mb-4">
+            <h3 className="text-xs font-bold text-neutral-300 uppercase tracking-widest mb-5">
               Confiança
             </h3>
             <div className="space-y-3">
@@ -162,7 +162,7 @@ export function Footer() {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-white/[0.04] pt-6 mt-10" />
+        <div className="border-t border-white/[0.04] pt-8 mt-12" />
 
         {/* Footer Bottom */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">

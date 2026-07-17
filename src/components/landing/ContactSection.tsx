@@ -69,7 +69,7 @@ export function ContactSection() {
   const inputClass = "w-full rounded-xl border border-white/[0.03] bg-[#070709] px-4 py-3 text-sm text-white placeholder-neutral-600 focus:border-[#4169E1] focus:bg-black focus:outline-none focus:ring-2 focus:ring-[#4169E1]/40 transition-all duration-200";
 
   return (
-    <section ref={ref} id="contato" className="py-24 sm:py-32 relative overflow-hidden">
+    <section ref={ref} id="contato" className="py-28 sm:py-36 lg:py-44 relative overflow-hidden">
       {/* Background gradients */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/3 left-1/4 -translate-x-1/2 w-[500px] h-[500px] rounded-full bg-emerald-500/[0.03] blur-[100px]" />
@@ -82,13 +82,13 @@ export function ContactSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7 }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6">
             <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
             <span className="text-emerald-400 text-xs font-semibold">Fale com o Seu Zélla</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6">
             Ainda com <span className="text-emerald-400 font-bold">dúvidas?</span>
           </h2>
           <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
@@ -97,14 +97,14 @@ export function ContactSection() {
         </motion.div>
 
         {/* Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-12">
           
           {/* Column Left: Contact Form */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.5 }}
-            className="p-8 sm:p-10 rounded-2xl border border-white/[0.03] bg-[#070709] shadow-2xl"
+            className="p-10 sm:p-12 rounded-2xl border border-white/[0.03] bg-[#070709] shadow-2xl"
           >
             <AnimatePresence mode="wait">
               {status === 'success' ? (
@@ -132,7 +132,7 @@ export function ContactSection() {
               ) : (
                 <motion.form
                   onSubmit={handleSubmit}
-                  className="space-y-6"
+                  className="space-y-7"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -150,7 +150,7 @@ export function ContactSection() {
                   />
 
                   {/* Nome e E-mail */}
-                  <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="grid gap-7 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-neutral-300 flex items-center gap-1">
                         Nome <span className="text-rose-500">*</span>
@@ -181,7 +181,7 @@ export function ContactSection() {
                   </div>
 
                   {/* Telefone e Assunto */}
-                  <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="grid gap-7 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-neutral-300">
                         Telefone / WhatsApp
@@ -284,10 +284,10 @@ export function ContactSection() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="flex flex-col gap-6"
           >
-            <div className="p-6 rounded-2xl border border-white/[0.03] bg-[#070709] shadow-2xl">
+            <div className="p-7 rounded-2xl border border-white/[0.03] bg-[#070709] shadow-2xl">
               <h3 className="mb-6 text-sm font-bold text-white">Canais diretos</h3>
               
-              <div className="space-y-5">
+              <div className="space-y-6">
                 {/* Comercial / Vendas */}
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 border border-emerald-500/20">
@@ -341,7 +341,7 @@ export function ContactSection() {
             </div>
 
             {/* Atendimento Note */}
-            <div className="p-6 rounded-2xl border border-white/[0.02] bg-[#070709]/50 text-neutral-400 text-xs leading-relaxed">
+            <div className="p-7 rounded-2xl border border-white/[0.02] bg-[#070709]/50 text-neutral-400 text-xs leading-relaxed">
               <span className="font-semibold text-neutral-300 block mb-1">Horário de Atendimento</span>
               De segunda a sexta-feira, das 09h às 18h (Horário de Brasília). Para urgências operacionais de hotéis parceiros, temos plantão 24h via central.
             </div>

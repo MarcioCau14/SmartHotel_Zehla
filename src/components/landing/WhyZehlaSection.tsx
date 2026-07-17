@@ -131,7 +131,7 @@ export function WhyZehlaSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} className="relative py-24 sm:py-32 bg-[#0a0a0a] overflow-hidden">
+    <section ref={ref} className="relative py-28 sm:py-36 lg:py-44 bg-[#0a0a0a] overflow-hidden">
       {/* Background accent */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-emerald-500/[0.03] rounded-full blur-[150px] pointer-events-none" />
 
@@ -141,13 +141,13 @@ export function WhyZehlaSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7 }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6">
             <Shield className="w-3.5 h-3.5 text-emerald-400" />
             <span className="text-emerald-400 text-xs font-medium uppercase tracking-wider">Comparativo Direto</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6">
             Por que pousadas trocam o{' '}
             <span className="text-blue-400 font-bold">Cloudbeds</span>{' '}
             pelo <span className="text-emerald-400 font-bold">Zélla</span>?
@@ -166,13 +166,13 @@ export function WhyZehlaSection() {
         >
           {/* Table Header */}
           <div className="grid grid-cols-3 border-b border-white/[0.06] bg-white/[0.02]">
-            <div className="p-4 sm:p-5">
+            <div className="p-5 sm:p-6">
               <span className="text-neutral-500 text-xs font-semibold uppercase tracking-wider">Recurso</span>
             </div>
-            <div className="p-4 sm:p-5 text-center border-l border-white/[0.06]">
+            <div className="p-5 sm:p-6 text-center border-l border-white/[0.06]">
               <span className="text-emerald-400 text-sm font-bold">Seu Zélla</span>
             </div>
-            <div className="p-4 sm:p-5 text-center border-l border-white/[0.06]">
+            <div className="p-5 sm:p-6 text-center border-l border-white/[0.06]">
               <span className="text-neutral-400 text-sm font-bold">Cloudbeds</span>
             </div>
           </div>
@@ -188,14 +188,14 @@ export function WhyZehlaSection() {
                 transition={{ duration: 0.4, delay: 0.3 + i * 0.05 }}
                 className={`grid grid-cols-3 border-b border-white/[0.04] last:border-b-0 hover:bg-white/[0.02] transition-colors`}
               >
-                <div className="p-4 sm:p-5 flex items-center gap-3">
+                <div className="p-5 sm:p-6 flex items-center gap-3">
                   <Icon className="w-4 h-4 text-neutral-500 shrink-0" />
                   <span className="text-white text-xs sm:text-sm font-medium">{row.feature}</span>
                 </div>
-                <div className={`p-4 sm:p-5 flex items-center justify-center border-l border-white/[0.06] ${row.zehlaHighlight ? 'bg-emerald-500/[0.04]' : ''}`}>
+                <div className={`p-5 sm:p-6 flex items-center justify-center border-l border-white/[0.06] ${row.zehlaHighlight ? 'bg-emerald-500/[0.04]' : ''}`}>
                   <CellValue value={row.zehla} highlight={row.zehlaHighlight} />
                 </div>
-                <div className={`p-4 sm:p-5 flex items-center justify-center border-l border-white/[0.06] ${row.cloudbedsBad ? 'bg-red-500/[0.02]' : ''}`}>
+                <div className={`p-5 sm:p-6 flex items-center justify-center border-l border-white/[0.06] ${row.cloudbedsBad ? 'bg-red-500/[0.02]' : ''}`}>
                   <CellValue value={row.cloudbeds} bad={row.cloudbedsBad} />
                 </div>
               </motion.div>
@@ -208,7 +208,7 @@ export function WhyZehlaSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.8 }}
-          className="text-center mt-12"
+          className="text-center mt-14"
         >
           <p className="text-neutral-400 text-sm mb-4">
             Migração simplificada — seu histórico de reservas é preservado

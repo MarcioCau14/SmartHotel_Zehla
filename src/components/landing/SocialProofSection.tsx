@@ -95,7 +95,7 @@ export function SocialProofSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} className="relative py-24 sm:py-32 bg-[#0a0a0a] overflow-hidden">
+    <section ref={ref} className="relative py-28 sm:py-36 lg:py-44 bg-[#0a0a0a] overflow-hidden">
       {/* Subtle background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-500/[0.02] to-transparent pointer-events-none" />
 
@@ -105,13 +105,13 @@ export function SocialProofSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7 }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-6">
             <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
             <span className="text-blue-400 text-xs font-medium uppercase tracking-wider">Números Reais</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6">
             Confiança que se {' '}
             <span className="text-emerald-400 font-bold">mede em resultados</span>
           </h2>
@@ -121,7 +121,7 @@ export function SocialProofSection() {
         </motion.div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {stats.map((stat, i) => {
             const Icon = stat.icon;
             return (
@@ -130,14 +130,14 @@ export function SocialProofSection() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className={`group relative rounded-2xl p-6 bg-white/[0.02] border ${stat.borderColor} hover:bg-white/[0.04] transition-all duration-300`}
+                className={`group relative rounded-2xl p-7 bg-white/[0.02] border ${stat.borderColor} hover:bg-white/[0.04] transition-all duration-300`}
               >
-                <div className="flex items-start justify-between mb-4">
+                <div className="flex items-start justify-between mb-5">
                   <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
                     <Icon className={`w-5 h-5 ${stat.iconColor}`} />
                   </div>
                 </div>
-                <div className="text-3xl sm:text-4xl font-extrabold text-white mb-1">
+                <div className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
                   <AnimatedCounter target={stat.value} suffix={stat.suffix} />
                 </div>
                 <div className="text-white font-semibold text-sm mb-2">{stat.label}</div>

@@ -211,27 +211,27 @@ export function PricingSection() {
   };
 
   return (
-    <section ref={ref} id="precos" className="parallax-section parallax-dark py-24 sm:py-32">
+    <section ref={ref} id="precos" className="parallax-section parallax-dark py-28 sm:py-36 lg:py-44">
       <div className="relative z-10 max-w-7xl mx-auto px-4">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7 }}
-          className="text-center mb-12"
+          className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6">
             <CreditCard className="w-3.5 h-3.5 text-emerald-400" />
             <span className="text-emerald-400 text-xs font-medium">Planos & Preços</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6">
             Escolha o plano ideal
             <br />
             <span className="text-emerald-400 font-bold">
               {niche === 'pousadas' ? 'para sua pousada' : 'para seus imóveis'}
             </span>
           </h2>
-          <p className="text-neutral-400 text-lg max-w-xl mx-auto mb-3">
+          <p className="text-neutral-400 text-lg max-w-xl mx-auto mb-4">
             Comece grátis por 7 dias. Sem cartão de crédito, sem compromisso. Cancele quando quiser.
           </p>
 
@@ -243,7 +243,7 @@ export function PricingSection() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.4, ease: easeOut }}
-              className="text-emerald-400/80 text-sm max-w-lg mx-auto mb-8 flex items-center justify-center gap-1.5"
+              className="text-emerald-400/80 text-sm max-w-lg mx-auto mb-10 flex items-center justify-center gap-1.5"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>
@@ -281,7 +281,7 @@ export function PricingSection() {
         </motion.div>
 
         {/* Pricing Cards Grid */}
-        <div className="pricing-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-16">
+        <div className="pricing-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-20">
           {plans.map((plan, i) => {
             const activePaymentMethod = plan.onlyCard ? 'cartao' : paymentMode;
             const price = activePaymentMethod === 'pix' ? plan.pricePix : plan.priceCartao;
@@ -309,7 +309,7 @@ export function PricingSection() {
                     : 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
                 }}
               >
-                <div className="relative rounded-2xl bg-[#0a0a0a] p-6 h-full flex flex-col">
+                <div className="relative rounded-2xl bg-[#0a0a0a] p-7 h-full flex flex-col">
                   {/* Popular badge */}
                   {plan.popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-bold shadow-lg shadow-emerald-500/30">
@@ -318,7 +318,7 @@ export function PricingSection() {
                   )}
 
                   {/* Plan Header */}
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-5">
                     <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${plan.iconBg} flex items-center justify-center`}>
                       <Icon className={`w-5 h-5 ${plan.iconColor}`} />
                     </div>
@@ -328,7 +328,7 @@ export function PricingSection() {
                   </div>
 
                   {/* Plan Details */}
-                  <h3 className="text-white font-bold text-xl mb-1">{plan.name}</h3>
+                  <h3 className="text-white font-bold text-xl mb-2">{plan.name}</h3>
                   <p className="text-neutral-400 text-xs mb-2 leading-relaxed">
                     {isAnfitrioes ? plan.descAnfitrioes : plan.desc}
                   </p>
@@ -394,10 +394,10 @@ export function PricingSection() {
                   </button>
 
                   {/* Divider */}
-                  <div className="h-px bg-white/[0.06] my-5" />
+                  <div className="h-px bg-white/[0.06] my-6" />
 
                   {/* Features */}
-                  <div className="flex-1 space-y-2.5">
+                  <div className="flex-1 space-y-3">
                     {plan.features.map((feature) => (
                       <div key={feature.text} className="flex items-start gap-2">
                         {feature.included ? (

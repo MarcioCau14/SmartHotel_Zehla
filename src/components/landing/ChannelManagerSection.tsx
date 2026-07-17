@@ -86,7 +86,7 @@ export function ChannelManagerSection() {
   const isInView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section ref={ref} id="channel-manager" className="relative py-24 sm:py-32 bg-[#060608] overflow-hidden">
+    <section ref={ref} id="channel-manager" className="relative py-28 sm:py-36 lg:py-44 bg-[#060608] overflow-hidden">
       <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
         style={{
           backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.5) 1px, transparent 1px)',
@@ -101,14 +101,14 @@ export function ChannelManagerSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7 }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-6">
             <Hotel className="w-3.5 h-3.5 text-blue-400" />
             <span className="text-blue-400 text-xs font-semibold uppercase tracking-wider">Channel Manager</span>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-5 leading-[1.1] tracking-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 leading-[1.1] tracking-tight">
             Seus canais, centralized
             <br />
             <span className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">sem overbooking</span>
@@ -120,7 +120,7 @@ export function ChannelManagerSection() {
         </motion.div>
 
         {/* ── Roadmap Cards ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {roadmapPhases.map((phase, i) => {
             const cfg = statusConfig[phase.status];
             const StatusIcon = cfg.icon;
@@ -131,13 +131,13 @@ export function ChannelManagerSection() {
                 initial={{ opacity: 0, y: 40 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.6, delay: i * 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
-                className={`relative p-7 sm:p-8 rounded-2xl bg-white/[0.02] border ${cfg.borderClass} hover:bg-white/[0.03] transition-all duration-500 group`}
+                className={`relative p-8 sm:p-10 rounded-2xl bg-white/[0.02] border ${cfg.borderClass} hover:bg-white/[0.03] transition-all duration-500 group`}
               >
                 {/* Hover glow */}
                 <div className={`absolute -top-16 -right-16 w-32 h-32 rounded-full bg-gradient-to-br ${cfg.glowClass} blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none`} />
 
                 {/* Phase label + status badge */}
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-7">
                   <span className="text-neutral-600 text-xs font-bold uppercase tracking-widest">{phase.phase}</span>
                   <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${cfg.badgeClass}`}>
                     <StatusIcon className="w-3 h-3" />
@@ -146,13 +146,13 @@ export function ChannelManagerSection() {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-white font-bold text-lg sm:text-xl mb-3">{phase.title}</h3>
+                <h3 className="text-white font-bold text-lg sm:text-xl mb-4">{phase.title}</h3>
 
                 {/* Description */}
-                <p className="text-neutral-400 text-sm leading-relaxed mb-6">{phase.desc}</p>
+                <p className="text-neutral-400 text-sm leading-relaxed mb-7">{phase.desc}</p>
 
                 {/* Features */}
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {phase.features.map((f, fi) => (
                     <div key={fi} className="flex items-start gap-2.5">
                       <CheckCircle2 className={`w-4 h-4 shrink-0 mt-0.5 ${phase.status === 'available' ? 'text-emerald-400' : phase.status === 'building' ? 'text-amber-400/60' : 'text-blue-400/40'}`} />
@@ -163,7 +163,7 @@ export function ChannelManagerSection() {
 
                 {/* CTA for available phase */}
                 {phase.status === 'available' && (
-                  <div className="mt-6 pt-5 border-t border-white/[0.04]">
+                  <div className="mt-8 pt-6 border-t border-white/[0.04]">
                     <button
                       onClick={() => {
                         const el = document.querySelector('#precos');
@@ -179,7 +179,7 @@ export function ChannelManagerSection() {
 
                 {/* Building indicator */}
                 {phase.status === 'building' && (
-                  <div className="mt-6 pt-5 border-t border-white/[0.04]">
+                  <div className="mt-8 pt-6 border-t border-white/[0.04]">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
                       <span className="text-amber-400/70 text-xs font-medium">Em desenvolvimento ativo — previsão de lançamento em breve</span>
@@ -196,7 +196,7 @@ export function ChannelManagerSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="mt-14 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-blue-500/[0.05] via-white/[0.02] to-emerald-500/[0.05] border border-white/[0.06]"
+          className="mt-16 p-8 sm:p-10 rounded-2xl bg-gradient-to-r from-blue-500/[0.05] via-white/[0.02] to-emerald-500/[0.05] border border-white/[0.06]"
         >
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             <div className="flex items-center gap-3">

@@ -13,7 +13,7 @@ export function NicheSwitcherSection() {
   const isInView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section ref={ref} className="relative py-16 sm:py-20 overflow-hidden border-t border-white/[0.03]">
+    <section ref={ref} className="relative py-28 sm:py-36 lg:py-44 overflow-hidden border-t border-white/[0.03]">
       {/* Dynamic background image with crossfade */}
       <div className="absolute inset-0 z-0">
         <AnimatePresence mode="wait">
@@ -66,7 +66,7 @@ export function NicheSwitcherSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] as [number, number, number, number] }}
-          className="flex flex-col items-center text-center gap-5 sm:gap-6"
+          className="flex flex-col items-center text-center gap-8 sm:gap-10"
         >
           {/* Dynamic headline + subheadline */}
           <AnimatePresence mode="wait">
@@ -76,7 +76,7 @@ export function NicheSwitcherSection() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5, ease: [0.2, 0.8, 0.2, 1] as [number, number, number, number] }}
-              className="flex flex-col items-center gap-5"
+              className="flex flex-col items-center gap-7"
             >
               {/* Headline */}
               <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.4rem] font-extrabold tracking-tight leading-[1.1] text-white max-w-4xl">
@@ -118,6 +118,7 @@ export function NicheSwitcherSection() {
             initial={{ opacity: 0, y: 10 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.4 }}
+            className="mt-4"
           >
             <button
               onClick={() => {

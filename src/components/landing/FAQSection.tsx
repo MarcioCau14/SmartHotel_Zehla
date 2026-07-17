@@ -13,7 +13,7 @@ function FAQItem({ q, a, isOpen, onToggle }: { q: string; a: string; isOpen: boo
     <div className="border-b border-white/[0.04] last:border-0">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between py-5 text-left cursor-pointer group"
+        className="w-full flex items-center justify-between py-6 text-left cursor-pointer group"
       >
         <span className="text-white text-sm font-medium pr-4 group-hover:text-emerald-400 transition-colors">{q}</span>
         <ChevronDown
@@ -29,7 +29,7 @@ function FAQItem({ q, a, isOpen, onToggle }: { q: string; a: string; isOpen: boo
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <p className="text-neutral-400 text-sm leading-relaxed pb-5">{a}</p>
+            <p className="text-neutral-400 text-sm leading-relaxed pb-6">{a}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -50,20 +50,20 @@ export function FAQSection() {
     : 'Perguntas frequentes sobre Anfitriões';
 
   return (
-    <section ref={ref} id="faq" className="py-24 sm:py-32">
+    <section ref={ref} id="faq" className="py-28 sm:py-36 lg:py-44">
       <div className="max-w-3xl mx-auto px-4">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7 }}
-          className="text-center mb-12"
+          className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-6">
             <HelpCircle className="w-3.5 h-3.5 text-blue-400" />
             <span className="text-blue-400 text-xs font-medium">Dúvidas Frequentes</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-6">
             {headerText}
           </h2>
           <p className="text-neutral-400 text-lg">
@@ -79,7 +79,7 @@ export function FAQSection() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.5, ease: easeOut }}
-            className="rounded-2xl bg-white/[0.02] border border-white/[0.06] px-6"
+            className="rounded-2xl bg-white/[0.02] border border-white/[0.06] px-8"
           >
             {faqs.map((faq, i) => (
               <FAQItem

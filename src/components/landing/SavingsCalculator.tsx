@@ -85,20 +85,20 @@ export function SavingsCalculator() {
   // Render
   // --------------------------------------------------------------------------
   return (
-    <section ref={ref} id="calculadora" className="py-20 sm:py-28 bg-[#060608]">
+    <section ref={ref} id="calculadora" className="py-28 sm:py-36 lg:py-44 bg-[#060608]">
       <div className="max-w-6xl mx-auto px-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6">
             <Calculator className="w-3.5 h-3.5 text-emerald-400" />
             <span className="text-emerald-400 text-xs font-medium">Simulador de Resultados</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6 tracking-tight">
             Quanto sua pousada{' '}
             <span className="text-emerald-400 font-bold">ganha com o Zélla?</span>
           </h2>
@@ -112,7 +112,7 @@ export function SavingsCalculator() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7, delay: 0.15 }}
-          className="relative rounded-3xl bg-[#111] border border-white/[0.06] p-8 sm:p-12 overflow-hidden"
+          className="relative rounded-3xl bg-[#111] border border-white/[0.06] p-10 sm:p-14 overflow-hidden"
         >
           {/* Background glows */}
           <div className="absolute top-0 right-0 w-72 h-72 bg-emerald-500/[0.07] rounded-full blur-[100px]" />
@@ -120,8 +120,8 @@ export function SavingsCalculator() {
 
           <div className="relative z-10">
             {/* ===== INPUTS ===== */}
-            <div className="max-w-2xl mx-auto mb-10">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <div className="max-w-2xl mx-auto mb-14">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
                 {/* Input 1: Contatos/mês */}
                 <div className="space-y-3">
                   <label className="block text-neutral-300 text-sm font-medium">
@@ -181,9 +181,9 @@ export function SavingsCalculator() {
             </div>
 
             {/* ===== RESULTADOS PRINCIPAIS ===== */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
               {/* Reservas a mais */}
-              <div className="text-center p-5 rounded-2xl bg-emerald-500/[0.06] border border-emerald-500/15">
+              <div className="text-center p-6 rounded-2xl bg-emerald-500/[0.06] border border-emerald-500/15">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center mx-auto mb-3">
                   <Users className="w-5 h-5 text-emerald-400" />
                 </div>
@@ -194,7 +194,7 @@ export function SavingsCalculator() {
               </div>
 
               {/* Receita extra mensal */}
-              <div className="text-center p-5 rounded-2xl bg-blue-500/[0.06] border border-blue-500/15">
+              <div className="text-center p-6 rounded-2xl bg-blue-500/[0.06] border border-blue-500/15">
                 <div className="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/20 flex items-center justify-center mx-auto mb-3">
                   <TrendingUp className="w-5 h-5 text-blue-400" />
                 </div>
@@ -205,7 +205,7 @@ export function SavingsCalculator() {
               </div>
 
               {/* Receita extra anual */}
-              <div className="text-center p-5 rounded-2xl bg-purple-500/[0.06] border border-purple-500/15">
+              <div className="text-center p-6 rounded-2xl bg-purple-500/[0.06] border border-purple-500/15">
                 <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/20 flex items-center justify-center mx-auto mb-3">
                   <BadgeDollarSign className="w-5 h-5 text-purple-400" />
                 </div>
@@ -216,7 +216,7 @@ export function SavingsCalculator() {
               </div>
 
               {/* ROI */}
-              <div className="text-center p-5 rounded-2xl bg-amber-500/[0.06] border border-amber-500/15">
+              <div className="text-center p-6 rounded-2xl bg-amber-500/[0.06] border border-amber-500/15">
                 <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/20 flex items-center justify-center mx-auto mb-3">
                   <Sparkles className="w-5 h-5 text-amber-400" />
                 </div>
@@ -228,9 +228,9 @@ export function SavingsCalculator() {
             </div>
 
             {/* ===== COMPARAÇÃO VISUAL ===== */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-10">
               {/* Sem Zélla */}
-              <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
+              <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
                 <div className="flex items-center gap-2 mb-3">
                   <Clock className="w-4 h-4 text-neutral-500" />
                   <span className="text-neutral-400 text-sm font-semibold">Sem o Zélla</span>
@@ -261,7 +261,7 @@ export function SavingsCalculator() {
               </div>
 
               {/* Com Zélla */}
-              <div className="p-5 rounded-2xl bg-emerald-500/[0.04] border border-emerald-500/15">
+              <div className="p-6 rounded-2xl bg-emerald-500/[0.04] border border-emerald-500/15">
                 <div className="flex items-center gap-2 mb-3">
                   <CheckCircle className="w-4 h-4 text-emerald-400" />
                   <span className="text-emerald-400 text-sm font-semibold">Com o Zélla</span>
@@ -293,9 +293,9 @@ export function SavingsCalculator() {
             </div>
 
             {/* ===== DETALHAMENTO FINANCEIRO ===== */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
               {/* Economia recepcionista */}
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+              <div className="flex items-center gap-4 p-5 rounded-xl bg-white/[0.02] border border-white/[0.06]">
                 <div className="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
                   <Moon className="w-5 h-5 text-indigo-400" />
                 </div>
@@ -306,7 +306,7 @@ export function SavingsCalculator() {
               </div>
 
               {/* Custo Zélla */}
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+              <div className="flex items-center gap-4 p-5 rounded-xl bg-white/[0.02] border border-white/[0.06]">
                 <div className="w-10 h-10 rounded-lg bg-white/[0.04] border border-white/[0.08] flex items-center justify-center shrink-0">
                   <Wallet className="w-5 h-5 text-neutral-400" />
                 </div>
@@ -317,7 +317,7 @@ export function SavingsCalculator() {
               </div>
 
               {/* Lucro líquido anual */}
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/15">
+              <div className="flex items-center gap-4 p-5 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/15">
                 <div className="w-10 h-10 rounded-lg bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center shrink-0">
                   <TrendingUp className="w-5 h-5 text-emerald-400" />
                 </div>
@@ -329,7 +329,7 @@ export function SavingsCalculator() {
             </div>
 
             {/* ===== HIPOTESES ===== */}
-            <div className="bg-white/[0.02] rounded-2xl p-5 border border-white/[0.05] mb-10">
+            <div className="bg-white/[0.02] rounded-2xl p-5 border border-white/[0.05] mb-12">
               <h4 className="text-neutral-300 text-xs font-bold uppercase tracking-wider mb-3">
                 Como calculamos esses números?
               </h4>
@@ -363,7 +363,7 @@ export function SavingsCalculator() {
 
             {/* ===== CTA ===== */}
             <div className="text-center">
-              <p className="text-neutral-500 text-sm mb-4">
+              <p className="text-neutral-500 text-sm mb-6">
                 Estimativa baseada nos dados informados. Teste grátis por 7 dias e comprove na prática.
               </p>
               <button

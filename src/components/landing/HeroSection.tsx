@@ -36,7 +36,7 @@ export function HeroSection() {
       <div className="absolute top-1/4 -left-32 w-[500px] h-[500px] rounded-full bg-emerald-500/[0.07] blur-[120px]" />
       <div className="absolute bottom-1/4 -right-32 w-[400px] h-[400px] rounded-full bg-purple-500/[0.05] blur-[100px]" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-14 pb-6 sm:pt-16 sm:pb-8 w-full">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-12 sm:pt-28 sm:pb-16 w-full">
         <div className="flex flex-col items-center text-center">
           {/* Text Content */}
           <motion.div
@@ -46,7 +46,7 @@ export function HeroSection() {
             className="flex flex-col items-center max-w-4xl mx-auto"
           >
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/[0.08] mb-4">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/[0.08] mb-6">
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
               <span className="text-emerald-400 text-xs font-medium uppercase tracking-wider">
                 Deixa com o Zélla
@@ -55,7 +55,7 @@ export function HeroSection() {
             </div>
 
             {/* Headline */}
-            <h1 className="text-[1.5rem] sm:text-4xl md:text-[2.75rem] lg:text-[3.25rem] xl:text-[4rem] font-satoshi font-bold tracking-tight leading-[1.15] text-white mb-3 text-center">
+            <h1 className="text-[1.5rem] sm:text-4xl md:text-[2.75rem] lg:text-[3.25rem] xl:text-[4rem] font-satoshi font-bold tracking-tight leading-[1.15] text-white mb-5 text-center">
               <span className="block">O Zélla atende, vende e</span>
               <span className="block text-blue-500 font-bold">
                 reserva{' '}
@@ -74,12 +74,12 @@ export function HeroSection() {
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg text-neutral-400 leading-relaxed mb-5 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-neutral-400 leading-relaxed mb-8 max-w-2xl mx-auto">
               O zelador digital que responde 24hs por 7. Atende os hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para pousadas e anfitriões de Airbnb.
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8 w-full sm:w-auto">
               <button
                 onClick={() => {
                   const el = document.querySelector('#precos');
@@ -101,7 +101,7 @@ export function HeroSection() {
             </div>
 
             {/* Social proof mini */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 text-xs sm:text-sm text-neutral-400 font-medium mb-5">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 text-xs sm:text-sm text-neutral-400 font-medium mb-10">
               <div className="flex -space-x-2.5">
                 {[
                   { name: 'Pousada Serenity', img: '/avatar-serenity.jpg' },
@@ -128,7 +128,7 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="flex flex-col items-center gap-3"
+              className="flex flex-col items-center gap-5"
             >
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.04]">
                 <Sparkles className="w-3 h-3 text-emerald-400" />

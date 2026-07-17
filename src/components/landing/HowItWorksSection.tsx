@@ -83,12 +83,12 @@ function StepCard({ step, index, isInView }: { step: StepData; index: number; is
         </div>
       )}
 
-      <div className={`relative p-7 sm:p-8 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.14] transition-all duration-500 h-full`}>
+      <div className={`relative p-8 sm:p-10 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.14] transition-all duration-500 h-full`}>
         {/* Hover glow */}
         <div className={`absolute -top-16 -right-16 w-32 h-32 rounded-full ${c.accent} blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none`} />
 
         {/* Top row: number + icon */}
-        <div className="flex items-start gap-4 mb-6">
+        <div className="flex items-start gap-4 mb-7">
           {/* Step number badge */}
           <div className={`shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br ${c.bg} ${c.border} border flex items-center justify-center shadow-lg ${c.glow}`}>
             <span className={`text-sm font-bold ${c.text}`}>{step.num}</span>
@@ -101,14 +101,14 @@ function StepCard({ step, index, isInView }: { step: StepData; index: number; is
         </div>
 
         {/* Title */}
-        <h3 className="text-white font-bold text-lg sm:text-xl mb-1">{step.title}</h3>
-        <p className={`text-xs font-medium ${c.text} mb-4 tracking-wide uppercase`}>{step.subtitle}</p>
+        <h3 className="text-white font-bold text-lg sm:text-xl mb-2">{step.title}</h3>
+        <p className={`text-xs font-medium ${c.text} mb-5 tracking-wide uppercase`}>{step.subtitle}</p>
 
         {/* Description */}
-        <p className="text-neutral-400 text-sm leading-relaxed mb-6">{step.desc}</p>
+        <p className="text-neutral-400 text-sm leading-relaxed mb-7">{step.desc}</p>
 
         {/* Highlights chips */}
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-7">
           {step.highlights.map((h, i) => (
             <div
               key={i}
@@ -164,7 +164,7 @@ export function HowItWorksSection() {
     : 'Da URL do anúncio ao primeiro check-in virtual automaticamente. Sem precisar de técnico ou conhecimento técnico.';
 
   return (
-    <section ref={ref} id="como-funciona" className="relative py-24 sm:py-32 overflow-hidden">
+    <section ref={ref} id="como-funciona" className="relative py-28 sm:py-36 lg:py-44 overflow-hidden">
       {/* Background grid pattern (Cloudbeds-inspired) */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
         style={{
@@ -179,10 +179,10 @@ export function HowItWorksSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
           {/* Eyebrow */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-6">
             <Zap className="w-3.5 h-3.5 text-blue-400" />
             <span className="text-blue-400 text-xs font-semibold uppercase tracking-wider">Simples como 1-2-3</span>
           </div>
@@ -194,7 +194,7 @@ export function HowItWorksSection() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
-              className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-5 leading-[1.1] tracking-tight"
+              className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 leading-[1.1] tracking-tight"
             >
               {headerTitle}
             </motion.h2>
@@ -218,7 +218,7 @@ export function HowItWorksSection() {
         <AnimatePresence mode="wait">
           <div
             key={`steps-${niche}`}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-5"
+            className="grid grid-cols-1 lg:grid-cols-3 gap-8"
           >
             {content.steps.map((step, i) => (
               <StepCard key={`${niche}-${step.num}`} step={step} index={i} isInView={isInView} />
@@ -231,7 +231,7 @@ export function HowItWorksSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 1.0 }}
-          className="mt-16 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-emerald-500/[0.06] via-blue-500/[0.04] to-violet-500/[0.06] border border-white/[0.06] text-center"
+          className="mt-20 p-8 sm:p-10 rounded-2xl bg-gradient-to-r from-emerald-500/[0.06] via-blue-500/[0.04] to-violet-500/[0.06] border border-white/[0.06] text-center"
         >
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10">
             <div className="flex items-center gap-3">
@@ -276,7 +276,7 @@ export function HowItWorksSection() {
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.7, delay: 1.2 }}
-          className="text-center mt-12"
+          className="text-center mt-14"
         >
           <button
             onClick={() => {

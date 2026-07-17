@@ -169,9 +169,9 @@ function CaseCard({ study, index }: { study: CaseStudy; index: number }) {
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-7">
           {/* Quote */}
-          <div className="relative mb-6">
+          <div className="relative mb-7">
             <Quote className="absolute -top-1 -left-1 w-6 h-6 text-emerald-500/20" />
             <p className="text-neutral-300 text-sm leading-relaxed pl-5 italic">
               &ldquo;{study.quote}&rdquo;
@@ -179,7 +179,7 @@ function CaseCard({ study, index }: { study: CaseStudy; index: number }) {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="grid grid-cols-3 gap-4 mb-6">
             {study.stats.map((stat) => (
               <div key={stat.metric} className="text-center p-3 rounded-xl bg-white/[0.02] border border-white/[0.04]">
                 <div className="text-xl font-extrabold text-emerald-400 mb-0.5">{stat.value}</div>
@@ -213,7 +213,7 @@ export function SuccessCasesSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} className="relative py-24 sm:py-32 bg-[#0a0a0a] overflow-hidden">
+    <section ref={ref} className="relative py-28 sm:py-36 lg:py-44 bg-[#0a0a0a] overflow-hidden">
       {/* Background accent */}
       <div className="absolute top-0 left-1/4 w-[600px] h-[400px] bg-blue-500/[0.03] rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[500px] h-[400px] bg-emerald-500/[0.03] rounded-full blur-[150px] pointer-events-none" />
@@ -224,13 +224,13 @@ export function SuccessCasesSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7 }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 mb-6">
             <Star className="w-3.5 h-3.5 text-amber-400" />
             <span className="text-amber-400 text-xs font-medium uppercase tracking-wider">Casos de Sucesso</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6">
             Pousadas reais,{' '}
             <span className="text-amber-400 font-bold">resultados reais</span>
           </h2>
@@ -240,7 +240,7 @@ export function SuccessCasesSection() {
         </motion.div>
 
         {/* Case Studies Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {caseStudies.map((study, i) => (
             <CaseCard key={study.id} study={study} index={i} />
           ))}
@@ -251,7 +251,7 @@ export function SuccessCasesSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06]"
+          className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6 p-8 rounded-2xl bg-white/[0.02] border border-white/[0.06]"
         >
           {[
             { icon: MessageSquare, value: '50.000+', label: 'Mensagens IA/mês' },

@@ -27,20 +27,20 @@ export function TestimonialsSection() {
   const headerText = niche === 'pousadas' ? 'O que os pousadeiros dizem' : 'O que os anfitriões dizem';
 
   return (
-    <section ref={ref} id="depoimentos" className="parallax-section parallax-grid py-24 sm:py-32">
+    <section ref={ref} id="depoimentos" className="parallax-section parallax-grid py-28 sm:py-36 lg:py-44">
       <div className="relative z-10 max-w-6xl mx-auto px-4">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7 }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 mb-6">
             <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
             <span className="text-amber-400 text-xs font-medium">Depoimentos Reais</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6">
             {headerText}
             <br />
             <span className="text-amber-400">sobre o Zélla</span>
@@ -60,7 +60,7 @@ export function TestimonialsSection() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.5, ease: easeOut }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             {testimonials.map((t, i) => {
               const c = colorMap[colorKeys[i % colorKeys.length]];
@@ -70,20 +70,20 @@ export function TestimonialsSection() {
                   initial={{ opacity: 0, y: 30 }}
                   animate={isInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.6, delay: i * 0.1 }}
-                  className={`relative p-6 rounded-2xl bg-white/[0.02] border ${c.border} hover:bg-white/[0.04] transition-all duration-300`}
+                  className={`relative p-7 rounded-2xl bg-white/[0.02] border ${c.border} hover:bg-white/[0.04] transition-all duration-300`}
                 >
                   {/* Quote icon */}
-                  <Quote className={`w-8 h-8 ${c.star} opacity-20 mb-3`} />
+                  <Quote className={`w-8 h-8 ${c.star} opacity-20 mb-4`} />
 
                   {/* Stars */}
-                  <div className="flex items-center gap-0.5 mb-4">
+                  <div className="flex items-center gap-0.5 mb-5">
                     {Array.from({ length: t.rating }).map((_, j) => (
                       <Star key={j} className={`w-3.5 h-3.5 ${c.star} fill-current`} />
                     ))}
                   </div>
 
                   {/* Text */}
-                  <p className="text-neutral-300 text-sm leading-relaxed mb-5">&ldquo;{t.text}&rdquo;</p>
+                  <p className="text-neutral-300 text-sm leading-relaxed mb-6">&ldquo;{t.text}&rdquo;</p>
 
                   {/* Author */}
                   <div className="flex items-center gap-3">

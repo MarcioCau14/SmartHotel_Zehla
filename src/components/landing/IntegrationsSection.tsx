@@ -77,7 +77,7 @@ export function IntegrationsSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} id="integracoes" className="relative py-24 sm:py-32 bg-[#060608] overflow-hidden">
+    <section ref={ref} id="integracoes" className="relative py-28 sm:py-36 lg:py-44 bg-[#060608] overflow-hidden">
       {/* Background grid */}
       <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] pointer-events-none" />
 
@@ -87,13 +87,13 @@ export function IntegrationsSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7 }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 mb-6">
             <Plug className="w-3.5 h-3.5 text-purple-400" />
             <span className="text-purple-400 text-xs font-medium uppercase tracking-wider">Ecossistema</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6">
             Tudo conectado,{' '}
             <span className="text-purple-400 font-bold">nada desconectado</span>
           </h2>
@@ -103,7 +103,7 @@ export function IntegrationsSection() {
         </motion.div>
 
         {/* Integration Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {integrations.map((integration, i) => {
             const Icon = integration.icon;
             return (
@@ -112,7 +112,7 @@ export function IntegrationsSection() {
                 initial={{ opacity: 0, y: 25 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: i * 0.08 }}
-                className="group relative rounded-xl p-5 bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.12] transition-all duration-300"
+                className="group relative rounded-xl p-6 bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.12] transition-all duration-300"
               >
                 {/* Status badge */}
                 <div className="absolute top-4 right-4">
@@ -121,11 +121,11 @@ export function IntegrationsSection() {
                   </span>
                 </div>
 
-                <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center mb-4 group-hover:bg-purple-500/20 transition-colors">
+                <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center mb-5 group-hover:bg-purple-500/20 transition-colors">
                   <Icon className="w-5 h-5 text-purple-400" />
                 </div>
 
-                <h3 className="text-white font-bold text-sm mb-2">{integration.name}</h3>
+                <h3 className="text-white font-bold text-sm mb-3">{integration.name}</h3>
                 <p className="text-neutral-500 text-xs leading-relaxed">{integration.description}</p>
               </motion.div>
             );
@@ -137,7 +137,7 @@ export function IntegrationsSection() {
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6, delay: 0.8 }}
-          className="text-center text-neutral-600 text-xs mt-10"
+          className="text-center text-neutral-600 text-xs mt-12"
         >
           Diferente de soluções que dependem de webhooks com delays, o Zélla usa conexão direta ao banco de dados para respostas em tempo real.
         </motion.p>

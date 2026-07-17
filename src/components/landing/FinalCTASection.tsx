@@ -11,7 +11,7 @@ export function FinalCTASection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <section ref={ref} className="py-24 sm:py-32 relative overflow-hidden">
+    <section ref={ref} className="py-28 sm:py-36 lg:py-44 relative overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-500/[0.04] to-transparent" />
@@ -27,7 +27,7 @@ export function FinalCTASection() {
           transition={{ duration: 0.8 }}
         >
           {/* Logo */}
-          <div className="flex items-center justify-center mb-8">
+          <div className="flex items-center justify-center mb-10">
             <motion.div
               initial={{ scale: 0 }}
               animate={isInView ? { scale: 1 } : {}}
@@ -42,18 +42,18 @@ export function FinalCTASection() {
           </div>
 
           {/* Headline */}
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-8 leading-tight">
             Sua pousada merece
             <br />
             <span className="text-blue-500 font-bold">um Zelador 24h por 7</span>
           </h2>
 
-          <p className="text-neutral-400 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="text-neutral-400 text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed">
             Imagine ter um atendente que nunca dorme, nunca erra o preço e ainda envia sua chave PIX na hora. O ZÉLLA cuida do seu WhatsApp enquanto você cuida dos seus hóspedes. Comece grátis e veja resultados em 48 horas.
           </p>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-5 mb-14">
             <button
               onClick={() => {
                 const el = document.querySelector('#precos');

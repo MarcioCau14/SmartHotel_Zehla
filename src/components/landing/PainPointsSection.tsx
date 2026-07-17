@@ -56,7 +56,7 @@ const scrollStats = [
 
 function StatsMarquee() {
   return (
-    <div className="relative overflow-hidden py-6 mb-4">
+    <div className="relative overflow-hidden py-8 mb-6">
       {/* Edge fade masks */}
       <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#060608] to-transparent z-10 pointer-events-none" />
       <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#060608] to-transparent z-10 pointer-events-none" />
@@ -97,7 +97,7 @@ function OpportunityCard({ item, index, isInView }: { item: PainCard; index: num
       initial={{ opacity: 0, y: 30 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: index * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className={`group relative p-6 sm:p-8 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.12] hover:bg-white/[0.04] transition-all duration-500 cursor-default overflow-hidden ${
+      className={`group relative p-7 sm:p-9 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.12] hover:bg-white/[0.04] transition-all duration-500 cursor-default overflow-hidden ${
         isLarge ? 'lg:col-span-1' : ''
       }`}
     >
@@ -105,17 +105,17 @@ function OpportunityCard({ item, index, isInView }: { item: PainCard; index: num
       <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full ${c.accent} blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none`} />
 
       {/* Icon */}
-      <div className={`w-11 h-11 rounded-xl ${c.accent} border ${c.ring} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}>
+      <div className={`w-11 h-11 rounded-xl ${c.accent} border ${c.ring} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
         {IconComponent && <IconComponent className="w-5 h-5 text-white" />}
       </div>
 
       {/* Title */}
-      <h3 className="text-white font-bold text-base sm:text-lg mb-3 group-hover:${c.text} transition-colors duration-300">
+      <h3 className="text-white font-bold text-base sm:text-lg mb-4 group-hover:${c.text} transition-colors duration-300">
         {item.title}
       </h3>
 
       {/* Description */}
-      <p className="text-neutral-400 text-sm leading-relaxed mb-4">
+      <p className="text-neutral-400 text-sm leading-relaxed mb-5">
         {item.desc}
       </p>
 
@@ -162,7 +162,7 @@ export function PainPointsSection() {
     : 'Veja como o Zélla transforma o WhatsApp dos seus imóveis em uma máquina de reservas — sem complicação e no seu tom de voz.';
 
   return (
-    <section ref={ref} className="relative py-20 sm:py-28 bg-[#060608] overflow-hidden">
+    <section ref={ref} className="relative py-28 sm:py-36 lg:py-44 bg-[#060608] overflow-hidden">
       {/* Subtle parallax background orbs */}
       <motion.div
         style={{ y: bgY }}
@@ -179,17 +179,17 @@ export function PainPointsSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="text-center mb-12"
+          className="text-center mb-16"
         >
           {/* Eyebrow with slash */}
-          <div className="inline-flex items-center gap-2 mb-5">
+          <div className="inline-flex items-center gap-2 mb-6">
             <span className="text-neutral-600 text-sm font-medium">/</span>
             <span className="text-emerald-400/80 text-xs font-semibold uppercase tracking-widest">
               Por que o Zélla
             </span>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-5 leading-[1.1] tracking-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 leading-[1.1] tracking-tight">
             <AnimatePresence mode="wait">
               <motion.span
                 key={`title-${niche}`}
@@ -236,7 +236,7 @@ export function PainPointsSection() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6"
           >
             {content.painCards.map((item, i) => (
               <OpportunityCard key={`${niche}-${item.title}`} item={item} index={i} isInView={isInView} />
@@ -249,7 +249,7 @@ export function PainPointsSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.7 }}
-          className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 mt-14 pt-8 border-t border-white/[0.04]"
+          className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 mt-16 pt-10 border-t border-white/[0.04]"
         >
           {[
             { icon: Zap, text: 'Setup em 5 minutos' },
