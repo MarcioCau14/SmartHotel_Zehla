@@ -228,7 +228,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="flex flex-col items-center max-w-3xl mx-auto"
+            className="flex flex-col items-center max-w-4xl mx-auto"
           >
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/[0.08] mb-8">
@@ -240,9 +240,9 @@ export function HeroSection() {
             </div>
 
             {/* Headline — exactly 2 lines: static line 1 + dynamic line 2 */}
-            <h1 className="text-[1.5rem] sm:text-[2.25rem] md:text-5xl lg:text-6xl xl:text-7xl font-satoshi font-bold tracking-tight leading-[1.15] text-white mb-6 text-center">
+            <h1 className="text-[1.5rem] sm:text-5xl md:text-[3.25rem] lg:text-[3.75rem] xl:text-[4.5rem] font-satoshi font-bold tracking-tight leading-[1.15] text-white mb-6 text-center">
               <span className="block whitespace-nowrap">O Zélla atende, vende e</span>
-              <span className="flex items-baseline justify-center whitespace-nowrap text-blue-500 font-bold">
+              <span className="block whitespace-nowrap text-blue-500 font-bold">
                 reserva{' '}
                 <span className="inline-block overflow-hidden relative align-baseline">
                   <AnimatePresence mode="wait">
