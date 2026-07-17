@@ -30,13 +30,13 @@ export function HeroSection() {
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-[#0a0a0a]">
+    <section className="relative flex items-center overflow-hidden bg-[#0a0a0a]">
 
       {/* Ambient glow */}
       <div className="absolute top-1/4 -left-32 w-[500px] h-[500px] rounded-full bg-emerald-500/[0.07] blur-[120px]" />
       <div className="absolute bottom-1/4 -right-32 w-[400px] h-[400px] rounded-full bg-purple-500/[0.05] blur-[100px]" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-16 pb-8 sm:pt-20 sm:pb-10 w-full">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-14 pb-6 sm:pt-16 sm:pb-8 w-full">
         <div className="flex flex-col items-center text-center">
           {/* Text Content */}
           <motion.div
@@ -46,7 +46,7 @@ export function HeroSection() {
             className="flex flex-col items-center max-w-4xl mx-auto"
           >
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/[0.08] mb-5">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/[0.08] mb-4">
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
               <span className="text-emerald-400 text-xs font-medium uppercase tracking-wider">
                 Deixa com o Zélla
@@ -74,25 +74,25 @@ export function HeroSection() {
               </span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-neutral-400 leading-relaxed mb-6 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-neutral-400 leading-relaxed mb-5 max-w-2xl mx-auto">
               O zelador digital que responde 24hs por 7. Atende os hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para pousadas e anfitriões de Airbnb.
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-5 w-full sm:w-auto">
               <button
                 onClick={() => {
                   const el = document.querySelector('#precos');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-xl hover:from-emerald-400 hover:to-emerald-500 transition-all duration-200 shadow-xl shadow-emerald-500/30 cursor-pointer text-base active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-xl hover:from-emerald-400 hover:to-emerald-500 transition-all duration-200 shadow-xl shadow-emerald-500/30 cursor-pointer text-sm sm:text-base active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 Grátis por 7 dias
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </button>
               <button
                 onClick={() => router.push('/parceiro')}
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/[0.04] border border-white/[0.12] text-white/90 font-bold rounded-xl hover:bg-white/[0.08] hover:border-white/[0.20] hover:text-white transition-all duration-200 cursor-pointer text-base active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white/[0.04] border border-white/[0.12] text-white/90 font-bold rounded-xl hover:bg-white/[0.08] hover:border-white/[0.20] hover:text-white transition-all duration-200 cursor-pointer text-sm sm:text-base active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 <Crown className="w-4 h-4 text-amber-400" />
                 Seja parceiro Zélla
@@ -101,7 +101,7 @@ export function HeroSection() {
             </div>
 
             {/* Social proof mini */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-sm text-neutral-400 font-medium mb-10">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 text-sm text-neutral-400 font-medium mb-6">
               <div className="flex -space-x-2.5">
                 {[
                   { name: 'Pousada Serenity', img: '/avatar-serenity.jpg' },
@@ -128,11 +128,11 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="flex flex-col items-center gap-4"
+              className="flex flex-col items-center gap-3"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.04]">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-neutral-400 text-xs font-semibold uppercase tracking-wider">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.08] bg-white/[0.04]">
+                <Sparkles className="w-3 h-3 text-emerald-400" />
+                <span className="text-neutral-400 text-[11px] font-semibold uppercase tracking-wider">
                   Escolha seu perfil
                 </span>
               </div>
