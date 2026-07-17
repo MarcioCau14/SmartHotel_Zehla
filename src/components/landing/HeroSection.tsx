@@ -8,9 +8,12 @@ import {
   Crown,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useNiche } from '@/contexts/NicheContext';
+import { NicheToggle } from './NicheToggle';
 
 export function HeroSection() {
   const router = useRouter();
+  const { niche, setNiche } = useNiche();
 
   // Rotating hero words
   const rotatingPhrases = [
@@ -27,13 +30,13 @@ export function HeroSection() {
   }, []);
 
   return (
-    <section className="relative flex items-center overflow-hidden bg-[#0a0a0a]">
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-[#0a0a0a]">
 
       {/* Ambient glow */}
       <div className="absolute top-1/4 -left-32 w-[500px] h-[500px] rounded-full bg-emerald-500/[0.07] blur-[120px]" />
       <div className="absolute bottom-1/4 -right-32 w-[400px] h-[400px] rounded-full bg-purple-500/[0.05] blur-[100px]" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-16 pb-4 sm:pt-20 sm:pb-6 w-full">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-16 pb-8 sm:pt-20 sm:pb-10 w-full">
         <div className="flex flex-col items-center text-center">
           {/* Text Content */}
           <motion.div
@@ -98,7 +101,7 @@ export function HeroSection() {
             </div>
 
             {/* Social proof mini */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-sm text-neutral-400 font-medium">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-sm text-neutral-400 font-medium mb-10">
               <div className="flex -space-x-2.5">
                 {[
                   { name: 'Pousada Serenity', img: '/avatar-serenity.jpg' },
@@ -119,6 +122,22 @@ export function HeroSection() {
               </div>
               <span className="sm:border-l sm:border-white/10 sm:pl-6 text-neutral-400 font-semibold">+100 pousadas já atendem melhor com o Zélla</span>
             </div>
+
+            {/* ── Niche Switcher (integrated into Hero) ── */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              className="flex flex-col items-center gap-4"
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.04]">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-neutral-400 text-xs font-semibold uppercase tracking-wider">
+                  Escolha seu perfil
+                </span>
+              </div>
+              <NicheToggle niche={niche} onNicheChange={setNiche} />
+            </motion.div>
           </motion.div>
         </div>
       </div>

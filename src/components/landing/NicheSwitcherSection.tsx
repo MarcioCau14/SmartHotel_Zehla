@@ -2,19 +2,18 @@
 
 import { useRef } from 'react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useNiche } from '@/contexts/NicheContext';
 import { getNicheContent } from '@/data/niche-content';
-import { NicheToggle } from './NicheToggle';
 
 export function NicheSwitcherSection() {
-  const { niche, setNiche } = useNiche();
+  const { niche } = useNiche();
   const content = getNicheContent(niche);
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section ref={ref} className="relative pt-8 pb-16 sm:pt-10 sm:pb-20 overflow-hidden">
+    <section ref={ref} className="relative py-16 sm:py-20 overflow-hidden border-t border-white/[0.03]">
       {/* Dynamic background image with crossfade */}
       <div className="absolute inset-0 z-0">
         <AnimatePresence mode="wait">
@@ -23,7 +22,7 @@ export function NicheSwitcherSection() {
             initial={{ opacity: 0, scale: 1.05 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.05 }}
-            transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }}
+            transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] as [number, number, number, number] }}
             className="absolute inset-0"
           >
             <div
@@ -66,20 +65,9 @@ export function NicheSwitcherSection() {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}
+          transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] as [number, number, number, number] }}
           className="flex flex-col items-center text-center gap-5 sm:gap-6"
         >
-          {/* Eyebrow */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.04]">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-neutral-400 text-xs font-semibold uppercase tracking-wider">
-              Escolha seu perfil
-            </span>
-          </div>
-
-          {/* The Toggle */}
-          <NicheToggle niche={niche} onNicheChange={setNiche} />
-
           {/* Dynamic headline + subheadline */}
           <AnimatePresence mode="wait">
             <motion.div
@@ -87,7 +75,7 @@ export function NicheSwitcherSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
+              transition={{ duration: 0.5, ease: [0.2, 0.8, 0.2, 1] as [number, number, number, number] }}
               className="flex flex-col items-center gap-5"
             >
               {/* Headline */}
