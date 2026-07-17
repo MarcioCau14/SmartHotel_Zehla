@@ -153,7 +153,7 @@ const plans = [
   },
 ];
 
-const easeOut = [0.2, 0.8, 0.2, 1] as const;
+const easeOut: [number, number, number, number] = [0.2, 0.8, 0.2, 1];
 
 export function PricingSection() {
   const ref = useRef<HTMLDivElement>(null);
@@ -242,7 +242,7 @@ export function PricingSection() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.4, ease: easeOut as unknown as number[] }}
+              transition={{ duration: 0.4, ease: easeOut }}
               className="text-emerald-400/80 text-sm max-w-lg mx-auto mb-8 flex items-center justify-center gap-1.5"
             >
               <Sparkles className="w-3.5 h-3.5" />

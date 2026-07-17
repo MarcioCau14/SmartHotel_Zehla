@@ -6,7 +6,7 @@ import { ChevronDown, HelpCircle } from 'lucide-react';
 import { useNiche } from '@/contexts/NicheContext';
 import { getNicheContent } from '@/data/niche-content';
 
-const easeOut = [0.2, 0.8, 0.2, 1] as const;
+const easeOut: [number, number, number, number] = [0.2, 0.8, 0.2, 1];
 
 function FAQItem({ q, a, isOpen, onToggle }: { q: string; a: string; isOpen: boolean; onToggle: () => void }) {
   return (
@@ -78,7 +78,7 @@ export function FAQSection() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.5, ease: easeOut as unknown as number[] }}
+            transition={{ duration: 0.5, ease: easeOut }}
             className="rounded-2xl bg-white/[0.02] border border-white/[0.06] px-6"
           >
             {faqs.map((faq, i) => (

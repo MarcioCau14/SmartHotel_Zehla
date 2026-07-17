@@ -454,7 +454,7 @@ const anfitrioesContent: NicheContent = {
     ],
     stats: [
       { label: 'Sem tocar no celular', val: '24/7', title: 'Atendimento IA', color: 'text-blue-400' },
-      { label: 'Economia em comissões', val: '15%', label: 'Sem Airbnb fee', title: 'Receita direta', color: 'text-emerald-400' },
+      { label: 'Economia em comissões (Sem Airbnb fee)', val: '15%', title: 'Receita direta', color: 'text-emerald-400' },
       { label: 'Do anúncio para a IA', val: '1 URL', title: 'Setup instantâneo', color: 'text-amber-400' },
       { label: 'Sem contratar equipe', val: '∞', title: 'Imóveis simultâneos', color: 'text-zinc-300' },
     ],

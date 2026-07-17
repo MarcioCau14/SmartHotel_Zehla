@@ -15,7 +15,7 @@ const colorMap: Record<string, { border: string; bg: string; star: string }> = {
   amber: { border: 'border-amber-500/15', bg: 'from-amber-500/10 to-amber-900/5', star: 'text-amber-400' },
 };
 
-const easeOut = [0.2, 0.8, 0.2, 1] as const;
+const easeOut: [number, number, number, number] = [0.2, 0.8, 0.2, 1];
 
 export function TestimonialsSection() {
   const ref = useRef<HTMLDivElement>(null);
@@ -59,7 +59,7 @@ export function TestimonialsSection() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.5, ease: easeOut as unknown as number[] }}
+            transition={{ duration: 0.5, ease: easeOut }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
           >
             {testimonials.map((t, i) => {
