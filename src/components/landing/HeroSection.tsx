@@ -27,13 +27,13 @@ export function HeroSection() {
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-[#0a0a0a]">
+    <section className="relative flex items-center overflow-hidden bg-[#0a0a0a]">
 
       {/* Ambient glow */}
       <div className="absolute top-1/4 -left-32 w-[500px] h-[500px] rounded-full bg-emerald-500/[0.07] blur-[120px]" />
       <div className="absolute bottom-1/4 -right-32 w-[400px] h-[400px] rounded-full bg-purple-500/[0.05] blur-[100px]" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-28 pb-20 w-full">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-8 sm:pt-24 sm:pb-10 w-full">
         <div className="flex flex-col items-center text-center">
           {/* Text Content */}
           <motion.div

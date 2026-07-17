@@ -14,7 +14,7 @@ export function NicheSwitcherSection() {
   const isInView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section ref={ref} className="relative py-20 sm:py-28 overflow-hidden">
+    <section ref={ref} className="relative pt-8 pb-16 sm:pt-10 sm:pb-20 overflow-hidden">
       {/* Dynamic background image with crossfade */}
       <div className="absolute inset-0 z-0">
         <AnimatePresence mode="wait">
@@ -67,7 +67,7 @@ export function NicheSwitcherSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}
-          className="flex flex-col items-center text-center gap-8 sm:gap-10"
+          className="flex flex-col items-center text-center gap-5 sm:gap-6"
         >
           {/* Eyebrow */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.04]">
