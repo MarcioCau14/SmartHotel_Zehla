@@ -203,7 +203,7 @@ export function HeroSection() {
   // Rotating hero words
   const rotatingPhrases = [
     'pelo WhatsApp.',
-    'da sua pousada.',
+    'a sua pousada.',
     'o seu imóvel.',
   ];
   const [phraseIdx, setPhraseIdx] = useState(0);
