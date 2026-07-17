@@ -1,66 +1,40 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
 import {
   MessageSquare,
   Wifi,
+  Key,
+  Link as LinkIcon,
   Check,
   Zap,
   Shield,
   Clock,
-  MessageCircle,
+  Star,
   TrendingUp,
   Globe,
   Sparkles,
   ArrowRight,
+  type LucideIcon,
 } from 'lucide-react';
 import { LinkInBioDemo } from './LinkInBioDemo';
+import { useNiche } from '@/contexts/NicheContext';
+import { getNicheContent } from '@/data/niche-content';
 
-const features = [
-  {
-    icon: MessageSquare,
-    badge: 'WhatsApp Inteligente 24/7',
-    heroStat: { val: '8s', label: 'tempo médio de resposta', gradient: 'from-emerald-400 to-cyan-400' },
-    headline: 'Seu hóspede pergunta. O Zélla reserva.',
-    subtitle: 'Não é só chat — é um motor de reservas automático.',
-    desc: 'Cada mensagem que seu hóspede manda é uma oportunidade de reserva que o Zélla não deixa escapar. Disponibilidade, preço e sua chave PIX cadastrada — tudo num único balão, no tom da sua pousada.',
-    stats: [
-      { val: '24/7', label: 'Atendimento ininterrupto', sublabel: 'Sem folga, sem férias', icon: Clock },
-      { val: '+35%', label: 'Aumento em reservas', sublabel: 'Média nos primeiros 90 dias', icon: TrendingUp },
-    ],
-    pills: [
-      { text: '1 balão = tudo resolvido', accent: true },
-      { text: 'Chave PIX cadastrada enviada automaticamente' },
-      { text: 'Tom de voz personalizado' },
-      { text: 'PT / ES — dois idiomas' },
-    ],
-    bottomLine: 'Deixe o software fazer o trabalho do software. Você cuide dos hóspedes.',
-    mockup: 'whatsapp',
-    reverse: false,
-  },
-  {
-    icon: Wifi,
-    badge: 'Link-in-Bio Profissional',
-    heroStat: { val: '2', label: 'cliques para reservar', gradient: 'from-blue-400 to-violet-400' },
-    headline: 'Bonito ganha elogios. Inteligente ganha reservas.',
-    subtitle: 'Seu Instagram vira máquina de conversão.',
-    desc: 'Cada seguidor no seu Instagram é uma reserva que não aconteceu ainda. O Link-in-Bio do Zélla transforma sua bio numa página de conversão — com galeria, reservas diretas e avaliações reais.',
-    stats: [
-      { val: '0%', label: 'Comissão de OTA', sublabel: 'Receita 100% direta', icon: Shield },
-      { val: '+20%', label: 'Receita por diária', sublabel: 'Com reservas diretas', icon: TrendingUp },
-    ],
-    pills: [
-      { text: 'Reservas diretas sem intermediário', accent: true },
-      { text: 'Galeria de fotos otimizada' },
-      { text: 'Avaliações reais de hóspedes' },
-      { text: 'SEO + análise de tráfego' },
-    ],
-    bottomLine: 'Menos cliques para o hóspede. Mais receita direta para você. (PRO e MAX)',
-    mockup: 'linkinbio',
-    reverse: true,
-  },
-];
+// Icon lookup map for string-to-component resolution
+const featureIconMap: Record<string, LucideIcon> = {
+  MessageSquare,
+  Wifi,
+  Key,
+  Link: LinkIcon,
+  Shield,
+  Clock,
+  TrendingUp,
+  Zap,
+  Sparkles,
+  Star,
+};
 
 function WhatsAppMockup() {
   const [animationStep, setAnimationStep] = useState(0);
@@ -99,7 +73,7 @@ function WhatsAppMockup() {
           <div className="absolute -left-[9px] top-[130px] w-[3px] h-[32px] bg-neutral-800 rounded-l-md border-r border-neutral-700" />
           <div className="absolute -left-[9px] top-[172px] w-[3px] h-[32px] bg-neutral-800 rounded-l-md border-r border-neutral-700" />
           <div className="absolute -right-[9px] top-[140px] w-[3px] h-[45px] bg-neutral-800 rounded-r-md border-l border-neutral-700" />
-          <div className="absolute -right-[9px] top-[215px] w-[3px] h-[28px] bg-neutral-900 rounded-r-sm border-l border-neutral-700 opacity-90" />
+          <div className="absolute -right-[9px] top-[215px] w-[3px] h-[28px] bg-neutral-900 rounded-r-sm border-l border-neutral-700 opacity:90" />
           <div className="absolute top-3.5 left-1/2 -translate-x-1/2 w-20 h-[18px] bg-black rounded-full z-30 flex items-center justify-center">
             <div className="w-1.5 h-1.5 rounded-full bg-[#1c1c1e] absolute right-4" />
           </div>
@@ -247,6 +221,9 @@ function FeatureMockup({ type }: { type: string }) {
 export function FeaturesSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-50px' });
+  const { niche, isPousadas } = useNiche();
+  const content = getNicheContent(niche);
+  const features = content.features;
 
   return (
     <section ref={ref} id="funcionalidades" className="py-24 sm:py-32 bg-[#0a0a0a]">
@@ -259,136 +236,173 @@ export function FeaturesSection() {
           className="text-center mb-20"
         >
           <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-6 tracking-tight">
-            Funcionalidades que <span className="text-blue-500 font-bold">transformam</span>
+            Funcionalidades que <span className={isPousadas ? 'text-emerald-500 font-bold' : 'text-blue-500 font-bold'}>transformam</span>
           </h2>
-          <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
-            O ZÉLLA vai ser seu zelador com funcionalidades inovadoras. São funções que vão te dar mais tempo para fazer sua pousada decolar.
-          </p>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={`features-desc-${niche}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
+              className="text-neutral-400 text-lg max-w-2xl mx-auto"
+            >
+              {isPousadas
+                ? 'O ZÉLLA vai ser seu zelador com funcionalidades inovadoras. São funções que vão te dar mais tempo para fazer sua pousada decolar.'
+                : 'O ZÉLLA é seu co-anfitrião digital. Funcionalidades que automatizam tudo — do check-in ao atendimento — para você escalar sem estresse.'
+              }
+            </motion.p>
+          </AnimatePresence>
         </motion.div>
 
         {/* Feature Rows — Alternating layout */}
-        <div className="space-y-24">
-          {features.map((feature, i) => (
-            <motion.div
-              key={feature.badge}
-              initial={{ opacity: 0, y: 30 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: i * 0.1 }}
-              className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center ${
-                feature.reverse ? 'lg:[direction:rtl]' : ''
-              }`}
-            >
-              {/* Text side */}
-              <div className={feature.reverse ? 'lg:[direction:ltr]' : ''}>
-                {/* Badge bar */}
-                <div className="flex items-center gap-3 mb-7">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                    <feature.icon className="w-5 h-5 text-emerald-400" />
-                  </div>
-                  <span className="text-emerald-400 text-xs font-bold uppercase tracking-wider">{feature.badge}</span>
-                </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`features-${niche}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
+            className="space-y-24"
+          >
+            {features.map((feature, i) => {
+              const IconComponent = featureIconMap[feature.icon] || MessageSquare;
+              const accentColor = isPousadas ? 'emerald' : 'blue';
 
-                {/* Hero Stat */}
-                {'heroStat' in feature && (
-                  <div className="mb-5 relative">
-                    <div className="flex items-end gap-3">
-                      <motion.span
-                        className={`text-6xl sm:text-7xl font-black tracking-tighter bg-gradient-to-br ${feature.heroStat.gradient} bg-clip-text text-transparent leading-none`}
-                        initial={{ opacity: 0, scale: 0.7, y: 10 }}
-                        animate={isInView ? { opacity: 1, scale: 1, y: 0 } : {}}
-                        transition={{ duration: 0.7, delay: 0.15, type: 'spring', stiffness: 120 }}
-                      >
-                        {feature.heroStat.val}
-                      </motion.span>
-                      <span className="text-neutral-400 text-sm font-medium pb-2 leading-snug">
-                        {feature.heroStat.label}
+              return (
+                <motion.div
+                  key={feature.badge}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.6, delay: i * 0.1 }}
+                  className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center ${
+                    feature.reverse ? 'lg:[direction:rtl]' : ''
+                  }`}
+                >
+                  {/* Text side */}
+                  <div className={feature.reverse ? 'lg:[direction:ltr]' : ''}>
+                    {/* Badge bar */}
+                    <div className="flex items-center gap-3 mb-7">
+                      <div className={`w-10 h-10 rounded-xl ${
+                        isPousadas
+                          ? 'bg-emerald-500/10 border border-emerald-500/20'
+                          : 'bg-blue-500/10 border border-blue-500/20'
+                      } flex items-center justify-center shrink-0`}>
+                        <IconComponent className={`w-5 h-5 ${isPousadas ? 'text-emerald-400' : 'text-blue-400'}`} />
+                      </div>
+                      <span className={`${isPousadas ? 'text-emerald-400' : 'text-blue-400'} text-xs font-bold uppercase tracking-wider`}>
+                        {feature.badge}
                       </span>
                     </div>
-                    <motion.div
-                      className={`h-[2px] mt-3 bg-gradient-to-r ${feature.heroStat.gradient} opacity-50`}
-                      initial={{ scaleX: 0 }}
-                      animate={isInView ? { scaleX: 1 } : {}}
-                      transition={{ duration: 0.8, delay: 0.4 }}
-                      style={{ transformOrigin: 'left' }}
-                    />
-                  </div>
-                )}
 
-                {/* Headline */}
-                <h3 className="text-2xl sm:text-3xl font-extrabold text-white mb-2 tracking-tight leading-tight">
-                  {feature.headline}
-                </h3>
+                    {/* Hero Stat */}
+                    {'heroStat' in feature && (
+                      <div className="mb-5 relative">
+                        <div className="flex items-end gap-3">
+                          <motion.span
+                            className={`text-6xl sm:text-7xl font-black tracking-tighter bg-gradient-to-br ${feature.heroStat.gradient} bg-clip-text text-transparent leading-none`}
+                            initial={{ opacity: 0, scale: 0.7, y: 10 }}
+                            animate={isInView ? { opacity: 1, scale: 1, y: 0 } : {}}
+                            transition={{ duration: 0.7, delay: 0.15, type: 'spring', stiffness: 120 }}
+                          >
+                            {feature.heroStat.val}
+                          </motion.span>
+                          <span className="text-neutral-400 text-sm font-medium pb-2 leading-snug">
+                            {feature.heroStat.label}
+                          </span>
+                        </div>
+                        <motion.div
+                          className={`h-[2px] mt-3 bg-gradient-to-r ${feature.heroStat.gradient} opacity-50`}
+                          initial={{ scaleX: 0 }}
+                          animate={isInView ? { scaleX: 1 } : {}}
+                          transition={{ duration: 0.8, delay: 0.4 }}
+                          style={{ transformOrigin: 'left' }}
+                        />
+                      </div>
+                    )}
 
-                {/* Subtitle */}
-                <p className="text-neutral-500 text-sm font-medium mb-5">{feature.subtitle}</p>
+                    {/* Headline */}
+                    <h3 className="text-2xl sm:text-3xl font-extrabold text-white mb-2 tracking-tight leading-tight">
+                      {feature.headline}
+                    </h3>
 
-                {/* Description */}
-                <p className="text-neutral-300 text-[15px] leading-relaxed mb-8">{feature.desc}</p>
+                    {/* Subtitle */}
+                    <p className="text-neutral-500 text-sm font-medium mb-5">{feature.subtitle}</p>
 
-                {/* Secondary Stats */}
-                {'stats' in feature && (
-                  <div className="grid grid-cols-2 gap-3 mb-8">
-                    {feature.stats.map((s: { val: string; label: string; sublabel?: string; icon: any }, si: number) => (
-                      <motion.div
-                        key={si}
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={isInView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.4, delay: 0.3 + si * 0.1 }}
-                        className="relative p-4 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300 group/stat"
+                    {/* Description */}
+                    <p className="text-neutral-300 text-[15px] leading-relaxed mb-8">{feature.desc}</p>
+
+                    {/* Secondary Stats */}
+                    {'stats' in feature && (
+                      <div className="grid grid-cols-2 gap-3 mb-8">
+                        {feature.stats.map((s, si: number) => {
+                          const StatIcon = featureIconMap[s.icon] || Clock;
+                          return (
+                            <motion.div
+                              key={si}
+                              initial={{ opacity: 0, y: 15 }}
+                              animate={isInView ? { opacity: 1, y: 0 } : {}}
+                              transition={{ duration: 0.4, delay: 0.3 + si * 0.1 }}
+                              className="relative p-4 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300 group/stat"
+                            >
+                              <StatIcon className={`w-4 h-4 ${isPousadas ? 'text-emerald-500/60' : 'text-blue-500/60'} mb-2.5 block`} />
+                              <div className="text-2xl font-bold text-white tracking-tight">{s.val}</div>
+                              <div className="text-[11px] text-neutral-400 font-semibold mt-1">{s.label}</div>
+                              {'sublabel' in s && s.sublabel && (
+                                <div className="text-[10px] text-neutral-600 mt-0.5">{s.sublabel}</div>
+                              )}
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Pills */}
+                    {'pills' in feature && (
+                      <div className="flex flex-wrap gap-2 mb-8">
+                        {feature.pills.map((p, pi: number) => (
+                          <motion.span
+                            key={pi}
+                            initial={{ opacity: 0, x: -8 }}
+                            animate={isInView ? { opacity: 1, x: 0 } : {}}
+                            transition={{ duration: 0.3, delay: 0.5 + pi * 0.06 }}
+                            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[12px] font-medium transition-all duration-200 ${
+                              p.accent
+                                ? isPousadas
+                                  ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400'
+                                  : 'bg-blue-500/10 border border-blue-500/25 text-blue-400'
+                                : 'bg-white/[0.03] border border-white/[0.06] text-neutral-400 hover:text-neutral-200 hover:bg-white/[0.05]'
+                            }`}
+                          >
+                            <Check className={`w-3 h-3 ${p.accent ? (isPousadas ? 'text-emerald-400' : 'text-blue-400') : 'text-neutral-600'}`} />
+                            {p.text}
+                          </motion.span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Bottom line */}
+                    {'bottomLine' in feature && (
+                      <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={isInView ? { opacity: 1 } : {}}
+                        transition={{ duration: 0.5, delay: 0.7 }}
+                        className={`text-neutral-600 text-xs italic border-l-2 ${isPousadas ? 'border-emerald-500/30' : 'border-blue-500/30'} pl-3`}
                       >
-                        <s.icon className="w-4 h-4 text-emerald-500/60 mb-2.5 block" />
-                        <div className="text-2xl font-bold text-white tracking-tight">{s.val}</div>
-                        <div className="text-[11px] text-neutral-400 font-semibold mt-1">{s.label}</div>
-                        {'sublabel' in s && s.sublabel && (
-                          <div className="text-[10px] text-neutral-600 mt-0.5">{s.sublabel}</div>
-                        )}
-                      </motion.div>
-                    ))}
+                        {feature.bottomLine}
+                      </motion.p>
+                    )}
                   </div>
-                )}
 
-                {/* Pills */}
-                {'pills' in feature && (
-                  <div className="flex flex-wrap gap-2 mb-8">
-                    {feature.pills.map((p: { text: string; accent?: boolean }, pi: number) => (
-                      <motion.span
-                        key={pi}
-                        initial={{ opacity: 0, x: -8 }}
-                        animate={isInView ? { opacity: 1, x: 0 } : {}}
-                        transition={{ duration: 0.3, delay: 0.5 + pi * 0.06 }}
-                        className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[12px] font-medium transition-all duration-200 ${
-                          p.accent
-                            ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400'
-                            : 'bg-white/[0.03] border border-white/[0.06] text-neutral-400 hover:text-neutral-200 hover:bg-white/[0.05]'
-                        }`}
-                      >
-                        <Check className={`w-3 h-3 ${p.accent ? 'text-emerald-400' : 'text-neutral-600'}`} />
-                        {p.text}
-                      </motion.span>
-                    ))}
+                  {/* Mockup side */}
+                  <div className={feature.reverse ? 'lg:[direction:ltr]' : ''}>
+                    <FeatureMockup type={feature.mockup} />
                   </div>
-                )}
-
-                {/* Bottom line */}
-                {'bottomLine' in feature && (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={isInView ? { opacity: 1 } : {}}
-                    transition={{ duration: 0.5, delay: 0.7 }}
-                    className="text-neutral-600 text-xs italic border-l-2 border-emerald-500/30 pl-3"
-                  >
-                    {feature.bottomLine}
-                  </motion.p>
-                )}
-              </div>
-
-              {/* Mockup side */}
-              <div className={feature.reverse ? 'lg:[direction:ltr]' : ''}>
-                <FeatureMockup type={feature.mockup} />
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </section>
   );

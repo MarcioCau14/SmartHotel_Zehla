@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import {
   UserPlus,
   MessageSquare,
@@ -13,40 +13,23 @@ import {
   Sparkles,
   Zap,
   Globe,
+  Link,
+  Bot,
+  type LucideIcon,
 } from 'lucide-react';
+import { useNiche } from '@/contexts/NicheContext';
+import { getNicheContent, type StepData } from '@/data/niche-content';
 
-/* ─────────── STEP DATA ─────────── */
-const steps = [
-  {
-    num: '01',
-    icon: UserPlus,
-    title: 'Cadastre sua pousada',
-    subtitle: '5 minutos é tudo que você precisa',
-    desc: 'Informe nome, WhatsApp oficial, endereço e quantidade de quartos. O Zélla cria o perfil da sua pousada e já personaliza as respostas com suas regras, preços e políticas. Sem necessidade de técnico.',
-    color: 'emerald',
-    fields: ['Nome da pousada', 'WhatsApp oficial', 'Endereço completo', 'Qtd. de quartos', 'Chave PIX (opcional)', 'Regras da pousada'],
-    highlights: ['Sem cartão de crédito', 'Onboarding guiado', 'Perfil instantâneo'],
-  },
-  {
-    num: '02',
-    icon: MessageSquare,
-    title: 'A IA atende por você',
-    subtitle: 'Seu WhatsApp vira ponto de venda 24/7',
-    desc: 'A IA responde perguntas, mostra disponibilidade, negocia preços e envia a chave PIX cadastrada para pagamento — tudo automaticamente, no tom da sua pousada. O primeiro hóspede atendido pela IA costuma chegar em menos de 24 horas.',
-    color: 'blue',
-    highlights: ['Resposta em até 8 segundos', 'Tom personalizado', 'Chave PIX automática'],
-  },
-  {
-    num: '03',
-    icon: BarChart3,
-    title: 'Acompanhe e otimize',
-    subtitle: 'Dados que guiam suas decisões',
-    desc: 'No painel de controle, veja em tempo real as reservas geradas, a receita do mês, a taxa de ocupação e sugestões inteligentes para vender mais. Relatórios semanais automáticos no seu e-mail.',
-    color: 'violet',
-    highlights: ['Dashboard em tempo real', 'Relatórios semanais', 'Sugestões de preço'],
-  },
-];
+/* ─────────── ICON LOOKUP MAP ─────────── */
+const iconMap: Record<string, LucideIcon> = {
+  UserPlus,
+  MessageSquare,
+  BarChart3,
+  Link,
+  Bot,
+};
 
+/* ─────────── COLOR MAP ─────────── */
 const colorMap: Record<string, { bg: string; border: string; text: string; glow: string; accent: string; ring: string }> = {
   emerald: {
     bg: 'from-emerald-500/20 to-emerald-900/10',
@@ -75,8 +58,9 @@ const colorMap: Record<string, { bg: string; border: string; text: string; glow:
 };
 
 /* ─────────── STEP CARD ─────────── */
-function StepCard({ step, index, isInView }: { step: typeof steps[number]; index: number; isInView: boolean }) {
+function StepCard({ step, index, isInView }: { step: StepData; index: number; isInView: boolean }) {
   const c = colorMap[step.color];
+  const IconComponent = iconMap[step.icon];
 
   return (
     <motion.div
@@ -112,7 +96,7 @@ function StepCard({ step, index, isInView }: { step: typeof steps[number]; index
 
           {/* Icon */}
           <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${c.bg} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-            <step.icon className={`w-6 h-6 ${c.text}`} />
+            {IconComponent && <IconComponent className={`w-6 h-6 ${c.text}`} />}
           </div>
         </div>
 
@@ -136,7 +120,7 @@ function StepCard({ step, index, isInView }: { step: typeof steps[number]; index
           ))}
         </div>
 
-        {/* Form fields preview (step 1 only) */}
+        {/* Form fields preview (step 1 only, when fields are provided) */}
         {step.fields && (
           <div className="space-y-2.5 pt-5 border-t border-white/[0.04]">
             {step.fields.map((field, idx) => (
@@ -167,6 +151,17 @@ function StepCard({ step, index, isInView }: { step: typeof steps[number]; index
 export function HowItWorksSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
+  const { niche, isPousadas } = useNiche();
+  const content = getNicheContent(niche);
+
+  // Niche-aware header text
+  const headerTitle = isPousadas
+    ? 'Em 3 passos simples'
+    : 'Em 3 passos, sem sair do sofá';
+
+  const headerDesc = isPousadas
+    ? 'Do cadastro à primeira reserva via IA em menos de 24 horas. Sem precisar de técnico ou conhecimento técnico.'
+    : 'Da URL do anúncio ao primeiro check-in virtual automaticamente. Sem precisar de técnico ou conhecimento técnico.';
 
   return (
     <section ref={ref} id="como-funciona" className="relative py-24 sm:py-32 overflow-hidden">
@@ -192,21 +187,44 @@ export function HowItWorksSection() {
             <span className="text-blue-400 text-xs font-semibold uppercase tracking-wider">Simples como 1-2-3</span>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-5 leading-[1.1] tracking-tight">
-            Em 3 passos simples
-          </h2>
+          <AnimatePresence mode="wait">
+            <motion.h2
+              key={`title-${niche}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
+              className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-5 leading-[1.1] tracking-tight"
+            >
+              {headerTitle}
+            </motion.h2>
+          </AnimatePresence>
 
-          <p className="text-neutral-400 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
-            Do cadastro à primeira reserva via IA em menos de 24 horas. Sem precisar de técnico ou conhecimento técnico.
-          </p>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={`desc-${niche}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.4, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
+              className="text-neutral-400 text-base sm:text-lg max-w-xl mx-auto leading-relaxed"
+            >
+              {headerDesc}
+            </motion.p>
+          </AnimatePresence>
         </motion.div>
 
         {/* ── Steps Grid ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-5">
-          {steps.map((step, i) => (
-            <StepCard key={step.num} step={step} index={i} isInView={isInView} />
-          ))}
-        </div>
+        <AnimatePresence mode="wait">
+          <div
+            key={`steps-${niche}`}
+            className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-5"
+          >
+            {content.steps.map((step, i) => (
+              <StepCard key={`${niche}-${step.num}`} step={step} index={i} isInView={isInView} />
+            ))}
+          </div>
+        </AnimatePresence>
 
         {/* ── Bottom promise strip ── */}
         <motion.div

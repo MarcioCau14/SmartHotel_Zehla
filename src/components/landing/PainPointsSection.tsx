@@ -1,7 +1,7 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
-import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { useRef } from 'react';
+import { motion, AnimatePresence, useInView, useScroll, useTransform } from 'framer-motion';
 import {
   Clock,
   MessageSquare,
@@ -13,56 +13,28 @@ import {
   ShieldCheck,
   TrendingUp,
   ArrowUpRight,
+  Key,
+  Bot,
+  Building2,
+  type LucideIcon,
 } from 'lucide-react';
+import { useNiche } from '@/contexts/NicheContext';
+import { getNicheContent, type PainCard } from '@/data/niche-content';
 
-/* ─────────── DATA ─────────── */
-const mainCards = [
-  {
-    icon: Clock,
-    title: 'Nunca mais perca uma reserva',
-    desc: 'Enquanto você descansa, a IA do Zélla atende cada hóspede em até 8 segundos — respondendo sobre disponibilidade, preços e enviando sua chave PIX cadastrada. Madrugada, feriado, domingo de chuva: sempre online.',
-    stat: { val: '24/7', label: 'Atendimento ininterrupto' },
-    color: 'emerald',
-    size: 'lg', // bento: large card
-  },
-  {
-    icon: MessageSquare,
-    title: 'Uma mensagem, tudo resolvido',
-    desc: 'Em vez de 5 balões fragmentados, o Zélla reúne saudação, disponibilidade, preço e chave PIX em um único balão completo. Mais profissional para o hóspede, mais eficiente para seu custo de API.',
-    stat: { val: '1', label: 'Balão com tudo incluído' },
-    color: 'blue',
-    size: 'lg',
-  },
-  {
-    icon: Users,
-    title: 'Contexto inteligente',
-    desc: 'O hóspede manda "Tem vaga?", "Preço?" e "Aceita pet?" em sequência? O Zélla agrupa tudo e responde de uma vez, entendendo a intenção completa da conversa.',
-    color: 'sky',
-    size: 'sm',
-  },
-  {
-    icon: BarChart3,
-    title: 'Painel de controle em tempo real',
-    desc: 'Reservas geradas, receita do dia, taxa de ocupação — tudo num dashboard que se atualiza ao vivo. Relatórios semanais automáticos por e-mail para decisões sem achismo.',
-    color: 'amber',
-    size: 'sm',
-  },
-  {
-    icon: DollarSign,
-    title: 'Custo sob controle',
-    desc: 'Você define o orçamento mensal e o Zélla gerencia o uso da API automaticamente. Sem surpresas na fatura, sem estresse.',
-    color: 'violet',
-    size: 'sm',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Pronto para outubro 2026',
-    desc: 'A Meta está mudando as regras da API do WhatsApp. O Zélla já está adaptado para manter seus custos baixos e sua operação estável.',
-    color: 'pink',
-    size: 'sm',
-  },
-];
+/* ─────────── ICON LOOKUP MAP ─────────── */
+const iconMap: Record<string, LucideIcon> = {
+  Clock,
+  MessageSquare,
+  DollarSign,
+  BarChart3,
+  Users,
+  ShieldCheck,
+  Key,
+  Bot,
+  Building2,
+};
 
+/* ─────────── COLOR MAP ─────────── */
 const colorMap: Record<string, { bg: string; accent: string; ring: string; glow: string; text: string; border: string }> = {
   emerald: { bg: 'bg-emerald-500', accent: 'bg-emerald-500/10', ring: 'border-emerald-500/20', glow: 'shadow-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/30' },
   blue:    { bg: 'bg-blue-500', accent: 'bg-blue-500/10', ring: 'border-blue-500/20', glow: 'shadow-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/30' },
@@ -115,9 +87,10 @@ function StatsMarquee() {
 }
 
 /* ─────────── SINGLE OPPORTUNITY CARD ─────────── */
-function OpportunityCard({ item, index, isInView }: { item: typeof mainCards[number]; index: number; isInView: boolean }) {
+function OpportunityCard({ item, index, isInView }: { item: PainCard; index: number; isInView: boolean }) {
   const c = colorMap[item.color];
   const isLarge = item.size === 'lg';
+  const IconComponent = iconMap[item.icon];
 
   return (
     <motion.div
@@ -133,7 +106,7 @@ function OpportunityCard({ item, index, isInView }: { item: typeof mainCards[num
 
       {/* Icon */}
       <div className={`w-11 h-11 rounded-xl ${c.accent} border ${c.ring} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}>
-        <item.icon className="w-5 h-5 text-white" />
+        {IconComponent && <IconComponent className="w-5 h-5 text-white" />}
       </div>
 
       {/* Title */}
@@ -169,6 +142,8 @@ function OpportunityCard({ item, index, isInView }: { item: typeof mainCards[num
 export function PainPointsSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
+  const { niche, isPousadas } = useNiche();
+  const content = getNicheContent(niche);
 
   // Parallax subtle effect for the section background
   const { scrollYProgress } = useScroll({
@@ -176,6 +151,15 @@ export function PainPointsSection() {
     offset: ['start end', 'end start'],
   });
   const bgY = useTransform(scrollYProgress, [0, 1], [40, -40]);
+
+  // Niche-aware header text
+  const headerTitle = isPousadas
+    ? 'Sua pousada merece'
+    : 'Seus imóveis merecem';
+
+  const headerDesc = isPousadas
+    ? 'Veja como o Zélla transforma o WhatsApp da sua pousada em uma máquina de reservas — sem complicação e no seu tom de voz.'
+    : 'Veja como o Zélla transforma o WhatsApp dos seus imóveis em uma máquina de reservas — sem complicação e no seu tom de voz.';
 
   return (
     <section ref={ref} className="relative py-20 sm:py-28 bg-[#060608] overflow-hidden">
@@ -206,14 +190,33 @@ export function PainPointsSection() {
           </div>
 
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-5 leading-[1.1] tracking-tight">
-            Sua pousada merece
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={`title-${niche}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
+              >
+                {headerTitle}
+              </motion.span>
+            </AnimatePresence>
             <br className="hidden sm:block" />
             <span className="bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent"> um atendimento à altura</span>
           </h2>
 
-          <p className="text-neutral-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-            Veja como o Zélla transforma o WhatsApp da sua pousada em uma máquina de reservas — sem complicação e no seu tom de voz.
-          </p>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={`desc-${niche}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.4, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
+              className="text-neutral-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed"
+            >
+              {headerDesc}
+            </motion.p>
+          </AnimatePresence>
         </motion.div>
 
         {/* ── Stats Marquee ── */}
@@ -226,11 +229,20 @@ export function PainPointsSection() {
         </motion.div>
 
         {/* ── Bento Grid ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-          {mainCards.map((item, i) => (
-            <OpportunityCard key={item.title} item={item} index={i} isInView={isInView} />
-          ))}
-        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`grid-${niche}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
+          >
+            {content.painCards.map((item, i) => (
+              <OpportunityCard key={`${niche}-${item.title}`} item={item} index={i} isInView={isInView} />
+            ))}
+          </motion.div>
+        </AnimatePresence>
 
         {/* ── Bottom trust strip (Cloudbeds-inspired) ── */}
         <motion.div
@@ -242,7 +254,7 @@ export function PainPointsSection() {
           {[
             { icon: Zap, text: 'Setup em 5 minutos' },
             { icon: ShieldCheck, text: 'Sem cartão de crédito' },
-            { icon: Sparkles, text: 'IA treinada para pousadas' },
+            { icon: Sparkles, text: isPousadas ? 'IA treinada para pousadas' : 'IA treinada para anfitriões' },
             { icon: TrendingUp, text: 'Resultados em 48h' },
           ].map((t, i) => (
             <div key={i} className="flex items-center gap-2 text-neutral-500 text-sm">

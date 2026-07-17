@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
 import {
   Check,
   X,
@@ -11,13 +11,15 @@ import {
   Rocket,
   Star,
   Zap,
-  ArrowRight,
   CreditCard,
   QrCode,
   Shield,
   Gift,
   Loader2,
+  Building2,
 } from 'lucide-react';
+import { useNiche } from '@/contexts/NicheContext';
+import { getNicheContent } from '@/data/niche-content';
 
 type PaymentMode = 'pix' | 'cartao';
 
@@ -35,9 +37,11 @@ const plans = [
     priceCartao: 0,
     priceLabel: 'Grátis',
     desc: 'Comece a testar o Zélla na sua pousada sem custo nenhum. Veja a IA atendendo seus hóspedes por 7 dias.',
+    descAnfitrioes: 'Comece a testar o Zélla no seu imóvel sem custo nenhum. Veja a IA atendendo seus hóspedes por 7 dias.',
     cta: 'Começar Trial Grátis',
     ctaStyle: 'border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.06]',
     popular: false,
+    idealPara: '1 imóvel',
     features: [
       { text: '5 hospedes atendidos dentro dos 7 dias', included: true },
       { text: 'Link-in-bio basico', included: true },
@@ -62,9 +66,11 @@ const plans = [
     priceCartao: 247,
     priceLabel: 'R$197',
     desc: 'Tudo que sua pousada precisa para vender mais pelo WhatsApp. IA 24/7, PIX integrado e dashboard completo.',
+    descAnfitrioes: 'Tudo que você precisa para atender hóspedes pelo WhatsApp. IA 24/7, check-in virtual e dashboard completo.',
     cta: 'Assinar LITE via PIX',
     ctaStyle: 'border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.06]',
     popular: false,
+    idealPara: '1–2 imóveis',
     features: [
       { text: '50 hospedes atendidos por mes', included: true },
       { text: '500 mensagens mensais', included: true },
@@ -91,9 +97,11 @@ const plans = [
     priceLabel: 'R$397',
     onlyCard: true,
     desc: 'Para pousadas que querem crescer sem limites. Mensagens ilimitadas, campanhas automatizadas e suporte prioritário.',
+    descAnfitrioes: 'Para anfitriões que querem escalar sem limites. Mensagens ilimitadas, importação de anúncios e suporte prioritário.',
     cta: 'Assinar PRO via Cartão',
     ctaStyle: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-400 hover:to-emerald-500 shadow-lg shadow-emerald-500/25',
     popular: true,
+    idealPara: '3–5 imóveis',
     features: [
       { text: 'Hóspedes ilimitados', included: true },
       { text: 'Link-in-bio profissional liberado', included: true },
@@ -122,9 +130,11 @@ const plans = [
     priceLabel: 'R$797',
     onlyCard: true,
     desc: 'Para redes e pousadas de alto padrão. Suporte VIP, consultoria personalizada e recursos exclusivos.',
+    descAnfitrioes: 'Para portfólios grandes e imóveis de alto padrão. Suporte VIP, consultoria personalizada e recursos exclusivos.',
     cta: 'Assinar MAX via Cartão',
     ctaStyle: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/25',
     popular: false,
+    idealPara: '6+ imóveis',
     features: [
       { text: 'Tudo do plano PRO', included: true },
       { text: 'Link-in-bio profissional liberado', included: true },
@@ -143,12 +153,16 @@ const plans = [
   },
 ];
 
+const easeOut = [0.2, 0.8, 0.2, 1] as const;
+
 export function PricingSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const [paymentMode, setPaymentMode] = useState<PaymentMode>('pix');
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const router = useRouter();
+  const { niche, isAnfitrioes } = useNiche();
+  const content = getNicheContent(niche);
 
   const handleSubscribe = async (planId: string, forcedPaymentMethod?: string) => {
     setLoadingPlan(planId);
@@ -213,11 +227,30 @@ export function PricingSection() {
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
             Escolha o plano ideal
             <br />
-            <span className="text-emerald-400 font-bold">para sua pousada</span>
+            <span className="text-emerald-400 font-bold">
+              {niche === 'pousadas' ? 'para sua pousada' : 'para seus imóveis'}
+            </span>
           </h2>
-          <p className="text-neutral-400 text-lg max-w-xl mx-auto mb-8">
+          <p className="text-neutral-400 text-lg max-w-xl mx-auto mb-3">
             Comece grátis por 7 dias. Sem cartão de crédito, sem compromisso. Cancele quando quiser.
           </p>
+
+          {/* Pricing Focus */}
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={niche}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.4, ease: easeOut as unknown as number[] }}
+              className="text-emerald-400/80 text-sm max-w-lg mx-auto mb-8 flex items-center justify-center gap-1.5"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>
+                Foco em <strong className="text-emerald-400">{content.pricing.focusLabel}</strong> — {content.pricing.focusDesc}
+              </span>
+            </motion.p>
+          </AnimatePresence>
 
           {/* Payment Toggle */}
           <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-white/[0.04] border border-white/[0.06]">
@@ -296,10 +329,22 @@ export function PricingSection() {
 
                   {/* Plan Details */}
                   <h3 className="text-white font-bold text-xl mb-1">{plan.name}</h3>
-                  <p className="text-neutral-400 text-xs mb-5 leading-relaxed">{plan.desc}</p>
+                  <p className="text-neutral-400 text-xs mb-2 leading-relaxed">
+                    {isAnfitrioes ? plan.descAnfitrioes : plan.desc}
+                  </p>
+
+                  {/* Ideal para badge (Anfitriões only) */}
+                  {isAnfitrioes && (
+                    <div className="flex items-center gap-1.5 mb-4">
+                      <Building2 className="w-3 h-3 text-blue-400" />
+                      <span className="text-[10px] font-semibold text-blue-300 bg-blue-500/15 border border-blue-500/25 px-2 py-0.5 rounded-full">
+                        Ideal para {plan.idealPara}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Price */}
-                  <div className="mb-6">
+                  <div className={isAnfitrioes ? 'mb-4' : 'mb-6'}>
                     {price === 0 ? (
                       <div className="flex items-baseline gap-1">
                         <span className="text-4xl font-extrabold text-white">Grátis</span>
