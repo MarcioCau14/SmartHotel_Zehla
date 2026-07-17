@@ -44,7 +44,7 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         {/* Brand Logo & Name */}
         <Link href="/" className="flex items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-lg">
-          <ZellaLogo size={36} />
+          <ZellaLogo size={42} />
         </Link>
 
         {/* Desktop Navigation Links */}

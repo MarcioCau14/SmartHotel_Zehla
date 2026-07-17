@@ -13,7 +13,7 @@ interface ZellaLogoProps {
  * ZellaLogo — animated wrapper around the header logo PNG.
  * Uses a gentle entrance + subtle floating breath loop.
  */
-export function ZellaLogo({ size = 36, className = '' }: ZellaLogoProps) {
+export function ZellaLogo({ size = 42, className = '' }: ZellaLogoProps) {
   return (
     <motion.div
       className={className}
@@ -42,7 +42,7 @@ export function ZellaLogo({ size = 36, className = '' }: ZellaLogoProps) {
         alt="Seu Zélla — Zelador Digital Inteligente"
         width={0}
         height={0}
-        sizes="(max-width: 768px) 120px, 170px"
+        sizes="(max-width: 768px) 140px, 200px"
         style={{ height: '100%', width: 'auto', objectFit: 'contain' }}
         draggable={false}
         priority
@@ -51,23 +51,23 @@ export function ZellaLogo({ size = 36, className = '' }: ZellaLogoProps) {
   );
 }
 
-/** Static version for the footer (no loop animation) */
-export function ZellaLogoStatic({ size = 56, className = '' }: ZellaLogoProps) {
+/** Static version for the footer (no loop animation) — width-based to match text container */
+export function ZellaLogoStatic({ size, className = '' }: ZellaLogoProps) {
   return (
     <motion.div
       className={className}
-      style={{ height: size, width: 'auto' }}
+      style={{ maxWidth: '100%', width: '384px' }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
     >
       <Image
-        src="/SeuZella_site_Logo_02.png"
+        src="/SeuZella_site_Logo_03.png"
         alt="Seu Zélla — Zelador Digital Inteligente"
-        width={0}
+        width={384}
         height={0}
-        sizes="56px"
-        style={{ height: '100%', width: 'auto', objectFit: 'contain' }}
+        sizes="(max-width: 640px) 260px, 384px"
+        style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
         draggable={false}
       />
     </motion.div>
