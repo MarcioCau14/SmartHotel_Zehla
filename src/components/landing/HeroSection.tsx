@@ -239,27 +239,34 @@ export function HeroSection() {
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
             </div>
 
-            {/* Headline — exactly 2 lines: left-aligned block, centered on page */}
-            <h1 className="text-[1.5rem] sm:text-5xl md:text-[3.25rem] lg:text-[3.75rem] xl:text-[4.5rem] font-satoshi font-bold tracking-tight leading-[1.15] text-white mb-6 w-fit mx-auto text-left">
-              <span className="block">O Zélla atende, vende e</span>
-              <span className="block text-blue-500 font-bold">
-                reserva{' '}
-                <span className="inline-block overflow-hidden relative align-baseline">
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={phraseIdx}
-                      initial={{ y: '110%', opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: '-110%', opacity: 0 }}
-                      transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-                      className="inline-block whitespace-nowrap"
-                    >
-                      {rotatingPhrases[phraseIdx]}
-                    </motion.span>
-                  </AnimatePresence>
+            {/* Headline — 2 lines: line 1 static, line 2 dynamic. All phrases kept in DOM for stable width. */}
+            <div className="mb-6 flex justify-center">
+              <h1 className="text-[1.5rem] sm:text-5xl md:text-[3.25rem] lg:text-[3.75rem] xl:text-[4.5rem] font-satoshi font-bold tracking-tight leading-[1.15] text-white grid justify-items-start text-left">
+                <span>O Zélla atende, vende e</span>
+                <span className="text-blue-500 font-bold relative">
+                  {/* Invisible measure layer — keeps grid width stable across all phrases */}
+                  <span className="invisible" aria-hidden="true">
+                    reserva {rotatingPhrases.reduce((a, b) => a.length > b.length ? a : b, '')}
+                  </span>
+                  {/* Visible animated phrase — absolutely positioned over the measure layer */}
+                  <span className="absolute inset-0">
+                    reserva{' '}
+                    <AnimatePresence mode="wait">
+                      <motion.span
+                        key={phraseIdx}
+                        initial={{ y: '110%', opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: '-110%', opacity: 0 }}
+                        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        className="inline-block whitespace-nowrap"
+                      >
+                        {rotatingPhrases[phraseIdx]}
+                      </motion.span>
+                    </AnimatePresence>
+                  </span>
                 </span>
-              </span>
-            </h1>
+              </h1>
+            </div>
 
             <p className="text-lg sm:text-xl text-neutral-400 leading-relaxed mb-10 max-w-2xl mx-auto">
               O zelador digital que responde 24hs por 7. Atende os hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para pousadas e anfitriões de Airbnb.
