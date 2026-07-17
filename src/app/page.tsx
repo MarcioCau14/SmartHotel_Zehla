@@ -23,7 +23,7 @@ import { FloatingCTA } from '@/components/landing/FloatingCTA';
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-white">
+    <main className="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden">
       <Header />
       <HeroSection />
       <SocialProofSection />

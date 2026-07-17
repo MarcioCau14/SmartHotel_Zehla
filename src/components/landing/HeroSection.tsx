@@ -326,7 +326,7 @@ export function HeroSection() {
             />
 
             {/* Main mockup */}
-            <div className="relative bg-[#111] rounded-2xl border border-white/[0.08] shadow-2xl shadow-emerald-500/[0.05] overflow-hidden flex flex-col text-left z-10" style={{ maxHeight: '520px' }}>
+            <div className="relative bg-[#111] rounded-2xl border border-white/[0.08] shadow-2xl shadow-emerald-500/[0.05] overflow-hidden flex flex-col text-left z-10 w-full" style={{ maxHeight: '520px' }}>
               {/* Top bar */}
               <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.06] bg-[#0a0a0a]/50">
                 <div className="w-3 h-3 rounded-full bg-red-500/80" />
@@ -367,14 +367,14 @@ export function HeroSection() {
                 {/* Dashboard content */}
                 <div className="flex-1 p-5 sm:p-8 space-y-6 overflow-hidden">
                   {/* Stats row — realistic numbers based on Meta's R$ 0,035/msg */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
                     {[
                       { label: 'Respostas em até 8 segundos', val: '24/7', title: 'Atendimento IA', color: 'text-emerald-400' },
                       { label: 'Média das pousadas parceiras', val: '+35%', title: 'Aumento em reservas', color: 'text-blue-400' },
                       { label: 'Sua chave PIX cadastrada', val: 'PIX', title: 'Pagamento integrado', color: 'text-amber-400' },
                       { label: 'Sem surpresas no fim do mês', val: 'R$ 197', title: 'A partir de /mês', color: 'text-zinc-300' },
                     ].map((s) => (
-                      <div key={s.title} className="bg-white/[0.02] rounded-xl p-4 border border-white/[0.05] flex flex-col justify-center">
+                      <div key={s.title} className="bg-white/[0.02] rounded-xl p-2 sm:p-4 border border-white/[0.05] flex flex-col justify-center">
                         <div className="text-neutral-500 text-[10px] font-semibold uppercase tracking-wider mb-1">{s.title}</div>
                         <div className={`text-2xl font-bold ${s.color}`}>{s.val}</div>
                         <div className="text-neutral-500 text-[10px] mt-1 font-medium truncate">{s.label}</div>
@@ -382,7 +382,7 @@ export function HeroSection() {
                     ))}
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
                     {/* Chat mockup */}
                     <div className="lg:col-span-3 bg-white/[0.02] rounded-xl p-5 border border-white/[0.05] space-y-4">
                       <div className="flex items-center gap-3 pb-3 border-b border-white/[0.04]">
