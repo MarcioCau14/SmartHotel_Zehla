@@ -2,15 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db, isDatabaseAvailable } from '@/lib/db';
 import { resolveTenantId } from '@/lib/ddc/auth-utils';
 import { checkEntitlement } from '@/lib/airb/gatekeeper';
-import type {
-  OnboardingWizardState,
-  OnboardingStep,
-  OnboardingStatus,
-} from '@/types/dashboard';
 import {
   ONBOARDING_STEP_ORDER,
-  calculateOnboardingProgress,
 } from '@/types/dashboard';
+import type { OnboardingStep, OnboardingStatus } from '@/types/dashboard';
 
 // ═══════════════════════════════════════════════════════════════
 // GET /api/ddc/airb/onboarding — Retrieve onboarding state for a property
@@ -33,26 +28,19 @@ export async function GET(request: NextRequest) {
     }
 
     if (!dbAvailable) {
-      const defaultState: OnboardingWizardState = {
-        propertyId,
-        currentStep: 'url_entry',
-        completedSteps: {} as Record<OnboardingStep, string | null>,
-        stepValidations: { url_entry: { valid: false, errors: [], warnings: [] } },
-        status: 'pending',
-        progress: 0,
-        subscriptionCheck: { allowed: true, currentCount: 0, maxAllowed: 4 },
-        scrapingJobId: null,
-        scrapedData: null,
-        manualData: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      return NextResponse.json({ success: true, data: defaultState });
+      return NextResponse.json({
+        success: true,
+        data: {
+          propertyId,
+          currentStep: 'url_entry',
+          status: 'pending',
+          progress: 0,
+        },
+      });
     }
 
     const property = await db.airBProperty.findFirst({
       where: { id: propertyId, tenantId },
-      include: { _count: { select: { conversations: true, regionalKnowledge: true } } },
     });
 
     if (!property) {
@@ -61,30 +49,30 @@ export async function GET(request: NextRequest) {
 
     const status: OnboardingStatus = (property.status as OnboardingStatus) || 'active';
     const currentStep = determineCurrentStep(property);
-    const completedSteps = determineCompletedSteps(property);
-    const progress = calculateOnboardingProgress(completedSteps);
 
     const latestScrapeJob = await db.airBScrapingJob.findFirst({
       where: { propertyId: property.id },
       orderBy: { createdAt: 'desc' },
     });
 
-    const state: OnboardingWizardState = {
-      propertyId: property.id,
-      currentStep,
-      completedSteps,
-      stepValidations: {},
-      status,
-      progress,
-      subscriptionCheck: { allowed: true, currentCount: 0, maxAllowed: 4 },
-      scrapingJobId: latestScrapeJob?.id || null,
-      scrapedData: latestScrapeJob?.result ? JSON.parse(latestScrapeJob.result as string) : null,
-      manualData: null,
-      createdAt: property.createdAt.toISOString(),
-      updatedAt: property.updatedAt.toISOString(),
-    };
-
-    return NextResponse.json({ success: true, data: state });
+    return NextResponse.json({
+      success: true,
+      data: {
+        propertyId: property.id,
+        currentStep,
+        status,
+        airbnbUrl: property.airbnbUrl,
+        scrapedAt: property.scrapedAt?.toISOString() || null,
+        scrapingJobId: latestScrapeJob?.id || null,
+        scrapedData: latestScrapeJob?.result ? JSON.parse(latestScrapeJob.result as string) : null,
+        hasWifi: !!property.wifiName,
+        hasLockCode: !!property.lockCode,
+        hasHostKnowledge: Array.isArray(property.hostKnowledge) && property.hostKnowledge.length > 0,
+        isActive: property.status === 'active',
+        createdAt: property.createdAt.toISOString(),
+        updatedAt: property.updatedAt.toISOString(),
+      },
+    });
   } catch (error) {
     console.error('[ONBOARDING] Error fetching state:', error);
     return NextResponse.json({ success: false, error: 'Erro ao buscar estado do onboarding' }, { status: 500 });
@@ -229,23 +217,11 @@ export async function POST(request: NextRequest) {
 
 // ── Helpers ──────────────────────────────────────────────────
 
-function determineCurrentStep(property: Record<string, unknown>): OnboardingStep {
+function determineCurrentStep(property: { status: string; wifiName: string | null; lockCode: string | null; name: string | null }): OnboardingStep {
   if (property.status === 'active') return 'activate';
   if (!property.wifiName && !property.lockCode) return 'customize_manual';
   if (!property.name) return 'review_auto';
   return 'customize_manual';
-}
-
-function determineCompletedSteps(property: Record<string, unknown>): Record<OnboardingStep, string | null> {
-  const completed: Record<OnboardingStep, string | null> = {
-    url_entry: property.airbnbUrl ? new Date().toISOString() : null,
-    scraping: property.scrapedAt ? new Date(property.scrapedAt as string).toISOString() : null,
-    review_auto: property.name ? new Date().toISOString() : null,
-    customize_manual: (property.wifiName && property.lockCode) ? new Date().toISOString() : null,
-    subscription_check: null,
-    activate: property.status === 'active' ? new Date().toISOString() : null,
-  };
-  return completed;
 }
 
 function getNextOnboardingStep(current: OnboardingStep): OnboardingStep | null {

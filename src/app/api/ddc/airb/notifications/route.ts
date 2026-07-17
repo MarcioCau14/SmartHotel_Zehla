@@ -5,9 +5,8 @@ import {
   evaluateClosingIntent,
   formatNotification,
   validateReservationDetails,
-  NOTIFICATION_TEMPLATES,
 } from '@/lib/airb/closing-notification-prompt';
-import type { NotificationType } from '@/lib/airb/closing-notification-prompt';
+import type { NotificationType, NotificationFormatData } from '@/lib/airb/closing-notification-prompt';
 
 // ═══════════════════════════════════════════════════════════════
 // POST /api/ddc/airb/notifications — Send closing notification to owner
@@ -70,36 +69,48 @@ export async function POST(request: NextRequest) {
     const dbAvailable = await isDatabaseAvailable();
 
     // Fetch property context
-    let propertyData: Record<string, unknown> | null = null;
+    let propertyName = 'Propriedade';
+    let checkinTime = '15:00';
+    let checkoutTime = '11:00';
     if (dbAvailable) {
-      propertyData = await db.airBProperty.findFirst({
+      const property = await db.airBProperty.findFirst({
         where: { id: propertyId, tenantId },
-      }) as Record<string, unknown> | null;
+      });
 
-      if (!propertyData) {
+      if (!property) {
         return NextResponse.json(
           { success: false, error: 'Propriedade não encontrada' },
           { status: 404 }
         );
       }
+
+      propertyName = property.name || propertyName;
+      checkinTime = property.checkinTime || checkinTime;
+      checkoutTime = property.checkoutTime || checkoutTime;
     }
 
-    // Format the WhatsApp notification message
-    const formattedMessage = formatNotification(type as NotificationType, {
-      propertyName: (propertyData?.name as string) || reservationDetails?.propertyName || 'Propriedade',
-      guestName: reservationDetails?.guestName || 'Hóspede',
-      guestCount: reservationDetails?.guestCount || 1,
-      checkIn: reservationDetails?.checkInDate || '',
-      checkOut: reservationDetails?.checkOutDate || '',
-      nights: reservationDetails?.nights || 0,
-      totalValue: reservationDetails?.totalValue || 0,
+    // Build the notification format data matching the interface
+    const formatData: NotificationFormatData = {
+      propertyName: reservationDetails?.propertyName || propertyName,
+      guestName: reservationDetails?.guestName || null,
+      checkInDate: reservationDetails?.checkInDate || null,
+      checkOutDate: reservationDetails?.checkOutDate || null,
+      checkinTime,
+      checkoutTime,
+      guestCount: reservationDetails?.guestCount || null,
+      agreedPrice: reservationDetails?.agreedPrice || String(reservationDetails?.totalValue || '0'),
+      originalPrice: reservationDetails?.originalTotal ? String(reservationDetails.originalTotal) : undefined,
+      discountPercent: reservationDetails?.discountPercent ? String(reservationDetails.discountPercent) : undefined,
       paymentMethod: reservationDetails?.paymentMethod || 'pix',
-      pixKey: reservationDetails?.pixKey || '',
-      discountPercent: reservationDetails?.discountPercent || 0,
-      originalTotal: reservationDetails?.originalTotal || 0,
-      escalationReason: reservationDetails?.escalationReason || '',
-      conversationSummary: conversationSummary || '',
-    });
+      pixKey: reservationDetails?.pixKey || undefined,
+      guestPhone: reservationDetails?.guestPhone || undefined,
+      specialRequests: reservationDetails?.specialRequests || [],
+      escalationReason: reservationDetails?.escalationReason || undefined,
+      conversationSummary: conversationSummary || undefined,
+    };
+
+    // Format the WhatsApp notification message
+    const formattedMessage = formatNotification(type as NotificationType, formatData);
 
     // Create notification in DB
     let notificationId: string | null = null;
@@ -130,12 +141,12 @@ export async function POST(request: NextRequest) {
             action: 'CLOSING_NOTIFICATION',
             intent: type,
             confidence: reservationDetails?.finalConfidence || 0.9,
-            metadata: {
+            metadata: JSON.stringify({
               propertyId,
               notificationType: type,
               reservationDetails,
               conversationSummary,
-            },
+            }),
           },
         });
       } catch (logError) {
