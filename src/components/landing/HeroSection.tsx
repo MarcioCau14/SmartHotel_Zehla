@@ -33,7 +33,7 @@ export function HeroSection() {
       <div className="absolute top-1/4 -left-32 w-[500px] h-[500px] rounded-full bg-emerald-500/[0.07] blur-[120px]" />
       <div className="absolute bottom-1/4 -right-32 w-[400px] h-[400px] rounded-full bg-purple-500/[0.05] blur-[100px]" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-8 sm:pt-24 sm:pb-10 w-full">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-16 pb-4 sm:pt-20 sm:pb-6 w-full">
         <div className="flex flex-col items-center text-center">
           {/* Text Content */}
           <motion.div
@@ -43,7 +43,7 @@ export function HeroSection() {
             className="flex flex-col items-center max-w-4xl mx-auto"
           >
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/[0.08] mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/[0.08] mb-5">
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
               <span className="text-emerald-400 text-xs font-medium uppercase tracking-wider">
                 Deixa com o Zélla
@@ -52,7 +52,7 @@ export function HeroSection() {
             </div>
 
             {/* Headline */}
-            <h1 className="text-[1.5rem] sm:text-5xl md:text-[3.25rem] lg:text-[3.75rem] xl:text-[4.5rem] font-satoshi font-bold tracking-tight leading-[1.15] text-white mb-6 text-center">
+            <h1 className="text-[1.5rem] sm:text-5xl md:text-[3.25rem] lg:text-[3.75rem] xl:text-[4.5rem] font-satoshi font-bold tracking-tight leading-[1.15] text-white mb-4 text-center">
               <span className="block">O Zélla atende, vende e</span>
               <span className="block text-blue-500 font-bold">
                 reserva{' '}
@@ -71,12 +71,12 @@ export function HeroSection() {
               </span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-neutral-400 leading-relaxed mb-10 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-neutral-400 leading-relaxed mb-6 max-w-2xl mx-auto">
               O zelador digital que responde 24hs por 7. Atende os hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para pousadas e anfitriões de Airbnb.
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6 w-full sm:w-auto">
               <button
                 onClick={() => {
                   const el = document.querySelector('#precos');
