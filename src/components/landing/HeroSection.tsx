@@ -239,8 +239,8 @@ export function HeroSection() {
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
             </div>
 
-            {/* Headline — exactly 2 lines: static line 1 + dynamic line 2 */}
-            <h1 className="text-[1.5rem] sm:text-5xl md:text-[3.25rem] lg:text-[3.75rem] xl:text-[4.5rem] font-satoshi font-bold tracking-tight leading-[1.15] text-white mb-6 text-center">
+            {/* Headline — exactly 2 lines: static line 1 + dynamic line 2, left-aligned block centered on page */}
+            <h1 className="text-[1.5rem] sm:text-5xl md:text-[3.25rem] lg:text-[3.75rem] xl:text-[4.5rem] font-satoshi font-bold tracking-tight leading-[1.15] text-white mb-6 text-left inline-block">
               <span className="block whitespace-nowrap">O Zélla atende, vende e</span>
               <span className="block whitespace-nowrap text-blue-500 font-bold">
                 reserva{' '}
