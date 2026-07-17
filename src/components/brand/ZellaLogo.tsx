@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 interface ZellaLogoProps {
   /** Height of the logo image in pixels */
@@ -9,18 +10,14 @@ interface ZellaLogoProps {
 }
 
 /**
- * ZellaLogo — animated wrapper around the existing logo PNG.
+ * ZellaLogo — animated wrapper around the header logo PNG.
  * Uses a gentle entrance + subtle floating breath loop.
- * No SVG duplication — the PNG already contains the full logo.
  */
-export function ZellaLogo({ size = 32, className = '' }: ZellaLogoProps) {
+export function ZellaLogo({ size = 36, className = '' }: ZellaLogoProps) {
   return (
-    <motion.img
-      src="/logo-zella-b01.png"
-      alt="Seu Zélla — Zelador Digital Inteligente"
+    <motion.div
       className={className}
-      style={{ height: size, width: 'auto', objectFit: 'contain' }}
-      draggable={false}
+      style={{ height: size, width: 'auto' }}
       // Entrance animation
       initial={{ opacity: 0, scale: 0.92, filter: 'blur(4px)' }}
       animate={{
@@ -39,22 +36,40 @@ export function ZellaLogo({ size = 32, className = '' }: ZellaLogoProps) {
           times: [0, 0.5, 1],
         },
       }}
-    />
+    >
+      <Image
+        src="/SeuZella_site_Logo_01.png"
+        alt="Seu Zélla — Zelador Digital Inteligente"
+        width={0}
+        height={0}
+        sizes="(max-width: 768px) 120px, 170px"
+        style={{ height: '100%', width: 'auto', objectFit: 'contain' }}
+        draggable={false}
+        priority
+      />
+    </motion.div>
   );
 }
 
 /** Static version for the footer (no loop animation) */
-export function ZellaLogoStatic({ size = 40, className = '' }: ZellaLogoProps) {
+export function ZellaLogoStatic({ size = 56, className = '' }: ZellaLogoProps) {
   return (
-    <motion.img
-      src="/logo-zella-b02.png"
-      alt="Seu Zélla — Zelador Digital Inteligente"
+    <motion.div
       className={className}
-      style={{ height: size, width: 'auto', objectFit: 'contain' }}
-      draggable={false}
+      style={{ height: size, width: 'auto' }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
-    />
+    >
+      <Image
+        src="/SeuZella_site_Logo_02.png"
+        alt="Seu Zélla — Zelador Digital Inteligente"
+        width={0}
+        height={0}
+        sizes="56px"
+        style={{ height: '100%', width: 'auto', objectFit: 'contain' }}
+        draggable={false}
+      />
+    </motion.div>
   );
 }

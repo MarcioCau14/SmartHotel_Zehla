@@ -6,6 +6,22 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Fix mobile responsiveness: overflow-x-clip only clips horizontal axis
+   without affecting vertical scrolling (unlike overflow-x-hidden which
+   implicitly sets overflow-y to auto on some mobile browsers) */
+@supports (overflow-x: clip) {
+  .overflow-x-clip {
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+}
+@supports not (overflow-x: clip) {
+  .overflow-x-clip {
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

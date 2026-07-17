@@ -50,7 +50,7 @@ export function Footer() {
           <div className="lg:col-span-4 space-y-5">
             {/* Brand Logo */}
           <div className="flex items-center gap-3">
-            <ZellaLogoStatic size={72} />
+            <ZellaLogoStatic size={56} />
           </div>
             
             <p className="text-neutral-500 text-xs leading-relaxed max-w-sm">
