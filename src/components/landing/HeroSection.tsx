@@ -239,23 +239,25 @@ export function HeroSection() {
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
             </div>
 
-            {/* Headline */}
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-satoshi font-bold tracking-tight leading-[1.15] text-white mb-6">
-              <span className="block">O Zélla atende, vende e</span>
-              <span className="block text-blue-500 font-bold">
+            {/* Headline — exactly 2 lines: static line 1 + dynamic line 2 */}
+            <h1 className="text-[1.5rem] sm:text-[2.25rem] md:text-5xl lg:text-6xl xl:text-7xl font-satoshi font-bold tracking-tight leading-[1.15] text-white mb-6 text-center">
+              <span className="block whitespace-nowrap">O Zélla atende, vende e</span>
+              <span className="flex items-baseline justify-center whitespace-nowrap text-blue-500 font-bold">
                 reserva{' '}
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={phraseIdx}
-                    initial={{ opacity: 0, y: 18, filter: 'blur(6px)' }}
-                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, y: -14, filter: 'blur(6px)' }}
-                    transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                    className="inline-block"
-                  >
-                    {rotatingPhrases[phraseIdx]}
-                  </motion.span>
-                </AnimatePresence>
+                <span className="inline-block overflow-hidden relative align-baseline">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={phraseIdx}
+                      initial={{ y: '110%', opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: '-110%', opacity: 0 }}
+                      transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+                      className="inline-block whitespace-nowrap"
+                    >
+                      {rotatingPhrases[phraseIdx]}
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
               </span>
             </h1>
 
