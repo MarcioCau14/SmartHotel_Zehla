@@ -17,43 +17,51 @@ import {
 import { useNiche } from '@/contexts/NicheContext';
 
 /* ─────────── ROADMAP DATA ─────────── */
-const roadmapPhases = [
-  {
-    phase: 'Fase 1',
-    status: 'available' as const,
-    title: 'iCal Export & Import',
-    desc: 'Exporte seu calendário de disponibilidade para Booking.com, Airbnb e qualquer plataforma que aceite iCal. Importe reservas externas automaticamente. Já disponível hoje.',
-    features: [
-      'Feed iCal por quarto',
-      'Importação de reservas via URL iCal',
-      'Atualização automática a cada 15 minutos',
-    ],
-  },
-  {
-    phase: 'Fase 2',
-    status: 'building' as const,
-    title: 'Channel Manager Direto',
-    desc: 'Conexão via API com os principais canais de reserva do mercado brasileiro. Sincronização bidirecional de disponibilidade e preços em tempo real — sem webhooks com delay.',
-    features: [
-      'API Booking.com & Airbnb',
-      'Sincronização bidirecional em tempo real',
-      'Prevenção automática de overbooking',
-      'Painel unificado de reservas',
-    ],
-  },
-  {
-    phase: 'Fase 3',
-    status: 'planned' as const,
-    title: 'Expansão 300+ Canais',
-    desc: 'Integração com dezenas de OTAs nacionais e internacionais via parceiros como SiteMinder. Um único painel para gerenciar toda a distribuição do seu negócio.',
-    features: [
-      'Expedia, Decolar, Trivago, Stays.net',
-      'Google Hotels & Google Travel',
-      'Preços dinâmicos inteligentes',
-      'Relatório de performance por canal',
-    ],
-  },
-];
+function getRoadmapPhases(niche: 'pousadas' | 'anfitrioes' | 'parceiro') {
+  const isPousadas = niche === 'pousadas';
+  const isAnfitrioes = niche === 'anfitrioes';
+  return [
+    {
+      phase: 'Fase 1',
+      status: 'available' as const,
+      title: 'iCal Export & Import',
+      desc: isPousadas
+        ? 'Exporte seu calendário de disponibilidade para Booking.com, Decolar e qualquer OTA que aceite iCal. Importe reservas externas automaticamente. Já disponível hoje.'
+        : isAnfitrioes
+        ? 'Exporte seu calendário de disponibilidade para Airbnb, Booking.com e qualquer plataforma que aceite iCal. Importe reservas externas automaticamente. Já disponível hoje.'
+        : 'Exporte seu calendário para qualquer plataforma que aceite iCal. Importe reservas externas automaticamente. Já disponível hoje.',
+      features: [
+        isPousadas ? 'Feed iCal por quarto' : 'Feed iCal por propriedade',
+        'Importação de reservas via URL iCal',
+        'Atualização automática a cada 15 minutos',
+      ],
+    },
+    {
+      phase: 'Fase 2',
+      status: 'building' as const,
+      title: 'Channel Manager Direto',
+      desc: 'Conexão via API com os principais canais de reserva do mercado brasileiro. Sincronização bidirecional de disponibilidade e preços em tempo real — sem webhooks com delay.',
+      features: [
+        isPousadas ? 'API Booking.com & Decolar' : isAnfitrioes ? 'API Booking.com & Airbnb' : 'API dos principais canais',
+        'Sincronização bidirecional em tempo real',
+        'Prevenção automática de overbooking',
+        'Painel unificado de reservas',
+      ],
+    },
+    {
+      phase: 'Fase 3',
+      status: 'planned' as const,
+      title: 'Expansão 300+ Canais',
+      desc: 'Integração com dezenas de OTAs nacionais e internacionais via parceiros como SiteMinder. Um único painel para gerenciar toda a distribuição do seu negócio.',
+      features: [
+        'Expedia, Decolar, Trivago, Stays.net',
+        'Google Hotels & Google Travel',
+        'Preços dinâmicos inteligentes',
+        'Relatório de performance por canal',
+      ],
+    },
+  ];
+}
 
 const statusConfig = {
   available: {
@@ -85,7 +93,9 @@ const statusConfig = {
 export function ChannelManagerSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
-  const { isPousadas, isAnfitrioes } = useNiche();
+  const { isPousadas, isAnfitrioes, isParceiro } = useNiche();
+  const niche: 'pousadas' | 'anfitrioes' | 'parceiro' = isPousadas ? 'pousadas' : isAnfitrioes ? 'anfitrioes' : 'parceiro';
+  const roadmapPhases = getRoadmapPhases(niche);
 
   return (
     <section ref={ref} id="channel-manager" className="relative py-28 sm:py-36 lg:py-44 bg-[#060608] overflow-hidden">

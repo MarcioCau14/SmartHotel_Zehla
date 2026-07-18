@@ -14,69 +14,79 @@ import {
 } from 'lucide-react';
 import { useNiche } from '@/contexts/NicheContext';
 
-const integrations = [
-  {
-    icon: MessageSquare,
-    name: 'WhatsApp Business API',
-    description: 'Integração oficial com a API Cloud da Meta para envio e recebimento de mensagens em tempo real.',
-    status: 'Ativo',
-    statusColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  },
-  {
-    icon: CreditCard,
-    name: 'Mercado Pago',
-    description: 'Checkout PIX e cartão integrado. Confirmação automática de pagamento em tempo real.',
-    status: 'Ativo',
-    statusColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  },
-  {
-    icon: Calendar,
-    name: 'iCal Sync',
-    description: 'Exporte calendários para Booking.com e Airbnb. Importe reservas via URL iCal (em expansão).',
-    status: 'Ativo',
-    statusColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  },
-  {
-    icon: BarChart3,
-    name: 'Analytics & Dashboards',
-    description: 'Métricas em tempo real de conversão, satisfação, receita e volume de atendimento.',
-    status: 'Ativo',
-    statusColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  },
-  {
-    icon: Globe,
-    name: 'Link-in-Bio',
-    description: 'Página profissional com galeria, reservas e avaliações — pronta para Instagram.',
-    status: 'Ativo',
-    statusColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  },
-  {
-    icon: Mail,
-    name: 'Relatórios por E-mail',
-    description: 'Resumo semanal automático com métricas chave enviado direto na sua caixa de entrada.',
-    status: 'Ativo',
-    statusColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  },
-  {
-    icon: Smartphone,
-    name: 'Multi-Provider AI',
-    description: 'OpenAI, Groq, Gemini, DeepSeek — roteamento inteligente para a melhor resposta.',
-    status: 'Ativo',
-    statusColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  },
-  {
-    icon: Plug,
-    name: 'Channel Manager',
-    description: 'Distribuição em 300+ canais de reserva (em breve via SiteMinder API).',
-    status: 'Em breve',
-    statusColor: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  },
-];
+function getIntegrations(niche: 'pousadas' | 'anfitrioes' | 'parceiro') {
+  const isPousadas = niche === 'pousadas';
+  const isAnfitrioes = niche === 'anfitrioes';
+  return [
+    {
+      icon: MessageSquare,
+      name: 'WhatsApp Business API',
+      description: 'Integração oficial com a API Cloud da Meta para envio e recebimento de mensagens em tempo real.',
+      status: 'Ativo',
+      statusColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    },
+    {
+      icon: CreditCard,
+      name: 'Mercado Pago',
+      description: 'Checkout PIX e cartão integrado. Confirmação automática de pagamento em tempo real.',
+      status: 'Ativo',
+      statusColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    },
+    {
+      icon: Calendar,
+      name: 'iCal Sync',
+      description: isPousadas
+        ? 'Exporte calendários para Booking.com, Decolar e outras OTAs. Importe reservas via URL iCal (em expansão).'
+        : isAnfitrioes
+        ? 'Exporte calendários para Airbnb, Booking.com e outras plataformas. Importe reservas via URL iCal (em expansão).'
+        : 'Exporte e importe calendários via URL iCal. Sincronize com qualquer plataforma que aceite o formato (em expansão).',
+      status: 'Ativo',
+      statusColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    },
+    {
+      icon: BarChart3,
+      name: 'Analytics & Dashboards',
+      description: 'Métricas em tempo real de conversão, satisfação, receita e volume de atendimento.',
+      status: 'Ativo',
+      statusColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    },
+    {
+      icon: Globe,
+      name: 'Link-in-Bio',
+      description: 'Página profissional com galeria, reservas e avaliações — pronta para Instagram.',
+      status: 'Ativo',
+      statusColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    },
+    {
+      icon: Mail,
+      name: 'Relatórios por E-mail',
+      description: 'Resumo semanal automático com métricas chave enviado direto na sua caixa de entrada.',
+      status: 'Ativo',
+      statusColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    },
+    {
+      icon: Smartphone,
+      name: 'Multi-Provider AI',
+      description: 'OpenAI, Groq, Gemini, DeepSeek — roteamento inteligente para a melhor resposta.',
+      status: 'Ativo',
+      statusColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    },
+    {
+      icon: Plug,
+      name: 'Channel Manager',
+      description: 'Distribuição em 300+ canais de reserva (em breve via SiteMinder API).',
+      status: 'Em breve',
+      statusColor: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+    },
+  ];
+}
 
 export function IntegrationsSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  const { isPousadas, isAnfitrioes } = useNiche();
+  const { isPousadas, isAnfitrioes, isParceiro } = useNiche();
+  const niche: 'pousadas' | 'anfitrioes' | 'parceiro' = isPousadas ? 'pousadas' : isAnfitrioes ? 'anfitrioes' : 'parceiro';
+  const integrations = getIntegrations(niche);
 
   return (
     <section ref={ref} id="integracoes" className="relative py-28 sm:py-36 lg:py-44 bg-[#060608] overflow-hidden">
