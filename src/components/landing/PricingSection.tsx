@@ -23,7 +23,40 @@ import { getNicheContent } from '@/data/niche-content';
 
 type PaymentMode = 'pix' | 'cartao';
 
-const plans = [
+interface PlanFeature {
+  text: string;
+  included: boolean;
+}
+
+interface Plan {
+  id: string;
+  name: string;
+  nameShort: string;
+  badge: string;
+  badgeColor: string;
+  icon: typeof Zap;
+  iconBg: string;
+  iconColor: string;
+  pricePix: number;
+  priceCartao: number;
+  priceLabel: string;
+  onlyCard?: boolean;
+  isParceiro?: boolean;
+  desc: string;
+  descAnfitrioes?: string;
+  descParceiro?: string;
+  cta: string;
+  ctaStyle: string;
+  popular: boolean;
+  idealParaPousadas?: string;
+  idealParaAnfitrioes?: string;
+  idealParaParceiro?: string;
+  features: PlanFeature[];
+  featuresAnfitrioes?: PlanFeature[];
+  featuresParceiro?: PlanFeature[];
+}
+
+const plans: Plan[] = [
   {
     id: 'gratuito',
     name: 'Gratuito',
@@ -430,31 +463,31 @@ export function PricingSection() {
                   {/* Plan Details */}
                   <h3 className="text-white font-bold text-xl mb-2">{plan.name}</h3>
                   <p className="text-neutral-400 text-xs mb-2 leading-relaxed">
-                    {isParceiro && (plan as Record<string, string>).descParceiro
-                      ? (plan as Record<string, string>).descParceiro
-                      : isAnfitrioes && (plan as Record<string, string>).descAnfitrioes
-                      ? (plan as Record<string, string>).descAnfitrioes
+                    {isParceiro && plan.descParceiro
+                      ? plan.descParceiro
+                      : isAnfitrioes && plan.descAnfitrioes
+                      ? plan.descAnfitrioes
                       : plan.desc}
                   </p>
 
                   {/* Ideal para badge */}
                   <div className="flex items-center gap-1.5 mb-4">
-                    {isPousadas && (plan as Record<string, string>).idealParaPousadas && (
+                    {isPousadas && plan.idealParaPousadas && (
                       <span className="text-[10px] font-semibold text-emerald-300 bg-emerald-500/15 border border-emerald-500/25 px-2 py-0.5 rounded-full">
-                        Ideal para {(plan as Record<string, string>).idealParaPousadas}
+                        Ideal para {plan.idealParaPousadas}
                       </span>
                     )}
-                    {isAnfitrioes && (plan as Record<string, string>).idealParaAnfitrioes && (
+                    {isAnfitrioes && plan.idealParaAnfitrioes && (
                       <>
                         <Building2 className="w-3 h-3 text-blue-400" />
                         <span className="text-[10px] font-semibold text-blue-300 bg-blue-500/15 border border-blue-500/25 px-2 py-0.5 rounded-full">
-                          Ideal para {(plan as Record<string, string>).idealParaAnfitrioes}
+                          Ideal para {plan.idealParaAnfitrioes}
                         </span>
                       </>
                     )}
-                    {isParceiro && (plan as Record<string, string>).idealParaParceiro && (
+                    {isParceiro && plan.idealParaParceiro && (
                       <span className="text-[10px] font-semibold text-amber-300 bg-amber-500/15 border border-amber-500/25 px-2 py-0.5 rounded-full">
-                        Ideal para {(plan as Record<string, string>).idealParaParceiro}
+                        Ideal para {plan.idealParaParceiro}
                       </span>
                     )}
                   </div>
@@ -472,14 +505,14 @@ export function PricingSection() {
                           <span className="text-4xl font-extrabold text-white">{price}</span>
                           <span className="text-neutral-500 text-sm">/mês</span>
                         </div>
-                        {(plan as Record<string, unknown>).isParceiro && (
+                        {plan.isParceiro && (
                           <div className="flex items-center gap-1 mt-1">
                             <span className="text-amber-400 text-xs font-semibold">
                               Congelado por 24 meses • Selo de Parceiro
                             </span>
                           </div>
                         )}
-                        {!(plan as Record<string, unknown>).isParceiro && activePaymentMethod === 'pix' && savings > 0 && (
+                        {!plan.isParceiro && activePaymentMethod === 'pix' && savings > 0 && (
                           <div className="flex items-center gap-1 mt-1">
                             <span className="text-neutral-600 text-xs line-through">R${plan.priceCartao}/mês</span>
                             <span className="text-emerald-400 text-xs font-medium">
@@ -521,10 +554,10 @@ export function PricingSection() {
 
                   {/* Features */}
                   <div className="flex-1 space-y-3">
-                    {(isParceiro && (plan as Record<string, unknown>).featuresParceiro
-                      ? (plan as Record<string, { text: string; included: boolean }[]>).featuresParceiro
-                      : isAnfitrioes && (plan as Record<string, unknown>).featuresAnfitrioes
-                      ? (plan as Record<string, { text: string; included: boolean }[]>).featuresAnfitrioes
+                    {(isParceiro && plan.featuresParceiro
+                      ? plan.featuresParceiro
+                      : isAnfitrioes && plan.featuresAnfitrioes
+                      ? plan.featuresAnfitrioes
                       : plan.features
                     ).map((feature) => (
                       <div key={feature.text} className="flex items-start gap-2">
