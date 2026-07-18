@@ -8,6 +8,11 @@ import { NicheToggle } from './NicheToggle';
 
 export function HeroSection() {
   const { niche, setNiche, isPousadas, isAnfitrioes, isParceiro } = useNiche();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Rotating hero words — niche-specific to avoid cross-contamination
   const rotatingPhrases = isPousadas
@@ -72,7 +77,8 @@ export function HeroSection() {
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-neutral-400 leading-relaxed mb-12 max-w-2xl mx-auto">
-              {isPousadas
+              {!mounted ? 'O zelador digital que responde 24hs por 7. Atende os hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para pousadas.' :
+              isPousadas
                 ? 'O zelador digital que responde 24hs por 7. Atende os hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para pousadas.'
                 : isAnfitrioes
                 ? 'O zelador digital que responde 24hs por 7. Atende seus hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para anfitriões Airbnb. O Zélla AirB é seu co-anfitrião digital.'
