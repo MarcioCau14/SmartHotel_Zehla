@@ -37,7 +37,7 @@ function getActiveStyle(value: NicheType) {
 
 export function NicheToggle({ niche, onNicheChange }: NicheToggleProps) {
   return (
-    <div className="relative inline-flex items-center bg-white/[0.04] border border-white/[0.08] rounded-2xl p-1.5 gap-1">
+    <div className="relative inline-flex flex-col sm:flex-row items-center bg-white/[0.04] border border-white/[0.08] rounded-2xl p-2 gap-1.5 sm:gap-1">
       {options.map((option) => {
         const Icon = option.icon;
         const isActive = niche === option.value;
@@ -46,7 +46,7 @@ export function NicheToggle({ niche, onNicheChange }: NicheToggleProps) {
             key={option.value}
             onClick={() => onNicheChange(option.value)}
             className={`
-              relative z-10 flex items-center gap-2 px-4 sm:px-6 py-3 sm:py-3.5
+              relative z-10 flex items-center gap-2.5 px-5 sm:px-7 py-3.5 sm:py-4
               rounded-xl font-bold text-sm sm:text-base transition-colors duration-300 cursor-pointer
               whitespace-nowrap
               ${isActive

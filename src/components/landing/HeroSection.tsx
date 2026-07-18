@@ -30,7 +30,7 @@ export function HeroSection() {
       <div className="absolute top-1/4 -left-32 w-[500px] h-[500px] rounded-full bg-emerald-500/[0.07] blur-[120px]" />
       <div className="absolute bottom-1/4 -right-32 w-[400px] h-[400px] rounded-full bg-purple-500/[0.05] blur-[100px]" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 lg:px-10 pt-24 pb-16 sm:pt-32 sm:pb-20 w-full">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 lg:px-10 pt-28 pb-8 sm:pt-36 sm:pb-12 w-full">
         <div className="flex flex-col items-center text-center">
 
           {/* ── Text Content ── */}
@@ -38,7 +38,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="flex flex-col items-center max-w-4xl mx-auto"
+            className="flex flex-col items-center max-w-5xl mx-auto"
           >
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/[0.08] mb-8">
@@ -49,8 +49,8 @@ export function HeroSection() {
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
             </div>
 
-            {/* Headline */}
-            <h1 className="text-[1.5rem] sm:text-4xl md:text-[2.75rem] lg:text-[3.25rem] xl:text-[4rem] font-satoshi font-bold tracking-tight leading-[1.15] text-white mb-6 text-center">
+            {/* Headline — ultra-bold, dominant for premium value perception (ollow.com.br inspired) */}
+            <h1 className="text-[2.25rem] sm:text-[3.5rem] md:text-[4.5rem] lg:text-[5.25rem] xl:text-[6rem] font-satoshi font-extrabold tracking-tight leading-[1.05] text-white mb-8 text-center">
               <span className="block">O Zélla atende, vende e</span>
               <span className="block text-blue-500 font-bold">
                 reserva{' '}
@@ -69,7 +69,7 @@ export function HeroSection() {
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg text-neutral-400 leading-relaxed mb-12 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-neutral-400 leading-relaxed mb-12 max-w-2xl mx-auto">
               O zelador digital que responde 24hs por 7. Atende os hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para pousadas e anfitriões de Airbnb.
             </p>
 
@@ -90,39 +90,6 @@ export function HeroSection() {
 
               {/* 3-toggle buttons */}
               <NicheToggle niche={niche} onNicheChange={setNiche} />
-
-              {/* CTA under toggle — context-aware */}
-              <motion.div
-                key={`cta-${niche}`}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {niche === 'parceiro' ? (
-                  <a
-                    href="/parceiro"
-                    className="group inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-bold rounded-xl hover:from-amber-400 hover:to-amber-500 transition-all duration-200 shadow-xl shadow-amber-500/25 text-sm active:scale-95"
-                  >
-                    Quero ser parceiro
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                  </a>
-                ) : (
-                  <button
-                    onClick={() => {
-                      const el = document.querySelector('#precos');
-                      if (el) el.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                    className={`group inline-flex items-center justify-center gap-2 px-8 py-3.5 font-bold rounded-xl transition-all duration-200 shadow-xl text-sm active:scale-95 ${
-                      niche === 'pousadas'
-                        ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-400 hover:to-emerald-500 shadow-emerald-500/25'
-                        : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-400 hover:to-blue-500 shadow-blue-500/25'
-                    }`}
-                  >
-                    Conhecer planos
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                  </button>
-                )}
-              </motion.div>
             </motion.div>
 
             {/* ── Social proof — below toggles ── */}
@@ -130,7 +97,7 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.6 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 text-xs sm:text-sm text-neutral-400 font-medium mt-12"
+              className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 text-xs sm:text-sm text-neutral-400 font-medium mt-8"
             >
               <div className="flex -space-x-2.5">
                 {[
@@ -150,7 +117,41 @@ export function HeroSection() {
                   </div>
                 ))}
               </div>
-              <span className="sm:border-l sm:border-white/10 sm:pl-6 text-neutral-400 font-semibold">+100 pousadas já atendem melhor com o Zélla</span>
+              <span className="sm:border-l sm:border-white/10 sm:pl-6 text-neutral-300 font-bold">+100 pousadas já atendem melhor com o Zélla</span>
+            </motion.div>
+
+            {/* ── CTA button — below social proof ── */}
+            <motion.div
+              key={`cta-${niche}`}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.75 }}
+              className="mt-7"
+            >
+              {niche === 'parceiro' ? (
+                <a
+                  href="/parceiro"
+                  className="group inline-flex items-center justify-center gap-2.5 px-10 py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-extrabold rounded-2xl hover:from-amber-400 hover:to-amber-500 transition-all duration-200 shadow-2xl shadow-amber-500/30 hover:shadow-amber-500/50 text-base active:scale-95 hover:scale-[1.03]"
+                >
+                  Quero ser parceiro
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </a>
+              ) : (
+                <button
+                  onClick={() => {
+                    const el = document.querySelector('#precos');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className={`group inline-flex items-center justify-center gap-2.5 px-10 py-4 font-extrabold rounded-2xl transition-all duration-200 shadow-2xl text-base active:scale-95 hover:scale-[1.03] ${
+                    niche === 'pousadas'
+                      ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-400 hover:to-emerald-500 shadow-emerald-500/30 hover:shadow-emerald-500/50'
+                      : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-400 hover:to-blue-500 shadow-blue-500/30 hover:shadow-blue-500/50'
+                  }`}
+                >
+                  Conhecer planos
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </button>
+              )}
             </motion.div>
 
           </motion.div>

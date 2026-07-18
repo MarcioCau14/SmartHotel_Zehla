@@ -13,7 +13,7 @@ export function NicheSwitcherSection() {
   const isInView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section ref={ref} className="relative py-28 sm:py-36 lg:py-44 overflow-hidden border-t border-white/[0.03]">
+    <section ref={ref} className="relative pt-14 pb-20 sm:pt-20 sm:pb-28 lg:pt-24 lg:pb-36 overflow-hidden border-t border-white/[0.03]">
       {/* Dynamic background image with crossfade */}
       <div className="absolute inset-0 z-0">
         <AnimatePresence mode="wait">
