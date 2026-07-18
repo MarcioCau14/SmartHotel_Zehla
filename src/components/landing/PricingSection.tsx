@@ -153,8 +153,8 @@ const plans = [
   },
   {
     id: 'parceiro',
-    name: 'PARCEIRO',
-    nameShort: 'Parceiro',
+    name: 'PARCEIRO PRO',
+    nameShort: 'Parceiro PRO',
     badge: 'Melhor Custo-Benefício',
     badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
     icon: Crown,
@@ -164,24 +164,26 @@ const plans = [
     priceCartao: 297,
     priceLabel: 'R$297',
     onlyCard: false,
-    isOneTime: true,
-    desc: 'Pagamento único de R$297 por 24 meses completos. Mesma IA 24/7, mesmo PIX, mesmo dashboard. Economia de R$4.431 comparado ao mensal.',
-    descAnfitrioes: 'Pagamento único de R$297 por 24 meses completos. Mesma IA 24/7, mesmo check-in virtual, mesmo dashboard. Economia de R$4.431.',
-    cta: 'Garantir Plano Parceiro',
+    isParceiro: true,
+    desc: 'Plano PRO completo por R$297/mês — R$100 a menos que o regular. Preço congelado por 24 meses + selo exclusivo de parceiro. Hóspedes e mensagens ilimitados.',
+    descAnfitrioes: 'Plano PRO completo por R$297/mês — R$100 a menos que o regular. Preço congelado por 24 meses + selo exclusivo de parceiro. Hóspedes e mensagens ilimitados.',
+    cta: 'Garantir Vaga de Parceiro',
     ctaStyle: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/30',
     popular: false,
-    idealPara: '1–2 imóveis',
+    idealPara: '1–5 imóveis',
     features: [
-      { text: '24 meses de acesso completo', included: true },
-      { text: 'Pagamento único — sem mensalidade', included: true },
-      { text: 'IA 24/7 no WhatsApp com tom personalizado', included: true },
-      { text: 'Checkout PIX integrado', included: true },
-      { text: 'Dashboard de métricas completo', included: true },
-      { text: '50 hóspedes atendidos por mês', included: true },
-      { text: '500 mensagens mensais', included: true },
-      { text: 'Relatórios semanais por e-mail', included: true },
-      { text: 'Sem marca d\'água ZELLA', included: true },
-      { text: 'Custo equivalente: R$12,38/mês', included: true },
+      { text: 'Plano PRO completo — R$297/mês', included: true },
+      { text: 'Preço congelado por 24 meses', included: true },
+      { text: 'Selo exclusivo de Parceiro Zélla', included: true },
+      { text: 'Hóspedes ilimitados', included: true },
+      { text: 'Mensagens ilimitadas (sem recargas)', included: true },
+      { text: 'WhatsApp IA com tom 100% personalizado', included: true },
+      { text: 'Checkout PIX e Cartão integrados', included: true },
+      { text: 'Dashboard completo com campanhas', included: true },
+      { text: 'Sugestões de preços inteligentes', included: true },
+      { text: 'Análise de sentimento', included: true },
+      { text: 'Suporte prioritário', included: true },
+      { text: 'Economia de R$100/mês vs. PRO regular', included: true },
     ],
   },
 ];
@@ -389,16 +391,16 @@ export function PricingSection() {
                         <div className="flex items-baseline gap-1">
                           <span className="text-sm text-neutral-400">R$</span>
                           <span className="text-4xl font-extrabold text-white">{price}</span>
-                          <span className="text-neutral-500 text-sm">{(plan as Record<string, unknown>).isOneTime ? '/24 meses' : '/mês'}</span>
+                          <span className="text-neutral-500 text-sm">/mês</span>
                         </div>
-                        {(plan as Record<string, unknown>).isOneTime && (
+                        {(plan as Record<string, unknown>).isParceiro && (
                           <div className="flex items-center gap-1 mt-1">
                             <span className="text-amber-400 text-xs font-semibold">
-                              Pagamento único — equivalente a R$12,38/mês
+                              Congelado por 24 meses • Selo de Parceiro
                             </span>
                           </div>
                         )}
-                        {!((plan as Record<string, unknown>).isOneTime) && activePaymentMethod === 'pix' && savings > 0 && (
+                        {!(plan as Record<string, unknown>).isParceiro && activePaymentMethod === 'pix' && savings > 0 && (
                           <div className="flex items-center gap-1 mt-1">
                             <span className="text-neutral-600 text-xs line-through">R${plan.priceCartao}/mês</span>
                             <span className="text-emerald-400 text-xs font-medium">
