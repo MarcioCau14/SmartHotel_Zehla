@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Star, MapPin, MessageSquare, ChevronRight } from 'lucide-react';
+import { useNiche } from '@/contexts/NicheContext';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type DemoPhase =
@@ -14,16 +15,30 @@ type DemoPhase =
   | 'mapa'             // Button 4 highlighted + map preview
   | 'whatsapp';        // Button 5 → full WhatsApp conversation
 
-// ─── LIB Buttons Data ────────────────────────────────────────────────────────
-const libButtons = [
-  { id: 'reservar', label: 'Reservar Agora (PIX Automático)', highlight: true, icon: '🏡', phase: 'reservar' as DemoPhase },
-  { id: 'galeria', label: 'Galeria de Fotos do Chalé', highlight: false, icon: '📸', phase: 'galeria' as DemoPhase },
-  { id: 'avaliacoes', label: 'Nossas Avaliações', highlight: false, icon: '⭐', phase: 'avaliacoes' as DemoPhase },
-  { id: 'mapa', label: 'Como Chegar (Mapa)', highlight: false, icon: '📍', phase: 'mapa' as DemoPhase },
-  { id: 'whatsapp-btn', label: 'Conversar no WhatsApp', highlight: false, icon: '💬', phase: 'whatsapp' as DemoPhase },
-];
+// ─── Niche-specific profile data ─────────────────────────────────────────────
+interface ProfileData {
+  igHandle: string;
+  profileName: string;
+  profileLabel: string;   // "Pousada" | "Airbnb" | "Parceiro Zélla"
+  bioLine1: string;
+  bioLine2: string;
+  bioLine3: string;
+  linkUrl: string;
+  libSubtitle: string;
+  libLocation: string;
+  libMapLabel: string;
+  libMapAddress: string;
+  roomLabel: string;       // "Chalé Vista Mar" | "Apartamento Vista Mar" etc.
+  roomDetails: string;     // "Cama king · Varanda · Hidromassagem"
+  roomPrice: string;       // "R$ 490"
+  roomPriceTotal: string;  // "R$ 980"
+  roomPriceBreakdown: string; // "R$ 490/noite × 2 noites"
+  highlights: { icon: string; label: string }[];
+  galleryPhotos: { src: string; label: string }[];
+  chatMessages: ChatMsg[];
+  showPartnerBadge: boolean;
+}
 
-// ─── WhatsApp Conversation Messages ──────────────────────────────────────────
 interface ChatMsg {
   from: 'guest' | 'zella';
   text: string;
@@ -32,39 +47,233 @@ interface ChatMsg {
   time: string;
 }
 
-const chatMessages: ChatMsg[] = [
-  {
-    from: 'guest',
-    text: 'Olá! Vi o perfil de vocês no Instagram. Têm disponibilidade para o final de semana que vem? Queríamos 2 noites pra casal.',
-    time: '14:22',
-  },
-  {
-    from: 'zella',
-    text: 'Olá, Bernardo! Que bom que nos encontrou pelo Instagram! 🌸 Seja bem-vindo à Pousada Serenity.\n\nSim, temos disponibilidade para o próximo final de semana (19 e 20 de julho). Nosso Chalé Vista Mar está livre — é o mais pedido pelos casais!\n\nCama king, varanda com vista pro mar e banheira de hidromassagem.\n\n💰 Valor: R$ 490/noite = R$ 980 total (2 noites) no PIX.\n\nQuer que eu segure essa vaga pra você?',
-    time: '14:22',
-  },
-  {
-    from: 'guest',
-    text: 'Perfeito! Quero sim, qual o procedimento?',
-    time: '14:24',
-  },
-  {
-    from: 'zella',
-    text: 'Vou gerar a reserva agora mesmo! Aqui está sua chave PIX:\n\n📅 Check-in: 19/07 (sáb)\n📅 Check-out: 21/07 (seg)\n🏡 Chalé Vista Mar — 2 hóspedes\n💳 Valor: R$ 980,00',
-    pix: true,
-    time: '14:24',
-  },
-  {
-    from: 'guest',
-    text: 'Boa! Acabei de fazer o PIX de R$ 980',
-    time: '14:28',
-  },
-  {
-    from: 'zella',
-    text: '✅ Pagamento confirmado! R$ 980,00 recebido.\n\n📋 Reserva #ZR-4821\n🏡 Chalé Vista Mar | 19 a 21/07\n👥 2 hóspedes\n\nVou te enviar as instruções de acesso na sexta! Qualquer dúvida é só chamar. Nos vemos em Paraty! 🏝️',
-    confirmation: true,
-    time: '14:28',
-  },
+const pousadaProfile: ProfileData = {
+  igHandle: 'pousadaserenity',
+  profileName: 'Pousada Serenity Paraty',
+  profileLabel: 'Pousada',
+  bioLine1: '✨ Seu refúgio paradisíaco em Paraty, RJ',
+  bioLine2: '🏝️ Chalés com vista mar & piscina infinita',
+  bioLine3: '👇 Garanta sua vaga direto sem taxas:',
+  linkUrl: 'seuzella.com/l/pousadaserenity',
+  libSubtitle: '✨ Seu refúgio em meio à natureza',
+  libLocation: 'Paraty, RJ',
+  libMapLabel: 'Paraty, RJ',
+  libMapAddress: 'Rua das Flores, 123 — Praia do Pontal',
+  roomLabel: '🏡 Chalé Vista Mar',
+  roomDetails: 'Cama king · Varanda · Hidromassagem',
+  roomPrice: 'R$ 490',
+  roomPriceTotal: 'R$ 980',
+  roomPriceBreakdown: 'R$ 490/noite × 2 noites',
+  highlights: [
+    { icon: '🏡', label: 'Chalés' },
+    { icon: '🏊', label: 'Piscina' },
+    { icon: '⭐', label: 'Reviews' },
+    { icon: '🍳', label: 'Café' },
+  ],
+  galleryPhotos: [
+    { src: '/pousada-quarto.jpg', label: 'Suíte Master' },
+    { src: '/pousada-piscina.jpg', label: 'Piscina Infinita' },
+    { src: '/pousada-cafe.jpg', label: 'Café da Manhã' },
+    { src: '/pousada-jardim.jpg', label: 'Jardim Tropical' },
+    { src: '/pousada-vista.jpg', label: 'Vista do Mar' },
+    { src: '/pousada-chale.jpg', label: 'Chalé Externo' },
+  ],
+  chatMessages: [
+    {
+      from: 'guest',
+      text: 'Olá! Vi o perfil de vocês no Instagram. Têm disponibilidade para o final de semana que vem? Queríamos 2 noites pra casal.',
+      time: '14:22',
+    },
+    {
+      from: 'zella',
+      text: 'Olá, Bernardo! Que bom que nos encontrou pelo Instagram! 🌸 Seja bem-vindo à Pousada Serenity.\n\nSim, temos disponibilidade para o próximo final de semana (19 e 20 de julho). Nosso Chalé Vista Mar está livre — é o mais pedido pelos casais!\n\nCama king, varanda com vista pro mar e banheira de hidromassagem.\n\n💰 Valor: R$ 490/noite = R$ 980 total (2 noites) no PIX.\n\nQuer que eu segure essa vaga pra você?',
+      time: '14:22',
+    },
+    {
+      from: 'guest',
+      text: 'Perfeito! Quero sim, qual o procedimento?',
+      time: '14:24',
+    },
+    {
+      from: 'zella',
+      text: 'Vou gerar a reserva agora mesmo! Aqui está sua chave PIX:\n\n📅 Check-in: 19/07 (sáb)\n📅 Check-out: 21/07 (seg)\n🏡 Chalé Vista Mar — 2 hóspedes\n💳 Valor: R$ 980,00',
+      pix: true,
+      time: '14:24',
+    },
+    {
+      from: 'guest',
+      text: 'Boa! Acabei de fazer o PIX de R$ 980',
+      time: '14:28',
+    },
+    {
+      from: 'zella',
+      text: '✅ Pagamento confirmado! R$ 980,00 recebido.\n\n📋 Reserva #ZR-4821\n🏡 Chalé Vista Mar | 19 a 21/07\n👥 2 hóspedes\n\nVou te enviar as instruções de acesso na sexta! Qualquer dúvida é só chamar. Nos vemos em Paraty! 🏝️',
+      confirmation: true,
+      time: '14:28',
+    },
+  ],
+  showPartnerBadge: false,
+};
+
+const anfitriaoProfile: ProfileData = {
+  igHandle: 'flatcopacabana',
+  profileName: 'Apartamento Copacabana',
+  profileLabel: 'Airbnb',
+  bioLine1: '✨ Apartamento premium em Copacabana, RJ',
+  bioLine2: '🏖️ Vista mar · 2 quartos · Wi-Fi rápido',
+  bioLine3: '👇 Reserve direto sem taxa de plataforma:',
+  linkUrl: 'seuzella.com/l/flatcopacabana',
+  libSubtitle: '✨ Sua estadia perfeita no Rio',
+  libLocation: 'Rio de Janeiro, RJ',
+  libMapLabel: 'Copacabana, RJ',
+  libMapAddress: 'Av. Atlântica, 456 — Copacabana',
+  roomLabel: '🏖️ Apartamento Vista Mar',
+  roomDetails: '2 quartos · Vista mar · Wi-Fi',
+  roomPrice: 'R$ 350',
+  roomPriceTotal: 'R$ 700',
+  roomPriceBreakdown: 'R$ 350/noite × 2 noites',
+  highlights: [
+    { icon: '🏖️', label: 'Praia' },
+    { icon: '🏙️', label: 'Vista' },
+    { icon: '⭐', label: 'Reviews' },
+    { icon: '🔑', label: 'Check-in' },
+  ],
+  galleryPhotos: [
+    { src: '/pousada-quarto.jpg', label: 'Quarto Master' },
+    { src: '/pousada-piscina.jpg', label: 'Vista do Mar' },
+    { src: '/pousada-cafe.jpg', label: 'Cozinha' },
+    { src: '/pousada-jardim.jpg', label: 'Sala de Estar' },
+    { src: '/pousada-vista.jpg', label: 'Varanda' },
+    { src: '/pousada-chale.jpg', label: 'Banheiro' },
+  ],
+  chatMessages: [
+    {
+      from: 'guest',
+      text: 'Olá! Vi o anúncio de vocês no Instagram. Tem disponibilidade para o final de semana que vem? Seriam 2 noites pra casal.',
+      time: '14:22',
+    },
+    {
+      from: 'zella',
+      text: 'Olá, Bernardo! Que bom que nos encontrou pelo Instagram! 🌊 Seja bem-vindo ao Apartamento Copacabana.\n\nSim, temos disponibilidade para o próximo final de semana (19 e 20 de julho). O apartamento está livre!\n\n2 quartos, vista pro mar e Wi-Fi rápido.\n\n💰 Valor: R$ 350/noite = R$ 700 total (2 noites) no PIX.\n\nQuer que eu reserve pra você?',
+      time: '14:22',
+    },
+    {
+      from: 'guest',
+      text: 'Perfeito! Quero sim, como faço?',
+      time: '14:24',
+    },
+    {
+      from: 'zella',
+      text: 'Vou gerar a reserva agora mesmo! Aqui está sua chave PIX:\n\n📅 Check-in: 19/07 (sáb)\n📅 Check-out: 21/07 (seg)\n🏖️ Apartamento Vista Mar — 2 hóspedes\n💳 Valor: R$ 700,00',
+      pix: true,
+      time: '14:24',
+    },
+    {
+      from: 'guest',
+      text: 'Boa! Acabei de fazer o PIX de R$ 700',
+      time: '14:28',
+    },
+    {
+      from: 'zella',
+      text: '✅ Pagamento confirmado! R$ 700,00 recebido.\n\n📋 Reserva #ZR-4821\n🏖️ Apartamento Vista Mar | 19 a 21/07\n👥 2 hóspedes\n\nVou te enviar as instruções de check-in virtual na sexta! Qualquer dúvida é só chamar. Nos vemos no Rio! 🏖️',
+      confirmation: true,
+      time: '14:28',
+    },
+  ],
+  showPartnerBadge: false,
+};
+
+const parceiroProfile: ProfileData = {
+  igHandle: 'parceirozella',
+  profileName: 'Parceiro Zélla',
+  profileLabel: 'Hospedagem',
+  bioLine1: '✨ Programa de Parceria Zélla',
+  bioLine2: '🏷️ Plano PRO congelado por 24 meses + Selo exclusivo',
+  bioLine3: '👇 Confira a página do nosso parceiro:',
+  linkUrl: 'seuzella.com/l/parceirozella',
+  libSubtitle: '✨ Seu negócio no Zélla',
+  libLocation: 'Brasil',
+  libMapLabel: 'Brasil',
+  libMapAddress: 'Parceiro Zélla — Programa Oficial',
+  roomLabel: '🏷️ Plano Parceiro PRO',
+  roomDetails: 'R$297/mês · Congelado 24 meses · Selo exclusivo',
+  roomPrice: 'R$ 297',
+  roomPriceTotal: 'R$ 297',
+  roomPriceBreakdown: 'R$297/mês · R$100 de desconto vs. PRO',
+  highlights: [
+    { icon: '🏷️', label: 'Preço' },
+    { icon: '🏅', label: 'Selo' },
+    { icon: '⭐', label: 'PRO' },
+    { icon: '🔒', label: '24 meses' },
+  ],
+  galleryPhotos: [
+    { src: '/pousada-quarto.jpg', label: 'Atendimento IA' },
+    { src: '/pousada-piscina.jpg', label: 'Dashboard' },
+    { src: '/pousada-cafe.jpg', label: 'Reservas' },
+    { src: '/pousada-jardim.jpg', label: 'Campanhas' },
+    { src: '/pousada-vista.jpg', label: 'Link-in-Bio' },
+    { src: '/pousada-chale.jpg', label: 'Relatórios' },
+  ],
+  chatMessages: [
+    {
+      from: 'guest',
+      text: 'Olá! Vi que vocês são parceiros do Zélla. Como funciona o atendimento?',
+      time: '14:22',
+    },
+    {
+      from: 'zella',
+      text: 'Olá, Bernardo! Bem-vindo! 🏅 Como Parceiro Zélla, seu negócio tem atendimento 24/7 pela IA.\n\nAqui está como funciona:\n\n✅ Respostas automáticas no seu tom de voz\n✅ Fechamento de reservas pelo WhatsApp\n✅ Check-in virtual automático\n✅ Dashboard completo com métricas\n\nTudo isso pelo plano PRO a R$297/mês — preço congelado por 24 meses!',
+      time: '14:22',
+    },
+    {
+      from: 'guest',
+      text: 'Interessante! Quero saber mais sobre o programa.',
+      time: '14:24',
+    },
+    {
+      from: 'zella',
+      text: 'Ótimo! Como parceiro, você tem:\n\n🏅 Selo exclusivo de Parceiro Zélla\n💰 R$100/mês de desconto vs. PRO regular\n🔒 Preço congelado por 24 meses\n👥 Hóspedes e mensagens ilimitados\n⚡ Suporte prioritário VIP\n\nVagas limitadas — apenas 100 parceiros!',
+      pix: true,
+      time: '14:24',
+    },
+    {
+      from: 'guest',
+      text: 'Perfeito, quero garantir minha vaga!',
+      time: '14:28',
+    },
+    {
+      from: 'zella',
+      text: '✅ Vaga reservada com sucesso!\n\n📋 Programa Parceiro Zélla\n🏅 Selo de Parceiro Fundador\n💰 R$297/mês congelado por 24 meses\n🔒 Economia de R$2.400 vs. PRO regular\n\nBem-vindo ao time! Vamos transformar seu negócio juntos. 🚀',
+      confirmation: true,
+      time: '14:28',
+    },
+  ],
+  showPartnerBadge: true,
+};
+
+// ─── LIB Buttons Data ────────────────────────────────────────────────────────
+const pousadaButtons = [
+  { id: 'reservar', label: 'Reservar Agora (PIX Automático)', highlight: true, icon: '🏡', phase: 'reservar' as DemoPhase },
+  { id: 'galeria', label: 'Galeria de Fotos do Chalé', highlight: false, icon: '📸', phase: 'galeria' as DemoPhase },
+  { id: 'avaliacoes', label: 'Nossas Avaliações', highlight: false, icon: '⭐', phase: 'avaliacoes' as DemoPhase },
+  { id: 'mapa', label: 'Como Chegar (Mapa)', highlight: false, icon: '📍', phase: 'mapa' as DemoPhase },
+  { id: 'whatsapp-btn', label: 'Conversar no WhatsApp', highlight: false, icon: '💬', phase: 'whatsapp' as DemoPhase },
+];
+
+const anfitriaoButtons = [
+  { id: 'reservar', label: 'Reservar Agora (PIX Automático)', highlight: true, icon: '🏖️', phase: 'reservar' as DemoPhase },
+  { id: 'galeria', label: 'Galeria de Fotos', highlight: false, icon: '📸', phase: 'galeria' as DemoPhase },
+  { id: 'avaliacoes', label: 'Avaliações dos Hóspedes', highlight: false, icon: '⭐', phase: 'avaliacoes' as DemoPhase },
+  { id: 'mapa', label: 'Como Chegar (Mapa)', highlight: false, icon: '📍', phase: 'mapa' as DemoPhase },
+  { id: 'whatsapp-btn', label: 'Conversar no WhatsApp', highlight: false, icon: '💬', phase: 'whatsapp' as DemoPhase },
+];
+
+const parceiroButtons = [
+  { id: 'reservar', label: 'Ver Plano Parceiro PRO', highlight: true, icon: '🏷️', phase: 'reservar' as DemoPhase },
+  { id: 'galeria', label: 'Funcionalidades do Zélla', highlight: false, icon: '📸', phase: 'galeria' as DemoPhase },
+  { id: 'avaliacoes', label: 'Depoimentos de Parceiros', highlight: false, icon: '⭐', phase: 'avaliacoes' as DemoPhase },
+  { id: 'mapa', label: 'Como Funciona', highlight: false, icon: '📍', phase: 'mapa' as DemoPhase },
+  { id: 'whatsapp-btn', label: 'Conversar no WhatsApp', highlight: false, icon: '💬', phase: 'whatsapp' as DemoPhase },
 ];
 
 // ─── Timing Constants (ms) ───────────────────────────────────────────────────
@@ -72,13 +281,18 @@ const INSTAGRAM_DURATION = 2500;
 const BUTTON_CYCLE_INTERVAL = 3000; // 3 seconds per button
 const CHAT_MSG_INTERVAL = 2200; // time between chat messages appearing
 const CHAT_PAUSE_AFTER_COMPLETE = 3000; // pause after full conversation before looping
-const TOTAL_CHAT_DURATION = chatMessages.length * CHAT_MSG_INTERVAL + CHAT_PAUSE_AFTER_COMPLETE;
-
-// Total loop = instagram(2.5s) + linkinbio(1s) + 5 buttons * 3s + whatsapp chat
-const TOTAL_LOOP = INSTAGRAM_DURATION + 1000 + (5 * BUTTON_CYCLE_INTERVAL) + TOTAL_CHAT_DURATION;
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 export function LinkInBioDemo() {
+  const { isAnfitrioes, isParceiro } = useNiche();
+
+  const profile = isParceiro ? parceiroProfile : isAnfitrioes ? anfitriaoProfile : pousadaProfile;
+  const libButtons = isParceiro ? parceiroButtons : isAnfitrioes ? anfitriaoButtons : pousadaButtons;
+  const chatMessages = profile.chatMessages;
+
+  const TOTAL_CHAT_DURATION = chatMessages.length * CHAT_MSG_INTERVAL + CHAT_PAUSE_AFTER_COMPLETE;
+  const TOTAL_LOOP = INSTAGRAM_DURATION + 1000 + (5 * BUTTON_CYCLE_INTERVAL) + TOTAL_CHAT_DURATION;
+
   const [phase, setPhase] = useState<DemoPhase>('instagram');
   const [chatStep, setChatStep] = useState(-1);
   const [showTyping, setShowTyping] = useState(false);
@@ -129,7 +343,8 @@ export function LinkInBioDemo() {
       chatTimersRef.current.push(loopTimer);
 
     }, INSTAGRAM_DURATION);
-  }, [clearAllTimers]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clearAllTimers, TOTAL_LOOP]);
 
   const startChatSequence = useCallback(() => {
     chatMessages.forEach((msg, idx) => {
@@ -152,7 +367,8 @@ export function LinkInBioDemo() {
         chatTimersRef.current.push(msgTimer);
       }
     });
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatMessages.length]);
 
   useEffect(() => {
     startLoop();
@@ -225,7 +441,7 @@ export function LinkInBioDemo() {
                   {/* IG Top Bar */}
                   <div className="flex items-center justify-between pb-3 border-b border-neutral-900 mt-1">
                     <div className="flex items-center gap-1">
-                      <span className="text-xs font-bold">pousadaserenity</span>
+                      <span className="text-xs font-bold">{profile.igHandle}</span>
                       <span className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center text-[7px] font-bold text-white shrink-0">✓</span>
                     </div>
                     <div className="flex items-center gap-3 text-neutral-300">
@@ -261,11 +477,11 @@ export function LinkInBioDemo() {
 
                   {/* Bio */}
                   <div className="mt-3 text-[8.5px] leading-snug">
-                    <p className="font-bold">Pousada Serenity Paraty</p>
-                    <p className="text-neutral-400">Pousada</p>
-                    <p className="mt-1">✨ Seu refúgio paradisíaco em Paraty, RJ</p>
-                    <p>🏝️ Chalés com vista mar & piscina infinita</p>
-                    <p className="mt-1">👇 Garanta sua vaga direto sem taxas:</p>
+                    <p className="font-bold">{profile.profileName}</p>
+                    <p className="text-neutral-400">{profile.profileLabel}</p>
+                    <p className="mt-1">{profile.bioLine1}</p>
+                    <p>{profile.bioLine2}</p>
+                    <p className="mt-1">{profile.bioLine3}</p>
                     {/* LINK with tap pulse */}
                     <div className="relative mt-1">
                       {tapPulse && (
@@ -277,7 +493,7 @@ export function LinkInBioDemo() {
                         />
                       )}
                       <span className="text-sky-400 font-semibold block text-left">
-                        seuzella.com/l/pousadaserenity
+                        {profile.linkUrl}
                       </span>
                     </div>
                   </div>
@@ -293,12 +509,7 @@ export function LinkInBioDemo() {
 
                   {/* Highlights */}
                   <div className="flex justify-between gap-2 mt-3 pb-3 border-b border-neutral-900">
-                    {[
-                      { icon: '🏡', label: 'Chalés' },
-                      { icon: '🏊', label: 'Piscina' },
-                      { icon: '⭐', label: 'Reviews' },
-                      { icon: '🍳', label: 'Café' },
-                    ].map(h => (
+                    {profile.highlights.map(h => (
                       <div key={h.label} className="flex flex-col items-center gap-1 shrink-0">
                         <div className="w-10 h-10 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center text-sm">
                           {h.icon}
@@ -340,7 +551,7 @@ export function LinkInBioDemo() {
                 {/* In-app browser top bar */}
                 <div className="w-full bg-[#1b1b1f] pt-8 pb-2 px-3 flex items-center justify-between border-b border-white/[0.04] z-20 shrink-0">
                   <span className="text-neutral-500 text-[10px]">✕</span>
-                  <span className="text-neutral-400 text-[7px] font-medium tracking-tight">seuzella.com/l/pousadaserenity</span>
+                  <span className="text-neutral-400 text-[7px] font-medium tracking-tight">{profile.linkUrl}</span>
                   <span className="text-[10px] text-neutral-400 rotate-90 leading-none">⋯</span>
                 </div>
 
@@ -360,12 +571,17 @@ export function LinkInBioDemo() {
                         <img src="/avatar-serenity.jpg" className="w-full h-full object-cover" alt="" />
                       </div>
                     </div>
-                    <h4 className="text-white text-[11px] font-bold tracking-tight">Pousada Serenity</h4>
-                    <p className="text-neutral-400 text-[7.5px] mt-0.5">✨ Seu refúgio em meio à natureza</p>
+                    <h4 className="text-white text-[11px] font-bold tracking-tight">{profile.profileName}</h4>
+                    <p className="text-neutral-400 text-[7.5px] mt-0.5">{profile.libSubtitle}</p>
                     <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[6.5px] font-semibold mt-1">
                       <span>⭐ 4.9</span>
                       <span className="text-neutral-500 font-normal">| 128 avaliações</span>
                     </div>
+                    {profile.showPartnerBadge && (
+                      <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[6px] font-bold mt-1">
+                        🏅 Parceiro Zélla Oficial
+                      </div>
+                    )}
                   </div>
 
                   {/* Buttons + Preview Area */}
@@ -433,8 +649,8 @@ export function LinkInBioDemo() {
                               <img src="/pousada-quarto.jpg" className="w-full h-full object-cover" alt="" />
                               <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-transparent to-transparent" />
                               <div className="absolute bottom-2 left-2 right-2">
-                                <p className="text-white text-[9px] font-bold">🏡 Chalé Vista Mar</p>
-                                <p className="text-neutral-300 text-[7px]">Cama king · Varanda · Hidromassagem</p>
+                                <p className="text-white text-[9px] font-bold">{profile.roomLabel}</p>
+                                <p className="text-neutral-300 text-[7px]">{profile.roomDetails}</p>
                               </div>
                             </div>
                             {/* Booking details */}
@@ -456,13 +672,13 @@ export function LinkInBioDemo() {
                                   </div>
                                 </div>
                                 <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-2 text-center">
-                                  <p className="text-[6px] text-emerald-400/70 uppercase font-medium">Total PIX</p>
-                                  <p className="text-emerald-400 text-base font-black">R$ 980</p>
-                                  <p className="text-[6.5px] text-neutral-400">R$ 490/noite × 2 noites</p>
+                                  <p className="text-[6px] text-emerald-400/70 uppercase font-medium">{isParceiro ? 'Valor mensal' : 'Total PIX'}</p>
+                                  <p className="text-emerald-400 text-base font-black">{profile.roomPriceTotal}</p>
+                                  <p className="text-[6.5px] text-neutral-400">{profile.roomPriceBreakdown}</p>
                                 </div>
                               </div>
                               <div className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-[8px] font-bold text-center py-1.5 rounded-lg mt-1.5 flex items-center justify-center gap-1">
-                                <span>Reservar via WhatsApp</span>
+                                <span>{isParceiro ? 'Garantir vaga de parceiro' : 'Reservar via WhatsApp'}</span>
                                 <MessageSquare className="w-3 h-3" />
                               </div>
                             </div>
@@ -481,14 +697,7 @@ export function LinkInBioDemo() {
                           >
                             <p className="text-[7px] text-neutral-500 font-semibold uppercase tracking-wider mb-1.5">📸 Galeria Completa</p>
                             <div className="grid grid-cols-2 gap-1 h-[calc(100%-16px)]">
-                              {[
-                                { src: '/pousada-quarto.jpg', label: 'Suíte Master' },
-                                { src: '/pousada-piscina.jpg', label: 'Piscina Infinita' },
-                                { src: '/pousada-cafe.jpg', label: 'Café da Manhã' },
-                                { src: '/pousada-jardim.jpg', label: 'Jardim Tropical' },
-                                { src: '/pousada-vista.jpg', label: 'Vista do Mar' },
-                                { src: '/pousada-chale.jpg', label: 'Chalé Externo' },
-                              ].map((photo, i) => (
+                              {profile.galleryPhotos.map((photo, i) => (
                                 <motion.div
                                   key={i}
                                   initial={{ opacity: 0, scale: 0.9 }}
@@ -527,9 +736,9 @@ export function LinkInBioDemo() {
                             </div>
                             <div className="space-y-1.5">
                               {[
-                                { name: 'Ana Clara', date: 'Jun 2026', text: 'Lugar incrível! O chalé vista mar é ainda mais lindo pessoalmente. Café da manhã maravilhoso.', rating: 5 },
+                                { name: 'Ana Clara', date: 'Jun 2026', text: 'Lugar incrível! O atendimento via WhatsApp foi super rápido. Reserva em 2 minutos, sem complicação.', rating: 5 },
                                 { name: 'Ricardo M.', date: 'Mai 2026', text: 'Atendimento via WhatsApp foi super rápido. Reserva em 2 minutos, sem complicação.', rating: 5 },
-                                { name: 'Juliana P.', date: 'Mai 2026', text: 'Fim de semana perfeito. Piscina aquecida, vista linda e silêncio total. Voltaremos!', rating: 5 },
+                                { name: 'Juliana P.', date: 'Mai 2026', text: 'Fim de semana perfeito. Tudo organizado e silêncio total. Voltaremos!', rating: 5 },
                               ].map((review, i) => (
                                 <motion.div
                                   key={i}
@@ -600,9 +809,9 @@ export function LinkInBioDemo() {
                                   </div>
                                   <div className="w-1.5 h-1.5 bg-emerald-500/40 rounded-full mt-0.5 blur-[1px]" />
                                 </motion.div>
-                                {/* Paraty label */}
+                                {/* Location label */}
                                 <div className="absolute top-[35%] left-[55%] bg-black/60 px-1.5 py-0.5 rounded text-[7px] text-white font-medium border border-white/10">
-                                  Paraty, RJ
+                                  {profile.libMapLabel}
                                 </div>
                               </div>
                             </div>
@@ -610,9 +819,9 @@ export function LinkInBioDemo() {
                             <div className="p-2 bg-[#111] border-t border-white/[0.04] space-y-1.5">
                               <p className="text-[8px] text-white font-bold flex items-center gap-1">
                                 <MapPin className="w-3 h-3 text-emerald-400" />
-                                Pousada Serenity
+                                {profile.profileName}
                               </p>
-                              <p className="text-[7px] text-neutral-400">Rua das Flores, 123 — Praia do Pontal</p>
+                              <p className="text-[7px] text-neutral-400">{profile.libMapAddress}</p>
                               <div className="flex gap-1.5">
                                 <div className="flex-1 bg-white/[0.04] rounded-lg px-2 py-1 text-center">
                                   <p className="text-[6px] text-neutral-500">De São Paulo</p>
@@ -697,7 +906,7 @@ export function LinkInBioDemo() {
                     </div>
                     <div>
                       <h4 className="text-white text-[10px] font-bold tracking-tight flex items-center gap-1">
-                        Pousada Serenity
+                        {profile.profileName}
                         <span className="px-1 py-[1px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[6px] font-bold rounded">IA</span>
                       </h4>
                       <p className="text-emerald-400 text-[7px] font-medium leading-none mt-0.5">ZÉLLA está online</p>
@@ -742,7 +951,7 @@ export function LinkInBioDemo() {
                         {msg.confirmation && (
                           <div className="mt-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-1.5">
                             <p className="text-emerald-400 text-[8px] font-bold flex items-center gap-1">
-                              <span>✓</span> Reserva Confirmada #ZR-4821
+                              <span>✓</span> {isParceiro ? 'Vaga Confirmada' : 'Reserva Confirmada'} #ZR-4821
                             </p>
                           </div>
                         )}

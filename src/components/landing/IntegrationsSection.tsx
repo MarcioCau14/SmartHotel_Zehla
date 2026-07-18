@@ -12,6 +12,7 @@ import {
   Mail,
   Smartphone,
 } from 'lucide-react';
+import { useNiche } from '@/contexts/NicheContext';
 
 const integrations = [
   {
@@ -75,6 +76,7 @@ const integrations = [
 export function IntegrationsSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const { isPousadas, isAnfitrioes } = useNiche();
 
   return (
     <section ref={ref} id="integracoes" className="relative py-28 sm:py-36 lg:py-44 bg-[#060608] overflow-hidden">
@@ -98,7 +100,7 @@ export function IntegrationsSection() {
             <span className="text-purple-400 font-bold">nada desconectado</span>
           </h2>
           <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
-            O Zélla se integra com as ferramentas que sua pousada já usa. Sem webhooks lentos, sem dados desatualizados — conexão direta em tempo real.
+            O Zélla se integra com as ferramentas que {isPousadas ? 'sua pousada' : isAnfitrioes ? 'seus imóveis' : 'seu negócio'} já usa. Sem webhooks lentos, sem dados desatualizados — conexão direta em tempo real.
           </p>
         </motion.div>
 

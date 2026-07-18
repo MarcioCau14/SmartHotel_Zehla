@@ -591,11 +591,11 @@ const parceiroContent: NicheContent = {
     {
       num: '02',
       icon: 'UserPlus',
-      title: 'Configure seu imóvel ou pousada',
+      title: 'Configure seu negócio no Zélla',
       subtitle: '5 minutos e está no ar',
-      desc: 'Cole a URL do seu anúncio Airbnb ou cadastre sua pousada. O Zélla importa tudo automaticamente e já começa a atender seus hóspedes. Em menos de 24 horas, a primeira reserva pela IA costuma chegar.',
+      desc: 'Cadastre seu negócio ou importe seu anúncio de hospedagem. O Zélla importa tudo automaticamente e já começa a atender seus hóspedes. Em menos de 24 horas, a primeira reserva pela IA costuma chegar.',
       color: 'emerald',
-      highlights: ['Importação automática do anúncio', 'Setup em 5 minutos', 'Primeira reserva em até 24h'],
+      highlights: ['Importação automática ou cadastro manual', 'Setup em 5 minutos', 'Primeira reserva em até 24h'],
     },
     {
       num: '03',
@@ -687,7 +687,7 @@ const parceiroContent: NicheContent = {
     {
       name: 'Thiago Ribeiro',
       role: 'Parceiro Zélla',
-      location: 'Pousada Mar Azul — Belo Horizonte, MG',
+      location: 'Belo Horizonte, MG',
       text: 'R$297/mês pelo PRO congelado por 2 anos? É o melhor negócio que já fiz. O PRO regular é R$397, então já economizo R$100 todo mês. A primeira reserva que o Zélla gerou já cobriu a mensalidade. Depois disso, é lucro.',
       avatar: '/avatar-serenity.jpg',
       rating: 5,
@@ -695,7 +695,7 @@ const parceiroContent: NicheContent = {
     {
       name: 'Camila Santos',
       role: 'Parceira Zélla',
-      location: 'Pousada Recanto — Ubatuba, SP',
+      location: 'Ubatuba, SP',
       text: 'Eu estava em dúvida entre o PRO regular e o Parceiro. Fiz as contas: R$397/mês = R$9.528 em 2 anos. O Parceiro é R$297/mês = R$7.128. Economia de R$2.400! E é o mesmo PRO completo com selo de parceiro.',
       avatar: '/pousada-vista.jpg',
       rating: 5,
@@ -703,7 +703,7 @@ const parceiroContent: NicheContent = {
     {
       name: 'Rafael Lima',
       role: 'Parceiro Zélla',
-      location: 'Chalé da Serra — Campos do Jordão, SP',
+      location: 'Campos do Jordão, SP',
       text: 'O plano Parceiro PRO é imbatível. R$297/mês com tudo do PRO: mensagens ilimitadas, hóspedes ilimitados, preço congelado por 24 meses. Configurei em 5 minutos e em 3 dias já tinha a primeira reserva. ROI de 10x.',
       avatar: '/pousada-chale.jpg',
       rating: 5,
@@ -720,7 +720,7 @@ const parceiroContent: NicheContent = {
     { question: 'O Parceiro tem as mesmas funcionalidades do PRO?', answer: 'Sim! O plano Parceiro inclui tudo do PRO: hóspedes ilimitados, mensagens ilimitadas, IA 24/7 no WhatsApp, campanhas automatizadas, análise de sentimento, suporte prioritário e dashboard completo. A diferença? Você paga R$100 a menos por mês e ganha o selo exclusivo de parceiro.' },
     { question: 'O que é o selo exclusivo de Parceiro?', answer: 'O selo de Parceiro Zélla é um distintivo oficial que aparece no seu perfil e comunicações. Mostra aos hóspedes que você é certificado pelo Zélla — transmitindo credibilidade e confiança. Apenas parceiros têm esse selo.' },
     { question: 'O preço de R$297/mês pode subir?', answer: 'Não durante 24 meses. Seu preço de R$297/mês fica congelado por 24 meses a partir da ativação, mesmo que o plano PRO regular sofra reajuste. Transparência total — você sabe exatamente quanto vai pagar.' },
-    { question: 'Posso usar para pousada e para Airbnb?', answer: 'Sim! O plano Parceiro PRO funciona para ambos. Você pode cadastrar sua pousada ou colar a URL do seu anúncio Airbnb — a IA importa tudo automaticamente. Hóspedes e mensagens são ilimitados para qualquer tipo de imóvel.' },
+    { question: 'Funciona para qualquer tipo de hospedagem?', answer: 'Sim! O plano Parceiro PRO funciona para pousadas, chalés, flats ou qualquer tipo de hospedagem. Você cadastra seu negócio ou importa seu anúncio — a IA importa tudo automaticamente. Hóspedes e mensagens são ilimitados para qualquer tipo de operação.' },
     { question: 'E se eu quiser o plano MAX depois?', answer: 'Se precisar de recursos exclusivos do MAX (consultoria mensal, onboarding personalizado, SLA garantido), você pode fazer upgrade pagando apenas a diferença. Seu preço de Parceiro é preservado se quiser voltar ao PRO depois.' },
   ],
 };

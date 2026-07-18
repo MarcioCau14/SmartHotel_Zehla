@@ -2,23 +2,32 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNiche } from '@/contexts/NicheContext';
 
 interface DynamicHeroTextProps {
   className?: string;
 }
 
-const phrases = ['pelo WhatsApp.', 'a sua pousada.', 'o seu imóvel.'];
-
 export function DynamicHeroText({ className }: DynamicHeroTextProps) {
+  const { niche, isPousadas, isAnfitrioes } = useNiche();
+
+  // Niche-specific rotating phrases to avoid cross-contamination
+  const phrases = isPousadas
+    ? ['pelo WhatsApp.', 'a sua pousada.']
+    : isAnfitrioes
+    ? ['pelo WhatsApp.', 'o seu imóvel.']
+    : ['pelo WhatsApp.', 'seu negócio.'];
+
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
+    setCurrentIndex(0);
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % phrases.length);
     }, 2500);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [phrases.length, niche]);
 
   return (
     <h1

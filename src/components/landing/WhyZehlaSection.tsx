@@ -15,6 +15,7 @@ import {
   TrendingUp,
   Clock,
 } from 'lucide-react';
+import { useNiche } from '@/contexts/NicheContext';
 
 interface ComparisonRow {
   feature: string;
@@ -25,78 +26,80 @@ interface ComparisonRow {
   cloudbedsBad?: boolean;
 }
 
-const comparisons: ComparisonRow[] = [
-  {
-    feature: 'WhatsApp IA Nativo',
-    icon: MessageSquare,
-    zehla: true,
-    zehlaHighlight: true,
-    cloudbeds: false,
-    cloudbedsBad: true,
-  },
-  {
-    feature: 'IA Preditiva para Hóspedes',
-    icon: Brain,
-    zehla: true,
-    zehlaHighlight: true,
-    cloudbeds: 'Parcial',
-  },
-  {
-    feature: 'Preço em Real (BRL)',
-    icon: DollarSign,
-    zehla: 'A partir de R$197/mês',
-    zehlaHighlight: true,
-    cloudbeds: 'USD ~R$800+/mês',
-    cloudbedsBad: true,
-  },
-  {
-    feature: 'Suporte em Português',
-    icon: Headphones,
-    zehla: 'PT-BR Nativo via WhatsApp',
-    zehlaHighlight: true,
-    cloudbeds: 'Apenas Inglês (Ticket)',
-    cloudbedsBad: true,
-  },
-  {
-    feature: 'Entende Mercado BR',
-    icon: Globe,
-    zehla: 'Feito para pousadas brasileiras',
-    zehlaHighlight: true,
-    cloudbeds: 'Foco em hotéis globais',
-    cloudbedsBad: true,
-  },
-  {
-    feature: 'Onboarding',
-    icon: Zap,
-    zehla: '5 minutos — wizard automático',
-    zehlaHighlight: true,
-    cloudbeds: '2 a 4 semanas',
-    cloudbedsBad: true,
-  },
-  {
-    feature: 'Resposta a Hóspedes',
-    icon: Clock,
-    zehla: '< 8 segundos (24/7)',
-    zehlaHighlight: true,
-    cloudbeds: 'Depende do staff',
-  },
-  {
-    feature: 'Revenue Management IA',
-    icon: TrendingUp,
-    zehla: true,
-    zehlaHighlight: true,
-    cloudbeds: 'Básico',
-    cloudbedsBad: true,
-  },
-  {
-    feature: 'Dados Diretos (sem Webhook)',
-    icon: Shield,
-    zehla: 'PostgreSQL direto',
-    zehlaHighlight: true,
-    cloudbeds: 'Webhooks com delays',
-    cloudbedsBad: true,
-  },
-];
+function getComparisons(niche: 'pousadas' | 'anfitrioes' | 'parceiro'): ComparisonRow[] {
+  return [
+    {
+      feature: 'WhatsApp IA Nativo',
+      icon: MessageSquare,
+      zehla: true,
+      zehlaHighlight: true,
+      cloudbeds: false,
+      cloudbedsBad: true,
+    },
+    {
+      feature: 'IA Preditiva para Hóspedes',
+      icon: Brain,
+      zehla: true,
+      zehlaHighlight: true,
+      cloudbeds: 'Parcial',
+    },
+    {
+      feature: 'Preço em Real (BRL)',
+      icon: DollarSign,
+      zehla: 'A partir de R$197/mês',
+      zehlaHighlight: true,
+      cloudbeds: 'USD ~R$800+/mês',
+      cloudbedsBad: true,
+    },
+    {
+      feature: 'Suporte em Português',
+      icon: Headphones,
+      zehla: 'PT-BR Nativo via WhatsApp',
+      zehlaHighlight: true,
+      cloudbeds: 'Apenas Inglês (Ticket)',
+      cloudbedsBad: true,
+    },
+    {
+      feature: 'Entende Mercado BR',
+      icon: Globe,
+      zehla: niche === 'pousadas' ? 'Feito para pousadas brasileiras' : niche === 'anfitrioes' ? 'Feito para anfitriões brasileiros' : 'Feito para parceiros brasileiros',
+      zehlaHighlight: true,
+      cloudbeds: 'Foco em hotéis globais',
+      cloudbedsBad: true,
+    },
+    {
+      feature: 'Onboarding',
+      icon: Zap,
+      zehla: '5 minutos — wizard automático',
+      zehlaHighlight: true,
+      cloudbeds: '2 a 4 semanas',
+      cloudbedsBad: true,
+    },
+    {
+      feature: 'Resposta a Hóspedes',
+      icon: Clock,
+      zehla: '< 8 segundos (24/7)',
+      zehlaHighlight: true,
+      cloudbeds: 'Depende do staff',
+    },
+    {
+      feature: 'Revenue Management IA',
+      icon: TrendingUp,
+      zehla: true,
+      zehlaHighlight: true,
+      cloudbeds: 'Básico',
+      cloudbedsBad: true,
+    },
+    {
+      feature: 'Dados Diretos (sem Webhook)',
+      icon: Shield,
+      zehla: 'PostgreSQL direto',
+      zehlaHighlight: true,
+      cloudbeds: 'Webhooks com delays',
+      cloudbedsBad: true,
+    },
+  ];
+}
 
 function CellValue({ value, highlight, bad }: { value: string | boolean; highlight?: boolean; bad?: boolean }) {
   if (value === true) {
@@ -129,6 +132,8 @@ function CellValue({ value, highlight, bad }: { value: string | boolean; highlig
 export function WhyZehlaSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const { isPousadas, isAnfitrioes } = useNiche();
+  const comparisons = getComparisons(isPousadas ? 'pousadas' : isAnfitrioes ? 'anfitrioes' : 'parceiro');
 
   return (
     <section ref={ref} className="relative py-28 sm:py-36 lg:py-44 bg-[#0a0a0a] overflow-hidden">
@@ -148,12 +153,12 @@ export function WhyZehlaSection() {
             <span className="text-emerald-400 text-xs font-medium uppercase tracking-wider">Comparativo Direto</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6">
-            Por que pousadas trocam o{' '}
+            Por que {isPousadas ? 'pousadas' : isAnfitrioes ? 'anfitriões' : 'parceiros'} trocam o{' '}
             <span className="text-blue-400 font-bold">Cloudbeds</span>{' '}
             pelo <span className="text-emerald-400 font-bold">Zélla</span>?
           </h2>
           <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
-            Feito no Brasil, em português, com IA nativa no WhatsApp. Veja como o Zélla supera o Cloudbeds em cada ponto crítico para sua pousada.
+            Feito no Brasil, em português, com IA nativa no WhatsApp. Veja como o Zélla supera o Cloudbeds em cada ponto crítico {isPousadas ? 'para sua pousada' : isAnfitrioes ? 'para seus imóveis' : 'para sua operação'}.
           </p>
         </motion.div>
 

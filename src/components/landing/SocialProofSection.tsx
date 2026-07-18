@@ -10,6 +10,7 @@ import {
   Users,
   Star,
 } from 'lucide-react';
+import { useNiche } from '@/contexts/NicheContext';
 
 function AnimatedCounter({ target, suffix = '', prefix = '' }: { target: number; suffix?: string; prefix?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -27,72 +28,87 @@ function AnimatedCounter({ target, suffix = '', prefix = '' }: { target: number;
   return <motion.span ref={ref}>{display}</motion.span>;
 }
 
-const stats = [
-  {
-    icon: Hotel,
-    value: 100,
-    suffix: '+',
-    label: 'Pousadas Atendidas',
-    description: 'Em todo o litoral brasileiro, de Florianópolis a Ubatuba',
-    color: 'from-emerald-500/20 to-emerald-900/10',
-    iconColor: 'text-emerald-400',
-    borderColor: 'border-emerald-500/20',
-  },
-  {
-    icon: MessageSquare,
-    value: 50000,
-    suffix: '+',
-    label: 'Mensagens por Mês',
-    description: 'Respondidas automaticamente com IA no WhatsApp',
-    color: 'from-blue-500/20 to-blue-900/10',
-    iconColor: 'text-blue-400',
-    borderColor: 'border-blue-500/20',
-  },
-  {
-    icon: TrendingUp,
-    value: 35,
-    suffix: '%',
-    label: 'Aumento em Reservas',
-    description: 'Média das pousadas parceiras nos primeiros 90 dias',
-    color: 'from-amber-500/20 to-amber-900/10',
-    iconColor: 'text-amber-400',
-    borderColor: 'border-amber-500/20',
-  },
-  {
-    icon: Clock,
-    value: 8,
-    suffix: 's',
-    label: 'Tempo Médio de Resposta',
-    description: 'Contra 4+ horas do atendimento manual nos fins de semana',
-    color: 'from-purple-500/20 to-purple-900/10',
-    iconColor: 'text-purple-400',
-    borderColor: 'border-purple-500/20',
-  },
-  {
-    icon: Users,
-    value: 15000,
-    suffix: '+',
-    label: 'Hóspedes Atendidos',
-    description: 'Pelo Zélla nos últimos 12 meses',
-    color: 'from-teal-500/20 to-teal-900/10',
-    iconColor: 'text-teal-400',
-    borderColor: 'border-teal-500/20',
-  },
-  {
-    icon: Star,
-    value: 98,
-    suffix: '%',
-    label: 'Satisfação dos Hóspedes',
-    description: 'Avaliação média do atendimento via IA',
-    color: 'from-rose-500/20 to-rose-900/10',
-    iconColor: 'text-rose-400',
-    borderColor: 'border-rose-500/20',
-  },
-];
+interface StatItem {
+  icon: React.ElementType;
+  value: number;
+  suffix: string;
+  label: string;
+  description: string;
+  color: string;
+  iconColor: string;
+  borderColor: string;
+}
+
+function getStats(niche: 'pousadas' | 'anfitrioes' | 'parceiro'): StatItem[] {
+  return [
+    {
+      icon: Hotel,
+      value: 100,
+      suffix: '+',
+      label: niche === 'pousadas' ? 'Pousadas Atendidas' : niche === 'anfitrioes' ? 'Imóveis Atendidos' : 'Parceiros Ativos',
+      description: 'Em todo o litoral brasileiro, de Florianópolis a Ubatuba',
+      color: 'from-emerald-500/20 to-emerald-900/10',
+      iconColor: 'text-emerald-400',
+      borderColor: 'border-emerald-500/20',
+    },
+    {
+      icon: MessageSquare,
+      value: 50000,
+      suffix: '+',
+      label: 'Mensagens por Mês',
+      description: 'Respondidas automaticamente com IA no WhatsApp',
+      color: 'from-blue-500/20 to-blue-900/10',
+      iconColor: 'text-blue-400',
+      borderColor: 'border-blue-500/20',
+    },
+    {
+      icon: TrendingUp,
+      value: 35,
+      suffix: '%',
+      label: 'Aumento em Reservas',
+      description: niche === 'pousadas' ? 'Média das pousadas parceiras nos primeiros 90 dias' : niche === 'anfitrioes' ? 'Média dos imóveis atendidos nos primeiros 90 dias' : 'Média dos parceiros Zélla nos primeiros 90 dias',
+      color: 'from-amber-500/20 to-amber-900/10',
+      iconColor: 'text-amber-400',
+      borderColor: 'border-amber-500/20',
+    },
+    {
+      icon: Clock,
+      value: 8,
+      suffix: 's',
+      label: 'Tempo Médio de Resposta',
+      description: 'Contra 4+ horas do atendimento manual nos fins de semana',
+      color: 'from-purple-500/20 to-purple-900/10',
+      iconColor: 'text-purple-400',
+      borderColor: 'border-purple-500/20',
+    },
+    {
+      icon: Users,
+      value: 15000,
+      suffix: '+',
+      label: 'Hóspedes Atendidos',
+      description: 'Pelo Zélla nos últimos 12 meses',
+      color: 'from-teal-500/20 to-teal-900/10',
+      iconColor: 'text-teal-400',
+      borderColor: 'border-teal-500/20',
+    },
+    {
+      icon: Star,
+      value: 98,
+      suffix: '%',
+      label: 'Satisfação dos Hóspedes',
+      description: 'Avaliação média do atendimento via IA',
+      color: 'from-rose-500/20 to-rose-900/10',
+      iconColor: 'text-rose-400',
+      borderColor: 'border-rose-500/20',
+    },
+  ];
+}
 
 export function SocialProofSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const { niche } = useNiche();
+  const stats = getStats(niche);
 
   return (
     <section ref={ref} className="relative py-28 sm:py-36 lg:py-44 bg-[#0a0a0a] overflow-hidden">
@@ -116,7 +132,7 @@ export function SocialProofSection() {
             <span className="text-emerald-400 font-bold">mede em resultados</span>
           </h2>
           <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
-            Pousadas de todo o Brasil já transformaram seu atendimento com o Zélla. Veja o impacto real nos números.
+            {niche === 'pousadas' ? 'Pousadas de todo o Brasil já transformaram seu atendimento com o Zélla.' : niche === 'anfitrioes' ? 'Anfitriões de todo o Brasil já transformaram seu atendimento com o Zélla.' : 'Parceiros de todo o Brasil já transformaram sua operação com o Zélla.'} Veja o impacto real nos números.
           </p>
         </motion.div>
 

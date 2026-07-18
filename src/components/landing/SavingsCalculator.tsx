@@ -14,6 +14,7 @@ import {
   Clock,
   CheckCircle,
 } from 'lucide-react';
+import { useNiche } from '@/contexts/NicheContext';
 
 // ============================================================================
 // Constantes de negócio (baseadas em dados do setor hoteleiro brasileiro)
@@ -27,6 +28,7 @@ const CUSTO_ZELLA_PRO = 397;        // R$/mês plano PRO (referência para cálc
 export function SavingsCalculator() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const { isPousadas, isAnfitrioes } = useNiche();
 
   const [contatosMes, setContatosMes] = useState(80);
   const [diariaMedia, setDiariaMedia] = useState(350);
@@ -99,8 +101,8 @@ export function SavingsCalculator() {
             <span className="text-emerald-400 text-xs font-medium">Simulador de Resultados</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6 tracking-tight">
-            Quanto sua pousada{' '}
-            <span className="text-emerald-400 font-bold">ganha com o Zélla?</span>
+            {isPousadas ? 'Quanto sua pousada' : isAnfitrioes ? 'Quanto seus imóveis' : 'Quanto você economiza'}{' '}
+            <span className="text-emerald-400 font-bold">{isPousadas || isAnfitrioes ? 'ganha com o Zélla?' : 'com o Zélla?'}</span>
           </h2>
           <p className="text-neutral-400 text-lg sm:text-xl max-w-2xl mx-auto">
             Insira os dados reais da sua operação e veja o impacto no seu faturamento
@@ -152,7 +154,7 @@ export function SavingsCalculator() {
                 {/* Input 2: Diária média */}
                 <div className="space-y-3">
                   <label className="block text-neutral-300 text-sm font-medium">
-                    Diária média da pousada
+                    {isPousadas ? 'Diária média da pousada' : isAnfitrioes ? 'Diária média do imóvel' : 'Diária média'}
                   </label>
                   <div className="flex items-center gap-3">
                     <button

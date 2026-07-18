@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { useNiche } from '@/contexts/NicheContext'
 
 // Simplified platforms - only names in text, no icons or colors
 const platforms = [
@@ -15,6 +16,7 @@ const platforms = [
 ]
 
 export default function BookingPlatformsMarquee() {
+  const { isPousadas, isAnfitrioes } = useNiche()
   return (
     <section className="py-16 bg-gradient-to-b from-transparent via-zinc-950/50 to-transparent border-y border-zinc-800">
       <div className="container mx-auto px-6 mb-12 text-center">
@@ -34,7 +36,7 @@ export default function BookingPlatformsMarquee() {
 
         {/* Description */}
         <p className="text-neutral-400 text-base sm:text-lg max-w-2xl mx-auto mb-8">
-          Conecte sua pousada a todas as principais plataformas de reservas e pagamentos em um único painel.
+          {isPousadas ? 'Conecte sua pousada a todas as principais plataformas de reservas e pagamentos em um único painel.' : isAnfitrioes ? 'Conecte seus imóveis a todas as principais plataformas de reservas e pagamentos em um único painel.' : 'Conecte sua operação a todas as principais plataformas de reservas e pagamentos em um único painel.'}
           Sincronização automática de disponibilidade e preços em tempo real.
         </p>
 

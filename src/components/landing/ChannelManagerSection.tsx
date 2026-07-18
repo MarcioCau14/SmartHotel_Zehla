@@ -14,6 +14,7 @@ import {
   Rocket,
   Lock,
 } from 'lucide-react';
+import { useNiche } from '@/contexts/NicheContext';
 
 /* ─────────── ROADMAP DATA ─────────── */
 const roadmapPhases = [
@@ -44,7 +45,7 @@ const roadmapPhases = [
     phase: 'Fase 3',
     status: 'planned' as const,
     title: 'Expansão 300+ Canais',
-    desc: 'Integração com dezenas de OTAs nacionais e internacionais via parceiros como SiteMinder. Um único painel para gerenciar toda a distribuição da sua pousada.',
+    desc: 'Integração com dezenas de OTAs nacionais e internacionais via parceiros como SiteMinder. Um único painel para gerenciar toda a distribuição do seu negócio.',
     features: [
       'Expedia, Decolar, Trivago, Stays.net',
       'Google Hotels & Google Travel',
@@ -84,6 +85,7 @@ const statusConfig = {
 export function ChannelManagerSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
+  const { isPousadas, isAnfitrioes } = useNiche();
 
   return (
     <section ref={ref} id="channel-manager" className="relative py-28 sm:py-36 lg:py-44 bg-[#060608] overflow-hidden">
@@ -115,7 +117,7 @@ export function ChannelManagerSection() {
           </h2>
 
           <p className="text-neutral-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-            O Channel Manager do Zélla está sendo construído em fases. Comece hoje com exportação iCal e acompanhe a evolução rumo à sincronização bidirecional com 300+ canais.
+            O Channel Manager do Zélla está sendo construído em fases. Comece hoje com exportação iCal e acompanhe a evolução rumo à sincronização bidirecional com 300+ canais — para {isPousadas ? 'sua pousada' : isAnfitrioes ? 'seus imóveis' : 'seu negócio'}.
           </p>
         </motion.div>
 

@@ -50,7 +50,7 @@ export function TestimonialsSection() {
               ? 'Pousadeiros que já usam o Zélla para vender mais e atender melhor pelo WhatsApp.'
               : niche === 'anfitrioes'
               ? 'Anfitriões que já usam o Zélla para escalar seus imóveis e atender melhor pelo WhatsApp.'
-              : 'Parceiros que já ganham comissão indicando o Zélla para pousadas.'}
+              : 'Parceiros que já economizam com o plano PRO por preço de parceiro.'}
           </p>
         </motion.div>
 

@@ -12,10 +12,12 @@ import {
   Sparkles,
   Flame,
 } from 'lucide-react';
+import { useNiche } from '@/contexts/NicheContext';
 
 export function BetaFounderSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const { isAnfitrioes, isParceiro } = useNiche();
 
   return (
     <section ref={ref} id="oferta-parceiro" className="py-24 sm:py-32 relative overflow-hidden bg-[#060608]">
@@ -39,7 +41,7 @@ export function BetaFounderSection() {
               </div>
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-500/10 border border-red-500/30">
                 <Clock className="w-3.5 h-3.5 text-red-400" />
-                <span className="text-red-400 text-xs font-bold">Vagas Limitadas — 100 pousadas</span>
+                <span className="text-red-400 text-xs font-bold">{isParceiro ? 'Vagas Limitadas — Programa Parceiro' : isAnfitrioes ? 'Vagas Limitadas — 100 anfitriões' : 'Vagas Limitadas — 100 pousadas'}</span>
               </div>
             </div>
 
@@ -51,7 +53,12 @@ export function BetaFounderSection() {
             </h2>
 
             <p className="text-zinc-400 text-base sm:text-lg max-w-2xl mb-10 leading-relaxed">
-              Você foi escolhido para o seleto grupo de <strong className="text-white">100 pousadas parceiras</strong> pioneiras no Brasil. Como agradecimento por nos ajudar a crescer, oferecemos uma condição única: use todas as funções do plano PRO pagando o valor do plano LITE, com preço congelado por 24 meses enquanto mantiver a assinatura ativa. Assim que preenchermos as vagas, o grupo será fechado definitivamente.
+              {isParceiro
+                ? <>Você foi escolhido para o seleto grupo de <strong className="text-white">100 parceiros pioneiros</strong> no Brasil. Como agradecimento por fechar parceria conosco, oferecemos uma condição única: use todas as funções do plano PRO pagando o valor do plano LITE, com preço congelado por 24 meses enquanto mantiver a assinatura ativa. Assim que preenchermos as vagas, o programa será fechado definitivamente.</>
+                : isAnfitrioes
+                ? <>Você foi escolhido para o seleto grupo de <strong className="text-white">100 anfitriões parceiros</strong> pioneiros no Brasil. Como agradecimento por nos ajudar a crescer, oferecemos uma condição única: use todas as funções do plano PRO pagando o valor do plano LITE, com preço congelado por 24 meses enquanto mantiver a assinatura ativa. Assim que preenchermos as vagas, o grupo será fechado definitivamente.</>
+                : <>Você foi escolhido para o seleto grupo de <strong className="text-white">100 pousadas parceiras</strong> pioneiras no Brasil. Como agradecimento por nos ajudar a crescer, oferecemos uma condição única: use todas as funções do plano PRO pagando o valor do plano LITE, com preço congelado por 24 meses enquanto mantiver a assinatura ativa. Assim que preenchermos as vagas, o grupo será fechado definitivamente.</>
+              }
             </p>
 
             {/* BENEFITS GRID WITH 3D HOVER AND GLOWS */}

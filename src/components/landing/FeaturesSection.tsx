@@ -37,7 +37,13 @@ const featureIconMap: Record<string, LucideIcon> = {
 };
 
 function WhatsAppMockup() {
+  const { isPousadas, isAnfitrioes } = useNiche();
   const [animationStep, setAnimationStep] = useState(0);
+
+  // Niche-specific chat data
+  const businessName = isPousadas ? 'Pousada Serenity' : isAnfitrioes ? 'Flat Copacabana' : 'Parceiro Zélla';
+  const roomName = isPousadas ? 'Chalé Vista Mar' : isAnfitrioes ? 'Apartamento Vista Mar' : 'Sua Hospedagem';
+  const greeting = isPousadas ? 'Seja muito bem-vindo à Pousada Serenity. 🌸' : isAnfitrioes ? 'Seja muito bem-vindo ao Apartamento Copacabana. 🌊' : 'Seja muito bem-vindo. ✨';
 
   useEffect(() => {
       const timers = [
@@ -98,12 +104,12 @@ function WhatsAppMockup() {
             <div className="w-full bg-[#1f2c34] pt-2 pb-2 px-3 flex items-center justify-between border-b border-white/[0.03] z-10 shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-[#111] border border-emerald-500/30 overflow-hidden relative">
-                  <img src="/avatar-serenity.jpg" className="w-full h-full object-cover" alt="Pousada Serenity" />
+                  <img src="/avatar-serenity.jpg" className="w-full h-full object-cover" alt={businessName} />
                   <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-[#1f2c34] rounded-full" />
                 </div>
                 <div>
                   <h4 className="text-white text-[11px] font-bold tracking-tight flex items-center gap-1">
-                    Pousada Serenity
+                    {businessName}
                     <span className="px-1 py-[1px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[7px] font-bold rounded">IA</span>
                   </h4>
                   <p className="text-emerald-400 text-[8px] font-medium leading-none mt-0.5">ZÉLLA está online</p>
@@ -146,8 +152,8 @@ function WhatsAppMockup() {
                       ⚡ Resposta completa do Zélla
                     </p>
                     <p className="whitespace-pre-line text-[#e9edef] text-[9.5px]">
-                      Olá, Bernardo! Seja muito bem-vindo à Pousada Serenity. 🌸{"\n\n"}
-                      Temos disponibilidade sim! O nosso **Chalé Vista Mar** é perfeito para casal nessa data.{"\n\n"}
+                      Olá, Bernardo! {greeting}{"\n\n"}
+                      Temos disponibilidade sim! O nosso **{roomName}** é perfeito para casal nessa data.{"\n\n"}
                       💰 **Valor do pacote (2 noites):** R$ 980 no PIX (ou 3x de R$ 350).
                     </p>
                     <div className="bg-[#111b21] p-1.5 rounded-lg border border-white/[0.04] font-mono text-[7px] break-all select-all flex items-center justify-between gap-1 mt-1">
@@ -183,7 +189,7 @@ function WhatsAppMockup() {
                       <span>✓</span> Confirmado! 🎉
                     </p>
                     <p className="text-[9.5px]">
-                      Pagamento de R$ 980 recebido com sucesso! Sua reserva para o **Chalé Vista Mar** (12 a 14 de setembro) está garantida. Nos vemos lá! 🏝️
+                      Pagamento de R$ 980 recebido com sucesso! Sua reserva para o **{roomName}** (12 a 14 de setembro) está garantida. Nos vemos lá! 🏝️
                     </p>
                     <span className="text-[7px] text-neutral-400/70 float-right mt-1 ml-2 font-medium">09:43</span>
                   </div>
@@ -221,7 +227,7 @@ function FeatureMockup({ type }: { type: string }) {
 export function FeaturesSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-50px' });
-  const { niche, isPousadas } = useNiche();
+  const { niche, isPousadas, isAnfitrioes } = useNiche();
   const content = getNicheContent(niche);
   const features = content.features;
 
@@ -236,7 +242,7 @@ export function FeaturesSection() {
           className="text-center mb-24"
         >
           <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-8 tracking-tight">
-            Funcionalidades que <span className={isPousadas ? 'text-emerald-500 font-bold' : 'text-blue-500 font-bold'}>transformam</span>
+            Funcionalidades que <span className={isPousadas ? 'text-emerald-500 font-bold' : isAnfitrioes ? 'text-blue-500 font-bold' : 'text-amber-500 font-bold'}>transformam</span>
           </h2>
           <AnimatePresence mode="wait">
             <motion.p
@@ -249,7 +255,9 @@ export function FeaturesSection() {
             >
               {isPousadas
                 ? 'O ZÉLLA vai ser seu zelador com funcionalidades inovadoras. São funções que vão te dar mais tempo para fazer sua pousada decolar.'
-                : 'O ZÉLLA é seu co-anfitrião digital. Funcionalidades que automatizam tudo — do check-in ao atendimento — para você escalar sem estresse.'
+                : isAnfitrioes
+                ? 'O ZÉLLA é seu co-anfitrião digital. Funcionalidades que automatizam tudo — do check-in ao atendimento — para você escalar sem estresse.'
+                : 'O ZÉLLA é seu parceiro de negócio. Funcionalidades completas do plano PRO com preço congelado — para você economizar e crescer.'
               }
             </motion.p>
           </AnimatePresence>
@@ -267,7 +275,7 @@ export function FeaturesSection() {
           >
             {features.map((feature, i) => {
               const IconComponent = featureIconMap[feature.icon] || MessageSquare;
-              const accentColor = isPousadas ? 'emerald' : 'blue';
+              const accentColor = isPousadas ? 'emerald' : isAnfitrioes ? 'blue' : 'amber';
 
               return (
                 <motion.div
@@ -286,11 +294,13 @@ export function FeaturesSection() {
                       <div className={`w-10 h-10 rounded-xl ${
                         isPousadas
                           ? 'bg-emerald-500/10 border border-emerald-500/20'
-                          : 'bg-blue-500/10 border border-blue-500/20'
+                          : isAnfitrioes
+                          ? 'bg-blue-500/10 border border-blue-500/20'
+                          : 'bg-amber-500/10 border border-amber-500/20'
                       } flex items-center justify-center shrink-0`}>
-                        <IconComponent className={`w-5 h-5 ${isPousadas ? 'text-emerald-400' : 'text-blue-400'}`} />
+                        <IconComponent className={`w-5 h-5 ${isPousadas ? 'text-emerald-400' : isAnfitrioes ? 'text-blue-400' : 'text-amber-400'}`} />
                       </div>
-                      <span className={`${isPousadas ? 'text-emerald-400' : 'text-blue-400'} text-xs font-bold uppercase tracking-wider`}>
+                      <span className={`${isPousadas ? 'text-emerald-400' : isAnfitrioes ? 'text-blue-400' : 'text-amber-400'} text-xs font-bold uppercase tracking-wider`}>
                         {feature.badge}
                       </span>
                     </div>
@@ -345,7 +355,7 @@ export function FeaturesSection() {
                               transition={{ duration: 0.4, delay: 0.3 + si * 0.1 }}
                               className="relative p-5 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300 group/stat"
                             >
-                              <StatIcon className={`w-4 h-4 ${isPousadas ? 'text-emerald-500/60' : 'text-blue-500/60'} mb-2.5 block`} />
+                              <StatIcon className={`w-4 h-4 ${isPousadas ? 'text-emerald-500/60' : isAnfitrioes ? 'text-blue-500/60' : 'text-amber-500/60'} mb-2.5 block`} />
                               <div className="text-2xl font-bold text-white tracking-tight">{s.val}</div>
                               <div className="text-[11px] text-neutral-400 font-semibold mt-1">{s.label}</div>
                               {'sublabel' in s && s.sublabel && (
@@ -370,11 +380,13 @@ export function FeaturesSection() {
                               p.accent
                                 ? isPousadas
                                   ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400'
-                                  : 'bg-blue-500/10 border border-blue-500/25 text-blue-400'
+                                  : isAnfitrioes
+                                  ? 'bg-blue-500/10 border border-blue-500/25 text-blue-400'
+                                  : 'bg-amber-500/10 border border-amber-500/25 text-amber-400'
                                 : 'bg-white/[0.03] border border-white/[0.06] text-neutral-400 hover:text-neutral-200 hover:bg-white/[0.05]'
                             }`}
                           >
-                            <Check className={`w-3 h-3 ${p.accent ? (isPousadas ? 'text-emerald-400' : 'text-blue-400') : 'text-neutral-600'}`} />
+                            <Check className={`w-3 h-3 ${p.accent ? (isPousadas ? 'text-emerald-400' : isAnfitrioes ? 'text-blue-400' : 'text-amber-400') : 'text-neutral-600'}`} />
                             {p.text}
                           </motion.span>
                         ))}
@@ -387,7 +399,7 @@ export function FeaturesSection() {
                         initial={{ opacity: 0 }}
                         animate={isInView ? { opacity: 1 } : {}}
                         transition={{ duration: 0.5, delay: 0.7 }}
-                        className={`text-neutral-600 text-xs italic border-l-2 ${isPousadas ? 'border-emerald-500/30' : 'border-blue-500/30'} pl-3`}
+                        className={`text-neutral-600 text-xs italic border-l-2 ${isPousadas ? 'border-emerald-500/30' : isAnfitrioes ? 'border-blue-500/30' : 'border-amber-500/30'} pl-3`}
                       >
                         {feature.bottomLine}
                       </motion.p>

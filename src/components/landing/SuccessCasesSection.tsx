@@ -13,10 +13,11 @@ import {
   ChevronRight,
   Quote,
 } from 'lucide-react';
+import { useNiche } from '@/contexts/NicheContext';
 
 interface CaseStudy {
   id: string;
-  pousada: string;
+  name: string;
   location: string;
   avatar: string;
   quote: string;
@@ -30,10 +31,10 @@ interface CaseStudy {
   tags: string[];
 }
 
-const caseStudies: CaseStudy[] = [
+const pousadasCases: CaseStudy[] = [
   {
     id: 'serenity',
-    pousada: 'Pousada Serenity',
+    name: 'Pousada Serenity',
     location: 'Florianópolis, SC',
     avatar: '/avatar-serenity.jpg',
     quote: 'Antes do Zélla, perdíamos 60% das mensagens que chegavam à noite. Hoje, nenhuma mensagem fica sem resposta — e as reservas aumentaram 42% em 3 meses.',
@@ -48,7 +49,7 @@ const caseStudies: CaseStudy[] = [
   },
   {
     id: 'sol-mar',
-    pousada: 'Pousada Sol & Mar',
+    name: 'Pousada Sol & Mar',
     location: 'Ubatuba, SP',
     avatar: '/avatar-solmar.svg',
     quote: 'O Zélla pagou a si mesmo no primeiro mês. A economia com a otimização de mensagens e o aumento de reservas diretas cobriram o plano LITE inteiro.',
@@ -63,7 +64,7 @@ const caseStudies: CaseStudy[] = [
   },
   {
     id: 'chale-montanha',
-    pousada: 'Chalé da Montanha',
+    name: 'Chalé da Montanha',
     location: 'Campos do Jordão, SP',
     avatar: '/avatar-chale.svg',
     quote: 'Meus hóspedes acham que eu tenho uma equipe de 5 pessoas atendendo WhatsApp. Na verdade, é só eu e o Zélla. A IA responde no meu tom de voz.',
@@ -75,6 +76,102 @@ const caseStudies: CaseStudy[] = [
       { metric: 'Tempo', value: '-15h', description: 'Horas poupadas por semana' },
     ],
     tags: ['6 chalés', 'Montanha', 'Inverno'],
+  },
+];
+
+const anfitrioesCases: CaseStudy[] = [
+  {
+    id: 'apt-centro-sp',
+    name: 'Apartamento Centro SP',
+    location: 'São Paulo, SP',
+    avatar: '/avatar-serenity.jpg',
+    quote: 'Antes do Zélla, eu perdia várias mensagens de hóspedes enquanto trabalhava. Hoje, a IA responde por mim 24h e já fechou reservas de R$8.000 num único mês.',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    videoThumb: '/pousada-vista.jpg',
+    stats: [
+      { metric: 'Reservas', value: '+38%', description: 'Aumento em 90 dias' },
+      { metric: 'Respostas', value: '< 6s', description: 'Tempo médio de resposta' },
+      { metric: 'Faturamento', value: 'R$8k', description: 'Faturado em 1 mês' },
+    ],
+    tags: ['1 imóvel', 'Airbnb', 'Urbano'],
+  },
+  {
+    id: 'flat-copa',
+    name: 'Flat Copacabana',
+    location: 'Rio de Janeiro, RJ',
+    avatar: '/avatar-solmar.svg',
+    quote: 'O Zélla pagou a si mesmo no primeiro mês. O check-in virtual e as respostas automáticas cobriram o plano LITE inteiro com o que economizei em comissões.',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    videoThumb: '/pousada-piscina.jpg',
+    stats: [
+      { metric: 'ROI', value: '15x', description: 'Retorno sobre investimento' },
+      { metric: 'Diretas', value: '+40%', description: 'Reservas sem intermediário' },
+      { metric: 'Economia', value: 'R$1.800', description: 'Economia mensal em taxas' },
+    ],
+    tags: ['2 imóveis', 'Praia', 'Alta temporada'],
+  },
+  {
+    id: 'chale-campos',
+    name: 'Chalé Campos',
+    location: 'Campos do Jordão, SP',
+    avatar: '/avatar-chale.svg',
+    quote: 'Meus hóspedes elogiam o atendimento rápido pelo WhatsApp. A IA do Zélla responde no meu tom e resolve tudo, desde a reserva até as orientações de chegada.',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    videoThumb: '/pousada-chale.jpg',
+    stats: [
+      { metric: 'Satisfação', value: '4.9/5', description: 'Avaliação dos hóspedes' },
+      { metric: 'Automação', value: '92%', description: 'Mensagens sem intervenção' },
+      { metric: 'Tempo', value: '-12h', description: 'Horas poupadas por semana' },
+    ],
+    tags: ['1 chalé', 'Montanha', 'Fim de semana'],
+  },
+];
+
+const parceiroCases: CaseStudy[] = [
+  {
+    id: 'hotel-central',
+    name: 'Hotel Central',
+    location: 'Belo Horizonte, MG',
+    avatar: '/avatar-serenity.jpg',
+    quote: 'Como parceiro, paguei R$297/mês pelo plano PRO completo — R$100 a menos que o regular. Em 3 meses já economizei R$300 e o preço vai ficar congelado por 24 meses.',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    videoThumb: '/pousada-vista.jpg',
+    stats: [
+      { metric: 'Economia', value: 'R$2.400', description: 'Economia em 24 meses' },
+      { metric: 'Respostas', value: '< 8s', description: 'Tempo médio de resposta' },
+      { metric: 'Reservas', value: '+35%', description: 'Aumento em 90 dias' },
+    ],
+    tags: ['Parceiro PRO', 'Selo exclusivo', 'Preço congelado'],
+  },
+  {
+    id: 'rede-sol',
+    name: 'Rede Sol Nascente',
+    location: 'Salvador, BA',
+    avatar: '/avatar-solmar.svg',
+    quote: 'O selo de parceiro me dá credibilidade na hora de fechar contratos. E o preço congelado por 24 meses é a melhor condição que já vi no mercado de hospedagem.',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    videoThumb: '/pousada-piscina.jpg',
+    stats: [
+      { metric: 'ROI', value: '18x', description: 'Retorno sobre investimento' },
+      { metric: 'Economia', value: 'R$100/mês', description: 'Desconto vs. PRO regular' },
+      { metric: 'Credibilidade', value: 'Selo', description: 'Selo exclusivo de parceiro' },
+    ],
+    tags: ['3 unidades', 'Rede', 'Parceiro fundador'],
+  },
+  {
+    id: 'flat-premium',
+    name: 'Flat Premium',
+    location: 'Curitiba, PR',
+    avatar: '/avatar-chale.svg',
+    quote: 'Entrei no programa parceiro logo no início. O preço congelado e o suporte VIP fazem toda a diferença. Hoje atendo 3x mais hóspedes sem aumentar equipe.',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    videoThumb: '/pousada-chale.jpg',
+    stats: [
+      { metric: 'Atendimento', value: '3x mais', description: 'Hóspedes atendidos' },
+      { metric: 'Automação', value: '91%', description: 'Mensagens sem intervenção' },
+      { metric: 'Economia', value: 'R$2.400', description: 'Em 24 meses de parceria' },
+    ],
+    tags: ['2 flats', 'Urbano', 'Parceiro pioneiro'],
   },
 ];
 
@@ -144,12 +241,12 @@ function CaseCard({ study, index }: { study: CaseStudy; index: number }) {
             </div>
           </div>
 
-          {/* Pousada name overlay */}
+          {/* Name overlay */}
           <div className="absolute bottom-4 left-4 right-4">
             <div className="flex items-center gap-2 mb-1">
-              <img src={study.avatar} alt={study.pousada} className="w-8 h-8 rounded-full border-2 border-white/20 object-cover" />
+              <img src={study.avatar} alt={study.name} className="w-8 h-8 rounded-full border-2 border-white/20 object-cover" />
               <div>
-                <h3 className="text-white font-bold text-sm">{study.pousada}</h3>
+                <h3 className="text-white font-bold text-sm">{study.name}</h3>
                 <div className="flex items-center gap-1 text-neutral-300 text-[10px]">
                   <MapPin className="w-2.5 h-2.5" />
                   {study.location}
@@ -211,6 +308,42 @@ function CaseCard({ study, index }: { study: CaseStudy; index: number }) {
 export function SuccessCasesSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const { isAnfitrioes, isParceiro } = useNiche();
+
+  const activeCases = isParceiro ? parceiroCases : isAnfitrioes ? anfitrioesCases : pousadasCases;
+
+  const headerTitle = isParceiro
+    ? (<>Parceiros reais, <span className="text-amber-400 font-bold">resultados reais</span></>)
+    : isAnfitrioes
+    ? (<>Anfitriões reais, <span className="text-amber-400 font-bold">resultados reais</span></>)
+    : (<>Pousadas reais, <span className="text-amber-400 font-bold">resultados reais</span></>);
+
+  const headerDesc = isParceiro
+    ? 'Veja como parceiros de diferentes regiões do Brasil economizam e crescem com o programa Parceiro Zélla.'
+    : isAnfitrioes
+    ? 'Veja como anfitriões de diferentes regiões do Brasil transformaram seu atendimento e aumentaram suas reservas com o Zélla.'
+    : 'Veja como pousadas de diferentes regiões do Brasil transformaram seu atendimento e aumentaram suas reservas com o Zélla.';
+
+  const bottomStats = isParceiro
+    ? [
+        { icon: MessageSquare, value: '50.000+', label: 'Mensagens IA/mês' },
+        { icon: TrendingUp, value: 'R$2.400', label: 'Economia por parceiro em 24 meses' },
+        { icon: Calendar, value: '100+', label: 'Parceiros ativos' },
+        { icon: Star, value: '4.9/5', label: 'Satisfação dos parceiros' },
+      ]
+    : isAnfitrioes
+    ? [
+        { icon: MessageSquare, value: '50.000+', label: 'Mensagens IA/mês' },
+        { icon: TrendingUp, value: '35%', label: 'Aumento médio em reservas' },
+        { icon: Calendar, value: '100+', label: 'Anfitriões atendidos' },
+        { icon: Star, value: '4.9/5', label: 'Satisfação dos hóspedes' },
+      ]
+    : [
+        { icon: MessageSquare, value: '50.000+', label: 'Mensagens IA/mês' },
+        { icon: TrendingUp, value: '35%', label: 'Aumento médio em reservas' },
+        { icon: Calendar, value: '100+', label: 'Pousadas atendidas' },
+        { icon: Star, value: '4.9/5', label: 'Satisfação dos hóspedes' },
+      ];
 
   return (
     <section ref={ref} className="relative py-28 sm:py-36 lg:py-44 bg-[#0a0a0a] overflow-hidden">
@@ -231,17 +364,16 @@ export function SuccessCasesSection() {
             <span className="text-amber-400 text-xs font-medium uppercase tracking-wider">Casos de Sucesso</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6">
-            Pousadas reais,{' '}
-            <span className="text-amber-400 font-bold">resultados reais</span>
+            {headerTitle}
           </h2>
           <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
-            Veja como pousadas de diferentes regiões do Brasil transformaram seu atendimento e aumentaram suas reservas com o Zélla.
+            {headerDesc}
           </p>
         </motion.div>
 
         {/* Case Studies Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {caseStudies.map((study, i) => (
+          {activeCases.map((study, i) => (
             <CaseCard key={study.id} study={study} index={i} />
           ))}
         </div>
@@ -253,12 +385,7 @@ export function SuccessCasesSection() {
           transition={{ duration: 0.6, delay: 0.6 }}
           className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6 p-8 rounded-2xl bg-white/[0.02] border border-white/[0.06]"
         >
-          {[
-            { icon: MessageSquare, value: '50.000+', label: 'Mensagens IA/mês' },
-            { icon: TrendingUp, value: '35%', label: 'Aumento médio em reservas' },
-            { icon: Calendar, value: '100+', label: 'Pousadas atendidas' },
-            { icon: Star, value: '4.9/5', label: 'Satisfação dos hóspedes' },
-          ].map((item) => {
+          {bottomStats.map((item) => {
             const Icon = item.icon;
             return (
               <div key={item.label} className="text-center">

@@ -4,11 +4,13 @@ import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { ArrowRight, Zap, Shield, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useNiche } from '@/contexts/NicheContext';
 
 export function FinalCTASection() {
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const { isPousadas, isAnfitrioes } = useNiche();
 
   return (
     <section ref={ref} className="py-28 sm:py-36 lg:py-44 relative overflow-hidden">
@@ -43,7 +45,7 @@ export function FinalCTASection() {
 
           {/* Headline */}
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-8 leading-tight">
-            Sua pousada merece
+            {isPousadas ? 'Sua pousada merece' : isAnfitrioes ? 'Seus imóveis merecem' : 'Seu negócio merece'}
             <br />
             <span className="text-blue-500 font-bold">um Zelador 24h por 7</span>
           </h2>

@@ -7,21 +7,23 @@ import { useNiche } from '@/contexts/NicheContext';
 import { NicheToggle } from './NicheToggle';
 
 export function HeroSection() {
-  const { niche, setNiche } = useNiche();
+  const { niche, setNiche, isPousadas, isAnfitrioes, isParceiro } = useNiche();
 
-  // Rotating hero words
-  const rotatingPhrases = [
-    'pelo WhatsApp.',
-    'a sua pousada.',
-    'o seu imóvel.',
-  ];
+  // Rotating hero words — niche-specific to avoid cross-contamination
+  const rotatingPhrases = isPousadas
+    ? ['pelo WhatsApp.', 'a sua pousada.']
+    : isAnfitrioes
+    ? ['pelo WhatsApp.', 'o seu imóvel.']
+    : ['pelo WhatsApp.', 'seu negócio.'];
+  const rotatingPhrasesLength = rotatingPhrases.length;
   const [phraseIdx, setPhraseIdx] = useState(0);
   useEffect(() => {
+    setPhraseIdx(0);
     const interval = setInterval(() => {
-      setPhraseIdx((prev) => (prev + 1) % rotatingPhrases.length);
+      setPhraseIdx((prev) => (prev + 1) % rotatingPhrasesLength);
     }, 2800);
     return () => clearInterval(interval);
-  }, []);
+  }, [rotatingPhrasesLength, niche]);
 
   return (
     <section className="relative flex items-center overflow-hidden bg-[#0a0a0a]">
@@ -70,7 +72,11 @@ export function HeroSection() {
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-neutral-400 leading-relaxed mb-12 max-w-2xl mx-auto">
-              O zelador digital que responde 24hs por 7. Atende os hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para pousadas e anfitriões de Airbnb.
+              {isPousadas
+                ? 'O zelador digital que responde 24hs por 7. Atende os hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para pousadas.'
+                : isAnfitrioes
+                ? 'O zelador digital que responde 24hs por 7. Atende seus hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para anfitriões de Airbnb.'
+                : 'O programa de parceria que congela seu preço por 24 meses. Plano PRO completo por R$297/mês com selo exclusivo de parceiro.'}
             </p>
 
             {/* ── Niche Switcher — Escolha seu perfil ── */}
@@ -100,12 +106,20 @@ export function HeroSection() {
               className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 text-xs sm:text-sm text-neutral-400 font-medium mt-8"
             >
               <div className="flex -space-x-2.5">
-                {[
-                  { name: 'Pousada Serenity', img: '/avatar-serenity.jpg' },
-                  { name: 'Pousada Sol & Mar', img: '/pousada-vista.jpg' },
-                  { name: 'Chalé da Montanha', img: '/pousada-chale.jpg' },
-                  { name: 'Recanto Verde', img: '/pousada-jardim.jpg' }
-                ].map((p, i) => (
+                {(isParceiro
+                  ? [
+                      { name: 'Hotel Central', img: '/avatar-serenity.jpg' },
+                      { name: 'Rede Sol Nascente', img: '/pousada-vista.jpg' },
+                      { name: 'Pousada Villa', img: '/pousada-chale.jpg' },
+                      { name: 'Flat Premium', img: '/pousada-jardim.jpg' },
+                    ]
+                  : [
+                      { name: 'Pousada Serenity', img: '/avatar-serenity.jpg' },
+                      { name: isAnfitrioes ? 'Flat Copacabana' : 'Pousada Sol & Mar', img: '/pousada-vista.jpg' },
+                      { name: isAnfitrioes ? 'Chalé Campos' : 'Chalé da Montanha', img: '/pousada-chale.jpg' },
+                      { name: isAnfitrioes ? 'Apartamento Centro' : 'Recanto Verde', img: '/pousada-jardim.jpg' },
+                    ]
+                ).map((p, i) => (
                   <div key={i} className="w-8 h-8 rounded-full p-[1.5px] bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 shadow-sm relative" style={{ zIndex: 40 - i * 10 }}>
                     <div className="w-full h-full rounded-full border border-[#0a0a0a] overflow-hidden bg-zinc-900">
                       <img
@@ -117,7 +131,7 @@ export function HeroSection() {
                   </div>
                 ))}
               </div>
-              <span className="sm:border-l sm:border-white/10 sm:pl-6 text-neutral-300 font-bold">+100 pousadas já atendem melhor com o Zélla</span>
+              <span className="sm:border-l sm:border-white/10 sm:pl-6 text-neutral-300 font-bold">{isPousadas ? '+100 pousadas já atendem melhor com o Zélla' : isAnfitrioes ? '+100 anfitriões já atendem melhor com o Zélla' : '+100 parceiros já economizam com o Zélla'}</span>
             </motion.div>
 
             {/* ── CTA button — below social proof ── */}

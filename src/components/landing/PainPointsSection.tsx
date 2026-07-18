@@ -142,7 +142,7 @@ function OpportunityCard({ item, index, isInView }: { item: PainCard; index: num
 export function PainPointsSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
-  const { niche, isPousadas } = useNiche();
+  const { niche, isPousadas, isAnfitrioes, isParceiro } = useNiche();
   const content = getNicheContent(niche);
 
   // Parallax subtle effect for the section background
@@ -155,11 +155,15 @@ export function PainPointsSection() {
   // Niche-aware header text
   const headerTitle = isPousadas
     ? 'Sua pousada merece'
-    : 'Seus imóveis merecem';
+    : isAnfitrioes
+    ? 'Seus imóveis merecem'
+    : 'Sua parceria merece';
 
   const headerDesc = isPousadas
     ? 'Veja como o Zélla transforma o WhatsApp da sua pousada em uma máquina de reservas — sem complicação e no seu tom de voz.'
-    : 'Veja como o Zélla transforma o WhatsApp dos seus imóveis em uma máquina de reservas — sem complicação e no seu tom de voz.';
+    : isAnfitrioes
+    ? 'Veja como o Zélla transforma o WhatsApp dos seus imóveis em uma máquina de reservas — sem complicação e no seu tom de voz.'
+    : 'Veja como o programa Parceiro Zélla congela seu preço e maximiza seu investimento com o plano PRO completo.';
 
   return (
     <section ref={ref} className="relative py-28 sm:py-36 lg:py-44 bg-[#060608] overflow-hidden">
@@ -184,7 +188,7 @@ export function PainPointsSection() {
           {/* Eyebrow with slash */}
           <div className="inline-flex items-center gap-2 mb-6">
             <span className="text-neutral-600 text-sm font-medium">/</span>
-            <span className="text-emerald-400/80 text-xs font-semibold uppercase tracking-widest">
+            <span className={`${isParceiro ? 'text-amber-400/80' : 'text-emerald-400/80'} text-xs font-semibold uppercase tracking-widest`}>
               Por que o Zélla
             </span>
           </div>
@@ -202,7 +206,7 @@ export function PainPointsSection() {
               </motion.span>
             </AnimatePresence>
             <br className="hidden sm:block" />
-            <span className="bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent"> um atendimento à altura</span>
+            <span className={`bg-gradient-to-r ${isParceiro ? 'from-amber-400 to-orange-400' : 'from-emerald-400 to-blue-400'} bg-clip-text text-transparent`}> {isParceiro ? 'um investimento à altura' : 'um atendimento à altura'}</span>
           </h2>
 
           <AnimatePresence mode="wait">
@@ -254,11 +258,11 @@ export function PainPointsSection() {
           {[
             { icon: Zap, text: 'Setup em 5 minutos' },
             { icon: ShieldCheck, text: 'Sem cartão de crédito' },
-            { icon: Sparkles, text: isPousadas ? 'IA treinada para pousadas' : 'IA treinada para anfitriões' },
+            { icon: Sparkles, text: isPousadas ? 'IA treinada para pousadas' : isAnfitrioes ? 'IA treinada para anfitriões' : 'IA completa do plano PRO' },
             { icon: TrendingUp, text: 'Resultados em 48h' },
           ].map((t, i) => (
             <div key={i} className="flex items-center gap-2 text-neutral-500 text-sm">
-              <t.icon className="w-4 h-4 text-emerald-500/50" />
+              <t.icon className={`w-4 h-4 ${isParceiro ? 'text-amber-500/50' : 'text-emerald-500/50'}`} />
               <span>{t.text}</span>
             </div>
           ))}

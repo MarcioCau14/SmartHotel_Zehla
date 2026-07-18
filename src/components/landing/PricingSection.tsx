@@ -38,6 +38,7 @@ const plans = [
     priceLabel: 'Grátis',
     desc: 'Comece a testar o Zélla na sua pousada sem custo nenhum. Veja a IA atendendo seus hóspedes por 7 dias.',
     descAnfitrioes: 'Comece a testar o Zélla no seu imóvel sem custo nenhum. Veja a IA atendendo seus hóspedes por 7 dias.',
+    descParceiro: 'Comece a testar o Zélla sem custo nenhum. Veja a IA atendendo seus hóspedes por 7 dias.',
     cta: 'Começar Trial Grátis',
     ctaStyle: 'border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.06]',
     popular: false,
@@ -67,6 +68,7 @@ const plans = [
     priceLabel: 'R$197',
     desc: 'Tudo que sua pousada precisa para vender mais pelo WhatsApp. IA 24/7, PIX integrado e dashboard completo.',
     descAnfitrioes: 'Tudo que você precisa para atender hóspedes pelo WhatsApp. IA 24/7, check-in virtual e dashboard completo.',
+    descParceiro: 'Tudo que sua operação precisa para vender mais pelo WhatsApp. IA 24/7, PIX integrado e dashboard completo.',
     cta: 'Assinar LITE via PIX',
     ctaStyle: 'border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.06]',
     popular: false,
@@ -98,6 +100,7 @@ const plans = [
     onlyCard: true,
     desc: 'Para pousadas que querem crescer sem limites. Mensagens ilimitadas, campanhas automatizadas e suporte prioritário.',
     descAnfitrioes: 'Para anfitriões que querem escalar sem limites. Mensagens ilimitadas, importação de anúncios e suporte prioritário.',
+    descParceiro: 'Para parceiros que querem crescer sem limites. Mensagens ilimitadas, campanhas automatizadas e suporte prioritário.',
     cta: 'Assinar PRO via Cartão',
     ctaStyle: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-400 hover:to-emerald-500 shadow-lg shadow-emerald-500/25',
     popular: true,
@@ -131,6 +134,7 @@ const plans = [
     onlyCard: true,
     desc: 'Para redes e pousadas de alto padrão. Suporte VIP, consultoria personalizada e recursos exclusivos.',
     descAnfitrioes: 'Para portfólios grandes e imóveis de alto padrão. Suporte VIP, consultoria personalizada e recursos exclusivos.',
+    descParceiro: 'Para operações de alto padrão. Suporte VIP, consultoria personalizada e recursos exclusivos.',
     cta: 'Assinar MAX via Cartão',
     ctaStyle: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/25',
     popular: false,
@@ -167,6 +171,7 @@ const plans = [
     isParceiro: true,
     desc: 'Plano PRO completo por R$297/mês — R$100 a menos que o regular. Preço congelado por 24 meses + selo exclusivo de parceiro. Hóspedes e mensagens ilimitados.',
     descAnfitrioes: 'Plano PRO completo por R$297/mês — R$100 a menos que o regular. Preço congelado por 24 meses + selo exclusivo de parceiro. Hóspedes e mensagens ilimitados.',
+    descParceiro: 'Plano PRO completo por R$297/mês — R$100 a menos que o regular. Preço congelado por 24 meses + selo exclusivo de parceiro. Hóspedes e mensagens ilimitados.',
     cta: 'Garantir Vaga de Parceiro',
     ctaStyle: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/30',
     popular: false,
@@ -263,7 +268,7 @@ export function PricingSection() {
             Escolha o plano ideal
             <br />
             <span className="text-emerald-400 font-bold">
-              {niche === 'pousadas' ? 'para sua pousada' : niche === 'anfitrioes' ? 'para seus imóveis' : 'para seus ganhos'}
+              {niche === 'pousadas' ? 'para sua pousada' : niche === 'anfitrioes' ? 'para seus imóveis' : 'para seu negócio'}
             </span>
           </h2>
           <p className="text-neutral-400 text-lg max-w-xl mx-auto mb-4">
@@ -367,7 +372,7 @@ export function PricingSection() {
                   {/* Plan Details */}
                   <h3 className="text-white font-bold text-xl mb-2">{plan.name}</h3>
                   <p className="text-neutral-400 text-xs mb-2 leading-relaxed">
-                    {isAnfitrioes ? plan.descAnfitrioes : plan.desc}
+                    {isAnfitrioes ? plan.descAnfitrioes : isParceiro && 'descParceiro' in plan && (plan as Record<string, string>).descParceiro ? (plan as Record<string, string>).descParceiro : plan.desc}
                   </p>
 
                   {/* Ideal para badge (Anfitriões only) */}

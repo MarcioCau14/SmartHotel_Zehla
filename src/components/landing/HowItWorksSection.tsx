@@ -167,7 +167,7 @@ function StepCard({ step, index, isInView }: { step: StepData; index: number; is
 export function HowItWorksSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
-  const { niche, isPousadas } = useNiche();
+  const { niche, isPousadas, isAnfitrioes, isParceiro } = useNiche();
   const content = getNicheContent(niche);
 
   // Niche-aware header text
@@ -202,9 +202,9 @@ export function HowItWorksSection() {
           className="text-center mb-20"
         >
           {/* Eyebrow */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-6">
-            <Zap className="w-3.5 h-3.5 text-blue-400" />
-            <span className="text-blue-400 text-xs font-semibold uppercase tracking-wider">Simples como 1-2-3</span>
+          <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${isParceiro ? 'bg-amber-500/10 border border-amber-500/20' : isAnfitrioes ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-emerald-500/10 border border-emerald-500/20'} mb-6`}>
+            <Zap className={`w-3.5 h-3.5 ${isParceiro ? 'text-amber-400' : isAnfitrioes ? 'text-blue-400' : 'text-emerald-400'}`} />
+            <span className={`${isParceiro ? 'text-amber-400' : isAnfitrioes ? 'text-blue-400' : 'text-emerald-400'} text-xs font-semibold uppercase tracking-wider`}>Simples como 1-2-3</span>
           </div>
 
           <AnimatePresence mode="wait">
@@ -251,16 +251,16 @@ export function HowItWorksSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 1.0 }}
-          className="mt-20 p-8 sm:p-10 rounded-2xl bg-gradient-to-r from-emerald-500/[0.06] via-blue-500/[0.04] to-violet-500/[0.06] border border-white/[0.06] text-center"
+          className={`mt-20 p-8 sm:p-10 rounded-2xl bg-gradient-to-r ${isParceiro ? 'from-amber-500/[0.06] via-orange-500/[0.04] to-amber-500/[0.06]' : 'from-emerald-500/[0.06] via-blue-500/[0.04] to-violet-500/[0.06]'} border border-white/[0.06] text-center`}
         >
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-emerald-400" />
+              <div className={`w-10 h-10 rounded-xl ${isParceiro ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-emerald-500/10 border border-emerald-500/20'} flex items-center justify-center`}>
+                <Sparkles className={`w-5 h-5 ${isParceiro ? 'text-amber-400' : 'text-emerald-400'}`} />
               </div>
               <div className="text-left">
-                <div className="text-white font-bold text-sm">Primeira reserva IA</div>
-                <div className="text-neutral-500 text-xs">Em até 24 horas</div>
+                <div className="text-white font-bold text-sm">{isParceiro ? 'Primeira economia' : 'Primeira reserva IA'}</div>
+                <div className="text-neutral-500 text-xs">{isParceiro ? 'Em até 24 horas' : 'Em até 24 horas'}</div>
               </div>
             </div>
             <div className="hidden sm:block w-px h-10 bg-white/[0.08]" />
@@ -280,12 +280,12 @@ export function HowItWorksSection() {
             </div>
             <div className="hidden sm:block w-px h-10 bg-white/[0.08]" />
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
-                <Zap className="w-5 h-5 text-violet-400" />
+              <div className={`w-10 h-10 rounded-xl ${isParceiro ? 'bg-orange-500/10 border border-orange-500/20' : 'bg-violet-500/10 border border-violet-500/20'} flex items-center justify-center`}>
+                <Zap className={`w-5 h-5 ${isParceiro ? 'text-orange-400' : 'text-violet-400'}`} />
               </div>
               <div className="text-left">
-                <div className="text-white font-bold text-sm">7 dias grátis</div>
-                <div className="text-neutral-500 text-xs">Sem cartão de crédito</div>
+                <div className="text-white font-bold text-sm">{isParceiro ? 'Preço congelado' : '7 dias grátis'}</div>
+                <div className="text-neutral-500 text-xs">{isParceiro ? 'R$297/mês por 24 meses' : 'Sem cartão de crédito'}</div>
               </div>
             </div>
           </div>
@@ -303,9 +303,9 @@ export function HowItWorksSection() {
               const el = document.querySelector('#precos');
               if (el) el.scrollIntoView({ behavior: 'smooth' });
             }}
-            className="group inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold hover:from-emerald-400 hover:to-emerald-500 transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 cursor-pointer"
+            className={`group inline-flex items-center gap-2 px-8 py-4 rounded-xl ${isParceiro ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 shadow-amber-500/25 hover:shadow-amber-500/40' : isAnfitrioes ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 shadow-blue-500/25 hover:shadow-blue-500/40' : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 shadow-emerald-500/25 hover:shadow-emerald-500/40'} text-white font-bold transition-all duration-300 shadow-lg cursor-pointer`}
           >
-            Começar agora — grátis por 7 dias
+            {isParceiro ? 'Começar agora — preço congelado' : 'Começar agora — grátis por 7 dias'}
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
         </motion.div>
