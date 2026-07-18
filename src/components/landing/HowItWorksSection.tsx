@@ -55,6 +55,22 @@ const colorMap: Record<string, { bg: string; border: string; text: string; glow:
     accent: 'bg-violet-500/10',
     ring: 'border-violet-500/20',
   },
+  amber: {
+    bg: 'from-amber-500/20 to-amber-900/10',
+    border: 'border-amber-500/20',
+    text: 'text-amber-400',
+    glow: 'shadow-amber-500/10',
+    accent: 'bg-amber-500/10',
+    ring: 'border-amber-500/20',
+  },
+  sky: {
+    bg: 'from-sky-500/20 to-sky-900/10',
+    border: 'border-sky-500/20',
+    text: 'text-sky-400',
+    glow: 'shadow-sky-500/10',
+    accent: 'bg-sky-500/10',
+    ring: 'border-sky-500/20',
+  },
 };
 
 /* ─────────── STEP CARD ─────────── */
@@ -157,11 +173,15 @@ export function HowItWorksSection() {
   // Niche-aware header text
   const headerTitle = isPousadas
     ? 'Em 3 passos simples'
-    : 'Em 3 passos, sem sair do sofá';
+    : niche === 'anfitrioes'
+    ? 'Em 3 passos, sem sair do sofá'
+    : 'Em 3 passos, comece a ganhar';
 
   const headerDesc = isPousadas
     ? 'Do cadastro à primeira reserva via IA em menos de 24 horas. Sem precisar de técnico ou conhecimento técnico.'
-    : 'Da URL do anúncio ao primeiro check-in virtual automaticamente. Sem precisar de técnico ou conhecimento técnico.';
+    : niche === 'anfitrioes'
+    ? 'Da URL do anúncio ao primeiro check-in virtual automaticamente. Sem precisar de técnico ou conhecimento técnico.'
+    : 'Do cadastro à primeira indicação em minutos. Sem custo, sem risco — só indica e acompanha.';
 
   return (
     <section ref={ref} id="como-funciona" className="relative py-28 sm:py-36 lg:py-44 overflow-hidden">
