@@ -225,7 +225,7 @@ const plans = [
     priceLabel: 'R$297',
     onlyCard: false,
     isParceiro: true,
-    desc: 'Plano PRO completo por R$297/mês — R$100 a menos que o regular. Preço congelado por 24 meses + selo exclusivo de parceiro. Hóspedes e mensagens ilimitados.',
+    desc: 'Plano PRO completo por R$297/mês — R$100 a menos que o regular. Preço congelado por 24 meses + selo exclusivo de parceiro. Atendimento e mensagens ilimitados.',
     descAnfitrioes: 'Plano PRO completo por R$297/mês — R$100 a menos que o regular. Preço congelado por 24 meses + selo exclusivo de parceiro. Atendimento e mensagens ilimitados.',
     descParceiro: 'Plano PRO completo por R$297/mês — R$100 a menos que o regular. Preço congelado por 24 meses + selo exclusivo de parceiro. Atendimento e mensagens ilimitados.',
     cta: 'Garantir Vaga de Parceiro',

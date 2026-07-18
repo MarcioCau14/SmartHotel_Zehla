@@ -154,7 +154,7 @@ export function SavingsCalculator() {
                 {/* Input 2: Valor médio */}
                 <div className="space-y-3">
                   <label className="block text-neutral-300 text-sm font-medium">
-                    {isPousadas ? 'Diária média da pousada' : isAnfitrioes ? 'Diária média do imóvel' : 'Ticket médio do atendimento'}
+                    {isPousadas ? 'Diária média da pousada' : isAnfitrioes ? 'Valor médio por noite do imóvel' : 'Ticket médio do atendimento'}
                   </label>
                   <div className="flex items-center gap-3">
                     <button
@@ -176,7 +176,7 @@ export function SavingsCalculator() {
                     </button>
                   </div>
                   <p className="text-neutral-500 text-[11px]">
-                    {isPousadas ? 'Valor médio cobrado por noite de hospedagem' : isAnfitrioes ? 'Valor médio cobrado por noite' : 'Valor médio por atendimento realizado'}
+                    {isPousadas ? 'Valor médio cobrado por noite de hospedagem' : isAnfitrioes ? 'Valor médio cobrado por noite no imóvel' : 'Valor médio por atendimento realizado'}
                   </p>
                 </div>
               </div>
@@ -354,7 +354,7 @@ export function SavingsCalculator() {
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="w-1 h-1 rounded-full bg-purple-500 mt-1.5 shrink-0" />
-                  <span>Receita extra = {isParceiro ? 'atendimentos adicionais × ticket médio' : 'reservas adicionais × diária × 2,5 noites'}</span>
+                  <span>Receita extra = {isParceiro ? 'atendimentos adicionais × ticket médio' : isAnfitrioes ? 'reservas adicionais × valor médio × 2,5 noites' : 'reservas adicionais × diária × 2,5 noites'}</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="w-1 h-1 rounded-full bg-purple-500 mt-1.5 shrink-0" />

@@ -4,7 +4,7 @@ import React from 'react'
 import { useNiche } from '@/contexts/NicheContext'
 
 // Simplified platforms - only names in text, no icons or colors
-const platforms = [
+const allPlatforms = [
   'Booking.com',
   'Airbnb',
   'Trivago',
@@ -16,7 +16,17 @@ const platforms = [
 ]
 
 export default function BookingPlatformsMarquee() {
-  const { isPousadas, isAnfitrioes } = useNiche()
+  const { isPousadas, isAnfitrioes, isParceiro } = useNiche()
+
+  // Parceiro niche: filter out Airbnb from platform list
+  const platforms = isParceiro
+    ? allPlatforms.filter(p => p !== 'Airbnb')
+    : allPlatforms
+
+  const headlineAccent = isParceiro
+    ? 'plataformas de atendimento do Brasil'
+    : 'plataformas de hospedagem do Brasil'
+
   return (
     <section className="py-16 bg-gradient-to-b from-transparent via-zinc-950/50 to-transparent border-y border-zinc-800">
       <div className="container mx-auto px-6 mb-12 text-center">
@@ -30,7 +40,7 @@ export default function BookingPlatformsMarquee() {
           Integrado com as maiores
           <br />
           <span className="text-blue-500 font-bold">
-            plataformas de hospedagem do Brasil
+            {headlineAccent}
           </span>
         </h2>
 

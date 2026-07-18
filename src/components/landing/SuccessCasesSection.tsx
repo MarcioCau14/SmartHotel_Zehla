@@ -148,7 +148,7 @@ const parceiroCases: CaseStudy[] = [
     name: 'Rede Sol Nascente',
     location: 'Salvador, BA',
     avatar: '/avatar-solmar.svg',
-    quote: 'O selo de parceiro me dá credibilidade na hora de fechar contratos. E o preço congelado por 24 meses é a melhor condição que já vi no mercado de hospedagem.',
+    quote: 'O selo de parceiro me dá credibilidade na hora de fechar contratos. E o preço congelado por 24 meses é a melhor condição que já vi no mercado.',
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
     videoThumb: '/pousada-piscina.jpg',
     stats: [

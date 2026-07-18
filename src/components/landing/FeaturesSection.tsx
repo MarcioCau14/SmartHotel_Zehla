@@ -48,7 +48,7 @@ function WhatsAppMockup() {
 
   // Niche-specific chat data
   const businessName = isPousadas ? 'Pousada Serenity' : isAnfitrioes ? 'Flat Copacabana' : 'Parceiro Zélla';
-  const roomName = isPousadas ? 'Chalé Vista Mar' : isAnfitrioes ? 'Apartamento Vista Mar' : 'Sua Hospedagem';
+  const roomName = isPousadas ? 'Chalé Vista Mar' : isAnfitrioes ? 'Apartamento Vista Mar' : 'Sua Operação';
   const greeting = isPousadas ? 'Seja muito bem-vindo à Pousada Serenity. 🌸' : isAnfitrioes ? 'Seja muito bem-vindo ao Apartamento Copacabana. 🌊' : 'Seja muito bem-vindo. ✨';
 
   useEffect(() => {

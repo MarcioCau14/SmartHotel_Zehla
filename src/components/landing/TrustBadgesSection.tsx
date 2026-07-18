@@ -2,8 +2,9 @@
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { useNiche } from '@/contexts/NicheContext';
 
-const logos = [
+const allLogos = [
   'Booking.com',
   'Airbnb',
   'Trivago',
@@ -17,6 +18,16 @@ const logos = [
 export function TrustBadgesSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-50px' });
+  const { isParceiro } = useNiche();
+
+  // Parceiro niche: filter out Airbnb-specific platforms, use generic terms
+  const logos = isParceiro
+    ? allLogos.filter(l => l !== 'Airbnb')
+    : allLogos;
+
+  const subtitle = isParceiro
+    ? 'Integrado com as maiores plataformas de atendimento e pagamento do Brasil'
+    : 'Integrado com as maiores plataformas de hospedagem do Brasil';
 
   return (
     <section ref={ref} className="py-14 bg-[#0a0a0a] border-y border-white/[0.04]">
@@ -27,7 +38,7 @@ export function TrustBadgesSection() {
         className="max-w-6xl mx-auto px-6"
       >
         <p className="text-center text-neutral-400 text-sm mb-8">
-          Integrado com as maiores plataformas de hospedagem do Brasil
+          {subtitle}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-5">
           {logos.map((logo, i) => (

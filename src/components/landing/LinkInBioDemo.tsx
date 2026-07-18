@@ -120,7 +120,7 @@ const anfitriaoProfile: ProfileData = {
   profileName: 'Apartamento Copacabana',
   profileLabel: 'Airbnb',
   bioLine1: '✨ Apartamento premium em Copacabana, RJ',
-  bioLine2: '🏖️ Vista mar · 2 quartos · Wi-Fi rápido',
+  bioLine2: '🏖️ Vista mar · 2 dormitórios · Wi-Fi rápido',
   bioLine3: '👇 Reserve direto sem taxa de plataforma:',
   linkUrl: 'seuzella.com/l/flatcopacabana',
   libSubtitle: '✨ Sua estadia perfeita no Rio',
@@ -128,7 +128,7 @@ const anfitriaoProfile: ProfileData = {
   libMapLabel: 'Copacabana, RJ',
   libMapAddress: 'Av. Atlântica, 456 — Copacabana',
   roomLabel: '🏖️ Apartamento Vista Mar',
-  roomDetails: '2 quartos · Vista mar · Wi-Fi',
+  roomDetails: '2 dormitórios · Vista mar · Wi-Fi',
   roomPrice: 'R$ 350',
   roomPriceTotal: 'R$ 700',
   roomPriceBreakdown: 'R$ 350/noite × 2 noites',
@@ -154,7 +154,7 @@ const anfitriaoProfile: ProfileData = {
     },
     {
       from: 'zella',
-      text: 'Olá, Bernardo! Que bom que nos encontrou pelo Instagram! 🌊 Seja bem-vindo ao Apartamento Copacabana.\n\nSim, temos disponibilidade para o próximo final de semana (19 e 20 de julho). O apartamento está livre!\n\n2 quartos, vista pro mar e Wi-Fi rápido.\n\n💰 Valor: R$ 350/noite = R$ 700 total (2 noites) no PIX.\n\nQuer que eu reserve pra você?',
+      text: 'Olá, Bernardo! Que bom que nos encontrou pelo Instagram! 🌊 Seja bem-vindo ao Apartamento Copacabana.\n\nSim, temos disponibilidade para o próximo final de semana (19 e 20 de julho). O apartamento está livre!\n\n2 dormitórios, vista pro mar e Wi-Fi rápido.\n\n💰 Valor: R$ 350/noite = R$ 700 total (2 noites) no PIX.\n\nQuer que eu reserve pra você?',
       time: '14:22',
     },
     {
@@ -186,7 +186,7 @@ const anfitriaoProfile: ProfileData = {
 const parceiroProfile: ProfileData = {
   igHandle: 'parceirozella',
   profileName: 'Parceiro Zélla',
-  profileLabel: 'Hospedagem',
+  profileLabel: 'Parceiro Zélla',
   bioLine1: '✨ Programa de Parceria Zélla',
   bioLine2: '🏷️ Plano PRO congelado por 24 meses + Selo exclusivo',
   bioLine3: '👇 Confira a página do nosso parceiro:',
