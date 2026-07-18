@@ -24,13 +24,13 @@ export function Header() {
   }, []);
 
   const navLinks = [
-    { name: 'Como Funciona', href: '#como-funciona' },
-    { name: 'Funcionalidades', href: '#funcionalidades' },
-    { name: 'Integrações', href: '#integracoes' },
-    { name: 'Calculadora', href: '#calculadora' },
-    { name: 'Preços', href: '#precos' },
-    { name: 'FAQ', href: '#faq' },
-    { name: 'Contato', href: '#contato' },
+    { name: 'Como Funciona', href: '#como-funciona', lgOnly: false },
+    { name: 'Funcionalidades', href: '#funcionalidades', lgOnly: false },
+    { name: 'Integrações', href: '#integracoes', lgOnly: true },
+    { name: 'Calculadora', href: '#calculadora', lgOnly: true },
+    { name: 'Preços', href: '#precos', lgOnly: false },
+    { name: 'FAQ', href: '#faq', lgOnly: true },
+    { name: 'Contato', href: '#contato', lgOnly: false },
   ];
 
   return (
@@ -41,19 +41,19 @@ export function Header() {
           : 'bg-transparent py-5'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-10 flex items-center justify-between gap-6 md:gap-8 lg:gap-10">
         {/* Brand Logo & Name */}
         <Link href="/" className="flex items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-lg">
           <ZellaLogo size={42} />
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
             <Link
               key={link.name}
               href={link.href}
-              className="text-xs font-medium text-white/70 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-md px-1 py-0.5"
+              className={`text-xs font-medium text-white/70 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-md px-1 py-0.5${link.lgOnly ? ' hidden lg:block' : ''}`}
             >
               {link.name}
             </Link>
@@ -61,7 +61,7 @@ export function Header() {
         </nav>
 
         {/* CTA Buttons (Desktop) */}
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-3">
           <Link
             href="/login"
             className="text-xs font-semibold text-white/80 hover:text-white px-4 py-2 transition-all active:scale-95 duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-lg"

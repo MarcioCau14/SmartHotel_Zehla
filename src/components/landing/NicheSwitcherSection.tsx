@@ -54,7 +54,9 @@ export function NicheSwitcherSection() {
             style={{
               background: niche === 'pousadas'
                 ? 'rgba(20, 184, 166, 0.04)'
-                : 'rgba(139, 92, 246, 0.04)',
+                : niche === 'anfitrioes'
+                  ? 'rgba(139, 92, 246, 0.04)'
+                  : 'rgba(217, 165, 32, 0.04)',
             }}
           />
         </motion.div>
@@ -84,9 +86,11 @@ export function NicheSwitcherSection() {
                 <span className={
                   niche === 'pousadas'
                     ? 'bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent'
-                    : 'bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent'
+                    : niche === 'anfitrioes'
+                      ? 'bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent'
+                      : 'bg-gradient-to-r from-amber-400 to-yellow-400 bg-clip-text text-transparent'
                 }>
-                  {niche === 'pousadas' ? 'Reservas diretas.' : 'Escale seus imóveis.'}
+                  {niche === 'pousadas' ? 'Reservas diretas.' : niche === 'anfitrioes' ? 'Escale seus imóveis.' : 'Comissão recorrente.'}
                 </span>
               </h2>
 
@@ -99,10 +103,12 @@ export function NicheSwitcherSection() {
               <div className={`inline-flex items-center gap-3 px-5 py-3 rounded-xl border ${
                 niche === 'pousadas'
                   ? 'bg-emerald-500/[0.08] border-emerald-500/20'
-                  : 'bg-blue-500/[0.08] border-blue-500/20'
+                  : niche === 'anfitrioes'
+                    ? 'bg-blue-500/[0.08] border-blue-500/20'
+                    : 'bg-amber-500/[0.08] border-amber-500/20'
               }`}>
                 <span className={`text-3xl sm:text-4xl font-black tracking-tight ${
-                  niche === 'pousadas' ? 'text-emerald-400' : 'text-blue-400'
+                  niche === 'pousadas' ? 'text-emerald-400' : niche === 'anfitrioes' ? 'text-blue-400' : 'text-amber-400'
                 }`}>
                   {content.switcher.heroStat.val}
                 </span>
@@ -128,7 +134,9 @@ export function NicheSwitcherSection() {
               className={`group inline-flex items-center gap-2.5 px-8 py-4 rounded-xl font-bold text-white transition-all duration-300 shadow-lg cursor-pointer active:scale-95 ${
                 niche === 'pousadas'
                   ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 shadow-emerald-500/25 hover:shadow-emerald-500/40'
-                  : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 shadow-blue-500/25 hover:shadow-blue-500/40'
+                  : niche === 'anfitrioes'
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 shadow-blue-500/25 hover:shadow-blue-500/40'
+                    : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 shadow-amber-500/25 hover:shadow-amber-500/40'
               }`}
             >
               {content.switcher.ctaText}

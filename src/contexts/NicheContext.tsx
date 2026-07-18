@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 
-export type NicheType = 'pousadas' | 'anfitrioes';
+export type NicheType = 'pousadas' | 'anfitrioes' | 'parceiro';
 
 interface NicheContextValue {
   niche: NicheType;
@@ -10,6 +10,7 @@ interface NicheContextValue {
   toggleNiche: () => void;
   isPousadas: boolean;
   isAnfitrioes: boolean;
+  isParceiro: boolean;
 }
 
 const NicheContext = createContext<NicheContextValue | null>(null);
@@ -22,13 +23,13 @@ function getInitialNiche(): NicheType {
     // Check URL params first (campaign links)
     const params = new URLSearchParams(window.location.search);
     const urlNiche = params.get('niche');
-    if (urlNiche === 'pousadas' || urlNiche === 'anfitrioes') {
+    if (urlNiche === 'pousadas' || urlNiche === 'anfitrioes' || urlNiche === 'parceiro') {
       localStorage.setItem(STORAGE_KEY, urlNiche);
       return urlNiche;
     }
     // Then check localStorage
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === 'pousadas' || stored === 'anfitrioes') return stored;
+    if (stored === 'pousadas' || stored === 'anfitrioes' || stored === 'parceiro') return stored;
   } catch {
     // Ignore SSR or storage errors
   }
@@ -56,14 +57,15 @@ export function NicheProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const toggleNiche = useCallback(() => {
-    setNiche(niche === 'pousadas' ? 'anfitrioes' : 'pousadas');
+    setNiche(niche === 'pousadas' ? 'anfitrioes' : niche === 'anfitrioes' ? 'parceiro' : 'pousadas');
   }, [niche, setNiche]);
 
   const isPousadas = niche === 'pousadas';
   const isAnfitrioes = niche === 'anfitrioes';
+  const isParceiro = niche === 'parceiro';
 
   return (
-    <NicheContext.Provider value={{ niche, setNiche, toggleNiche, isPousadas, isAnfitrioes }}>
+    <NicheContext.Provider value={{ niche, setNiche, toggleNiche, isPousadas, isAnfitrioes, isParceiro }}>
       {children}
     </NicheContext.Provider>
   );

@@ -228,7 +228,7 @@ export function PricingSection() {
             Escolha o plano ideal
             <br />
             <span className="text-emerald-400 font-bold">
-              {niche === 'pousadas' ? 'para sua pousada' : 'para seus imóveis'}
+              {niche === 'pousadas' ? 'para sua pousada' : niche === 'anfitrioes' ? 'para seus imóveis' : 'para seus ganhos'}
             </span>
           </h2>
           <p className="text-neutral-400 text-lg max-w-xl mx-auto mb-4">

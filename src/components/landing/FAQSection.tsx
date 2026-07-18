@@ -47,7 +47,9 @@ export function FAQSection() {
 
   const headerText = niche === 'pousadas'
     ? 'Perguntas frequentes sobre Pousadas'
-    : 'Perguntas frequentes sobre Anfitriões';
+    : niche === 'anfitrioes'
+    ? 'Perguntas frequentes sobre Anfitriões'
+    : 'Perguntas frequentes sobre Parceiros';
 
   return (
     <section ref={ref} id="faq" className="py-28 sm:py-36 lg:py-44">

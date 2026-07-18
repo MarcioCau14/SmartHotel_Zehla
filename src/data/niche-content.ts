@@ -515,11 +515,222 @@ const anfitrioesContent: NicheContent = {
 };
 
 // ═══════════════════════════════════════════════════════════════
+// PARCEIRO CONTENT
+// ═══════════════════════════════════════════════════════════════
+const parceiroContent: NicheContent = {
+  switcher: {
+    headline: 'Indique pousadas. Ganhe por cada uma.',
+    subheadline: 'Seja parceiro Zélla e ganhe comissão recorrente por cada pousada que você indica. Sem custo, sem risco — só indica e acompanha no painel.',
+    heroStat: { val: '30%', label: 'comissão recorrente' },
+    backgroundImage: '/images/niche-parceiro-bg.jpg',
+    ctaText: 'Ver como funciona o programa',
+    accentColor: 'amber',
+    glowColor: 'rgba(217, 165, 32, 0.08)',
+  },
+
+  painCards: [
+    {
+      icon: 'DollarSign',
+      title: 'Sem ferramenta = comissão perdida',
+      desc: 'Você indica pousadas para conhecidos, mas nunca sabe se a indicação virou cliente. Sem rastreio, sem comissão — o dinheiro fica na mesa e você nem percebe.',
+      stat: { val: '0', label: 'controle sobre indicações' },
+      color: 'amber',
+      size: 'lg',
+    },
+    {
+      icon: 'BarChart3',
+      title: 'Rastreie cada indicação',
+      desc: 'Com o painel do parceiro Zélla, você acompanha em tempo real cada pousada indicada — do primeiro contato à ativação. Nunca mais perca uma comissão por falta de controle.',
+      stat: { val: '100%', label: 'visibilidade das indicações' },
+      color: 'emerald',
+      size: 'lg',
+    },
+    {
+      icon: 'FileSpreadsheet',
+      title: 'Chega de planilha manual',
+      desc: 'Quem você indicou? Quando? A pousada ativou? Se você ainda controla indicações em planilha ou bloco de notas, está perdendo dinheiro e tempo. Automatize com o Zélla.',
+      color: 'sky',
+      size: 'sm',
+    },
+    {
+      icon: 'Repeat',
+      title: 'Comissão recorrente, não única',
+      desc: 'Diferente de programas de afiliado comum, o Zélla paga comissão enquanto a pousada permanecer ativa. Uma indicação, renda contínua.',
+      stat: { val: '30%', label: 'comissão por pousada ativa' },
+      color: 'violet',
+      size: 'sm',
+    },
+    {
+      icon: 'Link',
+      title: 'Link de indicação personalizado',
+      desc: 'Receba um link único para compartilhar com pousadas. Quem clicar e se cadastrar é automaticamente vinculado a você. Sem burocracia, sem conflito.',
+      color: 'blue',
+      size: 'sm',
+    },
+    {
+      icon: 'ShieldCheck',
+      title: 'Sem custo, sem risco',
+      desc: 'O programa de parceiros é 100% gratuito. Você não paga nada para participar — só ganha. Sem meta mínima, sem exclusividade, sem compromisso.',
+      color: 'pink',
+      size: 'sm',
+    },
+  ],
+
+  steps: [
+    {
+      num: '01',
+      icon: 'UserPlus',
+      title: 'Cadastre-se como parceiro',
+      subtitle: 'Leva menos de 2 minutos',
+      desc: 'Crie sua conta de parceiro Zélla gratuitamente. Você recebe um link de indicação personalizado e acesso ao painel de controle. Sem cartão de crédito, sem aprovação demorada.',
+      color: 'amber',
+      highlights: ['Cadastro gratuito', 'Link personalizado instantâneo', 'Acesso ao painel na hora'],
+      fields: ['Nome completo', 'E-mail', 'WhatsApp', 'Como conheceu o Zélla'],
+    },
+    {
+      num: '02',
+      icon: 'Share2',
+      title: 'Indique pousadas',
+      subtitle: 'Compartilhe e deixe o Zélla converter',
+      desc: 'Envie seu link de indicação para pousadas que você conhece. Quem se cadastrar pelo seu link é automaticamente vinculado a você. O Zélla cuida da apresentação, da negociação e da ativação.',
+      color: 'emerald',
+      highlights: ['Link com rastreio automático', 'Material de apoio disponível', 'Pousada vinculada a você para sempre'],
+    },
+    {
+      num: '03',
+      icon: 'TrendingUp',
+      title: 'Acompanhe e ganhe',
+      subtitle: 'Comissão recorrente que cresce sozinha',
+      desc: 'Acompanhe cada indicação no painel em tempo real. Quando a pousada ativar, sua comissão de 30% começa a ser creditada automaticamente. Quanto mais indica, mais ganha — todo mês.',
+      color: 'violet',
+      highlights: ['Painel em tempo real', 'Comissão creditada automaticamente', 'Renda recorrente mensal'],
+    },
+  ],
+
+  features: [
+    {
+      icon: 'BarChart3',
+      badge: 'Painel de Indicações',
+      heroStat: { val: '100%', label: 'visibilidade das indicações', gradient: 'from-amber-400 to-yellow-400' },
+      headline: 'Cada indicação, sob seu controle.',
+      subtitle: 'Nunca mais perca uma comissão por falta de rastreio.',
+      desc: 'O painel do parceiro mostra cada pousada que você indicou, o status da ativação e o valor da comissão em tempo real. Deixe de depender de memória e planilha — o Zélla rastreia tudo para você.',
+      stats: [
+        { val: '24/7', label: 'Acompanhamento ao vivo', sublabel: 'Status de cada indicação', icon: 'Clock' },
+        { val: '0', label: 'Indicações perdidas', sublabel: 'Rastreio total garantido', icon: 'ShieldCheck' },
+      ],
+      pills: [
+        { text: 'Link com rastreio automático', accent: true },
+        { text: 'Status de ativação em tempo real' },
+        { text: 'Histórico completo de indicações' },
+        { text: 'Notificações de conversão' },
+      ],
+      bottomLine: 'Você indica. O Zélla rastreia. Você ganha.',
+      mockup: 'whatsapp',
+      reverse: false,
+    },
+    {
+      icon: 'Repeat',
+      badge: 'Comissão Recorrente',
+      heroStat: { val: '30%', label: 'comissão mensal por pousada', gradient: 'from-amber-400 to-orange-400' },
+      headline: 'Uma indicação. Renda que se repete.',
+      subtitle: 'Não é comissão única — é receita recorrente.',
+      desc: 'Diferente de programas de afiliado comuns, o Zélla paga 30% de comissão enquanto a pousada permanecer ativa. Uma única indicação pode gerar renda por meses, sem esforço adicional.',
+      stats: [
+        { val: '30%', label: 'Comissão recorrente', sublabel: 'Por pousada ativa todo mês', icon: 'DollarSign' },
+        { val: '∞', label: 'Duração da comissão', sublabel: 'Enquanto a pousada estiver ativa', icon: 'Repeat' },
+      ],
+      pills: [
+        { text: 'Comissão enquanto a pousada ativar', accent: true },
+        { text: 'Crédito automático mensal' },
+        { text: 'Sem teto de ganhos' },
+        { text: 'Relatório de comissões detalhado' },
+      ],
+      bottomLine: 'Quanto mais indica, mais cresce sua renda recorrente. Sem limite.',
+      mockup: 'linkinbio',
+      reverse: true,
+    },
+  ],
+
+  dashboard: {
+    badge: 'Painel do Parceiro',
+    headline: 'Suas indicações,',
+    headlineAccent: 'suas comissões.',
+    desc: 'Acompanhe cada pousada indicada, veja o status de ativação em tempo real e acompanhe o crescimento da sua renda recorrente. Tudo centralizado num painel feito para quem ganha indicando.',
+    pains: [
+      { icon: 'Activity', title: 'Acompanhamento em Tempo Real', desc: 'Veja cada indicação do clique à ativação. Saiba exatamente quem se cadastrou, quem está em teste e quem já é cliente ativo.' },
+      { icon: 'DollarSign', title: 'Comissões Transparentes', desc: 'Acompanhe o valor das comissões geradas, o histórico de créditos e os próximos pagamentos. Sem surpresas, sem cálculo manual.' },
+      { icon: 'TrendingUp', title: 'Crescimento Recorrente', desc: 'Cada nova pousada ativada aumenta sua renda mensal. Veja a projeção de ganhos e acompanhe sua evolução mês a mês.' },
+    ],
+    stats: [
+      { label: 'Comissão por pousada ativa', val: '30%', title: 'Comissão recorrente', color: 'text-amber-400' },
+      { label: 'Rastreio total garantido', val: '100%', title: 'Visibilidade', color: 'text-emerald-400' },
+      { label: 'Cadastro sem custo', val: 'R$ 0', title: 'Para participar', color: 'text-blue-400' },
+      { label: 'Sem teto de ganhos', val: '∞', title: 'Potencial de renda', color: 'text-zinc-300' },
+    ],
+    recentActivity: [
+      { color: 'bg-amber-400', text: 'Nova indicação cadastrada (Pousada Mar Azul)', time: 'agora' },
+      { color: 'bg-emerald-400', text: 'Pousada Sol Nascente ativou o plano', time: '2h' },
+      { color: 'bg-blue-400', text: 'Comissão creditada: R$ 147,00', time: '1d' },
+    ],
+    footerLeft: { icon: 'DollarSign', label: 'Comissões do Mês:', value: 'R$ 1.260,00' },
+    footerRight: { icon: 'TrendingUp', label: 'Pousadas Ativas Indicadas:', value: '6' },
+    chatConversation: [
+      { sender: 'user', name: 'Dono da Pousada', text: 'Olá! Vi que o Zélla atende pelo WhatsApp automaticamente. Como funciona para minha pousada?' },
+      { sender: 'bot', confidence: '99%', actions: 'Link de parceiro detectado', text: 'Olá! O Zélla é um assistente de IA que atende seus hóspedes 24/7 pelo WhatsApp — responde cotações, mostra disponibilidade e envia sua chave PIX. Tudo sozinho, no tom da sua pousada. Quer ver na prática?' },
+      { sender: 'user', name: 'Dono da Pousada', text: 'Sim! Quero testar. Como começo?' },
+    ],
+  },
+
+  testimonials: [
+    {
+      name: 'Thiago Ribeiro',
+      role: 'Parceiro Zélla',
+      location: 'Consultor — Belo Horizonte, MG',
+      text: 'Eu já indicava pousadas de boca, mas nunca ganhava nada. Com o Zélla, cada indicação é rastreada e eu recebo comissão todo mês. Já são 5 pousadas ativas e uma renda extra de R$ 1.200.',
+      avatar: '/avatar-serenity.jpg',
+      rating: 5,
+    },
+    {
+      name: 'Camila Santos',
+      role: 'Parceira Zélla',
+      location: 'Corretora — Ubatuba, SP',
+      text: 'Trabalho com turismo e conheço dezenas de pousadeiros. Agora eu compartilho meu link e acompanho tudo pelo painel. A comissão recorrente faz diferença — é dinheiro que entra todo mês sem eu fazer nada a mais.',
+      avatar: '/pousada-vista.jpg',
+      rating: 5,
+    },
+    {
+      name: 'Rafael Lima',
+      role: 'Parceiro Zélla',
+      location: 'Influenciador — Florianópolis, SC',
+      text: 'Coloquei o link na minha bio e já indiquei 8 pousadas. O painel mostra cada uma, e quando ativam, a comissão cai automática. Sem burocracia, sem planilha, sem dor de cabeça.',
+      avatar: '/pousada-chale.jpg',
+      rating: 5,
+    },
+  ],
+
+  pricing: {
+    focusLabel: 'Renda recorrente por indicação',
+    focusDesc: 'Cada pousada que você indica e ativa gera 30% de comissão mensal. Quanto mais indica, mais cresce sua renda — sem custo para participar.',
+  },
+
+  faqs: [
+    { question: 'Preciso pagar algo para ser parceiro?', answer: 'Não! O programa de parceiros Zélla é 100% gratuito. Você não paga taxa de adesão, mensalidade ou qualquer outro valor. Só ganha.' },
+    { question: 'Como funciona a comissão recorrente?', answer: 'Você ganha 30% do valor da assinatura da pousada indicada, todo mês, enquanto ela permanecer ativa. Não é comissão única — é renda recorrente que cresce com cada nova indicação.' },
+    { question: 'Como faço para indicar uma pousada?', answer: 'Basta compartilhar seu link personalizado de parceiro. Quando a pousada se cadastrar pelo seu link, ela é automaticamente vinculada a você. O Zélla cuida do resto.' },
+    { question: 'Posso acompanhar minhas indicações?', answer: 'Sim! O painel do parceiro mostra cada indicação em tempo real — do clique ao cadastro, da ativação à comissão. Você nunca perde o rastreio.' },
+    { question: 'Existe limite de indicações?', answer: 'Não! Não há teto de ganhos nem limite de indicações. Quanto mais pousadas você indicar, maior sua renda recorrente.' },
+    { question: 'Quando recebo minhas comissões?', answer: 'As comissões são creditadas mensalmente, referentes ao mês anterior. O pagamento é feito via PIX diretamente para a chave cadastrada, sem burocracia.' },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════
 // CONTENT RESOLVER
 // ═══════════════════════════════════════════════════════════════
 const contentMap: Record<NicheType, NicheContent> = {
   pousadas: pousadasContent,
   anfitrioes: anfitrioesContent,
+  parceiro: parceiroContent,
 };
 
 export function getNicheContent(niche: NicheType): NicheContent {
