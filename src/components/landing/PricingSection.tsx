@@ -246,31 +246,33 @@ const plans: Plan[] = [
   },
   {
     id: 'parceiro',
-    name: 'PARCEIRO PRO',
-    nameShort: 'Parceiro PRO',
-    badge: 'Melhor Custo-Benefício',
+    name: 'PARCEIRO ZÉLLA',
+    nameShort: 'Parceiro Zélla',
+    badge: 'Exclusivo Parceiros',
     badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
     icon: Crown,
     iconBg: 'from-amber-500/20 to-amber-900/10',
     iconColor: 'text-amber-400',
-    pricePix: 297,
-    priceCartao: 297,
-    priceLabel: 'R$297',
+    pricePix: 247,
+    priceCartao: 247,
+    priceLabel: 'R$247',
     onlyCard: false,
     isParceiro: true,
-    desc: 'Plano PRO completo por R$297/mês — R$100 a menos que o regular. Preço congelado por 24 meses + selo exclusivo de parceiro. Atendimento e mensagens ilimitados.',
-    descAnfitrioes: 'Plano PRO completo por R$297/mês — R$100 a menos que o regular. Preço congelado por 24 meses + selo exclusivo de parceiro. Atendimento e mensagens ilimitados.',
-    descParceiro: 'Plano PRO completo por R$297/mês — R$100 a menos que o regular. Preço congelado por 24 meses + selo exclusivo de parceiro. Atendimento e mensagens ilimitados.',
+    desc: 'Plano PRO completo por R$247/mês — preço congelado por 24 meses + selo exclusivo de Parceiro Zélla no seu perfil Link-in-Bio. Atendimento e mensagens ilimitados.',
+    descAnfitrioes: 'Plano PRO completo por R$247/mês — preço congelado por 24 meses + selo exclusivo de Parceiro Zélla no seu perfil Link-in-Bio. Atendimento e mensagens ilimitados.',
+    descParceiro: 'Plano PRO completo por R$247/mês — preço congelado por 24 meses + selo exclusivo de Parceiro Zélla no seu perfil Link-in-Bio fornecido pelo Zélla. Link que pode ser fixado no perfil do Instagram. Atendimento e mensagens ilimitados.',
     cta: 'Garantir Vaga de Parceiro',
     ctaStyle: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/30',
-    popular: false,
+    popular: true,
     idealParaPousadas: '1–5 pousadas',
     idealParaAnfitrioes: '1–5 imóveis',
     idealParaParceiro: 'Qualquer operação',
     features: [
-      { text: 'Plano PRO completo — R$297/mês', included: true },
+      { text: 'Plano PRO completo — R$247/mês', included: true },
       { text: 'Preço congelado por 24 meses', included: true },
-      { text: 'Selo exclusivo de Parceiro Zélla', included: true },
+      { text: 'Selo exclusivo de Parceiro Zélla no Link-in-Bio', included: true },
+      { text: 'Perfil Link-in-Bio fornecido pelo Zélla', included: true },
+      { text: 'Link para fixar no perfil do Instagram', included: true },
       { text: 'Atendimento ilimitado', included: true },
       { text: 'Mensagens ilimitadas (sem recargas)', included: true },
       { text: 'WhatsApp IA com tom 100% personalizado', included: true },
@@ -279,7 +281,7 @@ const plans: Plan[] = [
       { text: 'Sugestões de preços inteligentes', included: true },
       { text: 'Análise de sentimento', included: true },
       { text: 'Suporte prioritário', included: true },
-      { text: 'Economia de R$100/mês vs. PRO regular', included: true },
+      { text: 'Economia de R$150/mês vs. PRO regular', included: true },
     ],
   },
 ];
@@ -412,8 +414,15 @@ export function PricingSection() {
         </motion.div>
 
         {/* Pricing Cards Grid */}
-        <div className={`pricing-grid grid gap-6 mb-20 ${isParceiro ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 max-w-5xl mx-auto' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-4'}`}>
-          {plans.filter(p => isParceiro ? p.id === 'parceiro' || p.id === 'lite' || p.id === 'pro' : p.id !== 'parceiro').map((plan, i) => {
+        <div className={`pricing-grid grid gap-6 mb-20 ${isParceiro ? 'grid-cols-1 max-w-lg mx-auto' : isAnfitrioes ? 'grid-cols-1 md:grid-cols-2 max-w-3xl mx-auto' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-4'}`}>
+          {plans.filter(p => {
+            // Parceiro niche: only show the Parceiro Zélla plan
+            if (isParceiro) return p.id === 'parceiro';
+            // Anfitriões niche: only show PRO and MAX
+            if (isAnfitrioes) return p.id === 'pro' || p.id === 'max';
+            // Pousadas niche: show all except parceiro
+            return p.id !== 'parceiro';
+          }).map((plan, i) => {
             const activePaymentMethod = plan.onlyCard ? 'cartao' : paymentMode;
             const price = activePaymentMethod === 'pix' ? plan.pricePix : plan.priceCartao;
             const savings = plan.priceCartao > 0 && !plan.onlyCard ? plan.priceCartao - plan.pricePix : 0;
@@ -506,9 +515,12 @@ export function PricingSection() {
                           <span className="text-neutral-500 text-sm">/mês</span>
                         </div>
                         {plan.isParceiro && (
-                          <div className="flex items-center gap-1 mt-1">
+                          <div className="flex flex-col gap-0.5 mt-1">
                             <span className="text-amber-400 text-xs font-semibold">
-                              Congelado por 24 meses • Selo de Parceiro
+                              Congelado por 24 meses
+                            </span>
+                            <span className="text-amber-400/70 text-[10px]">
+                              Selo de Parceiro no Link-in-Bio • Fixe no Instagram
                             </span>
                           </div>
                         )}

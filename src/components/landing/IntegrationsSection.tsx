@@ -74,7 +74,7 @@ function getIntegrations(niche: 'pousadas' | 'anfitrioes' | 'parceiro') {
     {
       icon: Plug,
       name: 'Channel Manager',
-      description: 'Distribuição em 300+ canais de reserva (em breve via SiteMinder API).',
+      description: 'Sincronização de calendário e reservas com canais de reserva (em desenvolvimento).',
       status: 'Em breve',
       statusColor: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
     },

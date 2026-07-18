@@ -3,16 +3,13 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import {
-  Hotel,
-  Calendar,
   ArrowRight,
-  Sparkles,
-  Shield,
-  Zap,
-  Globe,
   CheckCircle2,
   Rocket,
   Lock,
+  Calendar,
+  Shield,
+  Zap,
 } from 'lucide-react';
 import { useNiche } from '@/contexts/NicheContext';
 
@@ -39,25 +36,23 @@ function getRoadmapPhases(niche: 'pousadas' | 'anfitrioes' | 'parceiro') {
     {
       phase: 'Fase 2',
       status: 'building' as const,
-      title: 'Channel Manager Direto',
-      desc: 'Conexão via API com os principais canais de reserva do mercado brasileiro. Sincronização bidirecional de disponibilidade e preços em tempo real — sem webhooks com delay.',
+      title: 'Conexão Direta com Canais',
+      desc: 'Estamos trabalhando na conexão via API com os principais canais de reserva do mercado brasileiro. Em desenvolvimento — vamos liberar conforme cada integração for testada e validada.',
       features: [
         isPousadas ? 'API Booking.com & Decolar' : isAnfitrioes ? 'API Booking.com & Airbnb' : 'API dos principais canais',
-        'Sincronização bidirecional em tempo real',
-        'Prevenção automática de overbooking',
+        'Sincronização de disponibilidade e preços',
         'Painel unificado de reservas',
       ],
     },
     {
       phase: 'Fase 3',
       status: 'planned' as const,
-      title: 'Expansão 300+ Canais',
-      desc: 'Integração com dezenas de OTAs nacionais e internacionais via parceiros como SiteMinder. Um único painel para gerenciar toda a distribuição do seu negócio.',
+      title: 'Expansão de Canais',
+      desc: 'Mais canais e OTAs nacionais e internacionais estão no nosso roadmap. Vamos liberar gradativamente, sempre com testes rigorosos antes de disponibilizar. Qualidade antes de quantidade.',
       features: [
-        'Expedia, Decolar, Trivago, Stays.net',
-        'Google Hotels & Google Travel',
-        'Preços dinâmicos inteligentes',
+        'Novos canais conforme demanda',
         'Relatório de performance por canal',
+        'Atualizações progressivas',
       ],
     },
   ];
@@ -116,18 +111,17 @@ export function ChannelManagerSection() {
           className="text-center mb-20"
         >
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-6">
-            <Hotel className="w-3.5 h-3.5 text-blue-400" />
-            <span className="text-blue-400 text-xs font-semibold uppercase tracking-wider">Channel Manager</span>
+            <Calendar className="w-3.5 h-3.5 text-blue-400" />
+            <span className="text-blue-400 text-xs font-semibold uppercase tracking-wider">Calendário & Canais</span>
           </div>
 
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 leading-[1.1] tracking-tight">
-            Seus canais, centralized
-            <br />
-            <span className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">sem overbooking</span>
+            Seu calendário,{' '}
+            <span className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">siempre atualizado</span>
           </h2>
 
           <p className="text-neutral-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-            O Channel Manager do Zélla está sendo construído em fases. Comece hoje com exportação iCal e acompanhe a evolução rumo à sincronização bidirecional com 300+ canais — para {isPousadas ? 'sua pousada' : isAnfitrioes ? 'seus imóveis' : 'seu negócio'}.
+            Comece hoje com exportação iCal para sincronizar disponibilidade com {isPousadas ? 'Booking.com, Decolar e outras OTAs' : isAnfitrioes ? 'Airbnb, Booking.com e outras plataformas' : 'suas plataformas de reserva'}. Estamos evoluindo o Channel Manager com responsabilidade — cada nova integração só chega quando está realmente pronta e testada.
           </p>
         </motion.div>
 
@@ -194,7 +188,17 @@ export function ChannelManagerSection() {
                   <div className="mt-8 pt-6 border-t border-white/[0.04]">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                      <span className="text-amber-400/70 text-xs font-medium">Em desenvolvimento ativo — previsão de lançamento em breve</span>
+                      <span className="text-amber-400/70 text-xs font-medium">Em desenvolvimento — liberaremos quando estiver validado e testado</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Planned indicator */}
+                {phase.status === 'planned' && (
+                  <div className="mt-8 pt-6 border-t border-white/[0.04]">
+                    <div className="flex items-center gap-2">
+                      <Lock className="w-3.5 h-3.5 text-blue-400/50" />
+                      <span className="text-blue-400/50 text-xs font-medium">No roadmap — prioridade após validação da Fase 2</span>
                     </div>
                   </div>
                 )}
@@ -216,8 +220,8 @@ export function ChannelManagerSection() {
                 <Shield className="w-5 h-5 text-blue-400" />
               </div>
               <div>
-                <div className="text-white font-bold text-sm">Sem promessas falsas</div>
-                <div className="text-neutral-500 text-xs">Mostramos exatamente o que está disponível hoje</div>
+                <div className="text-white font-bold text-sm">Sem promessas vazias</div>
+                <div className="text-neutral-500 text-xs">Só mostramos o que está disponível ou em desenvolvimento real</div>
               </div>
             </div>
             <div className="hidden sm:block w-px h-10 bg-white/[0.08]" />
@@ -226,18 +230,18 @@ export function ChannelManagerSection() {
                 <Zap className="w-5 h-5 text-emerald-400" />
               </div>
               <div>
-                <div className="text-white font-bold text-sm">Evolução contínua</div>
-                <div className="text-neutral-500 text-xs">Novos canais e funcionalidades a cada atualização</div>
+                <div className="text-white font-bold text-sm">iCal já funciona</div>
+                <div className="text-neutral-500 text-xs">Exporte e importe calendários hoje mesmo</div>
               </div>
             </div>
             <div className="hidden sm:block w-px h-10 bg-white/[0.08]" />
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shrink-0">
-                <Globe className="w-5 h-5 text-violet-400" />
+                <Calendar className="w-5 h-5 text-violet-400" />
               </div>
               <div>
-                <div className="text-white font-bold text-sm">iCal já funciona</div>
-                <div className="text-neutral-500 text-xs">Exporte e importe calendários hoje mesmo</div>
+                <div className="text-white font-bold text-sm">Evolução responsável</div>
+                <div className="text-neutral-500 text-xs">Cada integração é liberada só após testes rigorosos</div>
               </div>
             </div>
           </div>
