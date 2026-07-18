@@ -133,11 +133,11 @@ const parceiroCases: CaseStudy[] = [
     name: 'Hotel Central',
     location: 'Belo Horizonte, MG',
     avatar: '/avatar-serenity.jpg',
-    quote: 'Como parceiro, paguei R$297/mês pelo plano PRO completo — R$100 a menos que o regular. Em 3 meses já economizei R$300 e o preço vai ficar congelado por 24 meses.',
+    quote: 'Como parceiro, paguei R$247/mês pelo plano PRO completo — R$150 a menos que o regular. Em 3 meses já economizei R$450 e o preço vai ficar congelado por 24 meses. Ainda ganho o selo no Link-in-Bio para fixar no Instagram!',
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
     videoThumb: '/pousada-vista.jpg',
     stats: [
-      { metric: 'Economia', value: 'R$2.400', description: 'Economia em 24 meses' },
+      { metric: 'Economia', value: 'R$3.600', description: 'Economia em 24 meses' },
       { metric: 'Respostas', value: '< 8s', description: 'Tempo médio de resposta' },
       { metric: 'Reservas', value: '+35%', description: 'Aumento em 90 dias' },
     ],
@@ -153,7 +153,7 @@ const parceiroCases: CaseStudy[] = [
     videoThumb: '/pousada-piscina.jpg',
     stats: [
       { metric: 'ROI', value: '18x', description: 'Retorno sobre investimento' },
-      { metric: 'Economia', value: 'R$100/mês', description: 'Desconto vs. PRO regular' },
+      { metric: 'Economia', value: 'R$150/mês', description: 'Desconto vs. PRO regular' },
       { metric: 'Credibilidade', value: 'Selo', description: 'Selo exclusivo de parceiro' },
     ],
     tags: ['3 unidades', 'Rede', 'Parceiro fundador'],
@@ -169,7 +169,7 @@ const parceiroCases: CaseStudy[] = [
     stats: [
       { metric: 'Atendimento', value: '3x mais', description: 'Atendimentos realizados' },
       { metric: 'Automação', value: '91%', description: 'Mensagens sem intervenção' },
-      { metric: 'Economia', value: 'R$2.400', description: 'Em 24 meses de parceria' },
+      { metric: 'Economia', value: 'R$3.600', description: 'Em 24 meses de parceria' },
     ],
     tags: ['2 flats', 'Urbano', 'Parceiro pioneiro'],
   },
@@ -327,7 +327,7 @@ export function SuccessCasesSection() {
   const bottomStats = isParceiro
     ? [
         { icon: MessageSquare, value: '50.000+', label: 'Mensagens IA/mês' },
-        { icon: TrendingUp, value: 'R$2.400', label: 'Economia por parceiro em 24 meses' },
+        { icon: TrendingUp, value: 'R$3.600', label: 'Economia por parceiro em 24 meses' },
         { icon: Calendar, value: '100+', label: 'Parceiros ativos' },
         { icon: Star, value: '4.9/5', label: 'Satisfação dos parceiros' },
       ]

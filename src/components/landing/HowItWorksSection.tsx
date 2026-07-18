@@ -289,7 +289,7 @@ export function HowItWorksSection() {
               </div>
               <div className="text-left">
                 <div className="text-white font-bold text-sm">{isParceiro ? 'Preço congelado' : '7 dias grátis'}</div>
-                <div className="text-neutral-500 text-xs">{isParceiro ? 'R$297/mês por 24 meses' : 'Sem cartão de crédito'}</div>
+                <div className="text-neutral-500 text-xs">{isParceiro ? 'R$247/mês por 24 meses' : 'Sem cartão de crédito'}</div>
               </div>
             </div>
           </div>

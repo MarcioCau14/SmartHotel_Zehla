@@ -82,7 +82,7 @@ export function HeroSection() {
                 ? 'O zelador digital que responde 24hs por 7. Atende os hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para pousadas.'
                 : isAnfitrioes
                 ? 'O zelador digital que responde 24hs por 7. Atende seus hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para anfitriões Airbnb. O Zélla AirB é seu co-anfitrião digital.'
-                : 'O programa de parceria que congela seu preço por 24 meses. Plano PRO completo por R$297/mês com selo exclusivo de parceiro.'}
+                : 'O programa de parceria que congela seu preço por 24 meses. Plano PRO completo por R$247/mês com selo exclusivo de parceiro no Link-in-Bio.'}
             </p>
 
             {/* ── Niche Switcher — Escolha seu perfil ── */}

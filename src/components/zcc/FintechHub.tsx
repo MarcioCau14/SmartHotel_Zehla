@@ -33,7 +33,7 @@ const BETA_PROGRAM = {
   currentPartners: 10, // 8 Beta Testers + 2 Early Adopters
   betaTesters: 8,
   earlyAdopters: 2,
-  priceAfterBeta: 297, // R$297/mês congelado por 24 meses
+  priceAfterBeta: 247, // R$247/mês congelado por 24 meses
   betaEndFree: '01/08/2026',
   frozenMonths: 24,
 };
@@ -235,7 +235,7 @@ export function FintechHub() {
               <li className="flex items-start gap-1.5"><span style={{ color: 'var(--zcc-kinpaku)' }} className="mt-0.5">{'\u2192'}</span> Grátis até {BETA_PROGRAM.betaEndFree}</li>
               <li className="flex items-start gap-1.5"><span style={{ color: 'var(--zcc-kinpaku)' }} className="mt-0.5">{'\u2192'}</span> Depois: R${BETA_PROGRAM.priceAfterBeta}/mês congelado por {BETA_PROGRAM.frozenMonths} meses</li>
               <li className="flex items-start gap-1.5"><span style={{ color: 'var(--zcc-kinpaku)' }} className="mt-0.5">{'\u2192'}</span> Recursos PRO completos (vs R$397/mês público)</li>
-              <li className="flex items-start gap-1.5"><span style={{ color: 'var(--zcc-kinpaku)' }} className="mt-0.5">{'\u2192'}</span> Economia de R$100/mês durante 24 meses (R$2.400 total)</li>
+              <li className="flex items-start gap-1.5"><span style={{ color: 'var(--zcc-kinpaku)' }} className="mt-0.5">{'\u2192'}</span> Economia de R$150/mês durante 24 meses (R$3.600 total)</li>
             </ul>
           </div>
         </div>

@@ -195,11 +195,11 @@ const parceiroProfile: ProfileData = {
   libLocation: 'Brasil',
   libMapLabel: 'Brasil',
   libMapAddress: 'Parceiro Zélla — Programa Oficial',
-  roomLabel: '🏷️ Plano Parceiro PRO',
-  roomDetails: 'R$297/mês · Congelado 24 meses · Selo exclusivo',
-  roomPrice: 'R$ 297',
-  roomPriceTotal: 'R$ 297',
-  roomPriceBreakdown: 'R$297/mês · R$100 de desconto vs. PRO',
+  roomLabel: '🏷️ Plano Parceiro Zélla',
+  roomDetails: 'R$247/mês · Congelado 24 meses · Selo no Link-in-Bio',
+  roomPrice: 'R$ 247',
+  roomPriceTotal: 'R$ 247',
+  roomPriceBreakdown: 'R$247/mês · R$150 de desconto vs. PRO',
   highlights: [
     { icon: '🏷️', label: 'Preço' },
     { icon: '🏅', label: 'Selo' },
@@ -222,7 +222,7 @@ const parceiroProfile: ProfileData = {
     },
     {
       from: 'zella',
-      text: 'Olá, Bernardo! Bem-vindo! 🏅 Como Parceiro Zélla, seu negócio tem atendimento 24/7 pela IA.\n\nAqui está como funciona:\n\n✅ Respostas automáticas no seu tom de voz\n✅ Fechamento de reservas pelo WhatsApp\n✅ Check-in virtual automático\n✅ Dashboard completo com métricas\n\nTudo isso pelo plano PRO a R$297/mês — preço congelado por 24 meses!',
+      text: 'Olá, Bernardo! Bem-vindo! 🏅 Como Parceiro Zélla, seu negócio tem atendimento 24/7 pela IA.\n\nAqui está como funciona:\n\n✅ Respostas automáticas no seu tom de voz\n✅ Fechamento de reservas pelo WhatsApp\n✅ Check-in virtual automático\n✅ Dashboard completo com métricas\n\nTudo isso pelo plano PRO a R$247/mês — preço congelado por 24 meses! Ainda ganha o selo no Link-in-Bio para fixar no Instagram.',
       time: '14:22',
     },
     {
@@ -232,7 +232,7 @@ const parceiroProfile: ProfileData = {
     },
     {
       from: 'zella',
-      text: 'Ótimo! Como parceiro, você tem:\n\n🏅 Selo exclusivo de Parceiro Zélla\n💰 R$100/mês de desconto vs. PRO regular\n🔒 Preço congelado por 24 meses\n👥 Atendimentos e mensagens ilimitados\n⚡ Suporte prioritário VIP\n\nVagas limitadas — apenas 100 parceiros!',
+      text: 'Ótimo! Como parceiro, você tem:\n\n🏅 Selo exclusivo de Parceiro Zélla no Link-in-Bio\n💰 R$150/mês de desconto vs. PRO regular\n🔒 Preço congelado por 24 meses\n👥 Atendimentos e mensagens ilimitados\n⚡ Suporte prioritário VIP\n📸 Link para fixar no Instagram\n\nVagas limitadas — apenas 100 parceiros!',
       pix: true,
       time: '14:24',
     },
@@ -243,7 +243,7 @@ const parceiroProfile: ProfileData = {
     },
     {
       from: 'zella',
-      text: '✅ Vaga reservada com sucesso!\n\n📋 Programa Parceiro Zélla\n🏅 Selo de Parceiro Fundador\n💰 R$297/mês congelado por 24 meses\n🔒 Economia de R$2.400 vs. PRO regular\n\nBem-vindo ao time! Vamos transformar seu negócio juntos. 🚀',
+      text: '✅ Vaga reservada com sucesso!\n\n📋 Programa Parceiro Zélla\n🏅 Selo de Parceiro no Link-in-Bio\n💰 R$247/mês congelado por 24 meses\n🔒 Economia de R$3.600 vs. PRO regular\n📸 Link para fixar no Instagram\n\nBem-vindo ao time! Vamos transformar seu negócio juntos. 🚀',
       confirmation: true,
       time: '14:28',
     },

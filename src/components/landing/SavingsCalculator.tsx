@@ -24,7 +24,7 @@ const CONVERSAO_COM_ZELLA = 0.35;   // 35% — resposta instantânea 24/7 + PIX 
 const ESTADIA_MEDIA_HOSPEDAGEM = 2.5; // noites por reserva (média pousadas/anfitriões BR)
 const ECONOMIA_RECEPCIONISTA = 1200;  // R$/mês economizados cobrindo madrugada/fim de semana
 const CUSTO_ZELLA_PRO = 397;          // R$/mês plano PRO (referência para cálculo)
-const CUSTO_ZELLA_PARCEIRO = 297;     // R$/mês plano Parceiro PRO
+const CUSTO_ZELLA_PARCEIRO = 247;     // R$/mês plano Parceiro Zélla
 
 export function SavingsCalculator() {
   const ref = useRef<HTMLDivElement>(null);

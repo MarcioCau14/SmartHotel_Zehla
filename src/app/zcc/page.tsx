@@ -389,7 +389,7 @@ function SettingsPanel() {
             <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Early Adopters</span><span className="font-medium" style={{color:'var(--zcc-patina)'}}>2 ativos</span></div>
             <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Total Parceiros</span><span className="font-medium" style={{color:'var(--zcc-champagne)'}}>10 de 100</span></div>
             <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Vagas Restantes</span><span className="font-medium" style={{color:'var(--zcc-kinpaku)'}}>90 disponíveis</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Preço Pós-Beta</span><span style={{color:'var(--zcc-champagne)'}}>R$0 → R$297/mês (congelado 24 meses)</span></div>
+            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Preço Pós-Beta</span><span style={{color:'var(--zcc-champagne)'}}>R$0 → R$247/mês (congelado 24 meses)</span></div>
             <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Fim Gratuidade</span><span style={{color:'var(--zcc-champagne)'}}>01/08/2026</span></div>
           </div>
         </div>
@@ -406,7 +406,7 @@ function SettingsPanel() {
             <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>LITE (Cartão)</span><span className="font-medium" style={{color:'var(--zcc-patina)'}}>R$247/mês</span></div>
             <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>PRO</span><span className="font-medium" style={{color:'var(--zcc-kinpaku)'}}>R$397/mês</span></div>
             <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>MAX</span><span className="font-medium" style={{color:'#d4a843'}}>R$797/mês</span></div>
-            <div className="flex justify-between border-t pt-2 mt-2" style={{borderColor:'var(--zcc-hairline)'}}><span style={{color:'var(--zcc-text-secondary)'}}>Beta Parceiro</span><span style={{color:'#d4a843'}}>R$297/mês</span></div>
+            <div className="flex justify-between border-t pt-2 mt-2" style={{borderColor:'var(--zcc-hairline)'}}><span style={{color:'var(--zcc-text-secondary)'}}>Beta Parceiro</span><span style={{color:'#d4a843'}}>R$247/mês</span></div>
             <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Link-in-Bio Standalone</span><span className="font-medium" style={{color:'var(--zcc-patina)'}}>R$47/mês</span></div>
           </div>
         </div>

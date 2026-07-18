@@ -3,7 +3,7 @@ export type PlanTier = (typeof PLAN_TIERS)[number];
 
 export const TIER_LABELS: Record<PlanTier, string> = { lite: "LITE", pro: "PRO", max: "MAX", universal: "Universal" };
 export const TIER_COLORS: Record<PlanTier, string> = { lite: "bg-blue-500/20 text-blue-400", pro: "bg-emerald-500/20 text-emerald-400", max: "bg-amber-500/20 text-amber-400", universal: "bg-gray-500/20 text-gray-400" };
-export const TIER_PRICES: Record<PlanTier, number> = { lite: 97, pro: 297, max: 797, universal: 0 };
+export const TIER_PRICES: Record<PlanTier, number> = { lite: 97, pro: 247, max: 797, universal: 0 };
 
 export const SWIPE_CHANNELS = ["whatsapp", "email", "instagram", "voice", "chat_widget"] as const;
 export type SwipeChannel = (typeof SWIPE_CHANNELS)[number];

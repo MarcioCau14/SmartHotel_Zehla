@@ -96,7 +96,7 @@ export function BetaFounderSection() {
                   </div>
                   <div>
                     <h4 className="text-white font-bold text-sm sm:text-base">Preço de Fundador Congelado</h4>
-                    <span className="text-emerald-400 text-xs font-semibold">R$ 297,00/mês por 24 meses</span>
+                    <span className="text-emerald-400 text-xs font-semibold">R$ 247,00/mês por 24 meses</span>
                   </div>
                 </div>
                 <p className="text-zinc-500 text-xs leading-relaxed group-hover:text-zinc-400 transition-colors">

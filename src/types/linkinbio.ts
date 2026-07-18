@@ -74,7 +74,7 @@ export const LITE_LINKINBIO_DAYS = 0; // 0 = sem expiração enquanto assinante
 
 // Beta: 24 months
 export const BETA_PARTNERSHIP_MONTHS = 24;
-export const BETA_MONTHLY_PRICE = 297; // R$ 297/mês
+export const BETA_MONTHLY_PRICE = 247; // R$ 247/mês
 
 export function getLinkInBioExpiryDate(plan: PlanTier, _startDate: Date): Date | null {
   // LITE/PRO/MAX: sem expiração enquanto plano estiver ativo

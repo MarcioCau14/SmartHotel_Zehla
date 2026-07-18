@@ -331,7 +331,7 @@ export const globalMetrics = {
     liteCard: 247,
     pro: 397,
     max: 797,
-    betaPartner: 297,
+    betaPartner: 247,
     linkinbioStandalone: 47,
   },
 };
