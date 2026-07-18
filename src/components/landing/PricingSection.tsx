@@ -151,6 +151,39 @@ const plans = [
       { text: 'Treinamento mensal com equipe', included: true },
     ],
   },
+  {
+    id: 'parceiro',
+    name: 'PARCEIRO',
+    nameShort: 'Parceiro',
+    badge: 'Melhor Custo-Benefício',
+    badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+    icon: Crown,
+    iconBg: 'from-amber-500/20 to-amber-900/10',
+    iconColor: 'text-amber-400',
+    pricePix: 297,
+    priceCartao: 297,
+    priceLabel: 'R$297',
+    onlyCard: false,
+    isOneTime: true,
+    desc: 'Pagamento único de R$297 por 24 meses completos. Mesma IA 24/7, mesmo PIX, mesmo dashboard. Economia de R$4.431 comparado ao mensal.',
+    descAnfitrioes: 'Pagamento único de R$297 por 24 meses completos. Mesma IA 24/7, mesmo check-in virtual, mesmo dashboard. Economia de R$4.431.',
+    cta: 'Garantir Plano Parceiro',
+    ctaStyle: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/30',
+    popular: false,
+    idealPara: '1–2 imóveis',
+    features: [
+      { text: '24 meses de acesso completo', included: true },
+      { text: 'Pagamento único — sem mensalidade', included: true },
+      { text: 'IA 24/7 no WhatsApp com tom personalizado', included: true },
+      { text: 'Checkout PIX integrado', included: true },
+      { text: 'Dashboard de métricas completo', included: true },
+      { text: '50 hóspedes atendidos por mês', included: true },
+      { text: '500 mensagens mensais', included: true },
+      { text: 'Relatórios semanais por e-mail', included: true },
+      { text: 'Sem marca d\'água ZELLA', included: true },
+      { text: 'Custo equivalente: R$12,38/mês', included: true },
+    ],
+  },
 ];
 
 const easeOut: [number, number, number, number] = [0.2, 0.8, 0.2, 1];
@@ -161,7 +194,7 @@ export function PricingSection() {
   const [paymentMode, setPaymentMode] = useState<PaymentMode>('pix');
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const router = useRouter();
-  const { niche, isAnfitrioes } = useNiche();
+  const { niche, isAnfitrioes, isParceiro } = useNiche();
   const content = getNicheContent(niche);
 
   const handleSubscribe = async (planId: string, forcedPaymentMethod?: string) => {
@@ -281,8 +314,8 @@ export function PricingSection() {
         </motion.div>
 
         {/* Pricing Cards Grid */}
-        <div className="pricing-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-20">
-          {plans.map((plan, i) => {
+        <div className={`pricing-grid grid gap-6 mb-20 ${isParceiro ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 max-w-5xl mx-auto' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-4'}`}>
+          {plans.filter(p => isParceiro ? p.id === 'parceiro' || p.id === 'lite' || p.id === 'pro' : p.id !== 'parceiro').map((plan, i) => {
             const activePaymentMethod = plan.onlyCard ? 'cartao' : paymentMode;
             const price = activePaymentMethod === 'pix' ? plan.pricePix : plan.priceCartao;
             const savings = plan.priceCartao > 0 && !plan.onlyCard ? plan.priceCartao - plan.pricePix : 0;
@@ -306,6 +339,8 @@ export function PricingSection() {
                     ? 'linear-gradient(135deg, #10B981, #8B5CF6, #10B981)'
                     : plan.id === 'max'
                     ? 'linear-gradient(135deg, #F59E0B, #EF4444, #F59E0B)'
+                    : plan.id === 'parceiro'
+                    ? 'linear-gradient(135deg, #F59E0B, #D97706, #F59E0B)'
                     : 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
                 }}
               >
@@ -354,9 +389,16 @@ export function PricingSection() {
                         <div className="flex items-baseline gap-1">
                           <span className="text-sm text-neutral-400">R$</span>
                           <span className="text-4xl font-extrabold text-white">{price}</span>
-                          <span className="text-neutral-500 text-sm">/mês</span>
+                          <span className="text-neutral-500 text-sm">{(plan as Record<string, unknown>).isOneTime ? '/24 meses' : '/mês'}</span>
                         </div>
-                        {activePaymentMethod === 'pix' && savings > 0 && (
+                        {(plan as Record<string, unknown>).isOneTime && (
+                          <div className="flex items-center gap-1 mt-1">
+                            <span className="text-amber-400 text-xs font-semibold">
+                              Pagamento único — equivalente a R$12,38/mês
+                            </span>
+                          </div>
+                        )}
+                        {!((plan as Record<string, unknown>).isOneTime) && activePaymentMethod === 'pix' && savings > 0 && (
                           <div className="flex items-center gap-1 mt-1">
                             <span className="text-neutral-600 text-xs line-through">R${plan.priceCartao}/mês</span>
                             <span className="text-emerald-400 text-xs font-medium">

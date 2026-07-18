@@ -90,7 +90,7 @@ export function NicheSwitcherSection() {
                       ? 'bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent'
                       : 'bg-gradient-to-r from-amber-400 to-yellow-400 bg-clip-text text-transparent'
                 }>
-                  {niche === 'pousadas' ? 'Reservas diretas.' : niche === 'anfitrioes' ? 'Escale seus imóveis.' : 'Comissão recorrente.'}
+                  {niche === 'pousadas' ? 'Reservas diretas.' : niche === 'anfitrioes' ? 'Escale seus imóveis.' : 'Economia real.'}
                 </span>
               </h2>
 

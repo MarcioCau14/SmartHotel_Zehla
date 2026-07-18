@@ -24,13 +24,10 @@ export function Header() {
   }, []);
 
   const navLinks = [
-    { name: 'Como Funciona', href: '#como-funciona', lgOnly: false },
-    { name: 'Funcionalidades', href: '#funcionalidades', lgOnly: false },
     { name: 'Integrações', href: '#integracoes', lgOnly: true },
     { name: 'Calculadora', href: '#calculadora', lgOnly: true },
     { name: 'Preços', href: '#precos', lgOnly: false },
     { name: 'FAQ', href: '#faq', lgOnly: true },
-    { name: 'Contato', href: '#contato', lgOnly: false },
   ];
 
   return (
