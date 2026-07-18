@@ -16,6 +16,9 @@ import {
   Globe,
   Sparkles,
   ArrowRight,
+  Crown,
+  BarChart3,
+  DollarSign,
   type LucideIcon,
 } from 'lucide-react';
 import { LinkInBioDemo } from './LinkInBioDemo';
@@ -34,6 +37,9 @@ const featureIconMap: Record<string, LucideIcon> = {
   Zap,
   Sparkles,
   Star,
+  Crown,
+  BarChart3,
+  DollarSign,
 };
 
 function WhatsAppMockup() {

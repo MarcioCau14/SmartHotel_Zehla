@@ -232,7 +232,7 @@ const parceiroProfile: ProfileData = {
     },
     {
       from: 'zella',
-      text: 'Ótimo! Como parceiro, você tem:\n\n🏅 Selo exclusivo de Parceiro Zélla\n💰 R$100/mês de desconto vs. PRO regular\n🔒 Preço congelado por 24 meses\n👥 Hóspedes e mensagens ilimitados\n⚡ Suporte prioritário VIP\n\nVagas limitadas — apenas 100 parceiros!',
+      text: 'Ótimo! Como parceiro, você tem:\n\n🏅 Selo exclusivo de Parceiro Zélla\n💰 R$100/mês de desconto vs. PRO regular\n🔒 Preço congelado por 24 meses\n👥 Atendimentos e mensagens ilimitados\n⚡ Suporte prioritário VIP\n\nVagas limitadas — apenas 100 parceiros!',
       pix: true,
       time: '14:24',
     },

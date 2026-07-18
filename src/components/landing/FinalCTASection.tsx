@@ -10,7 +10,7 @@ export function FinalCTASection() {
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  const { isPousadas, isAnfitrioes } = useNiche();
+  const { isPousadas, isAnfitrioes, isParceiro } = useNiche();
 
   return (
     <section ref={ref} className="py-28 sm:py-36 lg:py-44 relative overflow-hidden">
@@ -51,7 +51,7 @@ export function FinalCTASection() {
           </h2>
 
           <p className="text-neutral-400 text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed">
-            Imagine ter um atendente que nunca dorme, nunca erra o preço e ainda envia sua chave PIX na hora. O ZÉLLA cuida do seu WhatsApp enquanto você cuida dos seus hóspedes. Comece grátis e veja resultados em 48 horas.
+            Imagine ter um atendente que nunca dorme, nunca erra o preço e ainda envia sua chave PIX na hora. O ZÉLLA cuida do seu WhatsApp enquanto você {isParceiro ? 'foca no seu negócio' : 'cuida dos seus hóspedes'}. Comece grátis e veja resultados em 48 horas.
           </p>
 
           {/* CTAs */}

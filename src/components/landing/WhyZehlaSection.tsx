@@ -37,7 +37,7 @@ function getComparisons(niche: 'pousadas' | 'anfitrioes' | 'parceiro'): Comparis
       cloudbedsBad: true,
     },
     {
-      feature: 'IA Preditiva para Hóspedes',
+      feature: niche === 'parceiro' ? 'IA Preditiva para Atendimento' : 'IA Preditiva para Hóspedes',
       icon: Brain,
       zehla: true,
       zehlaHighlight: true,
@@ -76,7 +76,7 @@ function getComparisons(niche: 'pousadas' | 'anfitrioes' | 'parceiro'): Comparis
       cloudbedsBad: true,
     },
     {
-      feature: 'Resposta a Hóspedes',
+      feature: niche === 'parceiro' ? 'Resposta a Contatos' : 'Resposta a Hóspedes',
       icon: Clock,
       zehla: '< 8 segundos (24/7)',
       zehlaHighlight: true,

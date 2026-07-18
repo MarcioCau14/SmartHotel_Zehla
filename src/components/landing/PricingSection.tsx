@@ -37,21 +37,23 @@ const plans = [
     priceCartao: 0,
     priceLabel: 'Grátis',
     desc: 'Comece a testar o Zélla na sua pousada sem custo nenhum. Veja a IA atendendo seus hóspedes por 7 dias.',
-    descAnfitrioes: 'Comece a testar o Zélla no seu imóvel sem custo nenhum. Veja a IA atendendo seus hóspedes por 7 dias.',
-    descParceiro: 'Comece a testar o Zélla sem custo nenhum. Veja a IA atendendo seus hóspedes por 7 dias.',
+    descAnfitrioes: 'Comece a testar o Zélla AirB no seu imóvel sem custo nenhum. Veja a IA atendendo seus hóspedes por 7 dias.',
+    descParceiro: 'Comece a testar o Zélla sem custo nenhum. Veja a IA atendendo automaticamente por 7 dias.',
     cta: 'Começar Trial Grátis',
     ctaStyle: 'border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.06]',
     popular: false,
-    idealPara: '1 imóvel',
+    idealParaPousadas: '1 pousada',
+    idealParaAnfitrioes: '1 imóvel',
+    idealParaParceiro: '1 operação',
     features: [
-      { text: '5 hospedes atendidos dentro dos 7 dias', included: true },
+      { text: '5 atendimentos dentro dos 7 dias', included: true },
       { text: 'Link-in-bio basico', included: true },
       { text: '100 mensagens nos 7 dias', included: true },
       { text: '7 dias de teste gratis', included: true },
       { text: 'Dashboard basico', included: true },
       { text: 'Marca d\'agua ZELLA obrigatoria', included: true },
       { text: 'Atendimento 24h nos 7 dias', included: true },
-      { text: 'IA respondendo seus hóspedes 24h', included: true },
+      { text: 'IA respondendo automaticamente 24h', included: true },
     ],
   },
   {
@@ -67,12 +69,14 @@ const plans = [
     priceCartao: 247,
     priceLabel: 'R$197',
     desc: 'Tudo que sua pousada precisa para vender mais pelo WhatsApp. IA 24/7, PIX integrado e dashboard completo.',
-    descAnfitrioes: 'Tudo que você precisa para atender hóspedes pelo WhatsApp. IA 24/7, check-in virtual e dashboard completo.',
-    descParceiro: 'Tudo que sua operação precisa para vender mais pelo WhatsApp. IA 24/7, PIX integrado e dashboard completo.',
+    descAnfitrioes: 'Tudo que seu imóvel precisa para atender hóspedes pelo WhatsApp. IA 24/7, check-in virtual e dashboard completo.',
+    descParceiro: 'Tudo que sua operação precisa para atender pelo WhatsApp. IA 24/7, PIX integrado e dashboard completo.',
     cta: 'Assinar LITE via PIX',
     ctaStyle: 'border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.06]',
     popular: false,
-    idealPara: '1–2 imóveis',
+    idealParaPousadas: '1–2 pousadas',
+    idealParaAnfitrioes: '1–2 imóveis',
+    idealParaParceiro: '1–2 operações',
     features: [
       { text: '50 hospedes atendidos por mes', included: true },
       { text: '500 mensagens mensais', included: true },
@@ -99,12 +103,14 @@ const plans = [
     priceLabel: 'R$397',
     onlyCard: true,
     desc: 'Para pousadas que querem crescer sem limites. Mensagens ilimitadas, campanhas automatizadas e suporte prioritário.',
-    descAnfitrioes: 'Para anfitriões que querem escalar sem limites. Mensagens ilimitadas, importação de anúncios e suporte prioritário.',
-    descParceiro: 'Para parceiros que querem crescer sem limites. Mensagens ilimitadas, campanhas automatizadas e suporte prioritário.',
+    descAnfitrioes: 'Para anfitriões que querem escalar sem limites. Mensagens ilimitadas, Magic Onboarding e suporte prioritário.',
+    descParceiro: 'Para operações que querem crescer sem limites. Mensagens ilimitadas, campanhas automatizadas e suporte prioritário.',
     cta: 'Assinar PRO via Cartão',
     ctaStyle: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-400 hover:to-emerald-500 shadow-lg shadow-emerald-500/25',
     popular: true,
-    idealPara: '3–5 imóveis',
+    idealParaPousadas: '3–5 pousadas',
+    idealParaAnfitrioes: '3–5 imóveis',
+    idealParaParceiro: '3–5 operações',
     features: [
       { text: 'Hóspedes ilimitados', included: true },
       { text: 'Link-in-bio profissional liberado', included: true },
@@ -133,12 +139,14 @@ const plans = [
     priceLabel: 'R$797',
     onlyCard: true,
     desc: 'Para redes e pousadas de alto padrão. Suporte VIP, consultoria personalizada e recursos exclusivos.',
-    descAnfitrioes: 'Para portfólios grandes e imóveis de alto padrão. Suporte VIP, consultoria personalizada e recursos exclusivos.',
+    descAnfitrioes: 'Para portfólios grandes e imóveis de alto padrão. Suporte VIP, Calendar Sync e recursos exclusivos.',
     descParceiro: 'Para operações de alto padrão. Suporte VIP, consultoria personalizada e recursos exclusivos.',
     cta: 'Assinar MAX via Cartão',
     ctaStyle: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/25',
     popular: false,
-    idealPara: '6+ imóveis',
+    idealParaPousadas: '6+ pousadas',
+    idealParaAnfitrioes: '6+ imóveis',
+    idealParaParceiro: '6+ operações',
     features: [
       { text: 'Tudo do plano PRO', included: true },
       { text: 'Link-in-bio profissional liberado', included: true },
@@ -175,7 +183,9 @@ const plans = [
     cta: 'Garantir Vaga de Parceiro',
     ctaStyle: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/30',
     popular: false,
-    idealPara: '1–5 imóveis',
+    idealParaPousadas: '1–5 pousadas',
+    idealParaAnfitrioes: '1–5 imóveis',
+    idealParaParceiro: '1–5 operações',
     features: [
       { text: 'Plano PRO completo — R$297/mês', included: true },
       { text: 'Preço congelado por 24 meses', included: true },
@@ -201,7 +211,7 @@ export function PricingSection() {
   const [paymentMode, setPaymentMode] = useState<PaymentMode>('pix');
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const router = useRouter();
-  const { niche, isAnfitrioes, isParceiro } = useNiche();
+  const { niche, isPousadas, isAnfitrioes, isParceiro } = useNiche();
   const content = getNicheContent(niche);
 
   const handleSubscribe = async (planId: string, forcedPaymentMethod?: string) => {
@@ -372,21 +382,37 @@ export function PricingSection() {
                   {/* Plan Details */}
                   <h3 className="text-white font-bold text-xl mb-2">{plan.name}</h3>
                   <p className="text-neutral-400 text-xs mb-2 leading-relaxed">
-                    {isAnfitrioes ? plan.descAnfitrioes : isParceiro && 'descParceiro' in plan && (plan as Record<string, string>).descParceiro ? (plan as Record<string, string>).descParceiro : plan.desc}
+                    {isParceiro && (plan as Record<string, string>).descParceiro
+                      ? (plan as Record<string, string>).descParceiro
+                      : isAnfitrioes && (plan as Record<string, string>).descAnfitrioes
+                      ? (plan as Record<string, string>).descAnfitrioes
+                      : plan.desc}
                   </p>
 
-                  {/* Ideal para badge (Anfitriões only) */}
-                  {isAnfitrioes && (
-                    <div className="flex items-center gap-1.5 mb-4">
-                      <Building2 className="w-3 h-3 text-blue-400" />
-                      <span className="text-[10px] font-semibold text-blue-300 bg-blue-500/15 border border-blue-500/25 px-2 py-0.5 rounded-full">
-                        Ideal para {plan.idealPara}
+                  {/* Ideal para badge */}
+                  <div className="flex items-center gap-1.5 mb-4">
+                    {isPousadas && (plan as Record<string, string>).idealParaPousadas && (
+                      <span className="text-[10px] font-semibold text-emerald-300 bg-emerald-500/15 border border-emerald-500/25 px-2 py-0.5 rounded-full">
+                        Ideal para {(plan as Record<string, string>).idealParaPousadas}
                       </span>
-                    </div>
-                  )}
+                    )}
+                    {isAnfitrioes && (plan as Record<string, string>).idealParaAnfitrioes && (
+                      <>
+                        <Building2 className="w-3 h-3 text-blue-400" />
+                        <span className="text-[10px] font-semibold text-blue-300 bg-blue-500/15 border border-blue-500/25 px-2 py-0.5 rounded-full">
+                          Ideal para {(plan as Record<string, string>).idealParaAnfitrioes}
+                        </span>
+                      </>
+                    )}
+                    {isParceiro && (plan as Record<string, string>).idealParaParceiro && (
+                      <span className="text-[10px] font-semibold text-amber-300 bg-amber-500/15 border border-amber-500/25 px-2 py-0.5 rounded-full">
+                        Ideal para {(plan as Record<string, string>).idealParaParceiro}
+                      </span>
+                    )}
+                  </div>
 
                   {/* Price */}
-                  <div className={isAnfitrioes ? 'mb-4' : 'mb-6'}>
+                  <div className="mb-6">
                     {price === 0 ? (
                       <div className="flex items-baseline gap-1">
                         <span className="text-4xl font-extrabold text-white">Grátis</span>

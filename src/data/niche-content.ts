@@ -97,7 +97,9 @@ export interface NicheContent {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// POUSADAS CONTENT
+// POUSADAS CONTENT — Zélla Pousadas
+// Terminologia exclusiva: pousada, quarto, diária, hóspede, reserva direta, OTA
+// NUNCA usar: imóvel, anúncio, Airbnb, anfitrião
 // ═══════════════════════════════════════════════════════════════
 const pousadasContent: NicheContent = {
   switcher: {
@@ -122,15 +124,15 @@ const pousadasContent: NicheContent = {
     {
       icon: 'MessageSquare',
       title: 'Uma mensagem, tudo resolvido',
-      desc: 'Em vez de 5 balões fragmentados, o Zélla reúne saudação, disponibilidade, preço e chave PIX em um único balão completo. Mais profissional para o hóspede, mais eficiente para seu custo de API.',
+      desc: 'Em vez de 5 balões fragmentados, o Zélla reúne saudação, disponibilidade, preço e chave PIX em um único balão completo. Message Bundling inteligente — mais profissional para o hóspede, mais eficiente para seu custo de API.',
       stat: { val: '1', label: 'Balão com tudo incluído' },
       color: 'blue',
       size: 'lg',
     },
     {
       icon: 'Users',
-      title: 'Contexto inteligente',
-      desc: 'O hóspede manda "Tem vaga?", "Preço?" e "Aceita pet?" em sequência? O Zélla agrupa tudo e responde de uma vez, entendendo a intenção completa da conversa.',
+      title: 'Contexto inteligente (One-Shot Resolution)',
+      desc: 'O hóspede manda "Tem vaga?", "Preço?" e "Aceita pet?" em sequência? O Zélla agrupa tudo e responde de uma vez, entendendo a intenção completa da conversa. Resposta densa única que reduz custos e aumenta conversão.',
       color: 'sky',
       size: 'sm',
     },
@@ -142,16 +144,16 @@ const pousadasContent: NicheContent = {
       size: 'sm',
     },
     {
-      icon: 'DollarSign',
-      title: 'Custo sob controle',
-      desc: 'Você define o orçamento mensal e o Zélla gerencia o uso da API automaticamente. Sem surpresas na fatura, sem estresse.',
+      icon: 'ShieldCheck',
+      title: 'Escudo Meta 2026 — custo protegido',
+      desc: 'A Meta vai cobrar R$0,04 por mensagem a partir de outubro de 2026. O Zélla já aplica Message Bundling e One-Shot Resolution para reduzir esse custo em até 80%. Sua pousada está pronta para a mudança.',
       color: 'violet',
       size: 'sm',
     },
     {
-      icon: 'ShieldCheck',
-      title: 'Pronto para outubro 2026',
-      desc: 'A Meta está mudando as regras da API do WhatsApp. O Zélla já está adaptado para manter seus custos baixos e sua operação estável.',
+      icon: 'DollarSign',
+      title: 'Zero comissão de OTA',
+      desc: 'Cada reserva que sai pelo WhatsApp é 15% da Booking ou Decolar que fica no seu bolso. O Zélla converte hóspedes em reservas diretas — sem intermediário, sem comissão, sem perder o controle.',
       color: 'pink',
       size: 'sm',
     },
@@ -195,7 +197,7 @@ const pousadasContent: NicheContent = {
       heroStat: { val: '8s', label: 'tempo médio de resposta', gradient: 'from-emerald-400 to-cyan-400' },
       headline: 'Seu hóspede pergunta. O Zélla reserva.',
       subtitle: 'Não é só chat — é um motor de reservas automático.',
-      desc: 'Cada mensagem que seu hóspede manda é uma oportunidade de reserva que o Zélla não deixa escapar. Disponibilidade, preço e sua chave PIX cadastrada — tudo num único balão, no tom da sua pousada.',
+      desc: 'Cada mensagem que seu hóspede manda é uma oportunidade de reserva que o Zélla não deixa escapar. Disponibilidade, preço e sua chave PIX cadastrada — tudo num único balão, no tom da sua pousada. One-Shot Resolution: resposta densa que resolve tudo de uma vez.',
       stats: [
         { val: '24/7', label: 'Atendimento ininterrupto', sublabel: 'Sem folga, sem férias', icon: 'Clock' },
         { val: '+35%', label: 'Aumento em reservas', sublabel: 'Média nos primeiros 90 dias', icon: 'TrendingUp' },
@@ -241,7 +243,7 @@ const pousadasContent: NicheContent = {
     pains: [
       { icon: 'Activity', title: 'Acompanhamento ao Vivo', desc: 'Acompanhe as respostas automáticas em tempo real. Veja com clareza a segurança do assistente e garanta um atendimento livre de falhas.' },
       { icon: 'Hand', title: 'Assuma quando Quiser (1-Click Handover)', desc: 'Se o hóspede solicitar algo muito específico, pause a IA e assuma a conversa na hora. A transição de IA para humano é imperceptível.' },
-      { icon: 'DollarSign', title: 'Métricas de Faturamento e Economia', desc: 'Acompanhe a receita de reservas diretas convertidas e visualize a economia de taxas de comissão (Booking, Airbnb) salvas pela IA.' },
+      { icon: 'DollarSign', title: 'Métricas de Faturamento e Economia', desc: 'Acompanhe a receita de reservas diretas convertidas e visualize a economia de taxas de comissão (Booking, Decolar) salvas pela IA.' },
     ],
     stats: [
       { label: 'Média das pousadas parceiras', val: '24/7', title: 'Atendimento IA', color: 'text-emerald-400' },
@@ -292,7 +294,7 @@ const pousadasContent: NicheContent = {
 
   pricing: {
     focusLabel: 'Volume de reservas',
-    focusDesc: 'Quanto mais cotações a IA atende, mais reservas diretas você fecha. Sem comissão, sem intermediário.',
+    focusDesc: 'Quanto mais cotações a IA atende, mais reservas diretas você fecha. Sem comissão de OTA, sem intermediário.',
   },
 
   faqs: [
@@ -300,18 +302,21 @@ const pousadasContent: NicheContent = {
     { question: 'Como o hóspede recebe a chave PIX?', answer: 'O Zélla envia automaticamente a chave PIX cadastrada no momento certo da conversa — quando o hóspede confirma interesse na reserva. Tudo em um único balão, sem fragmentação.' },
     { question: 'Posso intervir na conversa quando quiser?', answer: 'Sim! O painel mostra todas as conversas em tempo real. Com um clique você pausa a IA e assume o atendimento. A transição é imperceptível para o hóspede.' },
     { question: 'O Zélla funciona com calendário de disponibilidade?', answer: 'Sim. O Zélla consulta seu calendário em tempo real antes de confirmar qualquer reserva. Não há risco de overbooking.' },
+    { question: 'O que é o Escudo Meta 2026?', answer: 'A Meta vai cobrar por mensagem do WhatsApp a partir de outubro de 2026. O Zélla já aplica Message Bundling (agrupamento) e One-Shot Resolution (resposta densa única) para reduzir esse custo em até 80%. Sua pousada está protegida.' },
     { question: 'Qual o custo por mensagem?', answer: 'Nossos planos começam em R$ 197/mês com tudo incluído. Não cobramos por mensagem individual — você define o orçamento e o Zélla otimiza automaticamente.' },
-    { question: 'E se a IA errar uma resposta?', answer: 'O Zélla tem taxa de confiança de 98%+. Quando a confiança cai abaixo do limiar, ele escala para você automaticamente. Você nunca perde o controle.' },
   ],
 };
 
 // ═══════════════════════════════════════════════════════════════
-// ANFITRIÕES CONTENT — Inspirado na API do Airbnb
+// ANFITRIÕES CONTENT — Zélla AirB
+// Terminologia exclusiva: imóvel, anúncio, Airbnb, anfitrião, Superhost, comissão
+// NUNCA usar: pousada, quarto, diária
+// Conceitos do documento: Inbox Sync, Calendar Sync, Lifecycle Hooks, Review Engine, PIX Gatekeeper
 // ═══════════════════════════════════════════════════════════════
 const anfitrioesContent: NicheContent = {
   switcher: {
     headline: 'Seu co-anfitrião que nunca dorme.',
-    subheadline: 'Ele lê o seu anúncio Airbnb, entrega as chaves virtuais, responde com detalhes do imóvel e da redondeza, e converte hóspedes em reservas diretas — tudo automático, 24 horas por dia.',
+    subheadline: 'O Zélla AirB lê o seu anúncio Airbnb, entrega as chaves virtuais, responde com detalhes do imóvel e da redondeza, e converte hóspedes em reservas diretas — tudo automático, 24 horas por dia.',
     heroStat: { val: '0', label: 'interação necessária' },
     backgroundImage: '/images/niche-anfitrioes-bg.jpg',
     ctaText: 'Ver como funciona para Anfitriões',
@@ -331,9 +336,17 @@ const anfitrioesContent: NicheContent = {
     {
       icon: 'Bot',
       title: 'A IA que conhece seu imóvel como você',
-      desc: 'O Zélla importa as regras, fotos, localização, amenidades e políticas direto do seu anúncio Airbnb. Ele responde no WhatsApp com informações precisas sobre o imóvel e a vizinhança — restaurantes, praias, farmácias, transporte — como um anfitrião local que mora ali.',
-      stat: { val: '100%', label: 'Baseado no seu anúncio' },
+      desc: 'O Magic Onboarding importa as regras, fotos, localização, amenidades e políticas direto do seu anúncio Airbnb — preenchendo 78% do painel automaticamente. O Zélla responde no WhatsApp com informações precisas sobre o imóvel e a vizinhança como um anfitrião local que mora ali.',
+      stat: { val: '78%', label: 'Auto-preenchido pela IA' },
       color: 'emerald',
+      size: 'lg',
+    },
+    {
+      icon: 'ShieldAlert',
+      title: 'PIX Gatekeeper — proteção contra banimento',
+      desc: 'O Zélla detecta em tempo real se a conversa pertence a um hóspede originado do Airbnb e bloqueia automaticamente o envio de chaves PIX. Seu anfitrião nunca corre risco de banimento na plataforma por desvio de pagamento.',
+      stat: { val: '100%', label: 'Proteção automática' },
+      color: 'rose',
       size: 'lg',
     },
     {
@@ -344,25 +357,18 @@ const anfitrioesContent: NicheContent = {
       size: 'sm',
     },
     {
-      icon: 'ShieldCheck',
-      title: 'Confiança que o hóspede sente',
-      desc: 'Respostas rápidas, precisas e humanizadas transmitem segurança. O hóspede sente que está sendo cuidado por alguém que conhece o imóvel — e volta, e recomenda. A percepção de qualidade é o que gera avaliação 5 estrelas.',
+      icon: 'Star',
+      title: 'Caminho garantido para Superhost',
+      desc: 'Respostas rápidas e precisas aumentam sua taxa de resposta — métrica crucial para o selo Superhost. O hóspede sente que está sendo cuidado por alguém que conhece o imóvel. Avaliações 5 estrelas viram consequência.',
       color: 'amber',
       size: 'sm',
     },
     {
       icon: 'DollarSign',
       title: 'Reservas diretas = mais receita',
-      desc: 'Cada reserva via WhatsApp é uma comissão de 15% da Airbnb que fica no seu bolso. O Zélla converte hóspedes do Airbnb em clientes diretos recorrentes. Um hóspede que volta pelo WhatsApp nunca mais paga comissão.',
+      desc: 'Cada reserva via WhatsApp é uma comissão de 15% da Airbnb que fica no seu bolso. O Zélla converte hóspedes em clientes diretos recorrentes. Um hóspede que volta pelo WhatsApp nunca mais paga comissão.',
       stat: { val: '15%', label: 'Comissão Airbnb eliminada' },
       color: 'violet',
-      size: 'sm',
-    },
-    {
-      icon: 'MapPin',
-      title: 'Conhecimento local automático',
-      desc: 'O Zélla sabe informar sobre a redondeza: onde comer, como chegar, o que fazer, pontos turísticos, farmácias e emergências. Tudo baseado na localização do seu imóvel — sem você configurar nada.',
-      color: 'pink',
       size: 'sm',
     },
   ],
@@ -372,29 +378,29 @@ const anfitrioesContent: NicheContent = {
       num: '01',
       icon: 'Link',
       title: 'Cole a URL do seu anúncio',
-      subtitle: 'O Zélla faz o resto sozinho',
-      desc: 'Basta colar o link do seu anúncio Airbnb. O Zélla importa automaticamente as fotos, regras, preços, amenidades, localização, políticas e informações da vizinhança. Tudo preenchido sem você digitar nada — igual à API oficial do Airbnb.',
+      subtitle: 'O Magic Onboarding faz o resto',
+      desc: 'Basta colar o link do seu anúncio Airbnb. O Zélla AirB importa automaticamente as fotos, regras, preços, amenidades, localização, políticas e informações da vizinhança — 78% do painel preenchido sem você digitar nada. Em 5 minutos está pronto para atender.',
       color: 'blue',
-      highlights: ['Importação automática completa', 'Zero digitação', 'Revisão guiada'],
+      highlights: ['Importação automática (78%)', 'Zero digitação', 'Revisão guiada'],
       fields: ['URL do anúncio Airbnb', 'Chave PIX', 'WhatsApp do anfitrião', 'Código da fechadura', 'Instruções de check-in', 'Regras da casa'],
     },
     {
       num: '02',
       icon: 'Bot',
-      title: 'A IA atende no seu lugar',
-      subtitle: 'WhatsApp 24/7 com respostas do seu anúncio',
-      desc: 'O Zélla responde perguntas sobre o imóvel, envia fotos, confirma disponibilidade, entrega as chaves virtuais e informa sobre a redondeza — tudo baseado no que ele aprendeu do seu anúncio e da localização. Respostas humanizadas que transmitem confiança e cuidado.',
+      title: 'O Cérebro AirB atende no seu lugar',
+      subtitle: 'WhatsApp 24/7 + Inbox Sync Airbnb',
+      desc: 'O Zélla responde perguntas sobre o imóvel, envia fotos, confirma disponibilidade, entrega as chaves virtuais e informa sobre a redondeza — tudo baseado no que aprendeu do seu anúncio. Lifecycle Hooks automáticos: regras da casa após reserva, senha no check-in, pedido de avaliação no checkout.',
       color: 'emerald',
-      highlights: ['Respostas baseadas no anúncio', 'Chaves virtuais automáticas', 'Informações da vizinhança incluídas'],
+      highlights: ['Respostas baseadas no anúncio', 'Lifecycle Hooks automáticos', 'Chaves virtuais automáticas'],
     },
     {
       num: '03',
       icon: 'BarChart3',
       title: 'Escale e monitore',
       subtitle: 'De 2 para 10 imóveis sem estresse',
-      desc: 'Adicione mais imóveis colando novas URLs. O painel mostra ocupação, receita e avaliações de todo o portfólio. Você cresce sem contratar ninguém — cada imóvel tem seu próprio atendimento personalizado.',
+      desc: 'Adicione mais imóveis colando novas URLs. O painel mostra ocupação, receita e avaliações de todo o portfólio. Calendar Sync bidirecional mantém tudo atualizado — reserva direta bloqueia data no Airbnb instantaneamente. Você cresce sem contratar ninguém.',
       color: 'violet',
-      highlights: ['Portfólio centralizado', 'Relatórios consolidados', 'Alertas de avaliação'],
+      highlights: ['Portfólio centralizado', 'Calendar Sync bidirecional', 'Alertas de avaliação'],
     },
   ],
 
@@ -422,14 +428,14 @@ const anfitrioesContent: NicheContent = {
     },
     {
       icon: 'Link',
-      badge: 'Importação Airbnb 1-Click',
+      badge: 'Magic Onboarding — Importação Airbnb 1-Click',
       heroStat: { val: '1', label: 'URL para configurar', gradient: 'from-amber-400 to-rose-400' },
       headline: 'Cole o link. O Zélla se configura.',
       subtitle: 'Seu anúncio vira a base de conhecimento da IA — incluindo a vizinhança.',
-      desc: 'Não preencha formulários intermináveis. Cole a URL do seu anúncio Airbnb e o Zélla extrai tudo: fotos, regras, localização, preços, políticas, amenidades e pontos de interesse ao redor. Ele revisa e você só confirma — em 5 minutos está pronto para atender.',
+      desc: 'Não preencha formulários intermináveis. Cole a URL do seu anúncio Airbnb e o Magic Onboarding extrai tudo: fotos, regras, localização, preços, políticas, amenidades e pontos de interesse ao redor. 78% dos campos preenchidos automaticamente. Ele revisa e você só confirma — em 5 minutos está pronto para atender.',
       stats: [
         { val: '5 min', label: 'Tempo de setup', sublabel: 'Da URL ao atendimento ativo', icon: 'Zap' },
-        { val: '98%', label: 'Precisão da importação', sublabel: 'Campos auto-preenchidos', icon: 'Sparkles' },
+        { val: '78%', label: 'Auto-preenchido', sublabel: 'Campos importados do anúncio', icon: 'Sparkles' },
       ],
       pills: [
         { text: 'Importação automática via URL', accent: true },
@@ -447,7 +453,7 @@ const anfitrioesContent: NicheContent = {
     badge: 'Portfólio Inteligente',
     headline: 'Todos os seus imóveis,',
     headlineAccent: 'um único painel.',
-    desc: 'Acompanhe reservas, ocupação e avaliações de todo o seu portfólio em tempo real. Receba notificações quando o Zélla detectar intenção de reserva e aprove com um toque. Cada imóvel com seu próprio atendimento personalizado.',
+    desc: 'Acompanhe reservas, ocupação e avaliações de todo o seu portfólio em tempo real. Calendar Sync bidirecional mantém disponibilidade atualizada entre WhatsApp e Airbnb. Receba notificações quando o Zélla detectar intenção de reserva e aprove com um toque.',
     pains: [
       { icon: 'Building2', title: 'Visão de Portfólio Completa', desc: 'Acompanhe ocupação, receita e avaliação de todos os seus imóveis em um único painel. Relatórios consolidados para decisões estratégicas sobre crescimento.' },
       { icon: 'Bell', title: 'Notificação de Fechamento', desc: 'Quando o Zélla detecta intenção de reserva, ele te notifica com resumo da conversa e perfil do hóspede. Você aprova com um toque — sem abrir o WhatsApp.' },
@@ -506,17 +512,20 @@ const anfitrioesContent: NicheContent = {
   },
 
   faqs: [
-    { question: 'O Zélla importa mesmo tudo do meu anúncio Airbnb?', answer: 'Sim! Basta colar a URL e o Zélla extrai fotos, regras, localização, preços, amenidades e políticas automaticamente — como a API oficial do Airbnb. Você revisa e confirma em 5 minutos.' },
+    { question: 'O Zélla AirB importa mesmo tudo do meu anúncio Airbnb?', answer: 'Sim! O Magic Onboarding extrai fotos, regras, localização, preços, amenidades e políticas automaticamente — preenchendo 78% do painel sem você digitar nada. Você revisa e confirma em 5 minutos.' },
     { question: 'Como funciona o check-in virtual?', answer: 'Quando o hóspede confirma a reserva, o Zélla envia automaticamente as instruções de acesso com o código da fechadura inteligente. Tudo pelo WhatsApp, sem sua interação — nem de madrugada.' },
+    { question: 'O que é o PIX Gatekeeper?', answer: 'É um filtro em tempo real que detecta se a conversa pertence a um hóspede originado do Airbnb. Se sim, o Zélla bloqueia automaticamente o envio de chaves PIX — protegendo você contra banimento na plataforma por desvio de pagamento.' },
+    { question: 'O que são os Lifecycle Hooks?', answer: 'São automações baseadas nos eventos da plataforma: minutos após a reserva, o Zélla envia as regras da casa; na manhã do check-in, a senha da fechadura; após o check-out, um agradecimento e pedido de avaliação. Tudo automático, sem você aprovar.' },
     { question: 'O Zélla sabe informar sobre a vizinhança?', answer: 'Sim! Com base na localização do seu imóvel, o Zélla responde sobre restaurantes, praias, pontos turísticos, farmácias e transporte próximos. Tudo automático, sem configuração.' },
-    { question: 'Posso usar com múltiplos imóveis?', answer: 'Sim! Adicione quantos anúncios quiser colando as URLs. O painel mostra todas as propriedades em um único lugar com métricas consolidadas. Cada imóvel tem seu próprio atendimento personalizado.' },
-    { question: 'E se o hóspede tiver um problema que a IA não resolve?', answer: 'O Zélla detecta situações que precisam de atenção humana e te notifica imediatamente com o resumo da conversa. Você pode assumir o chat com um toque — a transição é imperceptível.' },
     { question: 'Quanto economizo em comissões?', answer: 'Cada reserva que o Zélla converte pelo WhatsApp elimina a comissão da Airbnb (cerca de 15%). Em um portfólio de 5 imóveis, isso pode representar mais de R$ 2.000/mês em economia. Hóspedes que voltam pelo WhatsApp nunca mais pagam comissão.' },
   ],
 };
 
 // ═══════════════════════════════════════════════════════════════
-// PARCEIRO CONTENT — R$297/mês durante 24 meses (PRO com selo exclusivo)
+// PARCEIRO CONTENT — Parceiro Zélla
+// Terminologia exclusiva: parceiro, plano, assinatura, mensalidade, economia, selo, PRO, ROI
+// NUNCA usar: imóveis, pousada, anúncio, Airbnb, anfitrião, quarto, diária
+// Foco: programa de parceria, preço congelado, selo exclusivo, economia vs PRO regular
 // ═══════════════════════════════════════════════════════════════
 const parceiroContent: NicheContent = {
   switcher: {
@@ -533,7 +542,7 @@ const parceiroContent: NicheContent = {
     {
       icon: 'Crown',
       title: 'PRO por R$297/mês — preço de parceiro',
-      desc: 'O plano PRO regular custa R$397/mês. Como Parceiro Zélla, você paga apenas R$297/mês com o preço congelado por 24 meses. São R$100 de desconto todo mês — R$2.400 de economia em 2 anos. Hóspedes ilimitados, mensagens ilimitadas, tudo do PRO.',
+      desc: 'O plano PRO regular custa R$397/mês. Como Parceiro Zélla, você paga apenas R$297/mês com o preço congelado por 24 meses. São R$100 de desconto todo mês — R$2.400 de economia em 2 anos. Atendimento ilimitado, mensagens ilimitadas, tudo do PRO.',
       stat: { val: 'R$2.400', label: 'Economia em 24 meses' },
       color: 'amber',
       size: 'lg',
@@ -541,7 +550,7 @@ const parceiroContent: NicheContent = {
     {
       icon: 'ShieldCheck',
       title: 'Selo Exclusivo de Parceiro Zélla',
-      desc: 'Receba o selo de parceiro oficial no seu perfil e communications. Transmita credibilidade e confiança aos seus hóspedes — eles sabem que estão sendo atendidos por uma empresa certificada. Diferencial que ninguém mais tem.',
+      desc: 'Receba o selo de parceiro oficial no seu perfil e comunicações. Transmita credibilidade e confiança — seus clientes sabem que estão sendo atendidos por uma operação certificada. Diferencial competitivo que ninguém mais tem.',
       stat: { val: 'OFICIAL', label: 'Selo de parceiro' },
       color: 'emerald',
       size: 'lg',
@@ -549,22 +558,22 @@ const parceiroContent: NicheContent = {
     {
       icon: 'Lock',
       title: 'Preço congelado por 24 meses',
-      desc: 'Mesmo que o plano PRO sofra reajuste, seu preço de R$297/mês fica travado por 24 meses. Sem surpresa, sem reajuste surpresa. Você sabe exatamente quanto vai pagar durante 2 anos inteiros.',
+      desc: 'Mesmo que o plano PRO sofra reajuste, seu preço de R$297/mês fica travado por 24 meses. Sem surpresa, sem reajuste inesperado. Você sabe exatamente quanto vai pagar durante 2 anos inteiros.',
       color: 'blue',
       size: 'sm',
     },
     {
       icon: 'Zap',
       title: 'Todas as funcionalidades do PRO',
-      desc: 'Hóspedes ilimitados, mensagens ilimitadas, campanhas automatizadas, análise de sentimento, sugestões de preços inteligentes, suporte prioritário. Tudo que o PRO oferece, você tem como Parceiro.',
+      desc: 'Atendimento ilimitado, mensagens ilimitadas, campanhas automatizadas, análise de sentimento, sugestões de preços inteligentes, suporte prioritário. Tudo que o PRO oferece, você tem como Parceiro.',
       color: 'sky',
       size: 'sm',
     },
     {
       icon: 'TrendingUp',
       title: 'ROI já na primeira semana',
-      desc: 'Com mensagens ilimitadas e hóspedes ilimitados, uma única reserva gerada pelo Zélla já cobre a mensalidade. Depois disso, cada reserva extra é lucro direto no seu bolso — e você ainda tem o mês todo pela frente.',
-      stat: { val: '1', label: 'Reserva para se pagar' },
+      desc: 'Com mensagens ilimitadas e atendimento ilimitado, um único contrato gerado pelo Zélla já cobre a mensalidade. Depois disso, cada novo atendimento é lucro direto — e você ainda tem o mês todo pela frente.',
+      stat: { val: '1', label: 'Contrato para se pagar' },
       color: 'violet',
       size: 'sm',
     },
@@ -591,18 +600,18 @@ const parceiroContent: NicheContent = {
     {
       num: '02',
       icon: 'UserPlus',
-      title: 'Configure seu negócio no Zélla',
+      title: 'Configure sua operação no Zélla',
       subtitle: '5 minutos e está no ar',
-      desc: 'Cadastre seu negócio ou importe seu anúncio de hospedagem. O Zélla importa tudo automaticamente e já começa a atender seus hóspedes. Em menos de 24 horas, a primeira reserva pela IA costuma chegar.',
+      desc: 'Cadastre sua operação de atendimento no Zélla. A IA já começa a responder seus clientes automaticamente, no tom que você definir. Em menos de 24 horas, o primeiro resultado pela IA costuma aparecer.',
       color: 'emerald',
-      highlights: ['Importação automática ou cadastro manual', 'Setup em 5 minutos', 'Primeira reserva em até 24h'],
+      highlights: ['Cadastro rápido e guiado', 'Setup em 5 minutos', 'Primeiro resultado em até 24h'],
     },
     {
       num: '03',
       icon: 'TrendingUp',
       title: '2 anos de PRO com preço travado',
       subtitle: 'Economia garantida mês a mês',
-      desc: 'Aproveite 24 meses de plano PRO completo por R$297/mês — R$100 a menos que o regular. Hóspedes ilimitados, mensagens ilimitadas, suporte prioritário, tudo incluído. Foque no que importa — o Zélla cuida do resto.',
+      desc: 'Aproveite 24 meses de plano PRO completo por R$297/mês — R$100 a menos que o regular. Atendimento ilimitado, mensagens ilimitadas, suporte prioritário, tudo incluído. Foque no que importa — o Zélla cuida do resto.',
       color: 'violet',
       highlights: ['24 meses de PRO congelado', 'R$100/mês de desconto', 'Suporte prioritário incluído'],
     },
@@ -615,16 +624,16 @@ const parceiroContent: NicheContent = {
       heroStat: { val: 'R$297/mês', label: 'PRO congelado por 24 meses', gradient: 'from-amber-400 to-yellow-400' },
       headline: 'Plano PRO. Preço de Parceiro.',
       subtitle: 'R$100 de desconto todo mês + selo exclusivo de parceiro.',
-      desc: 'O plano PRO regular custa R$397/mês. Como Parceiro Zélla, você paga R$297/mês com preço congelado por 24 meses — são R$100 de economia todo mês, totalizando R$2.400 em 2 anos. Hóspedes ilimitados, mensagens ilimitadas, suporte prioritário, tudo do PRO. E ainda ganha o selo exclusivo de parceiro.',
+      desc: 'O plano PRO regular custa R$397/mês. Como Parceiro Zélla, você paga R$297/mês com preço congelado por 24 meses — são R$100 de economia todo mês, totalizando R$2.400 em 2 anos. Atendimento ilimitado, mensagens ilimitadas, suporte prioritário, tudo do PRO. E ainda ganha o selo exclusivo de parceiro.',
       stats: [
         { val: 'R$2.400', label: 'Economia vs. PRO regular', sublabel: 'R$100 × 24 meses', icon: 'DollarSign' },
-        { val: 'R$100', label: 'Desconto por mês', sublabel: 'R$397 → R$297', icon: 'Calculator' },
+        { val: 'R$100', label: 'Desconto por mês', sublabel: 'R$397 → R$297', icon: 'TrendingUp' },
       ],
       pills: [
         { text: 'Plano PRO completo — R$297/mês', accent: true },
         { text: 'Preço congelado por 24 meses' },
         { text: 'Selo exclusivo de Parceiro Zélla' },
-        { text: 'Hóspedes e mensagens ilimitados' },
+        { text: 'Atendimento e mensagens ilimitados' },
       ],
       bottomLine: 'R$100 a menos por mês durante 2 anos. O PRO nunca foi tão acessível.',
       mockup: 'whatsapp',
@@ -657,28 +666,28 @@ const parceiroContent: NicheContent = {
     badge: 'Painel do Parceiro',
     headline: 'PRO completo,',
     headlineAccent: 'por um preço que impressiona.',
-    desc: 'O plano Parceiro dá acesso total ao dashboard PRO: reservas, receita, taxa de ocupação, campanhas, análise de sentimento — tudo em tempo real. Acompanhe seu ROI e veja a economia de R$100/mês acontecendo.',
+    desc: 'O plano Parceiro dá acesso total ao dashboard PRO: métricas de atendimento, receita gerada, campanhas ativas, análise de sentimento — tudo em tempo real. Acompanhe seu ROI e veja a economia de R$100/mês acontecendo.',
     pains: [
-      { icon: 'Activity', title: 'Dashboard PRO Completo', desc: 'Reservas geradas, receita do dia, taxa de ocupação, campanhas ativas — tudo em tempo real. Relatórios semanais automáticos no seu e-mail com métricas detalhadas.' },
+      { icon: 'Activity', title: 'Dashboard PRO Completo', desc: 'Métricas de atendimento, receita gerada, campanhas ativas — tudo em tempo real. Relatórios semanais automáticos no seu e-mail com dados detalhados.' },
       { icon: 'DollarSign', title: 'Economia de R$100/mês', desc: 'Veja exatamente quanto está economizando como Parceiro: R$100 todo mês comparado ao PRO regular. Em 24 meses, são R$2.400 que ficam no seu bolso.' },
-      { icon: 'TrendingUp', title: 'ROI Visível desde a Primeira Semana', desc: 'Com mensagens ilimitadas e hóspedes ilimitados, uma única reserva gerada pelo Zélla já cobre a mensalidade de R$297. O ROI é visível no painel desde o primeiro dia.' },
+      { icon: 'TrendingUp', title: 'ROI Visível desde a Primeira Semana', desc: 'Com mensagens ilimitadas e atendimento ilimitado, um único contrato gerado pelo Zélla já cobre a mensalidade de R$297. O ROI é visível no painel desde o primeiro dia.' },
     ],
     stats: [
       { label: 'Mensalidade Parceiro', val: 'R$297', title: 'Por mês (congelado)', color: 'text-amber-400' },
-      { label: 'Mesmo atendimento dos planos mensais', val: '24/7', title: 'IA no WhatsApp', color: 'text-emerald-400' },
+      { label: 'Atendimento 24/7', val: 'IA ativa', title: 'No WhatsApp', color: 'text-emerald-400' },
       { label: 'Desconto vs. PRO regular', val: 'R$100', title: 'Por mês', color: 'text-blue-400' },
       { label: 'Economia em 24 meses', val: 'R$2.400', title: 'Total garantido', color: 'text-zinc-300' },
     ],
     recentActivity: [
       { color: 'bg-amber-400', text: 'Plano Parceiro PRO ativado com sucesso', time: 'agora' },
-      { color: 'bg-emerald-400', text: 'Primeira reserva gerada pela IA', time: '18h' },
-      { color: 'bg-blue-400', text: 'PIX recebido — R$380,00', time: '1d' },
+      { color: 'bg-emerald-400', text: 'Primeiro resultado gerado pela IA', time: '18h' },
+      { color: 'bg-blue-400', text: 'Pagamento confirmado — R$297,00', time: '1d' },
     ],
     footerLeft: { icon: 'DollarSign', label: 'Receita Gerada pela IA:', value: 'R$ 2.340,00' },
     footerRight: { icon: 'Crown', label: 'Plano Parceiro PRO:', value: 'R$ 297,00/mês' },
     chatConversation: [
       { sender: 'user', name: 'Luciana Ferreira', text: 'Olá! Vi que vocês têm o plano Parceiro PRO por R$297/mês. Como funciona o preço congelado?' },
-      { sender: 'bot', confidence: '99%', actions: 'Plano Parceiro selecionado', text: 'Olá, Luciana! O Plano Parceiro PRO é simples: você paga R$297/mês e o preço fica congelado por 24 meses — mesmo que o PRO regular suba. São R$100 de desconto por mês em relação ao PRO de R$397. Tudo do PRO: hóspedes ilimitados, mensagens ilimitadas, suporte prioritário. E ainda ganha o selo exclusivo de parceiro. Quer garantir sua vaga?' },
+      { sender: 'bot', confidence: '99%', actions: 'Plano Parceiro selecionado', text: 'Olá, Luciana! O Plano Parceiro PRO é simples: você paga R$297/mês e o preço fica congelado por 24 meses — mesmo que o PRO regular suba. São R$100 de desconto por mês em relação ao PRO de R$397. Tudo do PRO: atendimento ilimitado, mensagens ilimitadas, suporte prioritário. E ainda ganha o selo exclusivo de parceiro. Quer garantir sua vaga?' },
       { sender: 'user', name: 'Luciana Ferreira', text: 'Isso é incrível! Quero garantir minha vaga de Parceiro agora!' },
     ],
   },
@@ -688,7 +697,7 @@ const parceiroContent: NicheContent = {
       name: 'Thiago Ribeiro',
       role: 'Parceiro Zélla',
       location: 'Belo Horizonte, MG',
-      text: 'R$297/mês pelo PRO congelado por 2 anos? É o melhor negócio que já fiz. O PRO regular é R$397, então já economizo R$100 todo mês. A primeira reserva que o Zélla gerou já cobriu a mensalidade. Depois disso, é lucro.',
+      text: 'R$297/mês pelo PRO congelado por 2 anos? É o melhor negócio que já fiz. O PRO regular é R$397, então já economizo R$100 todo mês. O primeiro resultado que o Zélla gerou já cobriu a mensalidade. Depois disso, é lucro.',
       avatar: '/avatar-serenity.jpg',
       rating: 5,
     },
@@ -704,7 +713,7 @@ const parceiroContent: NicheContent = {
       name: 'Rafael Lima',
       role: 'Parceiro Zélla',
       location: 'Campos do Jordão, SP',
-      text: 'O plano Parceiro PRO é imbatível. R$297/mês com tudo do PRO: mensagens ilimitadas, hóspedes ilimitados, preço congelado por 24 meses. Configurei em 5 minutos e em 3 dias já tinha a primeira reserva. ROI de 10x.',
+      text: 'O plano Parceiro PRO é imbatível. R$297/mês com tudo do PRO: mensagens ilimitadas, atendimento ilimitado, preço congelado por 24 meses. Configurei em 5 minutos e em 3 dias já tinha o primeiro resultado. ROI de 10x.',
       avatar: '/pousada-chale.jpg',
       rating: 5,
     },
@@ -712,15 +721,15 @@ const parceiroContent: NicheContent = {
 
   pricing: {
     focusLabel: 'PRO por preço de Parceiro',
-    focusDesc: 'R$297/mês congelados por 24 meses. Plano PRO completo com hóspedes e mensagens ilimitados + selo exclusivo de parceiro. Economia de R$2.400 vs. PRO regular.',
+    focusDesc: 'R$297/mês congelados por 24 meses. Plano PRO completo com atendimento e mensagens ilimitados + selo exclusivo de parceiro. Economia de R$2.400 vs. PRO regular.',
   },
 
   faqs: [
     { question: 'O plano Parceiro é realmente R$297/mês?', answer: 'Sim! Como Parceiro Zélla, você paga R$297/mês pelo plano PRO completo — R$100 a menos que o preço regular de R$397/mês. O preço fica congelado por 24 meses, sem reajuste. É o nosso melhor custo-benefício.' },
-    { question: 'O Parceiro tem as mesmas funcionalidades do PRO?', answer: 'Sim! O plano Parceiro inclui tudo do PRO: hóspedes ilimitados, mensagens ilimitadas, IA 24/7 no WhatsApp, campanhas automatizadas, análise de sentimento, suporte prioritário e dashboard completo. A diferença? Você paga R$100 a menos por mês e ganha o selo exclusivo de parceiro.' },
-    { question: 'O que é o selo exclusivo de Parceiro?', answer: 'O selo de Parceiro Zélla é um distintivo oficial que aparece no seu perfil e comunicações. Mostra aos hóspedes que você é certificado pelo Zélla — transmitindo credibilidade e confiança. Apenas parceiros têm esse selo.' },
+    { question: 'O Parceiro tem as mesmas funcionalidades do PRO?', answer: 'Sim! O plano Parceiro inclui tudo do PRO: atendimento ilimitado, mensagens ilimitadas, IA 24/7 no WhatsApp, campanhas automatizadas, análise de sentimento, suporte prioritário e dashboard completo. A diferença? Você paga R$100 a menos por mês e ganha o selo exclusivo de parceiro.' },
+    { question: 'O que é o selo exclusivo de Parceiro?', answer: 'O selo de Parceiro Zélla é um distintivo oficial que aparece no seu perfil e comunicações. Mostra aos seus clientes que você é certificado pelo Zélla — transmitindo credibilidade e confiança. Apenas parceiros têm esse selo.' },
     { question: 'O preço de R$297/mês pode subir?', answer: 'Não durante 24 meses. Seu preço de R$297/mês fica congelado por 24 meses a partir da ativação, mesmo que o plano PRO regular sofra reajuste. Transparência total — você sabe exatamente quanto vai pagar.' },
-    { question: 'Funciona para qualquer tipo de hospedagem?', answer: 'Sim! O plano Parceiro PRO funciona para pousadas, chalés, flats ou qualquer tipo de hospedagem. Você cadastra seu negócio ou importa seu anúncio — a IA importa tudo automaticamente. Hóspedes e mensagens são ilimitados para qualquer tipo de operação.' },
+    { question: 'O Parceiro funciona para qualquer tipo de operação?', answer: 'Sim! O plano Parceiro PRO funciona para qualquer operação de atendimento — de hospedagem a serviços. Você cadastra sua operação e a IA importa tudo automaticamente. Atendimento e mensagens são ilimitados para qualquer tipo de negócio.' },
     { question: 'E se eu quiser o plano MAX depois?', answer: 'Se precisar de recursos exclusivos do MAX (consultoria mensal, onboarding personalizado, SLA garantido), você pode fazer upgrade pagando apenas a diferença. Seu preço de Parceiro é preservado se quiser voltar ao PRO depois.' },
   ],
 };

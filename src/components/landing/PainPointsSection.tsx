@@ -11,11 +11,17 @@ import {
   Sparkles,
   Zap,
   ShieldCheck,
+  ShieldAlert,
   TrendingUp,
   ArrowUpRight,
   Key,
   Bot,
   Building2,
+  Crown,
+  Lock,
+  Star,
+  CreditCard,
+  UserPlus,
   type LucideIcon,
 } from 'lucide-react';
 import { useNiche } from '@/contexts/NicheContext';
@@ -29,9 +35,18 @@ const iconMap: Record<string, LucideIcon> = {
   BarChart3,
   Users,
   ShieldCheck,
+  ShieldAlert,
   Key,
   Bot,
   Building2,
+  Crown,
+  Lock,
+  Star,
+  Zap,
+  TrendingUp,
+  CreditCard,
+  UserPlus,
+  Sparkles,
 };
 
 /* ─────────── COLOR MAP ─────────── */
@@ -42,6 +57,7 @@ const colorMap: Record<string, { bg: string; accent: string; ring: string; glow:
   amber:   { bg: 'bg-amber-500', accent: 'bg-amber-500/10', ring: 'border-amber-500/20', glow: 'shadow-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/30' },
   violet:  { bg: 'bg-violet-500', accent: 'bg-violet-500/10', ring: 'border-violet-500/20', glow: 'shadow-violet-500/20', text: 'text-violet-400', border: 'border-violet-500/30' },
   pink:    { bg: 'bg-pink-500', accent: 'bg-pink-500/10', ring: 'border-pink-500/20', glow: 'shadow-pink-500/20', text: 'text-pink-400', border: 'border-pink-500/30' },
+  rose:    { bg: 'bg-rose-500', accent: 'bg-rose-500/10', ring: 'border-rose-500/20', glow: 'shadow-rose-500/20', text: 'text-rose-400', border: 'border-rose-500/30' },
 };
 
 /* ─────────── SCROLLING STATS MARQUEE (Cloudbeds-inspired) ─────────── */

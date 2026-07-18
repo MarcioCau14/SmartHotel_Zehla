@@ -28,7 +28,7 @@ const CUSTO_ZELLA_PRO = 397;        // R$/mês plano PRO (referência para cálc
 export function SavingsCalculator() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  const { isPousadas, isAnfitrioes } = useNiche();
+  const { isPousadas, isAnfitrioes, isParceiro } = useNiche();
 
   const [contatosMes, setContatosMes] = useState(80);
   const [diariaMedia, setDiariaMedia] = useState(350);
@@ -101,8 +101,8 @@ export function SavingsCalculator() {
             <span className="text-emerald-400 text-xs font-medium">Simulador de Resultados</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6 tracking-tight">
-            {isPousadas ? 'Quanto sua pousada' : isAnfitrioes ? 'Quanto seus imóveis' : 'Quanto você economiza'}{' '}
-            <span className="text-emerald-400 font-bold">{isPousadas || isAnfitrioes ? 'ganha com o Zélla?' : 'com o Zélla?'}</span>
+            {isPousadas ? 'Quanto sua pousada' : isAnfitrioes ? 'Quanto seus imóveis' : 'Quanto seu negócio'}{' '}
+            <span className="text-emerald-400 font-bold">{isPousadas || isAnfitrioes ? 'ganha com o Zélla?' : 'economiza com o Zélla?'}</span>
           </h2>
           <p className="text-neutral-400 text-lg sm:text-xl max-w-2xl mx-auto">
             Insira os dados reais da sua operação e veja o impacto no seu faturamento
@@ -154,7 +154,7 @@ export function SavingsCalculator() {
                 {/* Input 2: Diária média */}
                 <div className="space-y-3">
                   <label className="block text-neutral-300 text-sm font-medium">
-                    {isPousadas ? 'Diária média da pousada' : isAnfitrioes ? 'Diária média do imóvel' : 'Diária média'}
+                    {isPousadas ? 'Diária média da pousada' : isAnfitrioes ? 'Diária média do imóvel' : 'Ticket médio do atendimento'}
                   </label>
                   <div className="flex items-center gap-3">
                     <button
@@ -251,7 +251,7 @@ export function SavingsCalculator() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Resposta após horas</span>
-                    <span className="text-red-400/80 font-medium">Perde hóspedes</span>
+                    <span className="text-red-400/80 font-medium">{isParceiro ? 'Perde oportunidades' : 'Perde hóspedes'}</span>
                   </div>
                 </div>
                 <div className="mt-3 h-2.5 rounded-full bg-white/[0.04] overflow-hidden">
@@ -338,7 +338,7 @@ export function SavingsCalculator() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-[11px] text-neutral-500 leading-relaxed">
                 <div className="flex items-start gap-2">
                   <span className="w-1 h-1 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
-                  <span>Sem Zélla: <strong className="text-neutral-400">20% de conversão</strong> — resposta demorada perde hóspedes para concorrentes</span>
+                  <span>Sem Zélla: <strong className="text-neutral-400">20% de conversão</strong> — resposta demorada perde {isParceiro ? 'oportunidades para concorrentes' : 'hóspedes para concorrentes'}</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="w-1 h-1 rounded-full bg-emerald-500 mt-1.5 shrink-0" />

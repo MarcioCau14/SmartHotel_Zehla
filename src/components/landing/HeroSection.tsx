@@ -75,7 +75,7 @@ export function HeroSection() {
               {isPousadas
                 ? 'O zelador digital que responde 24hs por 7. Atende os hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para pousadas.'
                 : isAnfitrioes
-                ? 'O zelador digital que responde 24hs por 7. Atende seus hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para anfitriões de Airbnb.'
+                ? 'O zelador digital que responde 24hs por 7. Atende seus hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para anfitriões Airbnb. O Zélla AirB é seu co-anfitrião digital.'
                 : 'O programa de parceria que congela seu preço por 24 meses. Plano PRO completo por R$297/mês com selo exclusivo de parceiro.'}
             </p>
 
@@ -110,14 +110,14 @@ export function HeroSection() {
                   ? [
                       { name: 'Hotel Central', img: '/avatar-serenity.jpg' },
                       { name: 'Rede Sol Nascente', img: '/pousada-vista.jpg' },
-                      { name: 'Pousada Villa', img: '/pousada-chale.jpg' },
+                      { name: 'Operação Premium', img: '/pousada-chale.jpg' },
                       { name: 'Flat Premium', img: '/pousada-jardim.jpg' },
                     ]
                   : [
-                      { name: 'Pousada Serenity', img: '/avatar-serenity.jpg' },
-                      { name: isAnfitrioes ? 'Flat Copacabana' : 'Pousada Sol & Mar', img: '/pousada-vista.jpg' },
-                      { name: isAnfitrioes ? 'Chalé Campos' : 'Chalé da Montanha', img: '/pousada-chale.jpg' },
-                      { name: isAnfitrioes ? 'Apartamento Centro' : 'Recanto Verde', img: '/pousada-jardim.jpg' },
+                      { name: isAnfitrioes ? 'Flat Copacabana' : 'Pousada Serenity', img: '/avatar-serenity.jpg' },
+                      { name: isAnfitrioes ? 'Chalé Campos' : 'Pousada Sol & Mar', img: '/pousada-vista.jpg' },
+                      { name: isAnfitrioes ? 'Apartamento Centro' : 'Chalé da Montanha', img: '/pousada-chale.jpg' },
+                      { name: isAnfitrioes ? 'Studio Paulista' : 'Recanto Verde', img: '/pousada-jardim.jpg' },
                     ]
                 ).map((p, i) => (
                   <div key={i} className="w-8 h-8 rounded-full p-[1.5px] bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 shadow-sm relative" style={{ zIndex: 40 - i * 10 }}>

@@ -15,6 +15,8 @@ import {
   Globe,
   Link,
   Bot,
+  CreditCard,
+  TrendingUp,
   type LucideIcon,
 } from 'lucide-react';
 import { useNiche } from '@/contexts/NicheContext';
@@ -27,6 +29,8 @@ const iconMap: Record<string, LucideIcon> = {
   BarChart3,
   Link,
   Bot,
+  CreditCard,
+  TrendingUp,
 };
 
 /* ─────────── COLOR MAP ─────────── */
