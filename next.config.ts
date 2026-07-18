@@ -1,4 +1,13 @@
-if (process.env.NEXTAUTH_URL === '') {
+// Sanitize NEXTAUTH_URL — Vercel may set it to an empty string or invalid value
+try {
+  if (!process.env.NEXTAUTH_URL || process.env.NEXTAUTH_URL === '') {
+    delete process.env.NEXTAUTH_URL;
+  } else {
+    // Validate that it's a proper URL
+    new URL(process.env.NEXTAUTH_URL);
+  }
+} catch {
+  console.warn('[next.config] NEXTAUTH_URL is invalid, removing it:', process.env.NEXTAUTH_URL);
   delete process.env.NEXTAUTH_URL;
 }
 
