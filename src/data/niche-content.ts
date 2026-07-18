@@ -398,9 +398,9 @@ const anfitrioesContent: NicheContent = {
       icon: 'BarChart3',
       title: 'Escale e monitore',
       subtitle: 'De 2 para 10 imóveis sem estresse',
-      desc: 'Adicione mais imóveis colando novas URLs. O painel mostra ocupação, receita e avaliações de todo o portfólio. Calendar Sync bidirecional mantém tudo atualizado — reserva direta bloqueia data no Airbnb instantaneamente. Você cresce sem contratar ninguém.',
+      desc: 'Adicione mais imóveis colando novas URLs. O painel mostra ocupação, receita e avaliações de todo o portfólio. Exportação iCal já disponível para sincronizar disponibilidade com Airbnb e Booking. Conexão direta via API está em desenvolvimento. Você cresce sem contratar ninguém.',
       color: 'violet',
-      highlights: ['Portfólio centralizado', 'Calendar Sync bidirecional', 'Alertas de avaliação'],
+      highlights: ['Portfólio centralizado', 'iCal export disponível', 'API direta em desenvolvimento', 'Alertas de avaliação'],
     },
   ],
 
@@ -453,7 +453,7 @@ const anfitrioesContent: NicheContent = {
     badge: 'Portfólio Inteligente',
     headline: 'Todos os seus imóveis,',
     headlineAccent: 'um único painel.',
-    desc: 'Acompanhe reservas, ocupação e avaliações de todo o seu portfólio em tempo real. Calendar Sync bidirecional mantém disponibilidade atualizada entre WhatsApp e Airbnb. Receba notificações quando o Zélla detectar intenção de reserva e aprove com um toque.',
+    desc: 'Acompanhe reservas, ocupação e avaliações de todo o seu portfólio em tempo real. Exportação iCal disponível para sincronizar disponibilidade com Airbnb e Booking — conexão direta via API em desenvolvimento. Receba notificações quando o Zélla detectar intenção de reserva e aprove com um toque.',
     pains: [
       { icon: 'Building2', title: 'Visão de Portfólio Completa', desc: 'Acompanhe ocupação, receita e avaliação de todos os seus imóveis em um único painel. Relatórios consolidados para decisões estratégicas sobre crescimento.' },
       { icon: 'Bell', title: 'Notificação de Fechamento', desc: 'Quando o Zélla detecta intenção de reserva, ele te notifica com resumo da conversa e perfil do hóspede. Você aprova com um toque — sem abrir o WhatsApp.' },

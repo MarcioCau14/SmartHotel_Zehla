@@ -85,6 +85,15 @@ const zehlaProducts = [
     description: 'Link-in-Bio profissional sem Zélla IA — R$47/mês',
     badgeClass: 'zcc-badge',
   },
+  {
+    id: 'saas-parceiro-zella',
+    name: 'PARCEIRO ZÉLLA',
+    icon: '🤝',
+    price: 247,
+    subscribers: 0,
+    description: 'PRO completo R$247/mês × 24 meses + Selo parceiro Link-in-Bio + Instagram',
+    badgeClass: 'zcc-badge-gold',
+  },
 ];
 
 const statusConfig = {
@@ -175,6 +184,59 @@ export function FintechHub() {
           </div>
           <div className="text-sm font-bold font-mono" style={{ color: 'var(--zcc-kinpaku)' }}>
             MRR Total: R$ {saasMRR.toLocaleString('pt-BR')}/mês
+          </div>
+        </div>
+      </div>
+
+      {/* ── Regras de Pricing por Nicho ──────────────────────────────────────────── */}
+      <div className="zcc-panel p-5" style={{ borderColor: 'var(--zcc-kinpaku)', borderWidth: 1 }}>
+        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--zcc-champagne)' }}>
+          <Target className="w-4 h-4" style={{ color: 'var(--zcc-kinpaku)' }} />
+          Regras de Pricing por Nicho — Landing Page
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Pousadas */}
+          <div className="zcc-panel p-3 space-y-2">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--zcc-kinpaku)' }} />
+              <span className="text-xs font-bold" style={{ color: 'var(--zcc-kinpaku)' }}>Pousadas</span>
+            </div>
+            <div className="text-[10px] space-y-1" style={{ color: 'var(--zcc-text-secondary)' }}>
+              <div><strong style={{ color: 'var(--zcc-champagne)' }}>Exibe:</strong> TRIAL + LITE + PRO + MAX</div>
+              <div><strong style={{ color: 'var(--zcc-champagne)' }}>Oculta:</strong> Parceiro Zélla</div>
+              <div><strong style={{ color: 'var(--zcc-champagne)' }}>PIX:</strong> LITE R$197</div>
+              <div><strong style={{ color: 'var(--zcc-champagne)' }}>Cartão:</strong> PRO R$397, MAX R$797</div>
+            </div>
+          </div>
+          {/* Anfitriões */}
+          <div className="zcc-panel p-3 space-y-2">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--zcc-patina)' }} />
+              <span className="text-xs font-bold" style={{ color: 'var(--zcc-patina)' }}>Anfitriões Airbnb</span>
+            </div>
+            <div className="text-[10px] space-y-1" style={{ color: 'var(--zcc-text-secondary)' }}>
+              <div><strong style={{ color: 'var(--zcc-champagne)' }}>Exibe:</strong> SOMENTE PRO + MAX</div>
+              <div><strong style={{ color: 'var(--zcc-champagne)' }}>Oculta:</strong> TRIAL, LITE, Parceiro</div>
+              <div><strong style={{ color: 'var(--zcc-champagne)' }}>Pagamento:</strong> Exclusivo Cartão</div>
+              <div className="p-1.5 rounded mt-1" style={{ background: 'rgba(59,130,246,0.08)' }}>
+                <span style={{ color: 'var(--zcc-patina)' }}>⚠ Não exibir Trial/Lite para este nicho</span>
+              </div>
+            </div>
+          </div>
+          {/* Parceiro Zélla */}
+          <div className="zcc-panel p-3 space-y-2" style={{ borderColor: 'rgba(212,168,67,0.3)', borderWidth: 1 }}>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#d4a843' }} />
+              <span className="text-xs font-bold" style={{ color: '#d4a843' }}>Parceiro Zélla</span>
+            </div>
+            <div className="text-[10px] space-y-1" style={{ color: 'var(--zcc-text-secondary)' }}>
+              <div><strong style={{ color: 'var(--zcc-champagne)' }}>Exibe:</strong> SOMENTE Parceiro Zélla</div>
+              <div><strong style={{ color: 'var(--zcc-champagne)' }}>Oculta:</strong> TRIAL, LITE, PRO, MAX</div>
+              <div><strong style={{ color: '#d4a843' }}>Preço:</strong> R$247/mês × 24 meses</div>
+              <div className="p-1.5 rounded mt-1" style={{ background: 'rgba(212,168,67,0.08)' }}>
+                <span style={{ color: '#d4a843' }}>🤝 Selo parceiro no Link-in-Bio + fixar no Instagram</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -392,7 +454,7 @@ export function FintechHub() {
           ))}
         </div>
         <div className="mt-3 text-[10px]" style={{ color: 'var(--zcc-text-muted)' }}>
-          * Split aplicado sobre transações de reservas de hóspedes via Mercado Pago. Assinaturas SaaS (LITE R$197, PRO R$397, MAX R$797, Link-in-Bio R$47) são cobradas diretamente.
+          * Split aplicado sobre transações de reservas de hóspedes via Mercado Pago. Assinaturas SaaS (LITE R$197, PRO R$397, MAX R$797, Parceiro Zélla R$247/mês × 24 meses, Link-in-Bio R$47) são cobradas diretamente.
         </div>
       </div>
 

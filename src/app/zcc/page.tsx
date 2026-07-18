@@ -17,6 +17,7 @@ import {
   Key,
   TrendingUp,
   ExternalLink,
+  Calendar,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -332,6 +333,7 @@ function SettingsPanel() {
         <h2 className="text-lg font-bold" style={{color:'var(--zcc-champagne)'}}>Configurações do Sistema</h2>
       </div>
 
+      {/* ── LINHA 1: Infra + Segurança + IA ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Gateway */}
         <div className="zcc-panel p-5 space-y-4">
@@ -377,37 +379,172 @@ function SettingsPanel() {
             <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>SOC 2</span><span className="zcc-badge" style={{color:'#d4a843'}}>Em progresso</span></div>
           </div>
         </div>
+      </div>
 
-        {/* Beta Program */}
+      {/* ── LINHA 2: MATRIZ DE PREÇOS POR NICHO (Full Width) ── */}
+      <div className="zcc-panel p-5" style={{borderColor:'var(--zcc-kinpaku)', borderWidth:1}}>
+        <div className="flex items-center gap-2 mb-4">
+          <DollarSign className="w-4 h-4" style={{color:'var(--zcc-kinpaku)'}} />
+          <h3 className="text-sm font-semibold" style={{color:'var(--zcc-champagne)'}}>Matriz de Preços por Nicho — Visão Completa</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Pousadas */}
+          <div className="zcc-panel p-4 space-y-3">
+            <div className="flex items-center gap-2 mb-1">
+              <Building2 className="w-4 h-4" style={{color:'var(--zcc-kinpaku)'}} />
+              <span className="text-xs font-bold uppercase tracking-wider" style={{color:'var(--zcc-kinpaku)'}}>Pousadas</span>
+            </div>
+            <div className="text-[10px] mb-2" style={{color:'var(--zcc-text-muted)'}}>Planos disponíveis: TRIAL, LITE, PRO, MAX</div>
+            <div className="space-y-1.5 text-xs">
+              <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>TRIAL</span><span style={{color:'var(--zcc-champagne-dim)'}}>R$0 (7 dias)</span></div>
+              <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>LITE (PIX)</span><span className="font-medium" style={{color:'var(--zcc-patina)'}}>R$197/mês</span></div>
+              <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>LITE (Cartão)</span><span className="font-medium" style={{color:'var(--zcc-patina)'}}>R$247/mês</span></div>
+              <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>PRO</span><span className="font-medium" style={{color:'var(--zcc-kinpaku)'}}>R$397/mês</span></div>
+              <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>MAX</span><span className="font-medium" style={{color:'#d4a843'}}>R$797/mês</span></div>
+              <div className="flex justify-between border-t pt-1.5 mt-1.5" style={{borderColor:'var(--zcc-hairline)'}}><span style={{color:'var(--zcc-text-secondary)'}}>Link-in-Bio Standalone</span><span style={{color:'var(--zcc-patina)'}}>R$47/mês</span></div>
+            </div>
+          </div>
+
+          {/* Anfitriões Airbnb */}
+          <div className="zcc-panel p-4 space-y-3">
+            <div className="flex items-center gap-2 mb-1">
+              <Users className="w-4 h-4" style={{color:'var(--zcc-patina)'}} />
+              <span className="text-xs font-bold uppercase tracking-wider" style={{color:'var(--zcc-patina)'}}>Anfitriões Airbnb</span>
+            </div>
+            <div className="text-[10px] mb-2" style={{color:'var(--zcc-text-muted)'}}>Planos disponíveis: SOMENTE PRO e MAX</div>
+            <div className="space-y-1.5 text-xs">
+              <div className="flex justify-between opacity-40"><span style={{color:'var(--zcc-text-secondary)'}}>TRIAL</span><span style={{color:'var(--zcc-text-muted)'}}>Não exibido</span></div>
+              <div className="flex justify-between opacity-40"><span style={{color:'var(--zcc-text-secondary)'}}>LITE</span><span style={{color:'var(--zcc-text-muted)'}}>Não exibido</span></div>
+              <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>PRO</span><span className="font-bold" style={{color:'var(--zcc-kinpaku)'}}>R$397/mês</span></div>
+              <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>MAX</span><span className="font-bold" style={{color:'#d4a843'}}>R$797/mês</span></div>
+              <div className="flex justify-between border-t pt-1.5 mt-1.5" style={{borderColor:'var(--zcc-hairline)'}}><span style={{color:'var(--zcc-text-muted)'}}>Regra</span><span className="font-medium" style={{color:'var(--zcc-patina)'}}>Só PRO + MAX</span></div>
+            </div>
+          </div>
+
+          {/* Parceiro Zélla */}
+          <div className="zcc-panel p-4 space-y-3" style={{borderColor:'#d4a843', borderWidth:1}}>
+            <div className="flex items-center gap-2 mb-1">
+              <DollarSign className="w-4 h-4" style={{color:'#d4a843'}} />
+              <span className="text-xs font-bold uppercase tracking-wider" style={{color:'#d4a843'}}>Parceiro Zélla</span>
+            </div>
+            <div className="text-[10px] mb-2" style={{color:'var(--zcc-text-muted)'}}>Plano ÚNICO: PARCEIRO ZÉLLA</div>
+            <div className="space-y-1.5 text-xs">
+              <div className="flex justify-between opacity-40"><span style={{color:'var(--zcc-text-secondary)'}}>TRIAL</span><span style={{color:'var(--zcc-text-muted)'}}>Não exibido</span></div>
+              <div className="flex justify-between opacity-40"><span style={{color:'var(--zcc-text-secondary)'}}>LITE</span><span style={{color:'var(--zcc-text-muted)'}}>Não exibido</span></div>
+              <div className="flex justify-between opacity-40"><span style={{color:'var(--zcc-text-secondary)'}}>PRO</span><span style={{color:'var(--zcc-text-muted)'}}>Não exibido</span></div>
+              <div className="flex justify-between opacity-40"><span style={{color:'var(--zcc-text-secondary)'}}>MAX</span><span style={{color:'var(--zcc-text-muted)'}}>Não exibido</span></div>
+              <div className="flex justify-between border-t pt-1.5 mt-1.5" style={{borderColor:'#d4a84340'}}><span className="font-bold" style={{color:'#d4a843'}}>PARCEIRO ZÉLLA</span><span className="font-bold" style={{color:'#d4a843'}}>R$247/mês × 24 meses</span></div>
+            </div>
+            <div className="mt-2 p-2 rounded-lg" style={{background:'rgba(212,168,67,0.08)', border:'1px solid rgba(212,168,67,0.15)'}}>
+              <div className="text-[10px] font-semibold mb-1" style={{color:'#d4a843'}}>Benefícios inclusos:</div>
+              <ul className="text-[10px] space-y-0.5" style={{color:'var(--zcc-text-secondary)'}}>
+                <li>→ PRO completo por R$247/mês (economia R$150/mês)</li>
+                <li>→ Preço congelado por 24 meses</li>
+                <li>→ Selo de Parceiro Zélla no perfil Link-in-Bio</li>
+                <li>→ Link para fixar no perfil do Instagram</li>
+                <li>→ Atendimento + mensagens ilimitados</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── LINHA 3: Channel Manager Status + Programa Beta ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Channel Manager Status */}
         <div className="zcc-panel p-5 space-y-4">
           <div className="flex items-center gap-2">
-            <Users className="w-4 h-4" style={{color:'#d4a843'}} />
-            <h3 className="text-sm font-semibold" style={{color:'var(--zcc-champagne)'}}>Programa Beta</h3>
+            <Calendar className="w-4 h-4" style={{color:'var(--zcc-patina)'}} />
+            <h3 className="text-sm font-semibold" style={{color:'var(--zcc-champagne)'}}>Channel Manager — Roadmap</h3>
           </div>
-          <div className="space-y-2 text-xs">
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Beta Testers</span><span className="font-medium" style={{color:'#d4a843'}}>8 ativos</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Early Adopters</span><span className="font-medium" style={{color:'var(--zcc-patina)'}}>2 ativos</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Total Parceiros</span><span className="font-medium" style={{color:'var(--zcc-champagne)'}}>10 de 100</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Vagas Restantes</span><span className="font-medium" style={{color:'var(--zcc-kinpaku)'}}>90 disponíveis</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Preço Pós-Beta</span><span style={{color:'var(--zcc-champagne)'}}>R$0 → R$247/mês (congelado 24 meses)</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Fim Gratuidade</span><span style={{color:'var(--zcc-champagne)'}}>01/08/2026</span></div>
+          <div className="space-y-3">
+            {/* Fase 1 */}
+            <div className="flex items-start gap-3 p-3 rounded-lg" style={{background:'rgba(16,185,129,0.06)', border:'1px solid rgba(16,185,129,0.12)'}}>
+              <span className="zcc-badge" style={{color:'var(--zcc-kinpaku)', background:'rgba(16,185,129,0.1)'}}>DISPONÍVEL</span>
+              <div>
+                <div className="text-xs font-semibold" style={{color:'var(--zcc-champagne)'}}>Fase 1 — iCal Export & Import</div>
+                <div className="text-[10px] mt-0.5" style={{color:'var(--zcc-text-secondary)'}}>Exportar calendário para Booking/Airbnb/Decolar. Importar reservas via URL iCal. Atualização a cada 15 min.</div>
+              </div>
+            </div>
+            {/* Fase 2 */}
+            <div className="flex items-start gap-3 p-3 rounded-lg" style={{background:'rgba(245,158,11,0.06)', border:'1px solid rgba(245,158,11,0.12)'}}>
+              <span className="zcc-badge" style={{color:'#d4a843', background:'rgba(245,158,11,0.1)'}}>EM DESENVOLVIMENTO</span>
+              <div>
+                <div className="text-xs font-semibold" style={{color:'var(--zcc-champagne)'}}>Fase 2 — Conexão Direta com Canais</div>
+                <div className="text-[10px] mt-0.5" style={{color:'var(--zcc-text-secondary)'}}>API Booking.com & Decolar/Airbnb. Sincronização de disponibilidade e preços. Será liberado quando testado e validado.</div>
+              </div>
+            </div>
+            {/* Fase 3 */}
+            <div className="flex items-start gap-3 p-3 rounded-lg" style={{background:'rgba(59,130,246,0.04)', border:'1px solid rgba(59,130,246,0.08)'}}>
+              <span className="zcc-badge" style={{color:'var(--zcc-text-muted)', background:'rgba(59,130,246,0.06)'}}>NO ROADMAP</span>
+              <div>
+                <div className="text-xs font-semibold" style={{color:'var(--zcc-champagne)'}}>Fase 3 — Expansão de Canais</div>
+                <div className="text-[10px] mt-0.5" style={{color:'var(--zcc-text-secondary)'}}>Mais canais e OTAs. Liberação gradual conforme demanda e validação. Qualidade antes de quantidade.</div>
+              </div>
+            </div>
+          </div>
+          <div className="text-[10px] flex items-center gap-1.5 pt-2 border-t" style={{color:'var(--zcc-text-muted)', borderColor:'var(--zcc-hairline)'}}>
+            <Shield className="w-3 h-3" />
+            Sem promessas vazias — só mostramos o que está disponível ou em desenvolvimento real
           </div>
         </div>
 
-        {/* Pricing Matrix */}
-        <div className="zcc-panel p-5 space-y-4">
+        {/* Programa Beta Parceiro */}
+        <div className="zcc-panel p-5 space-y-4" style={{borderColor:'#d4a843', borderWidth:1}}>
           <div className="flex items-center gap-2">
-            <DollarSign className="w-4 h-4" style={{color:'var(--zcc-kinpaku)'}} />
-            <h3 className="text-sm font-semibold" style={{color:'var(--zcc-champagne)'}}>Matriz de Preços</h3>
+            <Users className="w-4 h-4" style={{color:'#d4a843'}} />
+            <h3 className="text-sm font-semibold" style={{color:'var(--zcc-champagne)'}}>Programa Beta Parceiro — Primeiros 100</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="zcc-panel p-3 space-y-2">
+              <div className="zcc-eyebrow">PROGRESSO</div>
+              <div className="text-lg font-bold" style={{color:'#d4a843'}}>10<span className="text-sm" style={{color:'var(--zcc-text-muted)'}}>/{'100'}</span></div>
+              <div className="zcc-progress-track">
+                <div className="zcc-progress-fill" style={{width:'10%', backgroundColor:'#d4a843'}} />
+              </div>
+              <div className="text-[10px]" style={{color:'var(--zcc-text-muted)'}}>90 vagas restantes</div>
+            </div>
+            <div className="zcc-panel p-3 space-y-2">
+              <div className="zcc-eyebrow">COMPOSIÇÃO</div>
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between"><span style={{color:'#d4a843'}}>Beta Testers</span><span style={{color:'var(--zcc-champagne)'}}>8</span></div>
+                <div className="flex justify-between"><span style={{color:'var(--zcc-patina)'}}>Early Adopters</span><span style={{color:'var(--zcc-champagne)'}}>2</span></div>
+              </div>
+            </div>
           </div>
           <div className="space-y-2 text-xs">
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>TRIAL</span><span style={{color:'var(--zcc-champagne-dim)'}}>R$0 (7 dias)</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>LITE (PIX)</span><span className="font-medium" style={{color:'var(--zcc-patina)'}}>R$197/mês</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>LITE (Cartão)</span><span className="font-medium" style={{color:'var(--zcc-patina)'}}>R$247/mês</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>PRO</span><span className="font-medium" style={{color:'var(--zcc-kinpaku)'}}>R$397/mês</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>MAX</span><span className="font-medium" style={{color:'#d4a843'}}>R$797/mês</span></div>
-            <div className="flex justify-between border-t pt-2 mt-2" style={{borderColor:'var(--zcc-hairline)'}}><span style={{color:'var(--zcc-text-secondary)'}}>Beta Parceiro</span><span style={{color:'#d4a843'}}>R$247/mês</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Link-in-Bio Standalone</span><span className="font-medium" style={{color:'var(--zcc-patina)'}}>R$47/mês</span></div>
+            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Preço Pós-Beta</span><span className="font-bold" style={{color:'#d4a843'}}>R$247/mês congelado por 24 meses</span></div>
+            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Economia vs. PRO regular</span><span style={{color:'var(--zcc-kinpaku)'}}>R$150/mês × 24 = R$3.600</span></div>
+            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Fim Gratuidade</span><span style={{color:'var(--zcc-champagne)'}}>01/08/2026</span></div>
+            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Selo Parceiro</span><span style={{color:'var(--zcc-champagne)'}}>Link-in-Bio + fixar no Instagram</span></div>
+          </div>
+          <div className="text-[10px] p-2 rounded-lg" style={{background:'rgba(212,168,67,0.08)', border:'1px solid rgba(212,168,67,0.12)', color:'var(--zcc-text-secondary)'}}>
+            <strong style={{color:'#d4a843'}}>Regra:</strong> O plano Parceiro Zélla dá acesso completo ao PRO (R$397) por R$247/mês. Inclui selo de parceiro no Link-in-Bio fornecido pelo Zélla (link para fixar no Instagram). Preço congelado por 24 meses — sem reajuste.
+          </div>
+        </div>
+      </div>
+
+      {/* ── LINHA 4: Regras de Nicho + Capacity + WhatsApp ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Regras por Nicho */}
+        <div className="zcc-panel p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" style={{color:'var(--zcc-kinpaku)'}} />
+            <h3 className="text-sm font-semibold" style={{color:'var(--zcc-champagne)'}}>Regras de Exibição por Nicho</h3>
+          </div>
+          <div className="space-y-3 text-xs">
+            <div className="p-2 rounded-lg" style={{background:'rgba(16,185,129,0.05)', border:'1px solid rgba(16,185,129,0.1)'}}>
+              <div className="font-semibold mb-1" style={{color:'var(--zcc-kinpaku)'}}>Pousadas</div>
+              <div style={{color:'var(--zcc-text-secondary)'}}>Exibe: TRIAL + LITE + PRO + MAX<br/>Oculta: Parceiro Zélla<br/>Pagamento: PIX (LITE) ou Cartão (PRO/MAX)</div>
+            </div>
+            <div className="p-2 rounded-lg" style={{background:'rgba(59,130,246,0.05)', border:'1px solid rgba(59,130,246,0.1)'}}>
+              <div className="font-semibold mb-1" style={{color:'var(--zcc-patina)'}}>Anfitriões Airbnb</div>
+              <div style={{color:'var(--zcc-text-secondary)'}}>Exibe: SOMENTE PRO + MAX<br/>Oculta: TRIAL, LITE, Parceiro Zélla<br/>Pagamento: Exclusivo Cartão</div>
+            </div>
+            <div className="p-2 rounded-lg" style={{background:'rgba(212,168,67,0.05)', border:'1px solid rgba(212,168,67,0.1)'}}>
+              <div className="font-semibold mb-1" style={{color:'#d4a843'}}>Parceiro Zélla</div>
+              <div style={{color:'var(--zcc-text-secondary)'}}>Exibe: SOMENTE Parceiro Zélla (R$247/mês × 24 meses)<br/>Oculta: TRIAL, LITE, PRO, MAX<br/>Benefício: Selo parceiro no Link-in-Bio + Instagram</div>
+            </div>
           </div>
         </div>
 
