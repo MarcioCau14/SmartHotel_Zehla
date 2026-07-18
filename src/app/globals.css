@@ -579,14 +579,15 @@ html {
 }
 
 /* ==========================================================================
-   NEO KINPAKU DESIGN SYSTEM — ZCC Console
+   NEO KINPAKU DESIGN SYSTEM — ZCC Console v3.0
+   Mission Control · Dark Lacquer · Gold Kinpaku · Flat Panels
    Inspired by pbakaus/impeccable: dark lacquer, gold kinpaku, flat panels
    ========================================================================== */
 
 :root {
-  --zcc-lacquer: #0e0e10;
-  --zcc-lacquer-raised: #161618;
-  --zcc-lacquer-sunken: #0a0a0c;
+  --zcc-lacquer: #0A0F1C;
+  --zcc-lacquer-raised: #111827;
+  --zcc-lacquer-sunken: #070B14;
   --zcc-kinpaku: #d4a843;
   --zcc-kinpaku-dim: rgba(212, 168, 67, 0.15);
   --zcc-kinpaku-glow: rgba(212, 168, 67, 0.08);
@@ -595,13 +596,16 @@ html {
   --zcc-champagne: #e8dcc8;
   --zcc-champagne-dim: rgba(232, 220, 200, 0.5);
   --zcc-cream: #f5f0e8;
-  --zcc-hairline: rgba(212, 168, 67, 0.12);
-  --zcc-hairline-strong: rgba(212, 168, 67, 0.25);
+  --zcc-hairline: rgba(212, 168, 67, 0.10);
+  --zcc-hairline-strong: rgba(212, 168, 67, 0.22);
   --zcc-text-primary: #e8dcc8;
   --zcc-text-secondary: rgba(232, 220, 200, 0.55);
   --zcc-text-muted: rgba(232, 220, 200, 0.3);
   --zcc-danger: #c45454;
   --zcc-success: #5a9a6a;
+  --zcc-alert-neon: rgba(239, 68, 68, 0.15);
+  --zcc-mission-bg: #0A0F1C;
+  --zcc-panel-hover: rgba(212, 168, 67, 0.04);
 }
 
 /* ── ZCC Panel (flat, 2px radius, no glassmorphism) ── */
@@ -816,3 +820,54 @@ html {
 .zcc-scroll::-webkit-scrollbar-track { background: transparent; }
 .zcc-scroll::-webkit-scrollbar-thumb { background: var(--zcc-hairline); border-radius: 2px; }
 .zcc-scroll::-webkit-scrollbar-thumb:hover { background: var(--zcc-hairline-strong); }
+
+/* ── ZCC Mission Control — Alert Glow ── */
+.zcc-alert-glow {
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.12), inset 0 0 15px rgba(239, 68, 68, 0.04);
+  border-color: rgba(239, 68, 68, 0.25) !important;
+}
+
+.zcc-alert-glow-amber {
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.12), inset 0 0 15px rgba(245, 158, 11, 0.04);
+  border-color: rgba(245, 158, 11, 0.25) !important;
+}
+
+.zcc-alert-glow-success {
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.10), inset 0 0 12px rgba(16, 185, 129, 0.03);
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+/* ── ZCC Kill Switch Animations ── */
+@keyframes killSwitchPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+}
+
+.zcc-kill-active {
+  animation: killSwitchPulse 2s ease-in-out infinite;
+}
+
+/* ── ZCC Mission Control Grid Background ── */
+.zcc-mission-grid {
+  background-image:
+    linear-gradient(rgba(212, 168, 67, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 168, 67, 0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ── ZCC Scan Line Effect (subtle) ── */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+.zcc-scanline::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(212, 168, 67, 0.04), transparent);
+  animation: scanline 8s linear infinite;
+  pointer-events: none;
+  z-index: 100;
+}

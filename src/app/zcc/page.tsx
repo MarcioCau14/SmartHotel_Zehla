@@ -1,141 +1,152 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import {
-  Brain,
-  ArrowLeft,
-  Bell,
-  Building2,
-  Activity,
-  Settings,
-  BarChart3,
-  Search,
-  Users,
-  Zap,
-  Shield,
-  DollarSign,
-  Key,
-  TrendingUp,
-  ExternalLink,
-  Calendar,
-  Home,
-  Crown,
-  Globe,
-  Star,
+  Brain, ArrowLeft, Bell, Building2, Activity, Settings,
+  Users, Zap, Shield, DollarSign, Key, TrendingUp,
+  Home, Globe, Flame, Command,
 } from 'lucide-react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { DashboardCards } from '@/components/zcc/DashboardCards';
-import { TargetsPanel } from '@/components/zcc/TargetsPanel';
-import { HunterConsole } from '@/components/zcc/HunterConsole';
-import { LeadsTable } from '@/components/zcc/LeadsTable';
-import { CampaignPanel } from '@/components/zcc/CampaignPanel';
-import { DispararEliteButton } from '@/components/zcc/DispararEliteButton';
-import { RevenueReportElite } from '@/components/zcc/RevenueReportElite';
 import { CerebroZella } from '@/components/zcc/CerebroZella';
-import { ClientOverview } from '@/components/zcc/ClientOverview';
 import { FintechHub } from '@/components/zcc/FintechHub';
 import { ApiKeysPanel } from '@/components/zcc/ApiKeysPanel';
-import { CognitiveObservability } from '@/components/zcc/CognitiveObservability';
 import { SwarmOverview } from '@/components/zcc/SwarmOverview';
 import { AirbnbPanel } from '@/components/zcc/AirbnbPanel';
-import { globalMetrics, tenClientFriends, airbnbHosts, parceirosZella, airbnbMetrics, parceiroMetrics } from '@/lib/zcc-clients-data';
-import type { Lead } from '@/lib/types';
+import { PulseCheck } from '@/components/zcc/PulseCheck';
+import { BurnRateCenter } from '@/components/zcc/BurnRateCenter';
+import { TenantXRay } from '@/components/zcc/TenantXRay';
+import { ClientOverview } from '@/components/zcc/ClientOverview';
+import { globalMetrics, airbnbMetrics, parceiroMetrics } from '@/lib/zcc-clients-data';
 
-type ZCCTab = 'overview' | 'cerebro' | 'financeiro' | 'airbnb' | 'tokens' | 'prospection' | 'settings';
+// ── Tab Configuration ──────────────────────────────────────────────────────────
 
-const tabs: { id: ZCCTab; label: string; icon: React.ElementType; desc: string }[] = [
-  { id: 'overview', label: 'Visão Geral', icon: Building2, desc: 'Clientes e métricas' },
-  { id: 'cerebro', label: 'Cérebro ZÉLLA', icon: Brain, desc: 'IA em tempo real' },
-  { id: 'financeiro', label: 'Financeiro', icon: DollarSign, desc: 'Pagamentos e receitas' },
-  { id: 'airbnb', label: 'Airbnb', icon: Home, desc: 'Anfitriões e imóveis' },
-  { id: 'tokens', label: 'Tokens & IA', icon: Key, desc: 'LLMs e API Keys' },
-  { id: 'prospection', label: 'Prospecção', icon: Search, desc: 'Hunter de Leads' },
-  { id: 'settings', label: 'Configurações', icon: Settings, desc: 'Sistema' },
+type ZCCTab = 'overview' | 'pulse' | 'cerebro' | 'financeiro' | 'airbnb' | 'burnrate' | 'tenants' | 'tokens' | 'settings';
+
+const tabs: { id: ZCCTab; label: string; icon: React.ElementType; desc: string; group: 'core' | 'ops' | 'config' }[] = [
+  { id: 'overview', label: 'Visão Geral', icon: Command, desc: 'Command Center', group: 'core' },
+  { id: 'pulse', label: 'Pulse Check', icon: Activity, desc: 'Telemetria & Infra', group: 'core' },
+  { id: 'cerebro', label: 'Cérebro', icon: Brain, desc: 'IA em tempo real', group: 'core' },
+  { id: 'financeiro', label: 'Financeiro', icon: DollarSign, desc: 'Receitas & Pagamentos', group: 'core' },
+  { id: 'airbnb', label: 'Airbnb', icon: Home, desc: 'Anfitriões & Imóveis', group: 'ops' },
+  { id: 'burnrate', label: 'Burn Rate', icon: Flame, desc: 'Custos API WhatsApp', group: 'ops' },
+  { id: 'tenants', label: 'Tenants', icon: Users, desc: 'Raio-X & Kill Switch', group: 'ops' },
+  { id: 'tokens', label: 'Tokens & IA', icon: Key, desc: 'LLMs & API Keys', group: 'config' },
+  { id: 'settings', label: 'Config', icon: Settings, desc: 'Sistema', group: 'config' },
 ];
+
+const tabGroups = [
+  { key: 'core', label: 'CORE', tabs: tabs.filter(t => t.group === 'core') },
+  { key: 'ops', label: 'OPS', tabs: tabs.filter(t => t.group === 'ops') },
+  { key: 'config', label: 'CONFIG', tabs: tabs.filter(t => t.group === 'config') },
+];
+
+// ── Mini Sparkline SVG ─────────────────────────────────────────────────────────
+
+function MiniSparkline({ data, color, width = 60, height = 20 }: {
+  data: number[]; color: string; width?: number; height?: number;
+}) {
+  if (data.length < 2) return null;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const points = data.map((v, i) =>
+    `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * (height - 2) - 1}`
+  ).join(' ');
+  return (
+    <svg width={width} height={height} className="opacity-50">
+      <polyline points={points} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// Generate mock sparkline data
+function sparkline(base: number, variance: number, len = 14): number[] {
+  return Array.from({ length: len }, () => base + (Math.random() - 0.4) * variance);
+}
+
+// ── Main Component ─────────────────────────────────────────────────────────────
 
 export default function ZCCPage() {
   const [activeTab, setActiveTab] = useState<ZCCTab>('overview');
-  const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
-  const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
-  const [diagnosisLead, setDiagnosisLead] = useState<Lead | null>(null);
-  const [diagnosisOpen, setDiagnosisOpen] = useState(false);
 
-  const handleSelectionChange = useCallback((ids: Set<string>) => {
-    setSelectedLeadIds(ids);
-  }, []);
-
-  const handleDiagnoseLead = useCallback((lead: Lead) => {
-    setDiagnosisLead(lead);
-    setDiagnosisOpen(true);
-  }, []);
-
-  const handleCloseDiagnosis = useCallback(() => {
-    setDiagnosisOpen(false);
-    setTimeout(() => setDiagnosisLead(null), 200);
-  }, []);
-
-  const handleClearSelection = useCallback(() => {
-    setSelectedLeadIds(new Set());
-  }, []);
-
-  // Computed niche stats
-  const totalMRR = airbnbMetrics.proCount * 397 + airbnbMetrics.maxCount * 797 + parceiroMetrics.monthlyMRR;
+  const totalMRR = airbnbMetrics.proCount * 397 + airbnbMetrics.maxCount * 797 + parceiroMetrics.monthlyMRR + globalMetrics.pousadas.revenue;
+  const totalClients = globalMetrics.totalClients;
 
   return (
-    <div className="min-h-screen bg-[#0e0e10]">
+    <div className="min-h-screen" style={{ background: '#0A0F1C' }}>
       {/* ===== TOP HEADER BAR ===== */}
-      <header className="zcc-header">
-        <div className="flex items-center justify-between px-4 py-3 max-w-[1920px] mx-auto">
+      <header className="zcc-header" style={{ background: 'rgba(10,15,28,0.95)', backdropFilter: 'blur(12px)' }}>
+        <div className="flex items-center justify-between px-4 py-2.5 max-w-[1920px] mx-auto">
           {/* Left: Back + Logo */}
           <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="text-[var(--zcc-text-muted)] hover:text-[var(--zcc-champagne-dim)] transition-colors p-1.5 rounded-lg hover:bg-white/[0.04]"
-              aria-label="Voltar ao início"
-            >
+            <Link href="/"
+              className="p-1.5 rounded transition-colors hover:bg-white/[0.04]"
+              style={{ color: 'var(--zcc-text-muted)' }}
+              aria-label="Voltar ao início">
               <ArrowLeft className="w-4 h-4" />
             </Link>
             <div className="flex items-center gap-3">
-              <img src="/zella-wordmark.png" alt="Zélla" width={120} height={28} className="brightness-90" />
-              <span style={{fontFamily:'var(--font-geist-mono),monospace',fontSize:'0.625rem',letterSpacing:'0.15em',textTransform:'uppercase',color:'var(--zcc-text-muted)'}}>ZCC Console</span>
+              <div className="flex items-center gap-1.5">
+                <Command className="w-4 h-4" style={{ color: 'var(--zcc-kinpaku)' }} />
+                <span className="text-sm font-bold tracking-tight" style={{ color: 'var(--zcc-champagne)' }}>ZÉLLA</span>
+              </div>
+              <div className="h-4 w-px" style={{ background: 'var(--zcc-hairline)' }} />
+              <span className="font-mono text-[9px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--zcc-kinpaku)' }}>
+                Central Control
+              </span>
             </div>
           </div>
 
-          {/* Center: Tabs */}
-          <div className="hidden xl:flex items-center gap-1 bg-white/[0.03] rounded-xl p-1 border border-white/[0.04]">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer ${
-                    activeTab === tab.id ? 'zcc-tab-active' : 'zcc-tab'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
+          {/* Center: Tab Groups */}
+          <div className="hidden lg:flex items-center gap-1">
+            {tabGroups.map((group, gi) => (
+              <div key={group.key} className="flex items-center gap-1">
+                {gi > 0 && (
+                  <div className="w-px h-4 mx-1.5" style={{ background: 'var(--zcc-hairline)' }} />
+                )}
+                <span className="text-[8px] font-mono font-bold tracking-[0.15em] mr-1" style={{ color: 'var(--zcc-text-muted)' }}>
+                  {group.label}
+                </span>
+                {group.tabs.map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[10px] font-mono font-medium transition-all duration-150 cursor-pointer ${
+                        activeTab === tab.id ? 'zcc-tab-active' : 'zcc-tab'
+                      }`}>
+                      <Icon className="w-3 h-3" />
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
           </div>
 
-          {/* Right: Status + User */}
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.04]">
-              <span className="w-2 h-2 rounded-full bg-[#d4a843] animate-pulse" />
-              <span className="text-[11px]" style={{color:'var(--zcc-champagne-dim)'}}>{globalMetrics.totalClients} clientes ativos</span>
+          {/* Right: Status + Notifications */}
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded" style={{ background: 'rgba(212,168,67,0.06)', border: '1px solid rgba(212,168,67,0.12)' }}>
+              <DollarSign className="w-3 h-3" style={{ color: 'var(--zcc-kinpaku)' }} />
+              <span className="text-[10px] font-mono font-bold" style={{ color: 'var(--zcc-kinpaku)' }}>
+                MRR R${totalMRR.toLocaleString('pt-BR')}
+              </span>
+              <MiniSparkline data={sparkline(totalMRR, totalMRR * 0.05)} color="#d4a843" width={40} height={14} />
             </div>
-            <div className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded-lg" style={{background:'rgba(212,168,67,0.06)', border:'1px solid rgba(212,168,67,0.12)'}}>
-              <DollarSign className="w-3 h-3" style={{color:'var(--zcc-kinpaku)'}} />
-              <span className="text-[11px] font-mono font-semibold" style={{color:'var(--zcc-kinpaku)'}}>MRR R${totalMRR.toLocaleString('pt-BR')}</span>
+            <div className="hidden md:flex items-center gap-1.5 px-2 py-1.5 rounded" style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.12)' }}>
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-mono" style={{ color: '#10b981' }}>{totalClients} online</span>
             </div>
-            <button className="relative p-1.5 rounded-lg hover:bg-white/[0.04] transition-all" style={{color:'var(--zcc-text-muted)'}}>
+            <button className="relative p-1.5 rounded transition-colors hover:bg-white/[0.04]" style={{ color: 'var(--zcc-text-muted)' }}>
               <Bell className="w-4 h-4" />
-              <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-[#d4a843] rounded-full" />
+              <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--zcc-kinpaku)' }} />
             </button>
-            <img src="/zella-mark.png" alt="" width={28} height={28} style={{borderRadius:'2px',border:'1px solid var(--zcc-hairline)'}} />
+            <div className="w-7 h-7 rounded flex items-center justify-center font-mono text-[9px] font-bold"
+              style={{ background: 'var(--zcc-kinpaku-dim)', color: 'var(--zcc-kinpaku)', border: '1px solid var(--zcc-hairline)' }}>
+              ZA
+            </div>
           </div>
         </div>
       </header>
@@ -143,580 +154,252 @@ export default function ZCCPage() {
       {/* ===== MAIN CONTENT ===== */}
       <main className="max-w-[1920px] mx-auto p-4 md:p-6">
         {/* Mobile Tab Selector */}
-        <div className="xl:hidden flex items-center gap-1 bg-white/[0.03] rounded-xl p-1 border border-white/[0.04] mb-6 overflow-x-auto">
+        <div className="lg:hidden flex items-center gap-1 mb-6 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer whitespace-nowrap ${
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-mono font-medium transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === tab.id ? 'zcc-tab-active' : 'zcc-tab'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
+                }`}>
+                <Icon className="w-3 h-3" />
                 <span>{tab.label}</span>
               </button>
             );
           })}
         </div>
 
-        {/* ===== TAB: VISÃO GERAL ===== */}
-        {activeTab === 'overview' && (
-          <div className="space-y-6">
-            {/* Global Command Center Metrics */}
-            <section>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                <div className="zcc-panel p-4">
-                  <div className="zcc-eyebrow">MRR Total</div>
-                  <div className="zcc-stat-value" style={{color:'var(--zcc-kinpaku)'}}>
-                    R$ {(totalMRR / 1000).toFixed(1)}k
-                  </div>
-                  <div className="text-[10px] flex items-center gap-1 mt-1" style={{color:'var(--zcc-kinpaku)',opacity:0.6}}>
-                    <TrendingUp className="w-3 h-3" />
-                    +{globalMetrics.monthlyGrowth}%/mês
-                  </div>
-                </div>
-                <div className="zcc-panel p-4">
-                  <div className="zcc-eyebrow">Reservas Totais</div>
-                  <div className="zcc-stat-value">
-                    {globalMetrics.totalReservations.toLocaleString('pt-BR')}
-                  </div>
-                  <div className="text-[10px] mt-1" style={{color:'var(--zcc-text-secondary)'}}>todos os nichos</div>
-                </div>
-                <div className="zcc-panel p-4">
-                  <div className="zcc-eyebrow">Msgs IA Processadas</div>
-                  <div className="zcc-stat-value" style={{color:'var(--zcc-patina)'}}>
-                    {(globalMetrics.totalMessagesProcessed / 1000).toFixed(1)}k
-                  </div>
-                  <div className="text-[10px] mt-1" style={{color:'var(--zcc-text-secondary)'}}>automatizadas</div>
-                </div>
-                <div className="zcc-panel p-4">
-                  <div className="zcc-eyebrow">Ocupação Média</div>
-                  <div className="zcc-stat-value" style={{color:'var(--zcc-patina)'}}>{globalMetrics.avgOccupancy}%</div>
-                  <div className="text-[10px] mt-1" style={{color:'var(--zcc-text-secondary)'}}>dos {globalMetrics.totalRooms} quartos/imóveis</div>
-                </div>
-                <div className="zcc-panel p-4">
-                  <div className="zcc-eyebrow">Ajustes de Preço</div>
-                  <div className="zcc-stat-value" style={{color:'#d4a843'}}>{globalMetrics.totalPriceAdjustments}</div>
-                  <div className="text-[10px] mt-1" style={{color:'var(--zcc-text-secondary)'}}>feitos hoje pelo Cérebro</div>
-                </div>
-              </div>
-            </section>
+        {/* ===== TAB CONTENT ===== */}
+        <AnimatePresence mode="wait">
+          <motion.div key={activeTab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
 
-            {/* Niche Breakdown — New Section */}
-            <section>
-              <div className="zcc-panel p-5" style={{borderColor:'var(--zcc-kinpaku)', borderWidth:1}}>
-                <div className="flex items-center gap-2 mb-4">
-                  <Globe className="w-4 h-4" style={{color:'var(--zcc-kinpaku)'}} />
-                  <h3 className="text-sm font-semibold" style={{color:'var(--zcc-champagne)'}}>Visão por Nicho — Resumo Interligado</h3>
+            {/* ===== TAB: VISÃO GERAL (Mission Control Overview) ===== */}
+            {activeTab === 'overview' && (
+              <div className="space-y-5">
+                {/* Global Command Metrics */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                  {[
+                    { label: 'MRR TOTAL', value: `R$ ${(totalMRR / 1000).toFixed(1)}k`, color: 'var(--zcc-kinpaku)', sparkData: sparkline(totalMRR, totalMRR * 0.05), trend: `+${globalMetrics.monthlyGrowth}%` },
+                    { label: 'RESERVAS', value: globalMetrics.totalReservations.toLocaleString('pt-BR'), color: 'var(--zcc-champagne)', sparkData: sparkline(5000, 500) },
+                    { label: 'MSGs IA', value: `${(globalMetrics.totalMessagesProcessed / 1000).toFixed(1)}k`, color: 'var(--zcc-patina)', sparkData: sparkline(8000, 800) },
+                    { label: 'OCUPAÇÃO', value: `${globalMetrics.avgOccupancy}%`, color: 'var(--zcc-patina)', sparkData: sparkline(82, 4) },
+                    { label: 'AJUSTES PREÇO', value: String(globalMetrics.totalPriceAdjustments), color: '#d4a843', sparkData: sparkline(55, 10) },
+                    { label: 'CLIENTES', value: String(totalClients), color: '#10b981', sparkData: sparkline(totalClients, 2), trend: `+${globalMetrics.monthlyGrowth}%` },
+                  ].map((stat, i) => (
+                    <motion.div key={stat.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.04 }} className="zcc-panel p-4">
+                      <div className="zcc-eyebrow">{stat.label}</div>
+                      <div className="text-lg font-bold font-mono" style={{ color: stat.color }}>{stat.value}</div>
+                      <MiniSparkline data={stat.sparkData} color={stat.color} />
+                      {stat.trend && (
+                        <div className="text-[9px] font-mono mt-1 flex items-center gap-0.5" style={{ color: '#10b981' }}>
+                          <TrendingUp className="w-2.5 h-2.5" /> {stat.trend}
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Pousadas */}
-                  <div className="zcc-panel p-4 space-y-3" style={{borderColor:'var(--zcc-kinpaku)', borderWidth:1}}>
-                    <div className="flex items-center gap-2">
-                      <Building2 className="w-4 h-4" style={{color:'var(--zcc-kinpaku)'}} />
-                      <span className="text-xs font-bold" style={{color:'var(--zcc-kinpaku)'}}>Pousadas</span>
-                      <span className="zcc-badge-gold">BETA</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <div className="zcc-eyebrow">CLIENTES</div>
-                        <div className="text-lg font-bold" style={{color:'var(--zcc-champagne)'}}>{globalMetrics.pousadas.clients}</div>
+
+                {/* Niche Breakdown — Interlinked */}
+                <div className="zcc-panel p-5" style={{ borderColor: 'var(--zcc-kinpaku)', borderWidth: 1 }}>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Globe className="w-4 h-4" style={{ color: 'var(--zcc-kinpaku)' }} />
+                    <h3 className="text-sm font-semibold" style={{ color: 'var(--zcc-champagne)' }}>Visão por Nicho — Ecossistema Interligado</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Pousadas */}
+                    <div className="zcc-panel p-4 space-y-3" style={{ borderColor: 'rgba(212,168,67,0.2)', borderWidth: 1 }}>
+                      <div className="flex items-center gap-2">
+                        <Building2 className="w-4 h-4" style={{ color: 'var(--zcc-kinpaku)' }} />
+                        <span className="text-xs font-bold" style={{ color: 'var(--zcc-kinpaku)' }}>Pousadas</span>
+                        <span className="zcc-badge-gold">BETA</span>
                       </div>
-                      <div>
-                        <div className="zcc-eyebrow">RECEITA</div>
-                        <div className="text-lg font-bold" style={{color:'var(--zcc-kinpaku)'}}>R$ {(globalMetrics.pousadas.revenue / 1000).toFixed(1)}k</div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div><div className="zcc-eyebrow">CLIENTES</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-champagne)' }}>{globalMetrics.pousadas.clients}</div></div>
+                        <div><div className="zcc-eyebrow">RECEITA</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-kinpaku)' }}>R$ {(globalMetrics.pousadas.revenue / 1000).toFixed(1)}k</div></div>
+                        <div><div className="zcc-eyebrow">RESERVAS</div><div className="text-sm font-bold font-mono" style={{ color: 'var(--zcc-patina)' }}>{globalMetrics.pousadas.reservations.toLocaleString('pt-BR')}</div></div>
+                        <div><div className="zcc-eyebrow">BRAIN AVG</div><div className="text-sm font-bold font-mono" style={{ color: '#10b981' }}>{globalMetrics.avgBrainAccuracy}%</div></div>
                       </div>
+                      <MiniSparkline data={sparkline(globalMetrics.pousadas.revenue, 5000)} color="#d4a843" width={200} height={28} />
                     </div>
-                    <div className="text-[10px] p-2 rounded" style={{background:'rgba(212,168,67,0.06)', color:'var(--zcc-text-muted)'}}>
-                      Planos: TRIAL + LITE + PRO + MAX • MRR atual: R$0 (Beta gratuito)
+
+                    {/* Airbnb */}
+                    <div className="zcc-panel p-4 space-y-3" style={{ borderColor: 'rgba(74,154,154,0.2)', borderWidth: 1 }}>
+                      <div className="flex items-center gap-2">
+                        <Home className="w-4 h-4" style={{ color: 'var(--zcc-patina)' }} />
+                        <span className="text-xs font-bold" style={{ color: 'var(--zcc-patina)' }}>Anfitriões Airbnb</span>
+                        <span className="zcc-badge-patina">PRO + MAX</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div><div className="zcc-eyebrow">ANFITRIÕES</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-champagne)' }}>{airbnbMetrics.totalHosts}</div></div>
+                        <div><div className="zcc-eyebrow">IMÓVEIS</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-patina)' }}>{airbnbMetrics.totalProperties}</div></div>
+                        <div><div className="zcc-eyebrow">SUPERHOSTS</div><div className="text-sm font-bold font-mono" style={{ color: '#d4a843' }}>{airbnbMetrics.superhosts}</div></div>
+                        <div><div className="zcc-eyebrow">ICAL SYNC</div><div className="text-sm font-bold font-mono" style={{ color: '#10b981' }}>{airbnbMetrics.icalSyncEnabled}/{airbnbMetrics.icalSyncTotal}</div></div>
+                      </div>
+                      <MiniSparkline data={sparkline(airbnbMetrics.monthlyRevenue, 3000)} color="#4a9a9a" width={200} height={28} />
+                    </div>
+
+                    {/* Parceiro */}
+                    <div className="zcc-panel p-4 space-y-3" style={{ borderColor: 'rgba(196,84,84,0.15)', borderWidth: 1 }}>
+                      <div className="flex items-center gap-2">
+                        <Shield className="w-4 h-4" style={{ color: '#c45454' }} />
+                        <span className="text-xs font-bold" style={{ color: '#c45454' }}>Parceiro Zélla</span>
+                        <span className="zcc-badge-danger">R$247×24m</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div><div className="zcc-eyebrow">PARCEIROS</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-champagne)' }}>{parceiroMetrics.totalPartners}</div></div>
+                        <div><div className="zcc-eyebrow">MRR</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-kinpaku)' }}>R$ {parceiroMetrics.monthlyMRR}</div></div>
+                        <div><div className="zcc-eyebrow">REFERRALS</div><div className="text-sm font-bold font-mono" style={{ color: 'var(--zcc-patina)' }}>{parceiroMetrics.totalReferrals}</div></div>
+                        <div><div className="zcc-eyebrow">SLOTS BETA</div><div className="text-sm font-bold font-mono" style={{ color: '#f59e0b' }}>{parceiroMetrics.slotsRemaining}/100</div></div>
+                      </div>
+                      <MiniSparkline data={sparkline(parceiroMetrics.monthlyMRR, 200)} color="#c45454" width={200} height={28} />
                     </div>
                   </div>
+                </div>
 
-                  {/* Airbnb */}
-                  <div className="zcc-panel p-4 space-y-3" style={{borderColor:'var(--zcc-patina)', borderWidth:1}}>
-                    <div className="flex items-center gap-2">
-                      <Home className="w-4 h-4" style={{color:'var(--zcc-patina)'}} />
-                      <span className="text-xs font-bold" style={{color:'var(--zcc-patina)'}}>Anfitriões Airbnb</span>
-                      <span className="zcc-badge-patina">PRO+MAX</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <div className="zcc-eyebrow">ANFITRIÕES</div>
-                        <div className="text-lg font-bold" style={{color:'var(--zcc-champagne)'}}>{globalMetrics.anfitrioes.clients}</div>
-                      </div>
-                      <div>
-                        <div className="zcc-eyebrow">IMÓVEIS</div>
-                        <div className="text-lg font-bold" style={{color:'var(--zcc-patina)'}}>{globalMetrics.anfitrioes.properties}</div>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-1 text-center">
-                      <div>
-                        <div className="text-[10px]" style={{color:'var(--zcc-text-muted)'}}>Superhosts</div>
-                        <div className="text-sm font-bold" style={{color:'#d4a843'}}>{airbnbMetrics.superhosts}</div>
-                      </div>
-                      <div>
-                        <div className="text-[10px]" style={{color:'var(--zcc-text-muted)'}}>iCal Sync</div>
-                        <div className="text-sm font-bold" style={{color:'var(--zcc-success)'}}>{airbnbMetrics.icalSyncEnabled}/{airbnbMetrics.icalSyncTotal}</div>
-                      </div>
-                      <div>
-                        <div className="text-[10px]" style={{color:'var(--zcc-text-muted)'}}>Resp. IA</div>
-                        <div className="text-sm font-bold" style={{color:'var(--zcc-kinpaku)'}}>{airbnbMetrics.avgAiResponseRate}%</div>
-                      </div>
-                    </div>
-                    <div className="text-[10px] p-2 rounded" style={{background:'rgba(74,154,154,0.06)', color:'var(--zcc-text-muted)'}}>
-                      Planos: SOMENTE PRO + MAX • MRR: R$ {(airbnbMetrics.proCount * 397 + airbnbMetrics.maxCount * 797).toLocaleString('pt-BR')}
-                    </div>
-                  </div>
+                {/* Quick Links to All Modules */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { tab: 'pulse' as ZCCTab, icon: Activity, label: 'Pulse Check', desc: 'CPU/RAM · Docker · Evolution API', color: '#10b981' },
+                    { tab: 'burnrate' as ZCCTab, icon: Flame, label: 'Burn Rate', desc: 'Custos WhatsApp · Anomalias', color: '#f59e0b' },
+                    { tab: 'tenants' as ZCCTab, icon: Users, label: 'Tenants', desc: 'Raio-X · Kill Switch · Churn', color: 'var(--zcc-kinpaku)' },
+                    { tab: 'airbnb' as ZCCTab, icon: Home, label: 'Airbnb', desc: 'Anfitriões · Imóveis · iCal', color: 'var(--zcc-patina)' },
+                  ].map((link, i) => {
+                    const Icon = link.icon;
+                    return (
+                      <motion.button key={link.tab} onClick={() => setActiveTab(link.tab)}
+                        initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.05 }}
+                        className="zcc-panel p-4 text-left hover:border-[var(--zcc-hairline-strong)] transition-all cursor-pointer group">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Icon className="w-4 h-4" style={{ color: link.color }} />
+                          <span className="text-xs font-bold font-mono" style={{ color: link.color }}>{link.label}</span>
+                        </div>
+                        <div className="text-[10px] font-mono" style={{ color: 'var(--zcc-text-muted)' }}>{link.desc}</div>
+                        <div className="text-[9px] font-mono mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--zcc-kinpaku)' }}>
+                          Acessar módulo →
+                        </div>
+                      </motion.button>
+                    );
+                  })}
+                </div>
 
-                  {/* Parceiro Zélla */}
-                  <div className="zcc-panel p-4 space-y-3" style={{borderColor:'#d4a843', borderWidth:1}}>
-                    <div className="flex items-center gap-2">
-                      <Crown className="w-4 h-4" style={{color:'#d4a843'}} />
-                      <span className="text-xs font-bold" style={{color:'#d4a843'}}>Parceiro Zélla</span>
-                      <span className="zcc-badge-gold">{parceiroMetrics.totalPartners}/100</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <div className="zcc-eyebrow">PARCEIROS</div>
-                        <div className="text-lg font-bold" style={{color:'var(--zcc-champagne)'}}>{parceiroMetrics.totalPartners}</div>
+                {/* System Status Strip */}
+                <div className="zcc-panel p-3">
+                  <div className="flex items-center gap-4 flex-wrap">
+                    <span className="text-[9px] font-mono font-bold tracking-[0.15em]" style={{ color: 'var(--zcc-text-muted)' }}>SYSTEM STATUS</span>
+                    {[
+                      { label: 'App', status: 'online', color: '#10b981' },
+                      { label: 'PostgreSQL', status: 'online', color: '#10b981' },
+                      { label: 'Redis', status: 'online', color: '#10b981' },
+                      { label: 'Evolution API', status: 'online', color: '#10b981' },
+                      { label: 'Nginx', status: 'online', color: '#10b981' },
+                      { label: 'BullMQ', status: 'online', color: '#10b981' },
+                    ].map(s => (
+                      <div key={s.label} className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: s.color }} />
+                        <span className="text-[9px] font-mono" style={{ color: 'var(--zcc-text-secondary)' }}>{s.label}</span>
                       </div>
-                      <div>
-                        <div className="zcc-eyebrow">MRR</div>
-                        <div className="text-lg font-bold" style={{color:'#d4a843'}}>R$ {parceiroMetrics.monthlyMRR.toLocaleString('pt-BR')}</div>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-1 text-center">
-                      <div>
-                        <div className="text-[10px]" style={{color:'var(--zcc-text-muted)' }}>Selos Ativos</div>
-                        <div className="text-sm font-bold" style={{color:'#d4a843'}}>{parceiroMetrics.sealEnabled}</div>
-                      </div>
-                      <div>
-                        <div className="text-[10px]" style={{color:'var(--zcc-text-muted)'}}>Referrals</div>
-                        <div className="text-sm font-bold" style={{color:'var(--zcc-patina)'}}>{parceiroMetrics.totalReferrals}</div>
-                      </div>
-                      <div>
-                        <div className="text-[10px]" style={{color:'var(--zcc-text-muted)'}}>Comissão</div>
-                        <div className="text-sm font-bold" style={{color:'var(--zcc-kinpaku)'}}>R${parceiroMetrics.totalCommission}</div>
-                      </div>
-                    </div>
-                    <div className="text-[10px] p-2 rounded" style={{background:'rgba(212,168,67,0.06)', color:'var(--zcc-text-muted)'}}>
-                      R$247/mês × 24 meses congelados + Selo Link-in-Bio + Instagram
-                    </div>
+                    ))}
+                    <span className="text-[9px] font-mono ml-auto" style={{ color: 'var(--zcc-text-muted)' }}>
+                      6/6 containers running · <button onClick={() => setActiveTab('pulse')} className="underline hover:text-[var(--zcc-kinpaku)]">ver detalhes</button>
+                    </span>
                   </div>
                 </div>
               </div>
-            </section>
+            )}
 
-            {/* Quick Links to DDC & LP */}
-            <section>
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/ddc"
-                  className="zcc-panel px-4 py-2.5 flex items-center gap-2 text-xs transition-all group"
-                  style={{color:'var(--zcc-champagne-dim)'}}
-                >
-                  <Building2 className="w-4 h-4 transition-colors" style={{color:'var(--zcc-text-secondary)'}} />
-                  <span>Dashboard do Cliente (DDC)</span>
-                  <ExternalLink className="w-3 h-3 transition-colors" style={{color:'var(--zcc-text-secondary)'}} />
-                </Link>
-                <Link
-                  href="/"
-                  className="zcc-panel px-4 py-2.5 flex items-center gap-2 text-xs transition-all group"
-                  style={{color:'var(--zcc-champagne-dim)'}}
-                >
-                  <Activity className="w-4 h-4 transition-colors" style={{color:'var(--zcc-text-secondary)'}} />
-                  <span>Landing Page</span>
-                  <ExternalLink className="w-3 h-3 transition-colors" style={{color:'var(--zcc-text-secondary)'}} />
-                </Link>
-                <Link
-                  href="/link-in-bio"
-                  className="zcc-panel px-4 py-2.5 flex items-center gap-2 text-xs transition-all group"
-                  style={{color:'var(--zcc-champagne-dim)'}}
-                >
-                  <Globe className="w-4 h-4 transition-colors" style={{color:'var(--zcc-text-secondary)'}} />
-                  <span>Link-in-Bio</span>
-                  <ExternalLink className="w-3 h-3 transition-colors" style={{color:'var(--zcc-text-secondary)'}} />
-                </Link>
+            {/* ===== TAB: PULSE CHECK ===== */}
+            {activeTab === 'pulse' && <PulseCheck />}
+
+            {/* ===== TAB: CÉREBRO ZÉLLA ===== */}
+            {activeTab === 'cerebro' && <CerebroZella />}
+
+            {/* ===== TAB: FINANCEIRO ===== */}
+            {activeTab === 'financeiro' && <FintechHub />}
+
+            {/* ===== TAB: AIRBNB ===== */}
+            {activeTab === 'airbnb' && <AirbnbPanel />}
+
+            {/* ===== TAB: BURN RATE ===== */}
+            {activeTab === 'burnrate' && <BurnRateCenter />}
+
+            {/* ===== TAB: TENANTS ===== */}
+            {activeTab === 'tenants' && <TenantXRay />}
+
+            {/* ===== TAB: TOKENS ===== */}
+            {activeTab === 'tokens' && (
+              <div className="space-y-5">
+                <ApiKeysPanel />
+                <SwarmOverview brainHealth={{}} />
               </div>
-            </section>
+            )}
 
-            <section>
-              <DashboardCards />
-            </section>
-            <section>
-              <ClientOverview />
-            </section>
-          </div>
-        )}
+            {/* ===== TAB: SETTINGS ===== */}
+            {activeTab === 'settings' && (
+              <div className="space-y-5">
+                <div className="zcc-panel p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Settings className="w-4 h-4" style={{ color: 'var(--zcc-kinpaku)' }} />
+                    <h3 className="text-sm font-semibold" style={{ color: 'var(--zcc-champagne)' }}>Configurações do Sistema</h3>
+                  </div>
 
-        {/* ===== TAB: CÉREBRO ZÉLLA ===== */}
-        {activeTab === 'cerebro' && (
-          <div className="space-y-6">
-            <section>
-              <CerebroZella />
-            </section>
-            <section>
-              <CognitiveObservability />
-            </section>
-          </div>
-        )}
+                  {/* Pricing Matrix */}
+                  <div className="mb-6">
+                    <div className="zcc-eyebrow mb-3">MATRIZ DE PREÇOS VIGENTE</div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {Object.entries(globalMetrics.pricing).map(([key, price]) => (
+                        <div key={key} className="zcc-panel p-3">
+                          <div className="zcc-eyebrow">{key.toUpperCase()}</div>
+                          <div className="text-lg font-bold font-mono" style={{ color: price === 0 ? 'var(--zcc-text-muted)' : 'var(--zcc-kinpaku)' }}>
+                            {price === 0 ? 'GRÁTIS' : `R$${price}`}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-        {/* ===== TAB: FINANCEIRO ===== */}
-        {activeTab === 'financeiro' && (
-          <div>
-            <section>
-              <FintechHub />
-            </section>
-          </div>
-        )}
-
-        {/* ===== TAB: AIRBNB ===== */}
-        {activeTab === 'airbnb' && (
-          <div>
-            <section>
-              <AirbnbPanel />
-            </section>
-          </div>
-        )}
-
-        {/* ===== TAB: TOKENS & IA ===== */}
-        {activeTab === 'tokens' && (
-          <div className="space-y-6">
-            <section>
-              <ApiKeysPanel />
-            </section>
-            <section>
-              <SwarmOverview brainHealth={{
-                edge_latency: 23,
-                brain_queue: 4,
-                voice_swarm: 2,
-                cache_hit_rate: 87.3,
-                tokens_today: globalMetrics.totalMessagesProcessed,
-                bullmq_pending: 3,
-              }} />
-            </section>
-          </div>
-        )}
-
-        {/* ===== TAB: PROSPECÇÃO ===== */}
-        {activeTab === 'prospection' && (
-          <div className="space-y-6">
-            <section>
-              <DashboardCards />
-            </section>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <section className="lg:col-span-3">
-                <TargetsPanel
-                  selectedTargetId={selectedTargetId}
-                  onSelectTarget={setSelectedTargetId}
-                />
-              </section>
-              <section className="lg:col-span-5">
-                <HunterConsole />
-              </section>
-              <section className="lg:col-span-4">
-                <CampaignPanel />
-              </section>
-            </div>
-            <section>
-              <LeadsTable
-                filterTargetId={selectedTargetId}
-                selectedLeadIds={selectedLeadIds}
-                onSelectionChange={handleSelectionChange}
-                onDiagnoseLead={handleDiagnoseLead as any}
-              />
-            </section>
-          </div>
-        )}
-
-        {/* ===== TAB: CONFIGURAÇÕES ===== */}
-        {activeTab === 'settings' && (
-          <div>
-            <SettingsPanel />
-          </div>
-        )}
+                  {/* Niche Rules */}
+                  <div>
+                    <div className="zcc-eyebrow mb-3">REGRAS POR NICHO</div>
+                    <div className="space-y-2">
+                      <div className="p-3 rounded" style={{ background: 'var(--zcc-lacquer-sunken)', border: '1px solid rgba(212,168,67,0.06)' }}>
+                        <div className="text-[10px] font-mono font-bold" style={{ color: 'var(--zcc-kinpaku)' }}>Pousadas</div>
+                        <div className="text-[9px] font-mono" style={{ color: 'var(--zcc-text-secondary)' }}>
+                          Planos visíveis: TRIAL, LITE, PRO, MAX · Pagamento: PIX ou Cartão
+                        </div>
+                      </div>
+                      <div className="p-3 rounded" style={{ background: 'var(--zcc-lacquer-sunken)', border: '1px solid rgba(74,154,154,0.06)' }}>
+                        <div className="text-[10px] font-mono font-bold" style={{ color: 'var(--zcc-patina)' }}>Anfitriões Airbnb</div>
+                        <div className="text-[9px] font-mono" style={{ color: 'var(--zcc-text-secondary)' }}>
+                          Planos visíveis: PRO (R$397) e MAX (R$797) · Pagamento: Exclusivo Cartão de Crédito
+                        </div>
+                      </div>
+                      <div className="p-3 rounded" style={{ background: 'var(--zcc-lacquer-sunken)', border: '1px solid rgba(196,84,84,0.06)' }}>
+                        <div className="text-[10px] font-mono font-bold" style={{ color: '#c45454' }}>Parceiro Zélla</div>
+                        <div className="text-[9px] font-mono" style={{ color: 'var(--zcc-text-secondary)' }}>
+                          Plano único: R$247/mês × 24 meses (preço congelado) · Badge Zélla Partner no Link-in-Bio
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
-      {/* Floating Disparar (only in prospection tab) */}
-      {activeTab === 'prospection' && (
-        <DispararEliteButton
-          selectedCount={selectedLeadIds.size}
-          selectedLeadIds={selectedLeadIds}
-          onClearSelection={handleClearSelection}
-        />
-      )}
-
-      {/* Revenue Diagnosis Modal */}
-      <RevenueReportElite
-        lead={diagnosisLead as any}
-        open={diagnosisOpen}
-        onClose={handleCloseDiagnosis}
-      />
-    </div>
-  );
-}
-
-// ============================================================================
-// Settings Panel — Configuration & System Info (Neo Kinpaku)
-// ============================================================================
-function SettingsPanel() {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2 mb-2">
-        <Settings className="w-5 h-5" style={{color:'var(--zcc-champagne-dim)'}} />
-        <h2 className="text-lg font-bold" style={{color:'var(--zcc-champagne)'}}>Configurações do Sistema</h2>
-      </div>
-
-      {/* ── LINHA 1: Infra + Segurança + IA ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Gateway */}
-        <div className="zcc-panel p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4" style={{color:'var(--zcc-kinpaku)'}} />
-            <h3 className="text-sm font-semibold" style={{color:'var(--zcc-champagne)'}}>Gateway de Pagamento</h3>
-          </div>
-          <div className="space-y-2 text-xs">
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Primário</span><span className="font-medium" style={{color:'var(--zcc-kinpaku)'}}>Mercado Pago</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Taxa PIX</span><span style={{color:'var(--zcc-champagne)'}}>0,99%</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Taxa Cartão</span><span style={{color:'var(--zcc-champagne)'}}>3,49%</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Fallback</span><span style={{color:'var(--zcc-champagne-dim)'}}>Stripe (internacional)</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Split</span><span className="zcc-badge" style={{color:'var(--zcc-kinpaku)'}}>Ativo</span></div>
-          </div>
+      {/* ===== FOOTER ===== */}
+      <footer className="mt-auto border-t py-3 px-4" style={{ borderColor: 'var(--zcc-hairline)', background: 'rgba(10,15,28,0.9)' }}>
+        <div className="max-w-[1920px] mx-auto flex items-center justify-between">
+          <span className="text-[9px] font-mono" style={{ color: 'var(--zcc-text-muted)' }}>
+            ZÉLLA Central Control v3.0 · Mission Control · {new Date().getFullYear()}
+          </span>
+          <span className="text-[9px] font-mono" style={{ color: 'var(--zcc-text-muted)' }}>
+            MODO DEUS · Acesso restrito
+          </span>
         </div>
-
-        {/* AI Router */}
-        <div className="zcc-panel p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <Brain className="w-4 h-4" style={{color:'var(--zcc-patina)'}} />
-            <h3 className="text-sm font-semibold" style={{color:'var(--zcc-champagne)'}}>ZaosNeuroRouter</h3>
-          </div>
-          <div className="space-y-2 text-xs">
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Algoritmo</span><span style={{color:'var(--zcc-champagne)'}}>Thompson Sampling</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Circuit Breaker</span><span className="zcc-badge" style={{color:'var(--zcc-kinpaku)'}}>CLOSED</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Budget Guard</span><span className="zcc-badge" style={{color:'var(--zcc-kinpaku)'}}>NOMINAL</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Providers Ativos</span><span style={{color:'var(--zcc-champagne)'}}>4</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Cache Hit Rate</span><span style={{color:'var(--zcc-champagne)'}}>87.3%</span></div>
-          </div>
-        </div>
-
-        {/* Security */}
-        <div className="zcc-panel p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4" style={{color:'var(--zcc-patina)'}} />
-            <h3 className="text-sm font-semibold" style={{color:'var(--zcc-champagne)'}}>Segurança</h3>
-          </div>
-          <div className="space-y-2 text-xs">
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>LGPD</span><span className="zcc-badge" style={{color:'var(--zcc-kinpaku)'}}>Compliant</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Criptografia</span><span style={{color:'var(--zcc-champagne)'}}>AES-256-GCM</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>TLS</span><span style={{color:'var(--zcc-champagne)'}}>1.3</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Uptime</span><span style={{color:'var(--zcc-champagne)'}}>99.97%</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>SOC 2</span><span className="zcc-badge" style={{color:'#d4a843'}}>Em progresso</span></div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── LINHA 2: MATRIZ DE PREÇOS POR NICHO (Full Width) ── */}
-      <div className="zcc-panel p-5" style={{borderColor:'var(--zcc-kinpaku)', borderWidth:1}}>
-        <div className="flex items-center gap-2 mb-4">
-          <DollarSign className="w-4 h-4" style={{color:'var(--zcc-kinpaku)'}} />
-          <h3 className="text-sm font-semibold" style={{color:'var(--zcc-champagne)'}}>Matriz de Preços por Nicho — Visão Completa</h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Pousadas */}
-          <div className="zcc-panel p-4 space-y-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Building2 className="w-4 h-4" style={{color:'var(--zcc-kinpaku)'}} />
-              <span className="text-xs font-bold uppercase tracking-wider" style={{color:'var(--zcc-kinpaku)'}}>Pousadas</span>
-            </div>
-            <div className="text-[10px] mb-2" style={{color:'var(--zcc-text-muted)'}}>Planos disponíveis: TRIAL, LITE, PRO, MAX</div>
-            <div className="space-y-1.5 text-xs">
-              <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>TRIAL</span><span style={{color:'var(--zcc-champagne-dim)'}}>R$0 (7 dias)</span></div>
-              <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>LITE (PIX)</span><span className="font-medium" style={{color:'var(--zcc-patina)'}}>R$197/mês</span></div>
-              <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>LITE (Cartão)</span><span className="font-medium" style={{color:'var(--zcc-patina)'}}>R$247/mês</span></div>
-              <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>PRO</span><span className="font-medium" style={{color:'var(--zcc-kinpaku)'}}>R$397/mês</span></div>
-              <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>MAX</span><span className="font-medium" style={{color:'#d4a843'}}>R$797/mês</span></div>
-              <div className="flex justify-between border-t pt-1.5 mt-1.5" style={{borderColor:'var(--zcc-hairline)'}}><span style={{color:'var(--zcc-text-secondary)'}}>Link-in-Bio Standalone</span><span style={{color:'var(--zcc-patina)'}}>R$47/mês</span></div>
-            </div>
-          </div>
-
-          {/* Anfitriões Airbnb */}
-          <div className="zcc-panel p-4 space-y-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Home className="w-4 h-4" style={{color:'var(--zcc-patina)'}} />
-              <span className="text-xs font-bold uppercase tracking-wider" style={{color:'var(--zcc-patina)'}}>Anfitriões Airbnb</span>
-            </div>
-            <div className="text-[10px] mb-2" style={{color:'var(--zcc-text-muted)'}}>Planos disponíveis: SOMENTE PRO e MAX</div>
-            <div className="space-y-1.5 text-xs">
-              <div className="flex justify-between opacity-40"><span style={{color:'var(--zcc-text-secondary)'}}>TRIAL</span><span style={{color:'var(--zcc-text-muted)'}}>Não exibido</span></div>
-              <div className="flex justify-between opacity-40"><span style={{color:'var(--zcc-text-secondary)'}}>LITE</span><span style={{color:'var(--zcc-text-muted)'}}>Não exibido</span></div>
-              <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>PRO</span><span className="font-bold" style={{color:'var(--zcc-kinpaku)'}}>R$397/mês</span></div>
-              <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>MAX</span><span className="font-bold" style={{color:'#d4a843'}}>R$797/mês</span></div>
-              <div className="flex justify-between border-t pt-1.5 mt-1.5" style={{borderColor:'var(--zcc-hairline)'}}><span style={{color:'var(--zcc-text-muted)'}}>Regra</span><span className="font-medium" style={{color:'var(--zcc-patina)'}}>Só PRO + MAX</span></div>
-            </div>
-          </div>
-
-          {/* Parceiro Zélla */}
-          <div className="zcc-panel p-4 space-y-3" style={{borderColor:'#d4a843', borderWidth:1}}>
-            <div className="flex items-center gap-2 mb-1">
-              <Crown className="w-4 h-4" style={{color:'#d4a843'}} />
-              <span className="text-xs font-bold uppercase tracking-wider" style={{color:'#d4a843'}}>Parceiro Zélla</span>
-            </div>
-            <div className="text-[10px] mb-2" style={{color:'var(--zcc-text-muted)'}}>Plano ÚNICO: PARCEIRO ZÉLLA</div>
-            <div className="space-y-1.5 text-xs">
-              <div className="flex justify-between opacity-40"><span style={{color:'var(--zcc-text-secondary)'}}>TRIAL</span><span style={{color:'var(--zcc-text-muted)'}}>Não exibido</span></div>
-              <div className="flex justify-between opacity-40"><span style={{color:'var(--zcc-text-secondary)'}}>LITE</span><span style={{color:'var(--zcc-text-muted)'}}>Não exibido</span></div>
-              <div className="flex justify-between opacity-40"><span style={{color:'var(--zcc-text-secondary)'}}>PRO</span><span style={{color:'var(--zcc-text-muted)'}}>Não exibido</span></div>
-              <div className="flex justify-between opacity-40"><span style={{color:'var(--zcc-text-secondary)'}}>MAX</span><span style={{color:'var(--zcc-text-muted)'}}>Não exibido</span></div>
-              <div className="flex justify-between border-t pt-1.5 mt-1.5" style={{borderColor:'#d4a84340'}}><span className="font-bold" style={{color:'#d4a843'}}>PARCEIRO ZÉLLA</span><span className="font-bold" style={{color:'#d4a843'}}>R$247/mês × 24 meses</span></div>
-            </div>
-            <div className="mt-2 p-2 rounded-lg" style={{background:'rgba(212,168,67,0.08)', border:'1px solid rgba(212,168,67,0.15)'}}>
-              <div className="text-[10px] font-semibold mb-1" style={{color:'#d4a843'}}>Benefícios inclusos:</div>
-              <ul className="text-[10px] space-y-0.5" style={{color:'var(--zcc-text-secondary)'}}>
-                <li>→ PRO completo por R$247/mês (economia R$150/mês)</li>
-                <li>→ Preço congelado por 24 meses</li>
-                <li>→ Selo de Parceiro Zélla no perfil Link-in-Bio</li>
-                <li>→ Link para fixar no perfil do Instagram</li>
-                <li>→ Atendimento + mensagens ilimitados</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── LINHA 3: Channel Manager Status + Programa Beta ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Channel Manager Status */}
-        <div className="zcc-panel p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4" style={{color:'var(--zcc-patina)'}} />
-            <h3 className="text-sm font-semibold" style={{color:'var(--zcc-champagne)'}}>Channel Manager — Roadmap</h3>
-          </div>
-          <div className="space-y-3">
-            {/* Fase 1 */}
-            <div className="flex items-start gap-3 p-3 rounded-lg" style={{background:'rgba(16,185,129,0.06)', border:'1px solid rgba(16,185,129,0.12)'}}>
-              <span className="zcc-badge" style={{color:'var(--zcc-kinpaku)', background:'rgba(16,185,129,0.1)'}}>DISPONÍVEL</span>
-              <div>
-                <div className="text-xs font-semibold" style={{color:'var(--zcc-champagne)'}}>Fase 1 — iCal Export & Import</div>
-                <div className="text-[10px] mt-0.5" style={{color:'var(--zcc-text-secondary)'}}>Exportar calendário para Booking/Airbnb/Decolar. Importar reservas via URL iCal. Atualização a cada 15 min.</div>
-              </div>
-            </div>
-            {/* Fase 2 */}
-            <div className="flex items-start gap-3 p-3 rounded-lg" style={{background:'rgba(245,158,11,0.06)', border:'1px solid rgba(245,158,11,0.12)'}}>
-              <span className="zcc-badge" style={{color:'#d4a843', background:'rgba(245,158,11,0.1)'}}>EM DESENVOLVIMENTO</span>
-              <div>
-                <div className="text-xs font-semibold" style={{color:'var(--zcc-champagne)'}}>Fase 2 — Conexão Direta com Canais</div>
-                <div className="text-[10px] mt-0.5" style={{color:'var(--zcc-text-secondary)'}}>API Booking.com & Decolar/Airbnb. Sincronização de disponibilidade e preços. Será liberado quando testado e validado.</div>
-              </div>
-            </div>
-            {/* Fase 3 */}
-            <div className="flex items-start gap-3 p-3 rounded-lg" style={{background:'rgba(59,130,246,0.04)', border:'1px solid rgba(59,130,246,0.08)'}}>
-              <span className="zcc-badge" style={{color:'var(--zcc-text-muted)', background:'rgba(59,130,246,0.06)'}}>NO ROADMAP</span>
-              <div>
-                <div className="text-xs font-semibold" style={{color:'var(--zcc-champagne)'}}>Fase 3 — Expansão de Canais</div>
-                <div className="text-[10px] mt-0.5" style={{color:'var(--zcc-text-secondary)'}}>Mais canais e OTAs. Liberação gradual conforme demanda e validação. Qualidade antes de quantidade.</div>
-              </div>
-            </div>
-          </div>
-          <div className="text-[10px] flex items-center gap-1.5 pt-2 border-t" style={{color:'var(--zcc-text-muted)', borderColor:'var(--zcc-hairline)'}}>
-            <Shield className="w-3 h-3" />
-            Sem promessas vazias — só mostramos o que está disponível ou em desenvolvimento real
-          </div>
-        </div>
-
-        {/* Programa Beta Parceiro */}
-        <div className="zcc-panel p-5 space-y-4" style={{borderColor:'#d4a843', borderWidth:1}}>
-          <div className="flex items-center gap-2">
-            <Crown className="w-4 h-4" style={{color:'#d4a843'}} />
-            <h3 className="text-sm font-semibold" style={{color:'var(--zcc-champagne)'}}>Programa Beta Parceiro — Primeiros 100</h3>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="zcc-panel p-3 space-y-2">
-              <div className="zcc-eyebrow">PROGRESSO</div>
-              <div className="text-lg font-bold" style={{color:'#d4a843'}}>{parceiroMetrics.totalPartners}<span className="text-sm" style={{color:'var(--zcc-text-muted)'}}>/100</span></div>
-              <div className="zcc-progress-track">
-                <div className="zcc-progress-fill" style={{width:`${parceiroMetrics.totalPartners}%`, backgroundColor:'#d4a843'}} />
-              </div>
-              <div className="text-[10px]" style={{color:'var(--zcc-text-muted)'}}>{100 - parceiroMetrics.totalPartners} vagas restantes</div>
-            </div>
-            <div className="zcc-panel p-3 space-y-2">
-              <div className="zcc-eyebrow">COMPOSIÇÃO</div>
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between"><span style={{color:'#d4a843'}}>Parceiros Ativos</span><span style={{color:'var(--zcc-champagne)'}}>{parceiroMetrics.activePartners}</span></div>
-                <div className="flex justify-between"><span style={{color:'var(--zcc-patina)'}}>Em Onboarding</span><span style={{color:'var(--zcc-champagne)'}}>{parceiroMetrics.onboarding}</span></div>
-              </div>
-            </div>
-          </div>
-          <div className="space-y-2 text-xs">
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Preço Pós-Beta</span><span className="font-bold" style={{color:'#d4a843'}}>R$247/mês congelado por 24 meses</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Economia vs. PRO regular</span><span style={{color:'var(--zcc-kinpaku)'}}>R$150/mês × 24 = R$3.600</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Fim Gratuidade</span><span style={{color:'var(--zcc-champagne)'}}>01/08/2026</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Selo Parceiro</span><span style={{color:'var(--zcc-champagne)'}}>Link-in-Bio + fixar no Instagram</span></div>
-          </div>
-          <div className="text-[10px] p-2 rounded-lg" style={{background:'rgba(212,168,67,0.08)', border:'1px solid rgba(212,168,67,0.12)', color:'var(--zcc-text-secondary)'}}>
-            <strong style={{color:'#d4a843'}}>Regra:</strong> O plano Parceiro Zélla dá acesso completo ao PRO (R$397) por R$247/mês. Inclui selo de parceiro no Link-in-Bio fornecido pelo Zélla (link para fixar no Instagram). Preço congelado por 24 meses — sem reajuste.
-          </div>
-        </div>
-      </div>
-
-      {/* ── LINHA 4: Regras de Nicho + Capacity + WhatsApp ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Regras por Nicho */}
-        <div className="zcc-panel p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" style={{color:'var(--zcc-kinpaku)'}} />
-            <h3 className="text-sm font-semibold" style={{color:'var(--zcc-champagne)'}}>Regras de Exibição por Nicho</h3>
-          </div>
-          <div className="space-y-3 text-xs">
-            <div className="p-2 rounded-lg" style={{background:'rgba(16,185,129,0.05)', border:'1px solid rgba(16,185,129,0.1)'}}>
-              <div className="font-semibold mb-1" style={{color:'var(--zcc-kinpaku)'}}>Pousadas</div>
-              <div style={{color:'var(--zcc-text-secondary)'}}>Exibe: TRIAL + LITE + PRO + MAX<br/>Oculta: Parceiro Zélla<br/>Pagamento: PIX (LITE) ou Cartão (PRO/MAX)</div>
-            </div>
-            <div className="p-2 rounded-lg" style={{background:'rgba(74,154,154,0.05)', border:'1px solid rgba(74,154,154,0.1)'}}>
-              <div className="font-semibold mb-1" style={{color:'var(--zcc-patina)'}}>Anfitriões Airbnb</div>
-              <div style={{color:'var(--zcc-text-secondary)'}}>Exibe: SOMENTE PRO + MAX<br/>Oculta: TRIAL, LITE, Parceiro Zélla<br/>Pagamento: Exclusivo Cartão</div>
-            </div>
-            <div className="p-2 rounded-lg" style={{background:'rgba(212,168,67,0.05)', border:'1px solid rgba(212,168,67,0.1)'}}>
-              <div className="font-semibold mb-1" style={{color:'#d4a843'}}>Parceiro Zélla</div>
-              <div style={{color:'var(--zcc-text-secondary)'}}>Exibe: SOMENTE Parceiro Zélla (R$247/mês × 24 meses)<br/>Oculta: TRIAL, LITE, PRO, MAX<br/>Benefício: Selo parceiro no Link-in-Bio + Instagram</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Capacity */}
-        <div className="zcc-panel p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" style={{color:'var(--zcc-patina)'}} />
-            <h3 className="text-sm font-semibold" style={{color:'var(--zcc-champagne)'}}>Capacidade</h3>
-          </div>
-          <div className="space-y-2 text-xs">
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Clientes Totais</span><span style={{color:'var(--zcc-champagne)'}}>{globalMetrics.totalClients}</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>→ Pousadas</span><span style={{color:'var(--zcc-kinpaku)'}}>{globalMetrics.pousadas.clients}</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>→ Anfitriões Airbnb</span><span style={{color:'var(--zcc-patina)'}}>{globalMetrics.anfitrioes.clients}</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>→ Parceiros Zélla</span><span style={{color:'#d4a843'}}>{parceiroMetrics.totalPartners}</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Capacidade Máx.</span><span style={{color:'var(--zcc-champagne)'}}>10.000+</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Uso CPU</span><span style={{color:'var(--zcc-kinpaku)'}}>12%</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Memória</span><span style={{color:'var(--zcc-kinpaku)'}}>24%</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Requests/s</span><span style={{color:'var(--zcc-champagne)'}}>847</span></div>
-          </div>
-        </div>
-
-        {/* WhatsApp API */}
-        <div className="zcc-panel p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <Activity className="w-4 h-4" style={{color:'var(--zcc-kinpaku)'}} />
-            <h3 className="text-sm font-semibold" style={{color:'var(--zcc-champagne)'}}>WhatsApp Business API</h3>
-          </div>
-          <div className="space-y-2 text-xs">
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Status</span><span className="zcc-badge" style={{color:'var(--zcc-kinpaku)'}}>Conectado</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Número</span><span style={{color:'var(--zcc-champagne)'}}>+55 XX XXXXX-XXXX</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Templates</span><span style={{color:'var(--zcc-champagne)'}}>12 aprovados</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Msgs Hoje</span><span style={{color:'var(--zcc-champagne)'}}>924</span></div>
-            <div className="flex justify-between"><span style={{color:'var(--zcc-text-secondary)'}}>Limite/Mês</span><span style={{color:'var(--zcc-champagne)'}}>Ilimitado</span></div>
-          </div>
-        </div>
-      </div>
+      </footer>
     </div>
   );
 }

@@ -17,9 +17,25 @@ const DEFAULT_AGENTS = [
 async function getHandler(_request: NextRequest, _ctx: any) {
   try {
     const result = await db.agentConfig.findMany();
-    // If DB has agent configs, return them; otherwise return defaults
+    // If DB has agent configs, map them to the expected AIAgent interface; otherwise return defaults
     if (result && result.length > 0) {
-      return NextResponse.json(result);
+      const mapped = result.map((dbAgent, i) => {
+        const fallback = DEFAULT_AGENTS[i] || DEFAULT_AGENTS[0];
+        return {
+          id: dbAgent.agentId || fallback.id,
+          icon: fallback.icon,
+          status: dbAgent.isActive ? 'active' : 'sleeping',
+          name: dbAgent.agentName || fallback.name,
+          role: fallback.role,
+          tasksCompleted: dbAgent.learnedPatterns || fallback.tasksCompleted,
+          tasksFailed: fallback.tasksFailed,
+          successRate: dbAgent.confidenceScore ? Math.round(dbAgent.confidenceScore * 100) : fallback.successRate,
+          avgLatencyMs: fallback.avgLatencyMs,
+          modelUsed: fallback.modelUsed,
+          uptimeHours: fallback.uptimeHours,
+        };
+      });
+      return NextResponse.json(mapped);
     }
     return NextResponse.json(DEFAULT_AGENTS);
   } catch (error) {

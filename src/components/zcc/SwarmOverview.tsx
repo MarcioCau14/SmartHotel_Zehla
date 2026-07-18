@@ -169,27 +169,27 @@ export function SwarmOverview({ brainHealth: _brainHealthProp }: SwarmOverviewPr
                 <div className="space-y-1 text-xs">
                   <div className="flex justify-between">
                     <span className="text-neutral-600">Tarefas</span>
-                    <span className="text-neutral-300">{agent.tasksCompleted.toLocaleString()}</span>
+                    <span className="text-neutral-300">{(agent.tasksCompleted ?? 0).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-600">Falhas</span>
-                    <span className="text-neutral-300">{agent.tasksFailed}</span>
+                    <span className="text-neutral-300">{agent.tasksFailed ?? 0}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-600">Sucesso</span>
-                    <span className={`font-semibold ${agent.successRate >= 99 ? 'text-emerald-400' : agent.successRate >= 95 ? 'text-amber-400' : 'text-red-400'}`}>{agent.successRate}%</span>
+                    <span className={`font-semibold ${(agent.successRate ?? 0) >= 99 ? 'text-emerald-400' : (agent.successRate ?? 0) >= 95 ? 'text-amber-400' : 'text-red-400'}`}>{agent.successRate ?? 0}%</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-600">Latência</span>
-                    <span className="text-neutral-300 font-mono">{agent.avgLatencyMs}ms</span>
+                    <span className="text-neutral-300 font-mono">{agent.avgLatencyMs ?? 0}ms</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-600">Modelo</span>
-                    <span className="text-neutral-300 font-mono text-[10px]">{agent.modelUsed}</span>
+                    <span className="text-neutral-300 font-mono text-[10px]">{agent.modelUsed ?? 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-600">Uptime</span>
-                    <span className="text-neutral-300">{(agent.uptimeHours / 24).toFixed(0)} dias</span>
+                    <span className="text-neutral-300">{((agent.uptimeHours ?? 0) / 24).toFixed(0)} dias</span>
                   </div>
                 </div>
               </div>
