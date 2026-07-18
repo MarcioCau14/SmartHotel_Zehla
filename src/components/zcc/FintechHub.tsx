@@ -1,6 +1,86 @@
 'use client';
 
-import { QrCode, CreditCard, CheckCircle, TrendingUp, Shield, Link2, Users, PieChart, Layers, DollarSign, Sparkles, Key, Wallet, Star, Target } from 'lucide-react';
+import {
+  QrCode, CreditCard, CheckCircle, TrendingUp, Shield, Link2, Users,
+  PieChart, Layers, DollarSign, Sparkles, Key, Wallet, Star, Target,
+  Home, Building2, BarChart3, Crown,
+} from 'lucide-react';
+import { airbnbMetrics, parceiroMetrics, globalMetrics } from '@/lib/zcc-clients-data';
+
+// ── Programa Beta Parceiro ──────────────────────────────────────────────────
+const BETA_PROGRAM = {
+  totalSlots: 100,
+  currentPartners: parceiroMetrics.totalPartners,
+  betaTesters: parceiroMetrics.activePartners,
+  earlyAdopters: parceiroMetrics.onboarding,
+  priceAfterBeta: 247,
+  betaEndFree: '01/08/2026',
+  frozenMonths: 24,
+};
+
+// ── Produtos ZEHLA (MRR SaaS) ──────────────────────────────────────────────────
+const zehlaProducts = [
+  {
+    id: 'saas-trial',
+    name: 'Zélla IA TRIAL',
+    icon: '🧪',
+    price: 0,
+    subscribers: 0,
+    description: 'Teste gratuito 14 dias — 50 msgs + Link-in-Bio',
+    niche: 'pousadas',
+    badgeClass: 'zcc-badge-muted',
+  },
+  {
+    id: 'saas-lite',
+    name: 'Zélla IA LITE',
+    icon: '🏠',
+    price: 197,
+    subscribers: 0,
+    description: 'IA 24/7 + 500 msgs + Link-in-Bio — Pousadas',
+    niche: 'pousadas',
+    badgeClass: 'zcc-badge',
+  },
+  {
+    id: 'saas-pro',
+    name: 'Zélla IA PRO',
+    icon: '🧠',
+    price: 397,
+    subscribers: airbnbMetrics.proCount, // Airbnb PRO subscribers
+    description: 'Msgs ilimitadas + CRM + Treinamento — Pousadas & Airbnb',
+    niche: 'pousadas+anfitrioes',
+    badgeClass: 'zcc-badge-patina',
+  },
+  {
+    id: 'saas-max',
+    name: 'Zélla IA MAX',
+    icon: '👑',
+    price: 797,
+    subscribers: airbnbMetrics.maxCount, // Airbnb MAX subscribers
+    description: 'Tudo do PRO + Zellador + Split + SLA 99.9% — Pousadas & Airbnb',
+    niche: 'pousadas+anfitrioes',
+    badgeClass: 'zcc-badge-gold',
+  },
+  {
+    id: 'linkinbio-standalone',
+    name: 'Link-in-Bio Standalone',
+    icon: '🔗',
+    price: 47,
+    subscribers: 0,
+    description: 'Link-in-Bio profissional sem Zélla IA — R$47/mês',
+    niche: 'todos',
+    badgeClass: 'zcc-badge',
+  },
+  {
+    id: 'saas-parceiro-zella',
+    name: 'PARCEIRO ZÉLLA',
+    icon: '🤝',
+    price: 247,
+    subscribers: parceiroMetrics.totalPartners,
+    description: 'PRO completo R$247/mês × 24 meses + Selo parceiro Link-in-Bio + Instagram',
+    niche: 'parceiro',
+    badgeClass: 'zcc-badge-gold',
+  },
+];
 
 interface PaymentOption {
   name: string;
@@ -27,75 +107,6 @@ const dailyVolume = [
   { day: 'Dom', pix: 5900, card: 1500 },
 ];
 
-// ── Programa Beta Parceiro ──────────────────────────────────────────────────
-const BETA_PROGRAM = {
-  totalSlots: 100,
-  currentPartners: 10, // 8 Beta Testers + 2 Early Adopters
-  betaTesters: 8,
-  earlyAdopters: 2,
-  priceAfterBeta: 247, // R$247/mês congelado por 24 meses
-  betaEndFree: '01/08/2026',
-  frozenMonths: 24,
-};
-
-// ── Produtos ZEHLA (MRR SaaS) ──────────────────────────────────────────────────
-const zehlaProducts = [
-  {
-    id: 'saas-trial',
-    name: 'Zélla IA TRIAL',
-    icon: '🧪',
-    price: 0,
-    subscribers: 0,
-    description: 'Teste gratuito 14 dias — 50 msgs + Link-in-Bio',
-    badgeClass: 'zcc-badge-muted',
-  },
-  {
-    id: 'saas-lite',
-    name: 'Zélla IA LITE',
-    icon: '🏠',
-    price: 197,
-    subscribers: 0,
-    description: 'IA 24/7 + 500 msgs + Link-in-Bio',
-    badgeClass: 'zcc-badge',
-  },
-  {
-    id: 'saas-pro',
-    name: 'Zélla IA PRO',
-    icon: '🧠',
-    price: 397,
-    subscribers: 0,
-    description: 'Msgs ilimitadas + CRM + Treinamento + Analytics',
-    badgeClass: 'zcc-badge-patina',
-  },
-  {
-    id: 'saas-max',
-    name: 'Zélla IA MAX',
-    icon: '👑',
-    price: 797,
-    subscribers: 0,
-    description: 'Tudo do PRO + Zellador + Split + SLA 99.9%',
-    badgeClass: 'zcc-badge-gold',
-  },
-  {
-    id: 'linkinbio-standalone',
-    name: 'Link-in-Bio Standalone',
-    icon: '🔗',
-    price: 47,
-    subscribers: 0,
-    description: 'Link-in-Bio profissional sem Zélla IA — R$47/mês',
-    badgeClass: 'zcc-badge',
-  },
-  {
-    id: 'saas-parceiro-zella',
-    name: 'PARCEIRO ZÉLLA',
-    icon: '🤝',
-    price: 247,
-    subscribers: 0,
-    description: 'PRO completo R$247/mês × 24 meses + Selo parceiro Link-in-Bio + Instagram',
-    badgeClass: 'zcc-badge-gold',
-  },
-];
-
 const statusConfig = {
   active: { label: 'Ativo', badgeClass: 'zcc-badge-success' },
   pending: { label: 'Pendente', badgeClass: 'zcc-badge-muted' },
@@ -106,11 +117,52 @@ const typeLabels = {
   gateway: 'Gateway',
 };
 
+// ── Per-Niche MRR Breakdown ──
+const nicheMRR = {
+  pousadas: {
+    label: 'Pousadas',
+    icon: Building2,
+    color: 'var(--zcc-kinpaku)',
+    currentMRR: 0, // Beta = free
+    projectedMRR: 10 * 397, // 10 pousadas × PRO R$397
+    breakdown: [
+      { plan: 'TRIAL', count: 0, price: 0 },
+      { plan: 'LITE', count: 0, price: 197 },
+      { plan: 'PRO', count: 0, price: 397 },
+      { plan: 'MAX', count: 0, price: 797 },
+    ],
+  },
+  anfitrioes: {
+    label: 'Anfitriões Airbnb',
+    icon: Home,
+    color: 'var(--zcc-patina)',
+    currentMRR: airbnbMetrics.proCount * 397 + airbnbMetrics.maxCount * 797,
+    projectedMRR: 10 * 397 + 10 * 797,
+    breakdown: [
+      { plan: 'PRO', count: airbnbMetrics.proCount, price: 397 },
+      { plan: 'MAX', count: airbnbMetrics.maxCount, price: 797 },
+    ],
+  },
+  parceiro: {
+    label: 'Parceiro Zélla',
+    icon: Crown,
+    color: '#d4a843',
+    currentMRR: parceiroMetrics.monthlyMRR,
+    projectedMRR: 100 * 247, // 100 parceiros × R$247
+    breakdown: [
+      { plan: 'PARCEIRO ZÉLLA', count: parceiroMetrics.totalPartners, price: 247 },
+    ],
+  },
+};
+
 export function FintechHub() {
   const saasMRR = zehlaProducts.reduce((sum, p) => sum + (p.price * p.subscribers), 0);
   const totalPixWeekly = dailyVolume.reduce((s, d) => s + d.pix, 0);
   const totalCardWeekly = dailyVolume.reduce((s, d) => s + d.card, 0);
   const totalWeekly = totalPixWeekly + totalCardWeekly;
+
+  const totalProjectedMRR = Object.values(nicheMRR).reduce((s, n) => s + n.projectedMRR, 0);
+  const totalCurrentMRR = Object.values(nicheMRR).reduce((s, n) => s + n.currentMRR, 0);
 
   return (
     <div className="space-y-5">
@@ -134,7 +186,83 @@ export function FintechHub() {
         <div className="zcc-panel p-4">
           <TrendingUp className="w-4 h-4 mb-2" style={{ color: 'var(--zcc-kinpaku)' }} />
           <div className="zcc-stat-value">R$ {saasMRR.toLocaleString('pt-BR')}</div>
-          <div className="zcc-eyebrow mt-1">MRR SAAS ZEHLA</div>
+          <div className="zcc-eyebrow mt-1">MRR SaaS ATUAL</div>
+        </div>
+      </div>
+
+      {/* ── MRR por Nicho (INTERCONNECTED) ──────────────────────────────────── */}
+      <div className="zcc-panel p-5" style={{ borderColor: 'var(--zcc-kinpaku)', borderWidth: 1 }}>
+        <div className="flex items-center gap-2 mb-4">
+          <BarChart3 className="w-4 h-4" style={{ color: 'var(--zcc-kinpaku)' }} />
+          <h3 className="text-sm font-semibold" style={{ color: 'var(--zcc-champagne)' }}>MRR por Nicho — Visão Interligada</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          {Object.entries(nicheMRR).map(([key, niche]) => {
+            const Icon = niche.icon;
+            return (
+              <div key={key} className="zcc-panel p-4 space-y-3" style={{ borderColor: niche.color, borderWidth: 1 }}>
+                <div className="flex items-center gap-2">
+                  <Icon className="w-4 h-4" style={{ color: niche.color }} />
+                  <span className="text-xs font-bold" style={{ color: niche.color }}>{niche.label}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <div className="zcc-eyebrow">MRR ATUAL</div>
+                    <div className="text-lg font-bold" style={{ color: niche.color }}>
+                      R$ {niche.currentMRR.toLocaleString('pt-BR')}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="zcc-eyebrow">PROJEÇÃO</div>
+                    <div className="text-lg font-bold" style={{ color: 'var(--zcc-text-secondary)' }}>
+                      R$ {niche.projectedMRR.toLocaleString('pt-BR')}
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  {niche.breakdown.map((item) => (
+                    <div key={item.plan} className="flex items-center justify-between text-xs">
+                      <span style={{ color: 'var(--zcc-text-secondary)' }}>{item.plan}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono" style={{ color: 'var(--zcc-champagne)' }}>{item.count} × R${item.price}</span>
+                        <span className="font-mono font-semibold" style={{ color: niche.color }}>
+                          R$ {(item.count * item.price).toLocaleString('pt-BR')}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {key === 'pousadas' && (
+                  <div className="text-[10px] p-2 rounded-lg" style={{ background: 'rgba(212,168,67,0.06)', border: '1px solid rgba(212,168,67,0.1)', color: 'var(--zcc-text-muted)' }}>
+                    Pousadas em Beta — MRR atual R$0 (gratuidade até 01/08/2026)
+                  </div>
+                )}
+                {key === 'anfitrioes' && (
+                  <div className="text-[10px] p-2 rounded-lg" style={{ background: 'rgba(74,154,154,0.06)', border: '1px solid rgba(74,154,154,0.1)', color: 'var(--zcc-text-muted)' }}>
+                    Anfitriões: SOMENTE PRO + MAX (sem Trial/Lite)
+                  </div>
+                )}
+                {key === 'parceiro' && (
+                  <div className="text-[10px] p-2 rounded-lg" style={{ background: 'rgba(212,168,67,0.06)', border: '1px solid rgba(212,168,67,0.1)', color: 'var(--zcc-text-muted)' }}>
+                    R$247/mês × 24 meses congelados + Selo Link-in-Bio + Instagram
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        {/* Total MRR Summary */}
+        <div className="zcc-panel p-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-1.5 text-xs">
+            <DollarSign className="w-3.5 h-3.5" style={{ color: 'var(--zcc-kinpaku)' }} />
+            <span style={{ color: 'var(--zcc-text-secondary)' }}>MRR Total Atual (todos os nichos):</span>
+            <span className="font-mono font-bold" style={{ color: 'var(--zcc-kinpaku)' }}>R$ {totalCurrentMRR.toLocaleString('pt-BR')}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs">
+            <TrendingUp className="w-3.5 h-3.5" style={{ color: 'var(--zcc-patina)' }} />
+            <span style={{ color: 'var(--zcc-text-secondary)' }}>MRR Projetado (metas):</span>
+            <span className="font-mono font-bold" style={{ color: 'var(--zcc-patina)' }}>R$ {totalProjectedMRR.toLocaleString('pt-BR')}</span>
+          </div>
         </div>
       </div>
 
@@ -166,11 +294,13 @@ export function FintechHub() {
                     <Users className="w-3 h-3" />
                     {product.subscribers} assinante{product.subscribers !== 1 ? 's' : ''}
                   </span>
-                  <span
-                    className="font-mono font-semibold"
-                    style={{ color: mrr > 0 ? 'var(--zcc-kinpaku)' : 'var(--zcc-text-muted)' }}
-                  >
+                  <span className="font-mono font-semibold" style={{ color: mrr > 0 ? 'var(--zcc-kinpaku)' : 'var(--zcc-text-muted)' }}>
                     MRR: R${mrr.toLocaleString('pt-BR')}
+                  </span>
+                </div>
+                <div className="mt-2 pt-1.5 border-t" style={{ borderColor: 'var(--zcc-hairline)' }}>
+                  <span className="text-[10px]" style={{ color: 'var(--zcc-text-muted)' }}>
+                    Nicho: {product.niche === 'pousadas' ? 'Pousadas' : product.niche === 'anfitrioes' ? 'Airbnb' : product.niche === 'parceiro' ? 'Parceiro' : product.niche === 'pousadas+anfitrioes' ? 'Pousadas + Airbnb' : 'Todos'}
                   </span>
                 </div>
               </div>
@@ -218,8 +348,8 @@ export function FintechHub() {
               <div><strong style={{ color: 'var(--zcc-champagne)' }}>Exibe:</strong> SOMENTE PRO + MAX</div>
               <div><strong style={{ color: 'var(--zcc-champagne)' }}>Oculta:</strong> TRIAL, LITE, Parceiro</div>
               <div><strong style={{ color: 'var(--zcc-champagne)' }}>Pagamento:</strong> Exclusivo Cartão</div>
-              <div className="p-1.5 rounded mt-1" style={{ background: 'rgba(59,130,246,0.08)' }}>
-                <span style={{ color: 'var(--zcc-patina)' }}>⚠ Não exibir Trial/Lite para este nicho</span>
+              <div className="p-1.5 rounded mt-1" style={{ background: 'rgba(74,154,154,0.08)' }}>
+                <span style={{ color: 'var(--zcc-patina)' }}>Não exibir Trial/Lite para este nicho</span>
               </div>
             </div>
           </div>
@@ -234,7 +364,7 @@ export function FintechHub() {
               <div><strong style={{ color: 'var(--zcc-champagne)' }}>Oculta:</strong> TRIAL, LITE, PRO, MAX</div>
               <div><strong style={{ color: '#d4a843' }}>Preço:</strong> R$247/mês × 24 meses</div>
               <div className="p-1.5 rounded mt-1" style={{ background: 'rgba(212,168,67,0.08)' }}>
-                <span style={{ color: '#d4a843' }}>🤝 Selo parceiro no Link-in-Bio + fixar no Instagram</span>
+                <span style={{ color: '#d4a843' }}>Selo parceiro no Link-in-Bio + fixar no Instagram</span>
               </div>
             </div>
           </div>
@@ -259,10 +389,7 @@ export function FintechHub() {
               </div>
             </div>
             <div className="zcc-progress-track">
-              <div
-                className="zcc-progress-fill"
-                style={{ width: `${(BETA_PROGRAM.currentPartners / BETA_PROGRAM.totalSlots) * 100}%`, backgroundColor: 'var(--zcc-kinpaku)' }}
-              />
+              <div className="zcc-progress-fill" style={{ width: `${(BETA_PROGRAM.currentPartners / BETA_PROGRAM.totalSlots) * 100}%`, backgroundColor: 'var(--zcc-kinpaku)' }} />
             </div>
             <div className="text-[10px]" style={{ color: 'var(--zcc-text-muted)' }}>{BETA_PROGRAM.totalSlots - BETA_PROGRAM.currentPartners} vagas restantes</div>
           </div>
@@ -273,20 +400,20 @@ export function FintechHub() {
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="flex items-center gap-1.5" style={{ color: 'var(--zcc-kinpaku)' }}>
-                  <div className="w-2 h-2" style={{ backgroundColor: 'var(--zcc-kinpaku)', borderRadius: 2 }} /> Beta Testers
+                  <div className="w-2 h-2" style={{ backgroundColor: 'var(--zcc-kinpaku)', borderRadius: 2 }} /> Parceiros Ativos
                 </span>
-                <span className="font-mono" style={{ color: 'var(--zcc-champagne)' }}>{BETA_PROGRAM.betaTesters} pousadas</span>
+                <span className="font-mono" style={{ color: 'var(--zcc-champagne)' }}>{parceiroMetrics.activePartners}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="flex items-center gap-1.5" style={{ color: 'var(--zcc-patina)' }}>
-                  <div className="w-2 h-2" style={{ backgroundColor: 'var(--zcc-patina)', borderRadius: 2 }} /> Early Adopters
+                  <div className="w-2 h-2" style={{ backgroundColor: 'var(--zcc-patina)', borderRadius: 2 }} /> Em Onboarding
                 </span>
-                <span className="font-mono" style={{ color: 'var(--zcc-champagne)' }}>{BETA_PROGRAM.earlyAdopters} pousadas</span>
+                <span className="font-mono" style={{ color: 'var(--zcc-champagne)' }}>{parceiroMetrics.onboarding}</span>
               </div>
             </div>
             <div className="pt-2 flex items-center justify-between text-xs" style={{ borderTop: '1px solid var(--zcc-border, rgba(255,255,255,0.06))' }}>
-              <span style={{ color: 'var(--zcc-text-secondary)' }}>Total de Pousadas no Programa</span>
-              <span className="font-bold" style={{ color: 'var(--zcc-champagne)' }}>{BETA_PROGRAM.currentPartners}</span>
+              <span style={{ color: 'var(--zcc-text-secondary)' }}>Selo Parceiro Ativo</span>
+              <span className="font-bold" style={{ color: '#d4a843' }}>{parceiroMetrics.sealEnabled}/{parceiroMetrics.totalPartners}</span>
             </div>
           </div>
 
@@ -294,10 +421,10 @@ export function FintechHub() {
           <div className="zcc-panel p-4 space-y-2">
             <div className="zcc-eyebrow">REGRAS DO PROGRAMA</div>
             <ul className="text-[11px] space-y-1.5" style={{ color: 'var(--zcc-text-secondary)' }}>
-              <li className="flex items-start gap-1.5"><span style={{ color: 'var(--zcc-kinpaku)' }} className="mt-0.5">{'\u2192'}</span> Grátis até {BETA_PROGRAM.betaEndFree}</li>
-              <li className="flex items-start gap-1.5"><span style={{ color: 'var(--zcc-kinpaku)' }} className="mt-0.5">{'\u2192'}</span> Depois: R${BETA_PROGRAM.priceAfterBeta}/mês congelado por {BETA_PROGRAM.frozenMonths} meses</li>
-              <li className="flex items-start gap-1.5"><span style={{ color: 'var(--zcc-kinpaku)' }} className="mt-0.5">{'\u2192'}</span> Recursos PRO completos (vs R$397/mês público)</li>
-              <li className="flex items-start gap-1.5"><span style={{ color: 'var(--zcc-kinpaku)' }} className="mt-0.5">{'\u2192'}</span> Economia de R$150/mês durante 24 meses (R$3.600 total)</li>
+              <li className="flex items-start gap-1.5"><span style={{ color: 'var(--zcc-kinpaku)' }} className="mt-0.5">→</span> Grátis até {BETA_PROGRAM.betaEndFree}</li>
+              <li className="flex items-start gap-1.5"><span style={{ color: 'var(--zcc-kinpaku)' }} className="mt-0.5">→</span> Depois: R${BETA_PROGRAM.priceAfterBeta}/mês congelado por {BETA_PROGRAM.frozenMonths} meses</li>
+              <li className="flex items-start gap-1.5"><span style={{ color: 'var(--zcc-kinpaku)' }} className="mt-0.5">→</span> Recursos PRO completos (vs R$397/mês público)</li>
+              <li className="flex items-start gap-1.5"><span style={{ color: 'var(--zcc-kinpaku)' }} className="mt-0.5">→</span> Economia de R$150/mês durante 24 meses (R$3.600 total)</li>
             </ul>
           </div>
         </div>
@@ -306,18 +433,18 @@ export function FintechHub() {
         <div className="zcc-panel p-3 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-1.5 text-xs">
             <Target className="w-3.5 h-3.5" style={{ color: 'var(--zcc-kinpaku)' }} />
-            <span style={{ color: 'var(--zcc-text-secondary)' }}>MRR Beta (atual, grátis):</span>
-            <span className="font-mono font-bold" style={{ color: 'var(--zcc-text-muted)' }}>R$ 0</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs">
-            <TrendingUp className="w-3.5 h-3.5" style={{ color: 'var(--zcc-patina)' }} />
-            <span style={{ color: 'var(--zcc-text-secondary)' }}>MRR após {BETA_PROGRAM.betaEndFree} ({BETA_PROGRAM.currentPartners} x R${BETA_PROGRAM.priceAfterBeta}):</span>
-            <span className="font-mono font-bold" style={{ color: 'var(--zcc-patina)' }}>R$ {(BETA_PROGRAM.currentPartners * BETA_PROGRAM.priceAfterBeta).toLocaleString('pt-BR')}</span>
+            <span style={{ color: 'var(--zcc-text-secondary)' }}>MRR atual ({parceiroMetrics.totalPartners} × R$247):</span>
+            <span className="font-mono font-bold" style={{ color: 'var(--zcc-kinpaku)' }}>R$ {parceiroMetrics.monthlyMRR.toLocaleString('pt-BR')}</span>
           </div>
           <div className="flex items-center gap-1.5 text-xs">
             <Star className="w-3.5 h-3.5" style={{ color: 'var(--zcc-kinpaku)' }} />
             <span style={{ color: 'var(--zcc-text-secondary)' }}>MRR com 100 parceiros:</span>
-            <span className="font-mono font-bold" style={{ color: 'var(--zcc-kinpaku)' }}>R$ {(BETA_PROGRAM.totalSlots * BETA_PROGRAM.priceAfterBeta).toLocaleString('pt-BR')}</span>
+            <span className="font-mono font-bold" style={{ color: '#d4a843' }}>R$ {(100 * 247).toLocaleString('pt-BR')}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs">
+            <Users className="w-3.5 h-3.5" style={{ color: 'var(--zcc-patina)' }} />
+            <span style={{ color: 'var(--zcc-text-secondary)' }}>Referrals: {parceiroMetrics.totalReferrals} ({parceiroMetrics.totalConversions} conversões)</span>
+            <span className="font-mono font-bold" style={{ color: 'var(--zcc-patina)' }}>R$ {parceiroMetrics.totalCommission.toLocaleString('pt-BR')}</span>
           </div>
         </div>
       </div>
@@ -409,15 +536,9 @@ export function FintechHub() {
             <div key={i} className="zcc-panel p-3">
               <div className="zcc-eyebrow mb-1">{key.type.toUpperCase()}</div>
               <div className="text-sm font-mono" style={{ color: 'var(--zcc-champagne)' }}>{key.value}</div>
-              <div className="mt-1.5">
-                <span className="zcc-badge-success">Ativa</span>
-              </div>
+              <div className="mt-1.5"><span className="zcc-badge-success">Ativa</span></div>
             </div>
           ))}
-        </div>
-        <div className="mt-3 text-[10px] flex items-center gap-1" style={{ color: 'var(--zcc-text-muted)' }}>
-          <Shield className="w-3 h-3" />
-          4 chaves PIX ativas. Recebimento instantâneo via Mercado Pago QR Code.
         </div>
       </div>
 
@@ -429,7 +550,7 @@ export function FintechHub() {
         </h3>
         <div className="space-y-2">
           {[
-            { recipient: 'Pousada', percent: 85, amount: 'R$ 12.070,00', color: 'var(--zcc-kinpaku)' },
+            { recipient: 'Pousada/Anfitrião', percent: 85, amount: 'R$ 12.070,00', color: 'var(--zcc-kinpaku)' },
             { recipient: 'ZEHLA SaaS', percent: 5, amount: 'R$ 710,00', color: 'var(--zcc-patina)' },
             { recipient: 'Mercado Pago Gateway', percent: 2.99, amount: 'R$ 424,60', color: '#06b6d4' },
             { recipient: 'IA Processing Fee', percent: 3.01, amount: 'R$ 427,04', color: 'var(--zcc-kinpaku)' },
@@ -443,10 +564,7 @@ export function FintechHub() {
                   <span className="text-sm font-mono" style={{ color: 'var(--zcc-champagne)' }}>{rule.amount}</span>
                 </div>
                 <div className="zcc-progress-track mt-1" style={{ height: 4 }}>
-                  <div
-                    className="zcc-progress-fill"
-                    style={{ width: `${rule.percent}%`, backgroundColor: rule.color }}
-                  />
+                  <div className="zcc-progress-fill" style={{ width: `${rule.percent}%`, backgroundColor: rule.color }} />
                 </div>
               </div>
               <span className="text-xs font-mono w-12 text-right" style={{ color: 'var(--zcc-text-secondary)' }}>{rule.percent}%</span>
@@ -454,14 +572,14 @@ export function FintechHub() {
           ))}
         </div>
         <div className="mt-3 text-[10px]" style={{ color: 'var(--zcc-text-muted)' }}>
-          * Split aplicado sobre transações de reservas de hóspedes via Mercado Pago. Assinaturas SaaS (LITE R$197, PRO R$397, MAX R$797, Parceiro Zélla R$247/mês × 24 meses, Link-in-Bio R$47) são cobradas diretamente.
+          * Split aplicado sobre transações de reservas via Mercado Pago. Assinaturas SaaS (LITE R$197, PRO R$397, MAX R$797, Parceiro Zélla R$247/mês × 24 meses, Link-in-Bio R$47) são cobradas diretamente.
         </div>
       </div>
 
       {/* ── Weekly volume table ───────────────────────────────────────────── */}
       <div className="zcc-panel p-5">
         <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--zcc-champagne)' }}>Volume Semanal — Transações de Hóspedes</h3>
-        <div className="overflow-x-auto zehla-scroll-x">
+        <div className="overflow-x-auto zcc-scroll">
           <table className="zcc-table w-full text-sm">
             <thead>
               <tr>

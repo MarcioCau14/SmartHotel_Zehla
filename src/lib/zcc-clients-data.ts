@@ -1,5 +1,5 @@
 // =============================================================================
-// ZEHLA SmartHotel — Dados dos 10 Clientes Amigos (Pousadas Beta Testers)
+// ZEHLA SmartHotel — Dados dos Clientes (Pousadas Beta + Anfitriões Airbnb)
 // =============================================================================
 
 export interface ClientFriend {
@@ -12,10 +12,11 @@ export interface ClientFriend {
   city: string;
   state: string;
   rooms: number;
-  plan: 'fundador' | 'lite' | 'pro' | 'max';
+  plan: 'fundador' | 'lite' | 'pro' | 'max' | 'parceiro';
   status: 'BETA_TESTER' | 'EARLY_ADOPTER' | 'ACTIVE' | 'ONBOARDING';
   avatar: string; // initials
   color: string; // tailwind bg color
+  niche: 'pousadas' | 'anfitrioes' | 'parceiro';
   // Métricas atuais
   totalReservations: number;
   monthlyRevenue: number;
@@ -32,6 +33,440 @@ export interface ClientFriend {
   automatedReplies24h: number;
 }
 
+// =============================================================================
+// Airbnb Host Data
+// =============================================================================
+
+export interface AirbnbHost {
+  id: string;
+  name: string;
+  owner: string;
+  email: string;
+  whatsapp: string;
+  city: string;
+  state: string;
+  avatar: string;
+  color: string;
+  plan: 'pro' | 'max';
+  status: 'ACTIVE' | 'ONBOARDING' | 'TRIAL';
+  superhost: boolean;
+  // Property data
+  properties: {
+    id: string;
+    airbnbId: string;
+    name: string;
+    propertyType: string;
+    listingUrl: string | null;
+    bedrooms: number;
+    bathrooms: number;
+    maxGuests: number;
+    avgNightlyRate: number;
+    occupancyRate: number;
+    totalReviews: number;
+    avgRating: number;
+    responseRate: number;
+    responseTimeMin: number;
+    icalSyncEnabled: boolean;
+    lastIcalSync: string | null;
+  }[];
+  // Metrics
+  totalBookings: number;
+  monthlyRevenue: number;
+  aiMessagesProcessed: number;
+  aiResponseRate: number; // % of inquiries answered by AI
+  avgResponseTime: number; // minutes
+  conversionRate: number;
+  cancelationRate: number;
+  // Brain
+  brainStatus: 'learning' | 'calibrated' | 'optimizing';
+  brainAccuracy: number;
+  activatedAt: string;
+  lastActivity: string;
+}
+
+export const airbnbHosts: AirbnbHost[] = [
+  {
+    id: 'airb-001',
+    name: 'Apartamento Copacabana View',
+    owner: 'Marcos Vinícius',
+    email: 'marcos@copacabanaview.com',
+    whatsapp: '5521998880001',
+    city: 'Rio de Janeiro',
+    state: 'RJ',
+    avatar: 'MV',
+    color: 'from-sky-500 to-sky-700',
+    plan: 'pro',
+    status: 'ACTIVE',
+    superhost: true,
+    properties: [
+      {
+        id: 'prop-001',
+        airbnbId: '48291037',
+        name: 'Apto Vista Mar Copacabana',
+        propertyType: 'Apartamento inteiro',
+        listingUrl: null,
+        bedrooms: 2,
+        bathrooms: 1,
+        maxGuests: 4,
+        avgNightlyRate: 320,
+        occupancyRate: 89,
+        totalReviews: 147,
+        avgRating: 4.92,
+        responseRate: 98,
+        responseTimeMin: 3,
+        icalSyncEnabled: true,
+        lastIcalSync: '2026-07-18T10:30:00Z',
+      },
+      {
+        id: 'prop-002',
+        airbnbId: '51829374',
+        name: 'Studio Moderno Ipanema',
+        propertyType: 'Studio',
+        listingUrl: null,
+        bedrooms: 1,
+        bathrooms: 1,
+        maxGuests: 2,
+        avgNightlyRate: 280,
+        occupancyRate: 82,
+        totalReviews: 89,
+        avgRating: 4.87,
+        responseRate: 100,
+        responseTimeMin: 2,
+        icalSyncEnabled: true,
+        lastIcalSync: '2026-07-18T10:28:00Z',
+      },
+    ],
+    totalBookings: 234,
+    monthlyRevenue: 18200,
+    aiMessagesProcessed: 3847,
+    aiResponseRate: 94,
+    avgResponseTime: 3,
+    conversionRate: 41.2,
+    cancelationRate: 2.1,
+    brainStatus: 'optimizing',
+    brainAccuracy: 93.8,
+    activatedAt: '2026-05-10T09:00:00Z',
+    lastActivity: '2026-07-18T10:45:00Z',
+  },
+  {
+    id: 'airb-002',
+    name: 'Flat Paulista Premium',
+    owner: 'Juliana Santos',
+    email: 'juliana@flatpaulista.com',
+    whatsapp: '5511997770002',
+    city: 'São Paulo',
+    state: 'SP',
+    avatar: 'JS',
+    color: 'from-violet-500 to-violet-700',
+    plan: 'pro',
+    status: 'ACTIVE',
+    superhost: true,
+    properties: [
+      {
+        id: 'prop-003',
+        airbnbId: '62749182',
+        name: 'Flat Executivo Av. Paulista',
+        propertyType: 'Apartamento inteiro',
+        listingUrl: null,
+        bedrooms: 1,
+        bathrooms: 1,
+        maxGuests: 2,
+        avgNightlyRate: 250,
+        occupancyRate: 85,
+        totalReviews: 203,
+        avgRating: 4.95,
+        responseRate: 100,
+        responseTimeMin: 1,
+        icalSyncEnabled: true,
+        lastIcalSync: '2026-07-18T09:15:00Z',
+      },
+    ],
+    totalBookings: 178,
+    monthlyRevenue: 12750,
+    aiMessagesProcessed: 2934,
+    aiResponseRate: 97,
+    avgResponseTime: 2,
+    conversionRate: 38.7,
+    cancelationRate: 1.8,
+    brainStatus: 'calibrated',
+    brainAccuracy: 91.2,
+    activatedAt: '2026-05-12T14:00:00Z',
+    lastActivity: '2026-07-18T09:30:00Z',
+  },
+  {
+    id: 'airb-003',
+    name: 'Casa Floripa Beach',
+    owner: 'Rafael Oliveira',
+    email: 'rafael@casafloripa.com',
+    whatsapp: '5548996660003',
+    city: 'Florianópolis',
+    state: 'SC',
+    avatar: 'RO',
+    color: 'from-teal-500 to-teal-700',
+    plan: 'max',
+    status: 'ACTIVE',
+    superhost: true,
+    properties: [
+      {
+        id: 'prop-004',
+        airbnbId: '73859204',
+        name: 'Casa com Piscina Jurerê',
+        propertyType: 'Casa inteira',
+        listingUrl: null,
+        bedrooms: 3,
+        bathrooms: 2,
+        maxGuests: 6,
+        avgNightlyRate: 580,
+        occupancyRate: 91,
+        totalReviews: 312,
+        avgRating: 4.97,
+        responseRate: 99,
+        responseTimeMin: 2,
+        icalSyncEnabled: true,
+        lastIcalSync: '2026-07-18T11:00:00Z',
+      },
+      {
+        id: 'prop-005',
+        airbnbId: '84960315',
+        name: 'Loft Barra da Lagoa',
+        propertyType: 'Loft',
+        listingUrl: null,
+        bedrooms: 1,
+        bathrooms: 1,
+        maxGuests: 3,
+        avgNightlyRate: 350,
+        occupancyRate: 87,
+        totalReviews: 124,
+        avgRating: 4.89,
+        responseRate: 96,
+        responseTimeMin: 4,
+        icalSyncEnabled: true,
+        lastIcalSync: '2026-07-18T10:55:00Z',
+      },
+      {
+        id: 'prop-006',
+        airbnbId: '95071426',
+        name: 'Chalé Ribeirão da Ilha',
+        propertyType: 'Chalé',
+        listingUrl: null,
+        bedrooms: 2,
+        bathrooms: 1,
+        maxGuests: 4,
+        avgNightlyRate: 420,
+        occupancyRate: 79,
+        totalReviews: 67,
+        avgRating: 4.85,
+        responseRate: 92,
+        responseTimeMin: 8,
+        icalSyncEnabled: false,
+        lastIcalSync: null,
+      },
+    ],
+    totalBookings: 342,
+    monthlyRevenue: 38900,
+    aiMessagesProcessed: 6128,
+    aiResponseRate: 91,
+    avgResponseTime: 3,
+    conversionRate: 44.1,
+    cancelationRate: 3.2,
+    brainStatus: 'optimizing',
+    brainAccuracy: 96.4,
+    activatedAt: '2026-05-08T11:00:00Z',
+    lastActivity: '2026-07-18T11:15:00Z',
+  },
+  {
+    id: 'airb-004',
+    name: 'Studio Savassi BH',
+    owner: 'Camila Ribeiro',
+    email: 'camila@studiosavassi.com',
+    whatsapp: '5531995550004',
+    city: 'Belo Horizonte',
+    state: 'MG',
+    avatar: 'CR',
+    color: 'from-rose-500 to-rose-700',
+    plan: 'pro',
+    status: 'ONBOARDING',
+    superhost: false,
+    properties: [
+      {
+        id: 'prop-007',
+        airbnbId: '106182537',
+        name: 'Studio Moderno Savassi',
+        propertyType: 'Studio',
+        listingUrl: null,
+        bedrooms: 1,
+        bathrooms: 1,
+        maxGuests: 2,
+        avgNightlyRate: 190,
+        occupancyRate: 62,
+        totalReviews: 23,
+        avgRating: 4.78,
+        responseRate: 78,
+        responseTimeMin: 35,
+        icalSyncEnabled: false,
+        lastIcalSync: null,
+      },
+    ],
+    totalBookings: 34,
+    monthlyRevenue: 4280,
+    aiMessagesProcessed: 412,
+    aiResponseRate: 45,
+    avgResponseTime: 22,
+    conversionRate: 22.3,
+    cancelationRate: 8.4,
+    brainStatus: 'learning',
+    brainAccuracy: 62.1,
+    activatedAt: '2026-07-01T16:00:00Z',
+    lastActivity: '2026-07-17T22:10:00Z',
+  },
+  {
+    id: 'airb-005',
+    name: 'Recanto Porto de Galinhas',
+    owner: 'Diego Costa',
+    email: 'diego@recantoporto.com',
+    whatsapp: '5581994440005',
+    city: 'Ipojuca',
+    state: 'PE',
+    avatar: 'DC',
+    color: 'from-amber-500 to-amber-700',
+    plan: 'max',
+    status: 'ACTIVE',
+    superhost: true,
+    properties: [
+      {
+        id: 'prop-008',
+        airbnbId: '117293648',
+        name: 'Casa Praia Porto de Galinhas',
+        propertyType: 'Casa inteira',
+        listingUrl: null,
+        bedrooms: 4,
+        bathrooms: 3,
+        maxGuests: 8,
+        avgNightlyRate: 720,
+        occupancyRate: 93,
+        totalReviews: 198,
+        avgRating: 4.94,
+        responseRate: 99,
+        responseTimeMin: 2,
+        icalSyncEnabled: true,
+        lastIcalSync: '2026-07-18T08:45:00Z',
+      },
+    ],
+    totalBookings: 189,
+    monthlyRevenue: 28100,
+    aiMessagesProcessed: 4213,
+    aiResponseRate: 96,
+    avgResponseTime: 2,
+    conversionRate: 46.8,
+    cancelationRate: 1.5,
+    brainStatus: 'optimizing',
+    brainAccuracy: 95.1,
+    activatedAt: '2026-05-20T10:00:00Z',
+    lastActivity: '2026-07-18T08:50:00Z',
+  },
+];
+
+// =============================================================================
+// Parceiro Zélla Data
+// =============================================================================
+
+export interface ParceiroZella {
+  id: string;
+  name: string;
+  owner: string;
+  email: string;
+  whatsapp: string;
+  city: string;
+  state: string;
+  avatar: string;
+  color: string;
+  status: 'ACTIVE' | 'ONBOARDING';
+  sealEnabled: boolean;
+  instagramProfile: string | null;
+  linkInBioSlug: string;
+  planPrice: number;
+  frozenMonths: number;
+  contractedAt: string;
+  // Metrics
+  referrals: number;
+  referralConversions: number;
+  commissionEarned: number;
+  lastActivity: string;
+}
+
+export const parceirosZella: ParceiroZella[] = [
+  {
+    id: 'parc-001',
+    name: 'Digital Host Pro',
+    owner: 'Thiago Andrade',
+    email: 'thiago@digitalhostpro.com',
+    whatsapp: '5521993330001',
+    city: 'Rio de Janeiro',
+    state: 'RJ',
+    avatar: 'TA',
+    color: 'from-yellow-500 to-yellow-700',
+    status: 'ACTIVE',
+    sealEnabled: true,
+    instagramProfile: '@digitalhostpro',
+    linkInBioSlug: 'digitalhostpro',
+    planPrice: 247,
+    frozenMonths: 24,
+    contractedAt: '2026-06-01T10:00:00Z',
+    referrals: 7,
+    referralConversions: 3,
+    commissionEarned: 1191,
+    lastActivity: '2026-07-18T09:20:00Z',
+  },
+  {
+    id: 'parc-002',
+    name: 'Hospedagem Inteligente',
+    owner: 'Fernanda Abreu',
+    email: 'fernanda@hospedageminteligente.com',
+    whatsapp: '5511992220002',
+    city: 'São Paulo',
+    state: 'SP',
+    avatar: 'FA',
+    color: 'from-pink-500 to-pink-700',
+    status: 'ACTIVE',
+    sealEnabled: true,
+    instagramProfile: '@hospedageminteligente',
+    linkInBioSlug: 'hospedageminteligente',
+    planPrice: 247,
+    frozenMonths: 24,
+    contractedAt: '2026-06-05T14:00:00Z',
+    referrals: 4,
+    referralConversions: 1,
+    commissionEarned: 397,
+    lastActivity: '2026-07-17T18:45:00Z',
+  },
+  {
+    id: 'parc-003',
+    name: 'Airbnb Master Class',
+    owner: 'Ricardo Gomes',
+    email: 'ricardo@airbnbmasterclass.com',
+    whatsapp: '5531991110003',
+    city: 'Belo Horizonte',
+    state: 'MG',
+    avatar: 'RG',
+    color: 'from-emerald-500 to-emerald-700',
+    status: 'ONBOARDING',
+    sealEnabled: false,
+    instagramProfile: '@airbnbmasterclass',
+    linkInBioSlug: 'airbnbmasterclass',
+    planPrice: 247,
+    frozenMonths: 24,
+    contractedAt: '2026-07-10T09:00:00Z',
+    referrals: 0,
+    referralConversions: 0,
+    commissionEarned: 0,
+    lastActivity: '2026-07-17T15:30:00Z',
+  },
+];
+
+// =============================================================================
+// 10 Pousadas Clientes (Beta Testers)
+// =============================================================================
+
 export const tenClientFriends: ClientFriend[] = [
   {
     id: 'client-001',
@@ -47,6 +482,7 @@ export const tenClientFriends: ClientFriend[] = [
     status: 'BETA_TESTER',
     avatar: 'AM',
     color: 'from-emerald-500 to-emerald-700',
+    niche: 'pousadas',
     totalReservations: 847,
     monthlyRevenue: 38400,
     aiMessagesProcessed: 12847,
@@ -74,6 +510,7 @@ export const tenClientFriends: ClientFriend[] = [
     status: 'BETA_TESTER',
     avatar: 'RS',
     color: 'from-blue-500 to-blue-700',
+    niche: 'pousadas',
     totalReservations: 623,
     monthlyRevenue: 29100,
     aiMessagesProcessed: 8934,
@@ -101,6 +538,7 @@ export const tenClientFriends: ClientFriend[] = [
     status: 'BETA_TESTER',
     avatar: 'FL',
     color: 'from-purple-500 to-purple-700',
+    niche: 'pousadas',
     totalReservations: 412,
     monthlyRevenue: 45200,
     aiMessagesProcessed: 6721,
@@ -128,6 +566,7 @@ export const tenClientFriends: ClientFriend[] = [
     status: 'BETA_TESTER',
     avatar: 'LM',
     color: 'from-amber-500 to-amber-700',
+    niche: 'pousadas',
     totalReservations: 534,
     monthlyRevenue: 22800,
     aiMessagesProcessed: 7562,
@@ -155,6 +594,7 @@ export const tenClientFriends: ClientFriend[] = [
     status: 'BETA_TESTER',
     avatar: 'PR',
     color: 'from-rose-500 to-rose-700',
+    niche: 'pousadas',
     totalReservations: 721,
     monthlyRevenue: 33600,
     aiMessagesProcessed: 10892,
@@ -182,6 +622,7 @@ export const tenClientFriends: ClientFriend[] = [
     status: 'BETA_TESTER',
     avatar: 'CA',
     color: 'from-cyan-500 to-cyan-700',
+    niche: 'pousadas',
     totalReservations: 389,
     monthlyRevenue: 18900,
     aiMessagesProcessed: 5431,
@@ -209,6 +650,7 @@ export const tenClientFriends: ClientFriend[] = [
     status: 'BETA_TESTER',
     avatar: 'MC',
     color: 'from-indigo-500 to-indigo-700',
+    niche: 'pousadas',
     totalReservations: 678,
     monthlyRevenue: 41200,
     aiMessagesProcessed: 9876,
@@ -236,6 +678,7 @@ export const tenClientFriends: ClientFriend[] = [
     status: 'EARLY_ADOPTER',
     avatar: 'EN',
     color: 'from-teal-500 to-teal-700',
+    niche: 'pousadas',
     totalReservations: 298,
     monthlyRevenue: 21500,
     aiMessagesProcessed: 4234,
@@ -263,6 +706,7 @@ export const tenClientFriends: ClientFriend[] = [
     status: 'BETA_TESTER',
     avatar: 'BS',
     color: 'from-orange-500 to-orange-700',
+    niche: 'pousadas',
     totalReservations: 567,
     monthlyRevenue: 35800,
     aiMessagesProcessed: 8123,
@@ -290,6 +734,7 @@ export const tenClientFriends: ClientFriend[] = [
     status: 'EARLY_ADOPTER',
     avatar: 'GF',
     color: 'from-lime-500 to-lime-700',
+    niche: 'pousadas',
     totalReservations: 187,
     monthlyRevenue: 14200,
     aiMessagesProcessed: 2876,
@@ -305,13 +750,45 @@ export const tenClientFriends: ClientFriend[] = [
   },
 ];
 
-// Métricas globais agregadas
+// =============================================================================
+// Aggregated Global Metrics (all niches)
+// =============================================================================
+
+export const airbnbMetrics = {
+  totalHosts: airbnbHosts.length,
+  totalProperties: airbnbHosts.reduce((s, h) => s + h.properties.length, 0),
+  superhosts: airbnbHosts.filter(h => h.superhost).length,
+  totalBookings: airbnbHosts.reduce((s, h) => s + h.totalBookings, 0),
+  monthlyRevenue: airbnbHosts.reduce((s, h) => s + h.monthlyRevenue, 0),
+  aiMessagesProcessed: airbnbHosts.reduce((s, h) => s + h.aiMessagesProcessed, 0),
+  avgAiResponseRate: Math.round(airbnbHosts.reduce((s, h) => s + h.aiResponseRate, 0) / airbnbHosts.length),
+  avgConversionRate: parseFloat((airbnbHosts.reduce((s, h) => s + h.conversionRate, 0) / airbnbHosts.length).toFixed(1)),
+  icalSyncEnabled: airbnbHosts.reduce((s, h) => s + h.properties.filter(p => p.icalSyncEnabled).length, 0),
+  icalSyncTotal: airbnbHosts.reduce((s, h) => s + h.properties.length, 0),
+  proCount: airbnbHosts.filter(h => h.plan === 'pro').length,
+  maxCount: airbnbHosts.filter(h => h.plan === 'max').length,
+  onboarding: airbnbHosts.filter(h => h.status === 'ONBOARDING').length,
+};
+
+export const parceiroMetrics = {
+  totalPartners: parceirosZella.length,
+  activePartners: parceirosZella.filter(p => p.status === 'ACTIVE').length,
+  onboarding: parceirosZella.filter(p => p.status === 'ONBOARDING').length,
+  sealEnabled: parceirosZella.filter(p => p.sealEnabled).length,
+  monthlyMRR: parceirosZella.reduce((s, p) => s + p.planPrice, 0),
+  totalReferrals: parceirosZella.reduce((s, p) => s + p.referrals, 0),
+  totalConversions: parceirosZella.reduce((s, p) => s + p.referralConversions, 0),
+  totalCommission: parceirosZella.reduce((s, p) => s + p.commissionEarned, 0),
+  betaSlots: 100,
+  slotsRemaining: 100 - parceirosZella.length,
+};
+
 export const globalMetrics = {
-  totalClients: 10,
-  totalRooms: 97,
-  totalReservations: 5256,
-  totalRevenue: 300700,
-  totalMessagesProcessed: 77496,
+  totalClients: 10 + airbnbHosts.length + parceirosZella.length, // all niches
+  totalRooms: 97 + airbnbMetrics.totalProperties,
+  totalReservations: 5256 + airbnbMetrics.totalBookings,
+  totalRevenue: 300700 + airbnbMetrics.monthlyRevenue + parceiroMetrics.monthlyMRR,
+  totalMessagesProcessed: 77496 + airbnbMetrics.aiMessagesProcessed,
   avgConversionRate: 31.6,
   avgOccupancy: 82,
   avgBrainAccuracy: 86.1,
@@ -320,10 +797,28 @@ export const globalMetrics = {
   activeBetas: 8,
   earlyAdopters: 2,
   monthlyGrowth: 18.4,
+  // Niche breakdown
+  pousadas: {
+    clients: 10,
+    revenue: 300700,
+    reservations: 5256,
+  },
+  anfitrioes: {
+    clients: airbnbHosts.length,
+    revenue: airbnbMetrics.monthlyRevenue,
+    reservations: airbnbMetrics.totalBookings,
+    properties: airbnbMetrics.totalProperties,
+    superhosts: airbnbMetrics.superhosts,
+  },
+  parceiro: {
+    clients: parceirosZella.length,
+    mrr: parceiroMetrics.monthlyMRR,
+    referrals: parceiroMetrics.totalReferrals,
+  },
   // Produtos SaaS ZEHLA
   linkinbioStandaloneSubscribers: 0,
-  linkinbioStandalonePrice: 47, // R$47/mês
-  linkinbioStandaloneMRR: 0, // 0 assinantes
+  linkinbioStandalonePrice: 47,
+  linkinbioStandaloneMRR: 0,
   // Matriz de preços vigente
   pricing: {
     trial: 0,
