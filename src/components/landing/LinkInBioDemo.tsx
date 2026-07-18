@@ -284,7 +284,7 @@ const CHAT_PAUSE_AFTER_COMPLETE = 3000; // pause after full conversation before 
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 export function LinkInBioDemo() {
-  const { isAnfitrioes, isParceiro } = useNiche();
+  const { isAnfitrioes, isParceiro, isPousadas } = useNiche();
 
   const profile = isParceiro ? parceiroProfile : isAnfitrioes ? anfitriaoProfile : pousadaProfile;
   const libButtons = isParceiro ? parceiroButtons : isAnfitrioes ? anfitriaoButtons : pousadaButtons;
@@ -870,7 +870,7 @@ export function LinkInBioDemo() {
                     <div className="grid grid-cols-3 gap-1 pt-1 pb-1">
                       {[
                         { label: '4.9', sub: 'Avaliação' },
-                        { label: '500+', sub: 'Hóspedes' },
+                        { label: '500+', sub: isPousadas ? 'Hóspedes' : isAnfitrioes ? 'Hóspedes' : 'Atendimentos' },
                         { label: '100%', sub: 'Satisfação' },
                       ].map((stat) => (
                         <div key={stat.label} className="text-center">

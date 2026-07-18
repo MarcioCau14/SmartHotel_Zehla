@@ -88,6 +88,28 @@ const plans = [
       { text: 'Sem marca d\'agua ZELLA', included: true },
       { text: 'Respostas otimizadas para economia', included: true },
     ],
+    featuresAnfitrioes: [
+      { text: '50 hóspedes atendidos por mês', included: true },
+      { text: '500 mensagens mensais', included: true },
+      { text: 'Recarga de 250 mensagens por R$97 (se precisar)', included: true },
+      { text: 'WhatsApp IA 24/7 com tom personalizado', included: true },
+      { text: 'Checkout PIX integrado (Mercado Pago)', included: true },
+      { text: 'Dashboard de métricas completo', included: true },
+      { text: 'Relatórios semanais por e-mail', included: true },
+      { text: 'Sem marca d\'água ZÉLLA', included: true },
+      { text: 'Respostas otimizadas para economia', included: true },
+    ],
+    featuresParceiro: [
+      { text: '50 atendimentos por mês', included: true },
+      { text: '500 mensagens mensais', included: true },
+      { text: 'Recarga de 250 mensagens por R$97 (se precisar)', included: true },
+      { text: 'WhatsApp IA 24/7 com tom personalizado', included: true },
+      { text: 'Checkout PIX integrado (Mercado Pago)', included: true },
+      { text: 'Dashboard de métricas completo', included: true },
+      { text: 'Relatórios semanais por e-mail', included: true },
+      { text: 'Sem marca d\'água ZÉLLA', included: true },
+      { text: 'Respostas otimizadas para economia', included: true },
+    ],
   },
   {
     id: 'pro',
@@ -122,6 +144,32 @@ const plans = [
       { text: 'Campanhas automatizadas', included: true },
       { text: 'Analise de sentimento', included: true },
       { text: 'Suporte prioritario', included: true },
+      { text: 'Economia inteligente nas mensagens', included: true },
+    ],
+    featuresAnfitrioes: [
+      { text: 'Hóspedes ilimitados', included: true },
+      { text: 'Link-in-bio profissional liberado', included: true },
+      { text: 'Mensagens ilimitadas (sem recargas)', included: true },
+      { text: 'WhatsApp IA com tom 100% personalizado', included: true },
+      { text: 'Checkout Cartão integrado', included: true },
+      { text: 'Dashboard completo', included: true },
+      { text: 'Sugestões de preços inteligentes', included: true },
+      { text: 'Campanhas automatizadas', included: true },
+      { text: 'Análise de sentimento', included: true },
+      { text: 'Suporte prioritário', included: true },
+      { text: 'Economia inteligente nas mensagens', included: true },
+    ],
+    featuresParceiro: [
+      { text: 'Atendimento ilimitado', included: true },
+      { text: 'Link-in-bio profissional liberado', included: true },
+      { text: 'Mensagens ilimitadas (sem recargas)', included: true },
+      { text: 'WhatsApp IA com tom 100% personalizado', included: true },
+      { text: 'Checkout Cartão integrado', included: true },
+      { text: 'Dashboard completo', included: true },
+      { text: 'Sugestões de preços inteligentes', included: true },
+      { text: 'Campanhas automatizadas', included: true },
+      { text: 'Análise de sentimento', included: true },
+      { text: 'Suporte prioritário', included: true },
       { text: 'Economia inteligente nas mensagens', included: true },
     ],
   },
@@ -473,7 +521,12 @@ export function PricingSection() {
 
                   {/* Features */}
                   <div className="flex-1 space-y-3">
-                    {plan.features.map((feature) => (
+                    {(isParceiro && (plan as Record<string, unknown>).featuresParceiro
+                      ? (plan as Record<string, { text: string; included: boolean }[]>).featuresParceiro
+                      : isAnfitrioes && (plan as Record<string, unknown>).featuresAnfitrioes
+                      ? (plan as Record<string, { text: string; included: boolean }[]>).featuresAnfitrioes
+                      : plan.features
+                    ).map((feature) => (
                       <div key={feature.text} className="flex items-start gap-2">
                         {feature.included ? (
                           <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />

@@ -346,15 +346,15 @@ export function SavingsCalculator() {
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="w-1 h-1 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-                  <span>Estadia média: <strong className="text-neutral-400">2,5 noites</strong> por reserva (média do setor)</span>
+                  <span>Estadia média: <strong className="text-neutral-400">{isParceiro ? '1 atendimento' : '2,5 noites'}</strong> por {isParceiro ? 'atendimento' : 'reserva'} (média do setor)</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="w-1 h-1 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-                  <span>Economia recepcionista: <strong className="text-neutral-400">R$ 1.200/mês</strong> cobrindo madrugadas e fins de semana</span>
+                  <span>{isParceiro ? 'Economia com automação' : 'Economia recepcionista'}: <strong className="text-neutral-400">R$ 1.200/mês</strong> {isParceiro ? 'com automação de atendimento' : 'cobrindo madrugadas e fins de semana'}</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="w-1 h-1 rounded-full bg-purple-500 mt-1.5 shrink-0" />
-                  <span>Receita extra = reservas adicionais x diária x 2,5 noites</span>
+                  <span>Receita extra = {isParceiro ? 'atendimentos adicionais × ticket médio' : 'reservas adicionais × diária × 2,5 noites'}</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="w-1 h-1 rounded-full bg-purple-500 mt-1.5 shrink-0" />

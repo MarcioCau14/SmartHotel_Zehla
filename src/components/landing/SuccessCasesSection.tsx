@@ -163,11 +163,11 @@ const parceiroCases: CaseStudy[] = [
     name: 'Flat Premium',
     location: 'Curitiba, PR',
     avatar: '/avatar-chale.svg',
-    quote: 'Entrei no programa parceiro logo no início. O preço congelado e o suporte VIP fazem toda a diferença. Hoje atendo 3x mais hóspedes sem aumentar equipe.',
+    quote: 'Entrei no programa parceiro logo no início. O preço congelado e o suporte VIP fazem toda a diferença. Hoje atendo 3x mais sem aumentar equipe.',
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
     videoThumb: '/pousada-chale.jpg',
     stats: [
-      { metric: 'Atendimento', value: '3x mais', description: 'Hóspedes atendidos' },
+      { metric: 'Atendimento', value: '3x mais', description: 'Atendimentos realizados' },
       { metric: 'Automação', value: '91%', description: 'Mensagens sem intervenção' },
       { metric: 'Economia', value: 'R$2.400', description: 'Em 24 meses de parceria' },
     ],
