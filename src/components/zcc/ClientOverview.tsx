@@ -77,6 +77,7 @@ const planLabels: Record<ClientFriend['plan'], string> = {
   lite: 'Lite',
   pro: 'Pro',
   max: 'Max',
+  parceiro: 'Parceiro Zélla',
 };
 
 const planPrices: Record<ClientFriend['plan'], string> = {
@@ -84,6 +85,7 @@ const planPrices: Record<ClientFriend['plan'], string> = {
   lite: 'R$197/mês',
   pro: 'R$397/mês',
   max: 'R$797/mês',
+  parceiro: 'R$247/mês × 24m',
 };
 
 type SortKey =
