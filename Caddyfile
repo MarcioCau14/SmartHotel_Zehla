@@ -1,10 +1,32 @@
 :81 {
-	handle {
-		reverse_proxy localhost:3000 {
-			header_up Host {host}
-			header_up X-Forwarded-For {remote_host}
-			header_up X-Forwarded-Proto {scheme}
-			header_up X-Real-IP {remote_host}
-		}
-	}
+        # Handle requests with XTransformPort=3003 (pulse-service / socket.io)
+        handle_path /socket.io/* {
+                @pulse query XTransformPort=3003
+                handle @pulse {
+                        reverse_proxy localhost:3003 {
+                                header_up Host {host}
+                                header_up X-Forwarded-For {remote_host}
+                                header_up X-Forwarded-Proto {scheme}
+                                header_up X-Real-IP {remote_host}
+                        }
+                }
+                handle {
+                        reverse_proxy localhost:3000 {
+                                header_up Host {host}
+                                header_up X-Forwarded-For {remote_host}
+                                header_up X-Forwarded-Proto {scheme}
+                                header_up X-Real-IP {remote_host}
+                        }
+                }
+        }
+
+        # Default: proxy to Next.js on port 3000
+        handle {
+                reverse_proxy localhost:3000 {
+                        header_up Host {host}
+                        header_up X-Forwarded-For {remote_host}
+                        header_up X-Forwarded-Proto {scheme}
+                        header_up X-Real-IP {remote_host}
+                }
+        }
 }

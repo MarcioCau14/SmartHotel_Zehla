@@ -1,0 +1,11 @@
+{
+  "name": "zella-pulse-service",
+  "version": "1.0.0",
+  "description": "ZCC Pulse Check — Socket.io real-time service for Zélla Central Control",
+  "scripts": {
+    "dev": "bun index.ts"
+  },
+  "dependencies": {
+    "socket.io": "^4.8.1"
+  }
+}

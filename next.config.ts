@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
   },
   reactStrictMode: true,
   productionBrowserSourceMaps: false,
-  serverExternalPackages: ["@prisma/client", "prisma", "bcryptjs", "sharp"],
+  serverExternalPackages: ["@prisma/client", "prisma", "bcryptjs", "sharp", "socket.io"],
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
@@ -31,7 +31,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "Content-Security-Policy",
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://api.openai.com https://api.groq.com https://graph.facebook.com https://api.vturb.com.br https://api.zapsign.com.br; frame-ancestors 'none'; form-action 'self'; base-uri 'self';",
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ws://localhost:* wss://localhost:* http://localhost:* https://api.openai.com https://api.groq.com https://graph.facebook.com https://api.vturb.com.br https://api.zapsign.com.br; frame-ancestors 'none'; form-action 'self'; base-uri 'self';",
           },
           {
             key: "X-Frame-Options",
