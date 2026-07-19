@@ -3,13 +3,12 @@
 import { useState } from 'react';
 import {
   Brain, ArrowLeft, Bell, Building2, Activity,
-  Users, Zap, Shield, DollarSign, Key, TrendingUp,
+  Users, Shield, DollarSign, Key, TrendingUp,
   Home, Globe, Flame, Command,
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { DashboardCards } from '@/components/zcc/DashboardCards';
 import { CerebroZella } from '@/components/zcc/CerebroZella';
 import { FintechHub } from '@/components/zcc/FintechHub';
 import { ApiKeysPanel } from '@/components/zcc/ApiKeysPanel';
@@ -36,11 +35,7 @@ const tabs: { id: ZCCTab; label: string; icon: React.ElementType; desc: string; 
   { id: 'tokens', label: 'Tokens & IA', icon: Key, desc: 'LLMs & API Keys', group: 'config' },
 ];
 
-const tabGroups = [
-  { key: 'core', label: 'CORE', tabs: tabs.filter(t => t.group === 'core') },
-  { key: 'ops', label: 'OPS', tabs: tabs.filter(t => t.group === 'ops') },
-  { key: 'config', label: 'CONFIG', tabs: tabs.filter(t => t.group === 'config') },
-];
+// Group property kept for data organization, not rendered in UI
 
 // ── Mini Sparkline SVG ─────────────────────────────────────────────────────────
 
@@ -99,30 +94,25 @@ export default function ZCCPage() {
             </div>
           </div>
 
-          {/* Center: Tab Groups */}
+          {/* Center: Tabs */}
           <div className="hidden lg:flex items-center gap-1">
-            {tabGroups.map((group, gi) => (
-              <div key={group.key} className="flex items-center gap-1">
-                {gi > 0 && (
-                  <div className="w-px h-4 mx-1.5" style={{ background: 'var(--zcc-hairline)' }} />
-                )}
-                <span className="text-[8px] font-mono font-bold tracking-[0.15em] mr-1" style={{ color: 'var(--zcc-text-muted)' }}>
-                  {group.label}
-                </span>
-                {group.tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[10px] font-mono font-medium transition-all duration-150 cursor-pointer ${
-                        activeTab === tab.id ? 'zcc-tab-active' : 'zcc-tab'
-                      }`}>
-                      <Icon className="w-3 h-3" />
-                      <span>{tab.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            ))}
+            {tabs.map((tab, ti) => {
+              const Icon = tab.icon;
+              return (
+                <div key={tab.id} className="flex items-center gap-1">
+                  {ti > 0 && (
+                    <div className="w-px h-4 mx-0.5" style={{ background: 'var(--zcc-hairline)' }} />
+                  )}
+                  <button onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[10px] font-mono font-medium transition-all duration-150 cursor-pointer ${
+                      activeTab === tab.id ? 'zcc-tab-active' : 'zcc-tab'
+                    }`}>
+                    <Icon className="w-3 h-3" />
+                    <span>{tab.label}</span>
+                  </button>
+                </div>
+              );
+            })}
           </div>
 
           {/* Right: Status + Notifications */}
