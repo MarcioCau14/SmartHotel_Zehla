@@ -1412,3 +1412,120 @@ model AirBTransaction {
   @@index([subscriptionId])
   @@map("airb_transactions")
 }
+
+// ===== ZCC ACCESS LOG =====
+model ZCCAccessLog {
+  id        String   @id @default(cuid())
+  ip        String
+  userAgent String?
+  method    String   // godmode_param | godmode_cookie | master_key_header | nextauth_admin | failed
+  success   Boolean
+  country   String?  // for future geo-IP
+  requestId String?
+  createdAt DateTime @default(now())
+
+  @@index([method])
+  @@index([success])
+  @@index([createdAt])
+  @@map("zcc_access_logs")
+}
+
+// ===== WHATSAPP MESSAGE COST =====
+model WhatsAppMessageCost {
+  id              String   @id @default(cuid())
+  tenantId        String
+  direction       String   // inbound | outbound
+  messageTemplate String?  // WhatsApp template category
+  costUsd         Float    @default(0.0068) // US$0.0068 per service message (Meta 2026 tariff)
+  costBrl         Float?   // cached BRL equivalent
+  bundled         Boolean  @default(false) // was this message bundled?
+  bundleId        String?  // reference to MessageBundle
+  conversationId  String?  // WhatsApp conversation ID
+  aiGenerated     Boolean  @default(false)
+  intent          String?  // detected intent
+  oneShot         Boolean  @default(false) // was this a one-shot resolution?
+  createdAt       DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([createdAt])
+  @@index([bundleId])
+  @@map("whatsapp_message_costs")
+}
+
+// ===== MESSAGE BUNDLE =====
+model MessageBundle {
+  id                   String    @id @default(cuid())
+  tenantId             String
+  originalMessageCount Int       // number of messages that were bundled
+  finalMessageCount    Int       @default(1) // after bundling (always 1)
+  savingsUsd           Float     // cost saved by bundling
+  bufferMs             Int       @default(3000) // buffer time in milliseconds
+  status               String    @default("completed") // pending | completed | expired
+  createdAt            DateTime  @default(now())
+  completedAt          DateTime?
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("message_bundles")
+}
+
+// ===== CONSENT RECORD =====
+model ConsentRecord {
+  id          String    @id @default(cuid())
+  tenantId    String
+  guestPhone  String    // WhatsApp number of the guest
+  consentType String    // whatsapp_communication | data_processing | marketing
+  status      String    // granted | denied | pending | withdrawn
+  source      String    // whatsapp_opt_in | ddc_checkbox | link_in_bio | admin_manual
+  ipAddress   String?
+  userAgent   String?
+  expiresAt   DateTime? // consent expiration
+  withdrawnAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([tenantId, guestPhone, consentType])
+  @@index([tenantId])
+  @@index([guestPhone])
+  @@index([status])
+  @@map("consent_records")
+}
+
+// ===== AIRBNB WEBHOOK EVENT =====
+model AirbnbWebhookEvent {
+  id                   String    @id @default(cuid())
+  tenantId             String
+  eventType            String    // reservation.created | reservation.updated | reservation.cancelled | listing.updated | review.posted
+  airbnbReservationId  String?
+  airbnbListingId      String?
+  payload              String    // JSON string with full event data
+  processed            Boolean   @default(false)
+  processedAt          DateTime?
+  mockTriggered        Boolean   @default(false) // was this triggered by ZCC mock button?
+  createdAt            DateTime  @default(now())
+
+  @@index([tenantId])
+  @@index([eventType])
+  @@index([processed])
+  @@map("airbnb_webhook_events")
+}
+
+// ===== AIRBNB OAUTH TOKEN =====
+model AirbnbOAuthToken {
+  id          String   @id @default(cuid())
+  tenantId    String
+  accessToken String
+  refreshToken String?
+  tokenType   String   @default("Bearer")
+  expiresIn   Int      // seconds until expiration
+  scope       String?  // comma-separated scopes
+  isMock      Boolean  @default(true) // flag to identify mock tokens
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([tenantId])
+  @@index([tenantId])
+  @@index([expiresAt])
+  @@map("airbnb_oauth_tokens")
+}

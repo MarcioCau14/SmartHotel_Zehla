@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Power, PowerOff, Eye, Search,
@@ -8,7 +8,7 @@ import {
   CheckCircle2, XCircle, AlertTriangle, Clock,
   ChevronRight, ExternalLink, Key, Crown, Star, Home,
 } from 'lucide-react';
-import { tenClientFriends, airbnbHosts, parceirosZella, globalMetrics } from '@/lib/zcc-clients-data';
+import { tenClientFriends, airbnbHosts, parceirosZella, globalMetrics as _globalMetrics } from '@/lib/zcc-clients-data';
 
 // ── Unified Tenant Type ────────────────────────────────────────────────────────
 
@@ -38,9 +38,9 @@ interface UnifiedTenant {
   referralCount?: number;
 }
 
-// ── Generate unified tenants ──────────────────────────────────────────────────
+// ── Generate static fallback tenants ──────────────────────────────────────────
 
-const unifiedTenants: UnifiedTenant[] = [
+const staticTenants: UnifiedTenant[] = [
   ...tenClientFriends.map(c => ({
     id: c.id,
     name: c.name,
@@ -110,12 +110,52 @@ const swarmStats = {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function TenantXRay() {
-  const [tenants, setTenants] = useState(unifiedTenants);
+  const [tenants, setTenants] = useState<UnifiedTenant[]>(staticTenants);
+  const [tenantsLoading, setTenantsLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterNiche, setFilterNiche] = useState<'all' | 'pousadas' | 'anfitrioes' | 'parceiro'>('all');
   const [filterPlan, setFilterPlan] = useState<string>('all');
   const [selectedTenant, setSelectedTenant] = useState<UnifiedTenant | null>(null);
   const [confirmKillId, setConfirmKillId] = useState<string | null>(null);
+
+  // Fetch tenants from API on mount, merge with static fallback
+  useEffect(() => {
+    async function fetchTenants() {
+      try {
+        const res = await fetch('/api/zcc/tenants');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data && Array.isArray(json.data) && json.data.length > 0) {
+            // Map API tenants to UnifiedTenant format and merge with static
+            const apiTenants: UnifiedTenant[] = json.data.map((t: any) => ({
+              id: t.id,
+              name: t.name,
+              niche: t.niche || 'pousadas',
+              plan: (t.plan || 'trial').toUpperCase(),
+              planPrice: t.planPrice ?? 0,
+              status: (t.status || 'ACTIVE').toUpperCase() as UnifiedTenant['status'],
+              city: t.city || '',
+              state: t.state || '',
+              owner: t.owner || '',
+              whatsapp: t.whatsapp || '',
+              revenue: t.revenue ?? 0,
+              aiMessagesProcessed: t.aiMessagesProcessed ?? 0,
+              conversionRate: t.conversionRate ?? 0,
+              brainAccuracy: t.brainAccuracy ?? 0,
+              brainStatus: t.brainStatus ?? 'learning',
+              killSwitchActive: t.killSwitchActive ?? false,
+            }));
+            setTenants(apiTenants);
+          }
+        }
+      } catch {
+        /* keep static fallback — tenants already initialized with staticTenants */
+      } finally {
+        setTenantsLoading(false);
+      }
+    }
+    fetchTenants();
+  }, []);
 
   const toggleKillSwitch = useCallback((id: string, reason?: string) => {
     setTenants(prev => prev.map(t => {
@@ -157,6 +197,13 @@ export function TenantXRay() {
 
   return (
     <div className="space-y-5">
+      {/* Loading indicator */}
+      {tenantsLoading && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded" style={{ background: 'rgba(212,168,67,0.06)', border: '1px solid rgba(212,168,67,0.12)' }}>
+          <div className="w-3 h-3 border-2 border-amber-400/40 border-t-amber-400 rounded-full animate-spin" />
+          <span className="text-[10px] font-mono" style={{ color: 'var(--zcc-kinpaku)' }}>Carregando dados...</span>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

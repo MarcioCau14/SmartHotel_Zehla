@@ -5,27 +5,24 @@ import {
   PieChart, Layers, DollarSign, Sparkles, Key, Wallet, Star, Target,
   Home, Building2, BarChart3, Crown,
 } from 'lucide-react';
-import { airbnbMetrics, parceiroMetrics, globalMetrics } from '@/lib/zcc-clients-data';
+import { useState, useEffect } from 'react';
+import { airbnbMetrics as _airbnbMetrics, parceiroMetrics as _parceiroMetrics } from '@/lib/zcc-clients-data';
 
-// ── Programa Beta Parceiro ──────────────────────────────────────────────────
-const BETA_PROGRAM = {
+// ── Programa Beta Parceiro (base definition, dynamically enriched) ────────
+const BETA_PROGRAM_BASE = {
   totalSlots: 100,
-  currentPartners: parceiroMetrics.totalPartners,
-  betaTesters: parceiroMetrics.activePartners,
-  earlyAdopters: parceiroMetrics.onboarding,
   priceAfterBeta: 247,
   betaEndFree: '01/08/2026',
   frozenMonths: 24,
 };
 
-// ── Produtos ZEHLA (MRR SaaS) ──────────────────────────────────────────────────
-const zehlaProducts = [
+// ── Produtos ZEHLA (MRR SaaS) — base definition, subscribers updated dynamically ──
+const zehlaProductsBase = [
   {
     id: 'saas-trial',
     name: 'Zélla IA TRIAL',
     icon: '🧪',
     price: 0,
-    subscribers: 0,
     description: 'Teste gratuito 14 dias — 50 msgs + Link-in-Bio',
     niche: 'pousadas',
     badgeClass: 'zcc-badge-muted',
@@ -35,7 +32,6 @@ const zehlaProducts = [
     name: 'Zélla IA LITE',
     icon: '🏠',
     price: 197,
-    subscribers: 0,
     description: 'IA 24/7 + 500 msgs + Link-in-Bio — Pousadas',
     niche: 'pousadas',
     badgeClass: 'zcc-badge',
@@ -45,7 +41,6 @@ const zehlaProducts = [
     name: 'Zélla IA PRO',
     icon: '🧠',
     price: 397,
-    subscribers: airbnbMetrics.proCount, // Airbnb PRO subscribers
     description: 'Msgs ilimitadas + CRM + Treinamento — Pousadas & Airbnb',
     niche: 'pousadas+anfitrioes',
     badgeClass: 'zcc-badge-patina',
@@ -55,7 +50,6 @@ const zehlaProducts = [
     name: 'Zélla IA MAX',
     icon: '👑',
     price: 797,
-    subscribers: airbnbMetrics.maxCount, // Airbnb MAX subscribers
     description: 'Tudo do PRO + Zellador + Split + SLA 99.9% — Pousadas & Airbnb',
     niche: 'pousadas+anfitrioes',
     badgeClass: 'zcc-badge-gold',
@@ -65,7 +59,6 @@ const zehlaProducts = [
     name: 'Link-in-Bio Standalone',
     icon: '🔗',
     price: 47,
-    subscribers: 0,
     description: 'Link-in-Bio profissional sem Zélla IA — R$47/mês',
     niche: 'todos',
     badgeClass: 'zcc-badge',
@@ -75,7 +68,6 @@ const zehlaProducts = [
     name: 'PARCEIRO ZÉLLA',
     icon: '🤝',
     price: 247,
-    subscribers: parceiroMetrics.totalPartners,
     description: 'PRO completo R$247/mês × 24 meses + Selo parceiro Link-in-Bio + Instagram',
     niche: 'parceiro',
     badgeClass: 'zcc-badge-gold',
@@ -117,45 +109,105 @@ const typeLabels = {
   gateway: 'Gateway',
 };
 
-// ── Per-Niche MRR Breakdown ──
-const nicheMRR = {
-  pousadas: {
-    label: 'Pousadas',
-    icon: Building2,
-    color: 'var(--zcc-kinpaku)',
-    currentMRR: 0, // Beta = free
-    projectedMRR: 10 * 397, // 10 pousadas × PRO R$397
-    breakdown: [
-      { plan: 'TRIAL', count: 0, price: 0 },
-      { plan: 'LITE', count: 0, price: 197 },
-      { plan: 'PRO', count: 0, price: 397 },
-      { plan: 'MAX', count: 0, price: 797 },
-    ],
-  },
-  anfitrioes: {
-    label: 'Anfitriões Airbnb',
-    icon: Home,
-    color: 'var(--zcc-patina)',
-    currentMRR: airbnbMetrics.proCount * 397 + airbnbMetrics.maxCount * 797,
-    projectedMRR: 10 * 397 + 10 * 797,
-    breakdown: [
-      { plan: 'PRO', count: airbnbMetrics.proCount, price: 397 },
-      { plan: 'MAX', count: airbnbMetrics.maxCount, price: 797 },
-    ],
-  },
-  parceiro: {
-    label: 'Parceiro Zélla',
-    icon: Crown,
-    color: '#d4a843',
-    currentMRR: parceiroMetrics.monthlyMRR,
-    projectedMRR: 100 * 247, // 100 parceiros × R$247
-    breakdown: [
-      { plan: 'PARCEIRO ZÉLLA', count: parceiroMetrics.totalPartners, price: 247 },
-    ],
-  },
-};
 
 export function FintechHub() {
+  // ── API hydration ──────────────────────────────────────────────────────────
+  const [apiData, setApiData] = useState<any>(null);
+  const [metricsLoading, setMetricsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchMetrics() {
+      try {
+        const res = await fetch('/api/zcc/metrics');
+        if (res.ok) {
+          const json = await res.json();
+          setApiData(json.data);
+        }
+      } catch {
+        /* use fallback */
+      } finally {
+        setMetricsLoading(false);
+      }
+    }
+    fetchMetrics();
+    const interval = setInterval(fetchMetrics, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // API data with static fallback
+  const airbnbMetrics = apiData ? {
+    ..._airbnbMetrics,
+    totalHosts: apiData.nicheBreakdown?.anfitrioes?.clients ?? _airbnbMetrics.totalHosts,
+    totalProperties: apiData.nicheBreakdown?.anfitrioes?.properties ?? _airbnbMetrics.totalProperties,
+    superhosts: apiData.nicheBreakdown?.anfitrioes?.superhosts ?? _airbnbMetrics.superhosts,
+    proCount: apiData.airbnbProCount ?? _airbnbMetrics.proCount,
+    maxCount: apiData.airbnbMaxCount ?? _airbnbMetrics.maxCount,
+    monthlyRevenue: apiData.nicheBreakdown?.anfitrioes?.revenue ?? _airbnbMetrics.monthlyRevenue,
+  } : _airbnbMetrics;
+
+  const parceiroMetrics = apiData ? {
+    ..._parceiroMetrics,
+    totalPartners: apiData.nicheBreakdown?.parceiro?.clients ?? _parceiroMetrics.totalPartners,
+    activePartners: apiData.nicheBreakdown?.parceiro?.clients ?? _parceiroMetrics.activePartners,
+    monthlyMRR: apiData.nicheBreakdown?.parceiro?.mrr ?? _parceiroMetrics.monthlyMRR,
+    totalReferrals: apiData.nicheBreakdown?.parceiro?.referrals ?? _parceiroMetrics.totalReferrals,
+  } : _parceiroMetrics;
+
+  // globalMetrics available from API: apiData?.totalClients, apiData?.totalReservations, etc.
+  // Used for nicheMRR computation via apiData directly
+
+  // ── Dynamic derived data ──────────────────────────────────────────────────
+  const BETA_PROGRAM = {
+    ...BETA_PROGRAM_BASE,
+    currentPartners: parceiroMetrics.totalPartners,
+    betaTesters: parceiroMetrics.activePartners,
+    earlyAdopters: parceiroMetrics.onboarding,
+  };
+
+  const zehlaProducts = zehlaProductsBase.map(p => {
+    let subscribers = 0;
+    if (p.id === 'saas-pro') subscribers = airbnbMetrics.proCount;
+    else if (p.id === 'saas-max') subscribers = airbnbMetrics.maxCount;
+    else if (p.id === 'saas-parceiro-zella') subscribers = parceiroMetrics.totalPartners;
+    return { ...p, subscribers };
+  });
+
+  const nicheMRR = {
+    pousadas: {
+      label: 'Pousadas',
+      icon: Building2,
+      color: 'var(--zcc-kinpaku)',
+      currentMRR: apiData?.mrr?.pousadas ?? 0,
+      projectedMRR: 10 * 397,
+      breakdown: [
+        { plan: 'TRIAL', count: 0, price: 0 },
+        { plan: 'LITE', count: 0, price: 197 },
+        { plan: 'PRO', count: 0, price: 397 },
+        { plan: 'MAX', count: 0, price: 797 },
+      ],
+    },
+    anfitrioes: {
+      label: 'Anfitriões Airbnb',
+      icon: Home,
+      color: 'var(--zcc-patina)',
+      currentMRR: apiData?.mrr?.airbnb ?? (airbnbMetrics.proCount * 397 + airbnbMetrics.maxCount * 797),
+      projectedMRR: 10 * 397 + 10 * 797,
+      breakdown: [
+        { plan: 'PRO', count: airbnbMetrics.proCount, price: 397 },
+        { plan: 'MAX', count: airbnbMetrics.maxCount, price: 797 },
+      ],
+    },
+    parceiro: {
+      label: 'Parceiro Zélla',
+      icon: Crown,
+      color: '#d4a843',
+      currentMRR: apiData?.mrr?.parceiro ?? parceiroMetrics.monthlyMRR,
+      projectedMRR: 100 * 247,
+      breakdown: [
+        { plan: 'PARCEIRO ZÉLLA', count: parceiroMetrics.totalPartners, price: 247 },
+      ],
+    },
+  };
   const saasMRR = zehlaProducts.reduce((sum, p) => sum + (p.price * p.subscribers), 0);
   const totalPixWeekly = dailyVolume.reduce((s, d) => s + d.pix, 0);
   const totalCardWeekly = dailyVolume.reduce((s, d) => s + d.card, 0);
@@ -166,6 +218,13 @@ export function FintechHub() {
 
   return (
     <div className="space-y-5">
+      {/* Loading indicator */}
+      {metricsLoading && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded" style={{ background: 'rgba(212,168,67,0.06)', border: '1px solid rgba(212,168,67,0.12)' }}>
+          <div className="w-3 h-3 border-2 border-amber-400/40 border-t-amber-400 rounded-full animate-spin" />
+          <span className="text-[10px] font-mono" style={{ color: 'var(--zcc-kinpaku)' }}>Carregando métricas...</span>
+        </div>
+      )}
       {/* ── Top Stats ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="zcc-panel p-4">

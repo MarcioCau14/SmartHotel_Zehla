@@ -1,0 +1,183 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+
+type TenantNiche = 'pousadas' | 'anfitrioes' | 'parceiro';
+
+const POUSADA_TYPES = ['pousada', 'hotel', 'hostel', 'chalé', 'resort'];
+
+const PLAN_PRICING: Record<string, number> = {
+  trial: 0,
+  starter: 147,
+  pro: 297,
+  business: 597,
+  airb_pro: 397,
+  airb_max: 797,
+  parceiro: 97,
+};
+
+function determineNiche(plan: string, propertyType?: string): TenantNiche {
+  if (plan === 'parceiro') return 'parceiro';
+  if (propertyType === 'airbnb') return 'anfitrioes';
+  if (POUSADA_TYPES.includes(propertyType || '')) return 'pousadas';
+  // Fallback: if they have Airbnb subscriptions, they're anfitrioes
+  return 'pousadas';
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const nicheFilter = searchParams.get('niche') as TenantNiche | null;
+    const searchFilter = searchParams.get('search')?.trim().toLowerCase() || '';
+    const planFilter = searchParams.get('plan')?.trim().toLowerCase() || '';
+
+    // ── Fetch all tenants with related data ──────────────────────
+    const tenants = await db.tenant.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        phoneAlt: true,
+        plan: true,
+        status: true,
+        createdAt: true,
+        subscriptionAt: true,
+        property: {
+          select: {
+            type: true,
+            city: true,
+            state: true,
+          },
+        },
+        airbSubscriptions: {
+          where: { status: 'active' },
+          select: { amount: true, planType: true, currentPropertyCount: true },
+        },
+        subscriptions: {
+          where: { status: 'active' },
+          select: { amount: true, planType: true },
+        },
+        _count: {
+          select: {
+            reservations: true,
+            agentLogs: true,
+            guests: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // ── Enrich each tenant ───────────────────────────────────────
+    const enriched = await Promise.all(
+      tenants.map(async (tenant) => {
+        const propertyType = tenant.property?.type;
+        const niche = determineNiche(tenant.plan, propertyType);
+
+        // Determine plan price
+        let planPrice = PLAN_PRICING[tenant.plan] ?? 0;
+        if (niche === 'anfitrioes' && tenant.airbSubscriptions.length > 0) {
+          planPrice = tenant.airbSubscriptions[0].amount;
+        }
+        const activeSub = tenant.subscriptions.find(s => s.status === 'active');
+        if (activeSub) {
+          planPrice = activeSub.amount;
+        }
+
+        // Revenue
+        let revenue = 0;
+        try {
+          const txResult = await db.transaction.aggregate({
+            where: {
+              tenantId: tenant.id,
+              type: 'PAYMENT',
+              status: 'COMPLETED',
+            },
+            _sum: { amount: true },
+          });
+          revenue = txResult._sum.amount ?? 0;
+        } catch {
+          revenue = 0;
+        }
+
+        // AI messages processed
+        let aiMessagesProcessed = 0;
+        try {
+          aiMessagesProcessed = await db.agentLog.count({
+            where: { tenantId: tenant.id, status: 'success' },
+          });
+        } catch {
+          aiMessagesProcessed = 0;
+        }
+
+        // Conversion rate (guests booked / total guests)
+        let conversionRate = 0;
+        try {
+          const totalGuests = tenant._count.guests;
+          const bookedGuests = await db.guest.count({
+            where: { tenantId: tenant.id, status: { in: ['booked', 'staying', 'checked_out'] } },
+          });
+          conversionRate = totalGuests > 0 ? Math.round((bookedGuests / totalGuests) * 100) : 0;
+        } catch {
+          conversionRate = 0;
+        }
+
+        // Brain accuracy (mock placeholder based on plan)
+        const brainAccuracy =
+          tenant.plan === 'business' ? 96 :
+          tenant.plan === 'pro' ? 91 :
+          tenant.plan === 'starter' ? 85 :
+          78;
+
+        return {
+          id: tenant.id,
+          name: tenant.name,
+          niche,
+          plan: tenant.plan,
+          planPrice,
+          status: tenant.status,
+          city: tenant.property?.city ?? '',
+          state: tenant.property?.state ?? '',
+          owner: tenant.email ?? '',
+          whatsapp: tenant.phoneAlt ?? tenant.phone ?? '',
+          revenue,
+          aiMessagesProcessed,
+          conversionRate,
+          brainAccuracy,
+          brainStatus: tenant.status === 'active' ? 'learning' : 'paused',
+          killSwitchActive: tenant.status === 'suspended',
+        };
+      })
+    );
+
+    // ── Apply filters ────────────────────────────────────────────
+    let filtered = enriched;
+
+    if (nicheFilter) {
+      filtered = filtered.filter(t => t.niche === nicheFilter);
+    }
+    if (searchFilter) {
+      filtered = filtered.filter(t =>
+        t.name.toLowerCase().includes(searchFilter) ||
+        t.owner.toLowerCase().includes(searchFilter) ||
+        t.city.toLowerCase().includes(searchFilter)
+      );
+    }
+    if (planFilter) {
+      filtered = filtered.filter(t => t.plan.toLowerCase() === planFilter);
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: filtered,
+      total: filtered.length,
+    });
+  } catch (error) {
+    console.error('[ZCC Tenants] Error:', error);
+    return NextResponse.json({
+      success: true,
+      data: [],
+      total: 0,
+    });
+  }
+}

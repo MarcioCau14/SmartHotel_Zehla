@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Brain, ArrowLeft, Bell, Building2, Activity,
   Users, Shield, DollarSign, Key, TrendingUp,
@@ -18,7 +18,40 @@ import { PulseCheck } from '@/components/zcc/PulseCheck';
 import { BurnRateCenter } from '@/components/zcc/BurnRateCenter';
 import { TenantXRay } from '@/components/zcc/TenantXRay';
 import { ClientOverview } from '@/components/zcc/ClientOverview';
-import { globalMetrics, airbnbMetrics, parceiroMetrics } from '@/lib/zcc-clients-data';
+import { globalMetrics as _globalMetrics, airbnbMetrics as _airbnbMetrics, parceiroMetrics as _parceiroMetrics } from '@/lib/zcc-clients-data';
+
+// ── API Hydration Hook ───────────────────────────────────────────────────────
+
+function useZCCMetrics() {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchMetrics() {
+      try {
+        const res = await fetch('/api/zcc/metrics');
+        if (res.ok) {
+          const json = await res.json();
+          setData(json.data);
+        }
+      } catch {
+        /* use fallback */
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchMetrics();
+    const interval = setInterval(fetchMetrics, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return { data, loading };
+}
+
+// Static fallbacks (renamed with underscore prefix)
+const globalMetrics = _globalMetrics;
+const airbnbMetrics = _airbnbMetrics;
+const parceiroMetrics = _parceiroMetrics;
 
 // ── Tab Configuration ──────────────────────────────────────────────────────────
 
@@ -65,9 +98,39 @@ function sparkline(base: number, variance: number, len = 14): number[] {
 
 export default function ZCCPage() {
   const [activeTab, setActiveTab] = useState<ZCCTab>('overview');
+  const { data: apiData, loading: metricsLoading } = useZCCMetrics();
 
-  const totalMRR = airbnbMetrics.proCount * 397 + airbnbMetrics.maxCount * 797 + parceiroMetrics.monthlyMRR + globalMetrics.pousadas.revenue;
-  const totalClients = globalMetrics.totalClients;
+  // API data with static fallback
+  const totalMRR = apiData?.mrr?.total ?? (airbnbMetrics.proCount * 397 + airbnbMetrics.maxCount * 797 + parceiroMetrics.monthlyMRR + globalMetrics.pousadas.revenue);
+  const totalClients = apiData?.totalClients ?? globalMetrics.totalClients;
+  const apiGlobalMetrics = apiData ? {
+    ...globalMetrics,
+    totalClients: apiData.totalClients ?? globalMetrics.totalClients,
+    totalReservations: apiData.totalReservations ?? globalMetrics.totalReservations,
+    totalMessagesProcessed: apiData.totalMessagesProcessed ?? globalMetrics.totalMessagesProcessed,
+    avgOccupancy: apiData.avgOccupancy ?? globalMetrics.avgOccupancy,
+    avgBrainAccuracy: apiData.nicheBreakdown?.pousadas ? globalMetrics.avgBrainAccuracy : globalMetrics.avgBrainAccuracy,
+    totalPriceAdjustments: apiData.totalPriceAdjustments ?? globalMetrics.totalPriceAdjustments,
+    monthlyGrowth: apiData.monthlyGrowth ?? globalMetrics.monthlyGrowth,
+    pousadas: {
+      clients: apiData.nicheBreakdown?.pousadas?.clients ?? globalMetrics.pousadas.clients,
+      revenue: apiData.nicheBreakdown?.pousadas?.revenue ?? globalMetrics.pousadas.revenue,
+      reservations: apiData.nicheBreakdown?.pousadas?.reservations ?? globalMetrics.pousadas.reservations,
+    },
+  } : globalMetrics;
+  const apiAirbnbMetrics = apiData ? {
+    ...airbnbMetrics,
+    totalHosts: apiData.nicheBreakdown?.anfitrioes?.clients ?? airbnbMetrics.totalHosts,
+    totalProperties: apiData.nicheBreakdown?.anfitrioes?.properties ?? airbnbMetrics.totalProperties,
+    superhosts: apiData.nicheBreakdown?.anfitrioes?.superhosts ?? airbnbMetrics.superhosts,
+    monthlyRevenue: apiData.nicheBreakdown?.anfitrioes?.revenue ?? airbnbMetrics.monthlyRevenue,
+  } : airbnbMetrics;
+  const apiParceiroMetrics = apiData ? {
+    ...parceiroMetrics,
+    totalPartners: apiData.nicheBreakdown?.parceiro?.clients ?? parceiroMetrics.totalPartners,
+    monthlyMRR: apiData.nicheBreakdown?.parceiro?.mrr ?? parceiroMetrics.monthlyMRR,
+    totalReferrals: apiData.nicheBreakdown?.parceiro?.referrals ?? parceiroMetrics.totalReferrals,
+  } : parceiroMetrics;
 
   return (
     <div className="min-h-screen" style={{ background: '#0A0F1C' }}>
@@ -167,13 +230,21 @@ export default function ZCCPage() {
               <div className="space-y-5">
                 {/* Global Command Metrics */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                  {[
-                    { label: 'MRR TOTAL', value: `R$ ${(totalMRR / 1000).toFixed(1)}k`, color: 'var(--zcc-kinpaku)', sparkData: sparkline(totalMRR, totalMRR * 0.05), trend: `+${globalMetrics.monthlyGrowth}%` },
-                    { label: 'RESERVAS', value: globalMetrics.totalReservations.toLocaleString('pt-BR'), color: 'var(--zcc-champagne)', sparkData: sparkline(5000, 500) },
-                    { label: 'MSGs IA', value: `${(globalMetrics.totalMessagesProcessed / 1000).toFixed(1)}k`, color: 'var(--zcc-patina)', sparkData: sparkline(8000, 800) },
-                    { label: 'OCUPAÇÃO', value: `${globalMetrics.avgOccupancy}%`, color: 'var(--zcc-patina)', sparkData: sparkline(82, 4) },
-                    { label: 'AJUSTES PREÇO', value: String(globalMetrics.totalPriceAdjustments), color: '#d4a843', sparkData: sparkline(55, 10) },
-                    { label: 'CLIENTES', value: String(totalClients), color: '#10b981', sparkData: sparkline(totalClients, 2), trend: `+${globalMetrics.monthlyGrowth}%` },
+                  {metricsLoading ? (
+                    Array.from({ length: 6 }).map((_, i) => (
+                      <div key={`skel-${i}`} className="zcc-panel p-4">
+                        <div className="zcc-eyebrow">&nbsp;</div>
+                        <div className="h-5 w-16 rounded shimmer" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                        <div className="h-3 w-12 mt-2 rounded" style={{ background: 'rgba(255,255,255,0.04)' }} />
+                      </div>
+                    ))
+                  ) : ([
+                    { label: 'MRR TOTAL', value: `R$ ${(totalMRR / 1000).toFixed(1)}k`, color: 'var(--zcc-kinpaku)', sparkData: sparkline(totalMRR, totalMRR * 0.05), trend: `+${apiGlobalMetrics.monthlyGrowth}%` },
+                    { label: 'RESERVAS', value: apiGlobalMetrics.totalReservations.toLocaleString('pt-BR'), color: 'var(--zcc-champagne)', sparkData: sparkline(5000, 500) },
+                    { label: 'MSGs IA', value: `${(apiGlobalMetrics.totalMessagesProcessed / 1000).toFixed(1)}k`, color: 'var(--zcc-patina)', sparkData: sparkline(8000, 800) },
+                    { label: 'OCUPAÇÃO', value: `${apiGlobalMetrics.avgOccupancy}%`, color: 'var(--zcc-patina)', sparkData: sparkline(82, 4) },
+                    { label: 'AJUSTES PREÇO', value: String(apiGlobalMetrics.totalPriceAdjustments), color: '#d4a843', sparkData: sparkline(55, 10) },
+                    { label: 'CLIENTES', value: String(totalClients), color: '#10b981', sparkData: sparkline(totalClients, 2), trend: `+${apiGlobalMetrics.monthlyGrowth}%` },
                   ].map((stat, i) => (
                     <motion.div key={stat.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.04 }} className="zcc-panel p-4">
@@ -186,7 +257,7 @@ export default function ZCCPage() {
                         </div>
                       )}
                     </motion.div>
-                  ))}
+                  )))}
                 </div>
 
                 {/* Niche Breakdown — Interlinked */}
@@ -204,12 +275,12 @@ export default function ZCCPage() {
                         <span className="zcc-badge-gold">BETA</span>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <div><div className="zcc-eyebrow">CLIENTES</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-champagne)' }}>{globalMetrics.pousadas.clients}</div></div>
-                        <div><div className="zcc-eyebrow">RECEITA</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-kinpaku)' }}>R$ {(globalMetrics.pousadas.revenue / 1000).toFixed(1)}k</div></div>
-                        <div><div className="zcc-eyebrow">RESERVAS</div><div className="text-sm font-bold font-mono" style={{ color: 'var(--zcc-patina)' }}>{globalMetrics.pousadas.reservations.toLocaleString('pt-BR')}</div></div>
-                        <div><div className="zcc-eyebrow">BRAIN AVG</div><div className="text-sm font-bold font-mono" style={{ color: '#10b981' }}>{globalMetrics.avgBrainAccuracy}%</div></div>
+                        <div><div className="zcc-eyebrow">CLIENTES</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-champagne)' }}>{apiGlobalMetrics.pousadas.clients}</div></div>
+                        <div><div className="zcc-eyebrow">RECEITA</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-kinpaku)' }}>R$ {(apiGlobalMetrics.pousadas.revenue / 1000).toFixed(1)}k</div></div>
+                        <div><div className="zcc-eyebrow">RESERVAS</div><div className="text-sm font-bold font-mono" style={{ color: 'var(--zcc-patina)' }}>{apiGlobalMetrics.pousadas.reservations.toLocaleString('pt-BR')}</div></div>
+                        <div><div className="zcc-eyebrow">BRAIN AVG</div><div className="text-sm font-bold font-mono" style={{ color: '#10b981' }}>{apiGlobalMetrics.avgBrainAccuracy}%</div></div>
                       </div>
-                      <MiniSparkline data={sparkline(globalMetrics.pousadas.revenue, 5000)} color="#d4a843" width={200} height={28} />
+                      <MiniSparkline data={sparkline(apiGlobalMetrics.pousadas.revenue, 5000)} color="#d4a843" width={200} height={28} />
                     </div>
 
                     {/* Airbnb */}
@@ -220,12 +291,12 @@ export default function ZCCPage() {
                         <span className="zcc-badge-patina">PRO + MAX</span>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <div><div className="zcc-eyebrow">ANFITRIÕES</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-champagne)' }}>{airbnbMetrics.totalHosts}</div></div>
-                        <div><div className="zcc-eyebrow">IMÓVEIS</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-patina)' }}>{airbnbMetrics.totalProperties}</div></div>
-                        <div><div className="zcc-eyebrow">SUPERHOSTS</div><div className="text-sm font-bold font-mono" style={{ color: '#d4a843' }}>{airbnbMetrics.superhosts}</div></div>
-                        <div><div className="zcc-eyebrow">ICAL SYNC</div><div className="text-sm font-bold font-mono" style={{ color: '#10b981' }}>{airbnbMetrics.icalSyncEnabled}/{airbnbMetrics.icalSyncTotal}</div></div>
+                        <div><div className="zcc-eyebrow">ANFITRIÕES</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-champagne)' }}>{apiAirbnbMetrics.totalHosts}</div></div>
+                        <div><div className="zcc-eyebrow">IMÓVEIS</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-patina)' }}>{apiAirbnbMetrics.totalProperties}</div></div>
+                        <div><div className="zcc-eyebrow">SUPERHOSTS</div><div className="text-sm font-bold font-mono" style={{ color: '#d4a843' }}>{apiAirbnbMetrics.superhosts}</div></div>
+                        <div><div className="zcc-eyebrow">ICAL SYNC</div><div className="text-sm font-bold font-mono" style={{ color: '#10b981' }}>{apiAirbnbMetrics.icalSyncEnabled}/{apiAirbnbMetrics.icalSyncTotal}</div></div>
                       </div>
-                      <MiniSparkline data={sparkline(airbnbMetrics.monthlyRevenue, 3000)} color="#4a9a9a" width={200} height={28} />
+                      <MiniSparkline data={sparkline(apiAirbnbMetrics.monthlyRevenue, 3000)} color="#4a9a9a" width={200} height={28} />
                     </div>
 
                     {/* Parceiro */}
@@ -236,12 +307,12 @@ export default function ZCCPage() {
                         <span className="zcc-badge-danger">R$247×24m</span>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <div><div className="zcc-eyebrow">PARCEIROS</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-champagne)' }}>{parceiroMetrics.totalPartners}</div></div>
-                        <div><div className="zcc-eyebrow">MRR</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-kinpaku)' }}>R$ {parceiroMetrics.monthlyMRR}</div></div>
-                        <div><div className="zcc-eyebrow">REFERRALS</div><div className="text-sm font-bold font-mono" style={{ color: 'var(--zcc-patina)' }}>{parceiroMetrics.totalReferrals}</div></div>
-                        <div><div className="zcc-eyebrow">SLOTS BETA</div><div className="text-sm font-bold font-mono" style={{ color: '#f59e0b' }}>{parceiroMetrics.slotsRemaining}/100</div></div>
+                        <div><div className="zcc-eyebrow">PARCEIROS</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-champagne)' }}>{apiParceiroMetrics.totalPartners}</div></div>
+                        <div><div className="zcc-eyebrow">MRR</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-kinpaku)' }}>R$ {apiParceiroMetrics.monthlyMRR}</div></div>
+                        <div><div className="zcc-eyebrow">REFERRALS</div><div className="text-sm font-bold font-mono" style={{ color: 'var(--zcc-patina)' }}>{apiParceiroMetrics.totalReferrals}</div></div>
+                        <div><div className="zcc-eyebrow">SLOTS BETA</div><div className="text-sm font-bold font-mono" style={{ color: '#f59e0b' }}>{apiParceiroMetrics.slotsRemaining}/100</div></div>
                       </div>
-                      <MiniSparkline data={sparkline(parceiroMetrics.monthlyMRR, 200)} color="#c45454" width={200} height={28} />
+                      <MiniSparkline data={sparkline(apiParceiroMetrics.monthlyMRR, 200)} color="#c45454" width={200} height={28} />
                     </div>
                   </div>
                 </div>
