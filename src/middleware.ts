@@ -15,6 +15,10 @@ const SKIP_LOG_PATHS = ['/api/health', '/api/readiness', '/_next/', '/favicon.ic
 
 const PROTECTED_PAGE_PATHS = ['/ddc', '/zcc', '/dashboard', '/config', '/tenants', '/campaigns', '/leads', '/targets', '/agents', '/roi', '/swipe-templates'];
 
+/** ZCC God Mode access token — allows preview access to /zcc without NextAuth login */
+const ZCC_GODMODE_TOKEN = 'zella-ctrl-2026';
+const ZCC_GODMODE_COOKIE = 'zcc_godmode';
+
 /** API routes that require auth in production */
 const PROTECTED_API_PREFIXES = [
   '/api/leads', '/api/targets', '/api/campaigns', '/api/swipe-templates',
@@ -105,6 +109,27 @@ export function middleware(request: NextRequest) {
       userAgent: request.headers.get('user-agent')?.slice(0, 100),  
       ip: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown',  
     }));  
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // ZCC GOD MODE ACCESS — Bypass auth for /zcc with secret token
+  // ═══════════════════════════════════════════════════════════════
+  const godmodeParam = request.nextUrl.searchParams.get('godmode');
+  const godmodeCookie = request.cookies.get(ZCC_GODMODE_COOKIE)?.value;
+
+  // If accessing /zcc with correct godmode token, set cookie and allow
+  if (pathname === '/zcc' && (godmodeParam === ZCC_GODMODE_TOKEN || godmodeCookie === ZCC_GODMODE_TOKEN)) {
+    const res = NextResponse.next();
+    if (godmodeParam === ZCC_GODMODE_TOKEN) {
+      res.cookies.set(ZCC_GODMODE_COOKIE, ZCC_GODMODE_TOKEN, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 8, // 8 hours
+        path: '/zcc',
+      });
+    }
+    return res;
   }
 
   // ═══════════════════════════════════════════════════════════════
