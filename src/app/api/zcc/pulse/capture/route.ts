@@ -6,6 +6,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyZCCAccessOrReject } from '@/lib/zcc-security';
 
 interface ErrorCapture {
   container: string;
@@ -22,6 +23,10 @@ interface ErrorCapture {
 const errorQueue: ErrorCapture[] = [];
 
 export async function POST(request: NextRequest) {
+  // ── Security Gate V3 — 6-Layer Protection ──
+  const security = await verifyZCCAccessOrReject(request);
+  if (!security.allowed) return security.response!;
+
   try {
     const body: ErrorCapture = await request.json();
 
@@ -57,7 +62,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // ── Security Gate V3 — 6-Layer Protection ──
+  const security = await verifyZCCAccessOrReject(request);
+  if (!security.allowed) return security.response!;
+
   return NextResponse.json({
     queueSize: errorQueue.length,
     recent: errorQueue.slice(-10),

@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { apiRatelimit } from '@/lib/rate-limit';
+import { verifyZCCAccessOrReject } from '@/lib/zcc-security';
 
 export async function GET(request: NextRequest) {
-  const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-  const rl = await apiRatelimit.limit(`api:${clientIp}:${new URL(request.url).pathname}`);
-  if (!rl.success) {
-    return NextResponse.json(
-      { error: 'RATE_LIMITED', message: 'Muitas requisições.', retryAfter: Math.ceil((rl.reset - Date.now()) / 1000) },
-      { status: 429, headers: { 'Retry-After': String(Math.ceil((rl.reset - Date.now()) / 1000)), 'X-RateLimit-Remaining': '0' } }
-    );
-  }
+  // ── Security Gate V3 — 6-Layer Protection ──
+  const security = await verifyZCCAccessOrReject(request);
+  if (!security.allowed) return security.response!;
 
   try {
     const [totalLeads, verifiedLeads, activeCampaigns] = await Promise.all([
@@ -29,12 +24,12 @@ export async function GET(request: NextRequest) {
       activeCampaigns,
       conversionRate,
       monthlyAICost: 47.50,
-    }, { headers: { 'X-Security-Shield': 'zero-trust-v2' } });
+    }, { headers: { 'X-Security-Shield': 'zero-trust-v3' } });
   } catch (error) {
     console.error('[ZCC Stats]', error);
     return NextResponse.json(
       { totalLeads: 0, verifiedLeads: 0, messagesSent: 0, activeCampaigns: 0, conversionRate: '0.0', monthlyAICost: 0 },
-      { status: 500, headers: { 'X-Security-Shield': 'zero-trust-v2' } }
+      { status: 500, headers: { 'X-Security-Shield': 'zero-trust-v3' } }
     );
   }
 }

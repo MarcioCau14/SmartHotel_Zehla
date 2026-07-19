@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { verifyZCCAccessOrReject } from '@/lib/zcc-security';
 
 const COST_PER_MESSAGE_USD = 0.0068;
 const COST_PER_MESSAGE_BRL = 0.035;
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
+  // ── Security Gate V3 — 6-Layer Protection ──
+  const security = await verifyZCCAccessOrReject(request);
+  if (!security.allowed) return security.response!;
+
   try {
     // ── Fetch all WhatsApp message costs ─────────────────────────
     let messageCosts: { tenantId: string; createdAt: Date; costUsd: number }[] = [];
@@ -26,11 +31,11 @@ export async function GET(_request: NextRequest) {
         property: { select: { type: true } },
         airbSubscriptions: {
           where: { status: 'active' },
-          select: { amount: true },
+          select: { amount: true, status: true },
         },
         subscriptions: {
           where: { status: 'active' },
-          select: { amount: true },
+          select: { amount: true, status: true },
         },
       },
     });

@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { verifyZCCAccessOrReject } from '@/lib/zcc-security';
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
+  // ── Security Gate V3 — 6-Layer Protection ──
+  const security = await verifyZCCAccessOrReject(request);
+  if (!security.allowed) return security.response!;
+
   try {
     // ── Core counts ──────────────────────────────────────────────
     const [totalClients, totalRooms, totalReservations, totalTransactions] = await Promise.all([
@@ -58,11 +63,11 @@ export async function GET(_request: NextRequest) {
         property: { select: { type: true } },
         airbSubscriptions: {
           where: { status: 'active' },
-          select: { amount: true, planType: true },
+          select: { amount: true, planType: true, status: true },
         },
         subscriptions: {
           where: { status: 'active' },
-          select: { amount: true, planType: true },
+          select: { amount: true, planType: true, status: true },
         },
       },
     });

@@ -1,20 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-
-function verifyZCCAccess(request: NextRequest): boolean {
-  const cookie = request.cookies.get('zcc_godmode')?.value;
-  const header = request.headers.get('X-ZCC-Master-Key');
-  return cookie === 'zella-ctrl-2026' || header === 'zella-ctrl-2026';
-}
+import { verifyZCCAccessOrReject } from '@/lib/zcc-security';
 
 export async function POST(request: NextRequest) {
+  // ── Security Gate V3 — 6-Layer Protection ──
+  const security = await verifyZCCAccessOrReject(request);
+  if (!security.allowed) return security.response!;
+
   try {
-    if (!verifyZCCAccess(request)) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized — ZCC access required' },
-        { status: 401 }
-      );
-    }
 
     const body = await request.json();
     const { tenantId, eventType, payload } = body as {

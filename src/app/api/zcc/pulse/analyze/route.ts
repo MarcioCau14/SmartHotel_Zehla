@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import ZAI from 'z-ai-web-dev-sdk';
+import { verifyZCCAccessOrReject } from '@/lib/zcc-security';
 
 const SYSTEM_PROMPT = `Você é o Agente de Infraestrutura Senior do ecossistema Seu Zélla.
 Um erro crítico acabou de ser capturado nos containers da VPS Hostinger.
@@ -31,6 +32,10 @@ interface AnalysisRequest {
 }
 
 export async function POST(request: NextRequest) {
+  // ── Security Gate V3 — 6-Layer Protection ──
+  const security = await verifyZCCAccessOrReject(request);
+  if (!security.allowed) return security.response!;
+
   try {
     const body: AnalysisRequest = await request.json();
 

@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { verifyZCCAccessOrReject } from '@/lib/zcc-security';
 
 /**
  * GET /api/zcc/consent?tenantId=xxx
  * Returns consent records for a specific tenant.
  */
 export async function GET(request: NextRequest) {
+  // ── Security Gate V3 — 6-Layer Protection ──
+  const security = await verifyZCCAccessOrReject(request);
+  if (!security.allowed) return security.response!;
+
   try {
     const { searchParams } = new URL(request.url);
     const tenantId = searchParams.get('tenantId');
@@ -64,6 +69,10 @@ export async function GET(request: NextRequest) {
  * Body: { tenantId, guestPhone, consentType, status, source, ipAddress?, userAgent?, expiresAt? }
  */
 export async function POST(request: NextRequest) {
+  // ── Security Gate V3 — 6-Layer Protection ──
+  const security = await verifyZCCAccessOrReject(request);
+  if (!security.allowed) return security.response!;
+
   try {
     const body = await request.json();
     const {

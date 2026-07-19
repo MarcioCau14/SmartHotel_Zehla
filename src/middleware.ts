@@ -314,7 +314,7 @@ export async function middleware(request: NextRequest) {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         maxAge: 60 * 60 * 8, // 8 horas
-        path: '/zcc',
+        path: '/', // Must be '/' so cookie is sent to /api/zcc/* too
       });
       auditZCCAccess({ ip, userAgent, method: 'param', success: true, path: pathname });
       return res;
@@ -343,7 +343,7 @@ export async function middleware(request: NextRequest) {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             maxAge: 60 * 60 * 8, // 8 horas
-            path: '/zcc',
+            path: '/', // Must be '/' so cookie is sent to /api/zcc/* too
           });
           auditZCCAccess({ ip, userAgent, method: 'cookie', success: true, path: pathname });
           return res;

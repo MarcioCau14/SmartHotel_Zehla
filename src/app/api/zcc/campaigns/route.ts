@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { apiRatelimit } from '@/lib/rate-limit';
+import { verifyZCCAccessOrReject } from '@/lib/zcc-security';
 
 export async function GET(request: NextRequest) {
-  const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-  const rl = await apiRatelimit.limit(`api:${clientIp}:${new URL(request.url).pathname}`);
-  if (!rl.success) {
-    return NextResponse.json(
-      { error: 'RATE_LIMITED', message: 'Muitas requisições.', retryAfter: Math.ceil((rl.reset - Date.now()) / 1000) },
-      { status: 429, headers: { 'Retry-After': String(Math.ceil((rl.reset - Date.now()) / 1000)), 'X-RateLimit-Remaining': '0' } }
-    );
-  }
+  // ── Security Gate V3 — 6-Layer Protection ──
+  const security = await verifyZCCAccessOrReject(request);
+  if (!security.allowed) return security.response!;
 
   try {
     const campaigns = await db.campaign.findMany({

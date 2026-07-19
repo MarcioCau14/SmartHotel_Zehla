@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { verifyZCCAccessOrReject } from '@/lib/zcc-security';
 
 type TenantNiche = 'pousadas' | 'anfitrioes' | 'parceiro';
 
@@ -24,6 +25,10 @@ function determineNiche(plan: string, propertyType?: string): TenantNiche {
 }
 
 export async function GET(request: NextRequest) {
+  // ── Security Gate V3 — 6-Layer Protection ──
+  const security = await verifyZCCAccessOrReject(request);
+  if (!security.allowed) return security.response!;
+
   try {
     const { searchParams } = new URL(request.url);
     const nicheFilter = searchParams.get('niche') as TenantNiche | null;
@@ -51,11 +56,11 @@ export async function GET(request: NextRequest) {
         },
         airbSubscriptions: {
           where: { status: 'active' },
-          select: { amount: true, planType: true, currentPropertyCount: true },
+          select: { amount: true, planType: true, currentPropertyCount: true, status: true },
         },
         subscriptions: {
           where: { status: 'active' },
-          select: { amount: true, planType: true },
+          select: { amount: true, planType: true, status: true },
         },
         _count: {
           select: {
