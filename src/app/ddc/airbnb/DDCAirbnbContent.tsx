@@ -1,0 +1,1159 @@
+'use client';
+
+import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from 'recharts';
+import { ZellaLogo } from '@/components/brand/ZellaLogo';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Switch } from '@/components/ui/switch';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from '@/components/ui/chart';
+import {
+  RefreshCw,
+  Bot,
+  Settings,
+  LogOut,
+  TrendingUp,
+  DollarSign,
+  ArrowUpRight,
+  CheckCircle2,
+  Clock,
+  ShieldCheck,
+  ChevronRight,
+  Menu,
+  Star,
+  Zap,
+  Plus,
+  Home,
+  CalendarDays,
+  Activity,
+  MessageSquare,
+  Shield,
+  CircleCheck,
+  CircleX,
+  Circle,
+  Bell,
+  Key,
+  Crown,
+} from 'lucide-react';
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type AirbnbTab = 'propriedades' | 'sincronizacao' | 'automacao' | 'config';
+
+interface PropertyData {
+  id: string;
+  name: string;
+  location: string;
+  connected: boolean;
+  occupancy: number;
+  rating: number;
+  reviews: number;
+  revenue: number;
+}
+
+interface CalendarDay {
+  day: number;
+  status: 'booked' | 'blocked' | 'available' | 'past';
+  guest?: string;
+}
+
+interface SyncSource {
+  name: string;
+  icon: string;
+  status: 'synced' | 'disconnected';
+  lastSync: string;
+}
+
+interface AutomationLog {
+  id: string;
+  action: string;
+  detail: string;
+  time: string;
+  type: 'auto-reply' | 'instruction' | 'update' | 'reminder';
+}
+
+// ─── Mock Data ───────────────────────────────────────────────────────────────
+
+const MOCK_PROPERTIES: PropertyData[] = [
+  {
+    id: '1',
+    name: 'Flat Copacabana',
+    location: 'Rio de Janeiro, RJ',
+    connected: true,
+    occupancy: 87,
+    rating: 4.92,
+    reviews: 214,
+    revenue: 8450,
+  },
+  {
+    id: '2',
+    name: 'Chalé Campos do Jordão',
+    location: 'Campos do Jordão, SP',
+    connected: true,
+    occupancy: 72,
+    rating: 4.85,
+    reviews: 156,
+    revenue: 6280,
+  },
+  {
+    id: '3',
+    name: 'Studio Paulista',
+    location: 'São Paulo, SP',
+    connected: false,
+    occupancy: 63,
+    rating: 4.78,
+    reviews: 89,
+    revenue: 3920,
+  },
+];
+
+const MOCK_SYNC_SOURCES: SyncSource[] = [
+  { name: 'Airbnb iCal', icon: '🏠', status: 'synced', lastSync: '2min' },
+  { name: 'Booking.com iCal', icon: '🔵', status: 'synced', lastSync: '5min' },
+  { name: 'Google Calendar', icon: '📅', status: 'disconnected', lastSync: '' },
+];
+
+const MOCK_AUTOMATION_LOG: AutomationLog[] = [
+  { id: '1', action: 'Resposta automática enviada', detail: 'para Marcos', time: '2min atrás', type: 'auto-reply' },
+  { id: '2', action: 'Instruções de check-in enviadas', detail: 'para Ana', time: '15min atrás', type: 'instruction' },
+  { id: '3', action: 'Disponibilidade atualizada no Airbnb', detail: 'Flat Copacabana', time: '1h atrás', type: 'update' },
+  { id: '4', action: 'Lembrete de review enviado', detail: 'para João', time: '3h atrás', type: 'reminder' },
+  { id: '5', action: 'Resposta automática enviada', detail: 'para Carla', time: '5h atrás', type: 'auto-reply' },
+  { id: '6', action: 'Preço atualizado automaticamente', detail: 'Chalé Campos do Jordão', time: '6h atrás', type: 'update' },
+];
+
+const RESPONSE_TIME_DATA = [
+  { day: 'Seg', seconds: 62 },
+  { day: 'Ter', seconds: 55 },
+  { day: 'Qua', seconds: 48 },
+  { day: 'Qui', seconds: 51 },
+  { day: 'Sex', seconds: 39 },
+  { day: 'Sáb', seconds: 44 },
+  { day: 'Dom', seconds: 47 },
+];
+
+// ─── Calendar Helper ─────────────────────────────────────────────────────────
+
+function generateCalendarDays(): CalendarDay[] {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = now.getDate();
+
+  const days: CalendarDay[] = [];
+  for (let d = 1; d <= daysInMonth; d++) {
+    if (d < today) {
+      days.push({ day: d, status: 'past' });
+    } else if (d === today || d === today + 3 || d === today + 7 || d === today + 8) {
+      days.push({ day: d, status: 'booked', guest: d === today ? 'Ana S.' : d === today + 3 ? 'Marcos L.' : d === today + 7 ? 'João P.' : 'Carla M.' });
+    } else if (d === today + 1 || d === today + 10) {
+      days.push({ day: d, status: 'blocked' });
+    } else {
+      days.push({ day: d, status: 'available' });
+    }
+  }
+  return days;
+}
+
+// ─── Chart Config ────────────────────────────────────────────────────────────
+
+const responseTimeChartConfig: ChartConfig = {
+  seconds: {
+    label: 'Segundos',
+    color: '#3b82f6',
+  },
+};
+
+// ─── Animation Variants ─────────────────────────────────────────────────────
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06 },
+  },
+};
+
+const staggerItem = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0 },
+};
+
+// ─── Sidebar Navigation Items ───────────────────────────────────────────────
+
+const NAV_ITEMS: { key: AirbnbTab; label: string; icon: React.ElementType }[] = [
+  { key: 'propriedades', label: 'Painel de Propriedades', icon: Home },
+  { key: 'sincronizacao', label: 'Sincronização', icon: CalendarDays },
+  { key: 'automacao', label: 'Automação', icon: Bot },
+  { key: 'config', label: 'Configurações', icon: Settings },
+];
+
+// ─── Format Helpers ─────────────────────────────────────────────────────────
+
+function formatBRL(value: number): string {
+  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function formatCompactBRL(value: number): string {
+  if (value >= 1000) {
+    return `R$ ${(value / 1000).toFixed(1).replace('.', ',')}k`;
+  }
+  return formatBRL(value);
+}
+
+// ─── Sidebar Navigation Component ───────────────────────────────────────────
+
+interface SidebarNavProps {
+  activeTab: AirbnbTab;
+  onTabChange: (tab: AirbnbTab) => void;
+  onNavigate?: () => void;
+}
+
+function SidebarNav({ activeTab, onTabChange, onNavigate }: SidebarNavProps) {
+  return (
+    <nav className="flex flex-col gap-1 px-3" role="navigation" aria-label="Menu principal">
+      {NAV_ITEMS.map((item) => {
+        const Icon = item.icon;
+        const isActive = activeTab === item.key;
+        return (
+          <button
+            key={item.key}
+            onClick={() => {
+              onTabChange(item.key);
+              onNavigate?.();
+            }}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 w-full text-left ${
+              isActive
+                ? 'bg-blue-600/15 text-blue-400 border border-blue-500/20'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent'
+            }`}
+            aria-current={isActive ? 'page' : undefined}
+          >
+            <Icon className="h-4 w-4 shrink-0" />
+            <span>{item.label}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
+// ─── Main Component ─────────────────────────────────────────────────────────
+
+export default function DDCAirbnbContent() {
+  const { data: session } = useSession();
+  const [activeTab, setActiveTab] = useState<AirbnbTab>('propriedades');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [calendarDays] = useState<CalendarDay[]>(generateCalendarDays);
+
+  // Notification toggles
+  const [notifNewReservation, setNotifNewReservation] = useState(true);
+  const [notifCancellation, setNotifCancellation] = useState(true);
+  const [notifReview, setNotifReview] = useState(true);
+  const [notifMessage, setNotifMessage] = useState(false);
+
+  const userName = session?.user?.name || 'Anfitrião';
+  const userInitials = userName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
+  // Summary stats
+  const totalProperties = MOCK_PROPERTIES.length;
+  const totalRevenue = MOCK_PROPERTIES.reduce((sum, p) => sum + p.revenue, 0);
+  const avgRating = (MOCK_PROPERTIES.reduce((sum, p) => sum + p.rating, 0) / MOCK_PROPERTIES.length).toFixed(2);
+  const totalReviews = MOCK_PROPERTIES.reduce((sum, p) => sum + p.reviews, 0);
+
+  const now = new Date();
+  const monthName = now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+  // ─── Tab: Painel de Propriedades ────────────────────────────────────────
+
+  const TabPropriedades = () => (
+    <motion.div
+      key="propriedades"
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+      className="space-y-6"
+    >
+      {/* Summary Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div variants={staggerItem}>
+          <Card className="bg-zinc-900/60 border-zinc-800/50 hover:border-blue-500/30 transition-colors">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <Home className="h-4 w-4 text-blue-400" />
+                <ArrowUpRight className="h-3 w-3 text-emerald-400" />
+              </div>
+              <p className="text-2xl font-bold text-white">{totalProperties}</p>
+              <p className="text-xs text-zinc-400 mt-1">Total de Imóveis</p>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div variants={staggerItem}>
+          <Card className="bg-zinc-900/60 border-zinc-800/50 hover:border-blue-500/30 transition-colors">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <DollarSign className="h-4 w-4 text-blue-400" />
+                <TrendingUp className="h-3 w-3 text-emerald-400" />
+              </div>
+              <p className="text-2xl font-bold text-white">{formatCompactBRL(totalRevenue)}</p>
+              <p className="text-xs text-zinc-400 mt-1">Receita do Mês</p>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div variants={staggerItem}>
+          <Card className="bg-zinc-900/60 border-zinc-800/50 hover:border-blue-500/30 transition-colors">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <Star className="h-4 w-4 text-amber-400" />
+                <span className="text-xs text-emerald-400">+0.03</span>
+              </div>
+              <p className="text-2xl font-bold text-white">{avgRating}</p>
+              <p className="text-xs text-zinc-400 mt-1">Avaliação Média</p>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div variants={staggerItem}>
+          <Card className="bg-zinc-900/60 border-zinc-800/50 hover:border-blue-500/30 transition-colors">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <MessageSquare className="h-4 w-4 text-blue-400" />
+                <ArrowUpRight className="h-3 w-3 text-emerald-400" />
+              </div>
+              <p className="text-2xl font-bold text-white">{totalReviews}</p>
+              <p className="text-xs text-zinc-400 mt-1">Total de Reviews</p>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* Property Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {MOCK_PROPERTIES.map((property) => (
+          <motion.div key={property.id} variants={staggerItem}>
+            <Card className="bg-zinc-900/60 border-zinc-800/50 hover:border-blue-500/30 transition-all duration-300 group">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-white text-base group-hover:text-blue-300 transition-colors">
+                      {property.name}
+                    </CardTitle>
+                    <CardDescription className="text-zinc-500 text-xs mt-0.5">
+                      {property.location}
+                    </CardDescription>
+                  </div>
+                  <Badge
+                    className={
+                      property.connected
+                        ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
+                        : 'bg-red-500/15 text-red-400 border-red-500/30 hover:bg-red-500/20'
+                    }
+                    variant="outline"
+                  >
+                    {property.connected ? (
+                      <>
+                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                        OAuth Conectado
+                      </>
+                    ) : (
+                      <>
+                        <CircleX className="h-3 w-3 mr-1" />
+                        Desconectado
+                      </>
+                    )}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0 space-y-4">
+                {/* Occupancy */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs text-zinc-400">Ocupação mensal</span>
+                    <span className="text-sm font-semibold text-white">{property.occupancy}%</span>
+                  </div>
+                  <Progress value={property.occupancy} className="h-1.5 bg-zinc-800 [&>div]:bg-blue-500" />
+                </div>
+
+                {/* Stats Row */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-0.5 mb-0.5">
+                      <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
+                      <span className="text-sm font-semibold text-white">{property.rating}</span>
+                    </div>
+                    <p className="text-[10px] text-zinc-500">Avaliação</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-semibold text-white">{property.reviews}</p>
+                    <p className="text-[10px] text-zinc-500">Reviews</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-semibold text-emerald-400">{formatBRL(property.revenue)}</p>
+                    <p className="text-[10px] text-zinc-500">Receita</p>
+                  </div>
+                </div>
+
+                <Separator className="bg-zinc-800/50" />
+
+                <Button
+                  variant="ghost"
+                  className="w-full text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 text-sm"
+                >
+                  Ver Detalhes
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+
+        {/* Add New Property Card */}
+        <motion.div variants={staggerItem}>
+          <Card className="bg-zinc-900/30 border-2 border-dashed border-zinc-700/50 hover:border-blue-500/40 transition-all duration-300 cursor-pointer group min-h-[280px] flex items-center justify-center">
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-zinc-800/60 flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-600/20 group-hover:border-blue-500/30 border border-zinc-700/50 transition-all">
+                <Plus className="h-6 w-6 text-zinc-400 group-hover:text-blue-400 transition-colors" />
+              </div>
+              <p className="text-sm font-medium text-zinc-300 group-hover:text-blue-300 transition-colors">
+                Conectar Novo Imóvel
+              </p>
+              <p className="text-xs text-zinc-500 mt-1">
+                Vincule sua propriedade via OAuth
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+
+  // ─── Tab: Sincronização ────────────────────────────────────────────────
+
+  const TabSincronizacao = () => {
+    const days = calendarDays;
+    const firstDayOfWeek = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+
+    return (
+      <motion.div
+        key="sincronizacao"
+        initial="hidden"
+        animate="visible"
+        variants={staggerContainer}
+        className="space-y-6"
+      >
+        {/* Calendar Header + Sync Button */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <motion.div variants={staggerItem}>
+            <h3 className="text-lg font-semibold text-white capitalize">{monthName}</h3>
+            <p className="text-xs text-zinc-400 mt-0.5">Visualização de disponibilidade em tempo real</p>
+          </motion.div>
+          <motion.div variants={staggerItem} className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-zinc-900/60 border-zinc-700/50 text-zinc-300 hover:text-white hover:border-blue-500/40"
+            >
+              <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+              Sincronizar Agora
+            </Button>
+          </motion.div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Calendar */}
+          <motion.div variants={staggerItem} className="lg:col-span-2">
+            <Card className="bg-zinc-900/60 border-zinc-800/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-white text-base">Calendário de Reservas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {/* Day Headers */}
+                <div className="grid grid-cols-7 gap-1 mb-2">
+                  {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((d) => (
+                    <div key={d} className="text-center text-[10px] text-zinc-500 font-medium py-1">
+                      {d}
+                    </div>
+                  ))}
+                </div>
+                {/* Empty slots before month starts */}
+                <div className="grid grid-cols-7 gap-1">
+                  {Array.from({ length: firstDayOfWeek }).map((_, i) => (
+                    <div key={`empty-${i}`} className="aspect-square" />
+                  ))}
+                  {/* Calendar days */}
+                  {days.map((d) => {
+                    let bgClass = '';
+                    let textClass = 'text-zinc-300';
+                    let indicator = null;
+
+                    if (d.status === 'past') {
+                      bgClass = 'bg-zinc-800/30';
+                      textClass = 'text-zinc-600';
+                    } else if (d.status === 'booked') {
+                      bgClass = 'bg-blue-500/20 border border-blue-500/30';
+                      textClass = 'text-blue-300';
+                      indicator = <span className="text-[8px] text-blue-400 truncate px-0.5">{d.guest}</span>;
+                    } else if (d.status === 'blocked') {
+                      bgClass = 'bg-zinc-700/30 border border-zinc-600/30';
+                      textClass = 'text-zinc-400';
+                    } else if (d.status === 'available') {
+                      indicator = <Circle className="h-1.5 w-1.5 text-emerald-400 fill-emerald-400 mx-auto" />;
+                    }
+
+                    return (
+                      <div
+                        key={d.day}
+                        className={`aspect-square rounded-md flex flex-col items-center justify-center p-0.5 ${bgClass} transition-colors hover:bg-zinc-700/30`}
+                      >
+                        <span className={`text-xs font-medium leading-none ${textClass}`}>{d.day}</span>
+                        {indicator}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Legend */}
+                <div className="flex flex-wrap items-center gap-4 mt-4 pt-3 border-t border-zinc-800/50">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 rounded-sm bg-blue-500/20 border border-blue-500/30" />
+                    <span className="text-[11px] text-zinc-400">Reservado</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 rounded-sm bg-zinc-700/30 border border-zinc-600/30" />
+                    <span className="text-[11px] text-zinc-400">Bloqueado</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Circle className="h-2 w-2 text-emerald-400 fill-emerald-400" />
+                    <span className="text-[11px] text-zinc-400">Disponível</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 rounded-sm bg-zinc-800/30" />
+                    <span className="text-[11px] text-zinc-400">Passado</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Sync Sources & Guarantee */}
+          <motion.div variants={staggerItem} className="space-y-4">
+            {/* iCal Sync Status */}
+            <Card className="bg-zinc-900/60 border-zinc-800/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-white text-base">Status iCal</CardTitle>
+                <CardDescription className="text-zinc-500 text-xs">Última sincronização</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {MOCK_SYNC_SOURCES.map((source) => (
+                  <div
+                    key={source.name}
+                    className="flex items-center justify-between p-2.5 rounded-lg bg-zinc-800/30"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-lg">{source.icon}</span>
+                      <div>
+                        <p className="text-sm text-white font-medium">{source.name}</p>
+                        {source.status === 'synced' ? (
+                          <p className="text-[11px] text-zinc-400">
+                            Sincronizado há {source.lastSync}
+                          </p>
+                        ) : (
+                          <p className="text-[11px] text-red-400">Não conectado</p>
+                        )}
+                      </div>
+                    </div>
+                    {source.status === 'synced' ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                    ) : (
+                      <CircleX className="h-4 w-4 text-red-400" />
+                    )}
+                  </div>
+                ))}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full mt-2 bg-zinc-800/40 border-zinc-700/50 text-zinc-300 hover:text-white hover:border-blue-500/40"
+                >
+                  <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                  Sincronizar Tudo
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Anti-Overbooking Guarantee */}
+            <Card className="bg-gradient-to-br from-blue-600/10 to-blue-800/5 border-blue-500/20">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/15 flex items-center justify-center shrink-0">
+                    <Shield className="h-5 w-5 text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">Garantia Anti-Overbooking</p>
+                    <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+                      Zélla bloqueia datas automaticamente em todos os canais. Double-booking é impossível.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </motion.div>
+    );
+  };
+
+  // ─── Tab: Automação ────────────────────────────────────────────────────
+
+  const TabAutomacao = () => (
+    <motion.div
+      key="automacao"
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+      className="space-y-6"
+    >
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <motion.div variants={staggerItem}>
+          <Card className="bg-zinc-900/60 border-zinc-800/50 hover:border-blue-500/30 transition-colors">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="h-4 w-4 text-blue-400" />
+                <span className="text-xs text-zinc-400">Tempo Médio de Resposta</span>
+              </div>
+              <p className="text-3xl font-bold text-white">47<span className="text-lg text-zinc-400 ml-1">seg</span></p>
+              <div className="flex items-center gap-1.5 mt-2">
+                <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30" variant="outline">
+                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                  Meta: &lt; 1min
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div variants={staggerItem}>
+          <Card className="bg-zinc-900/60 border-zinc-800/50 hover:border-blue-500/30 transition-colors">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Zap className="h-4 w-4 text-amber-400" />
+                <span className="text-xs text-zinc-400">One-Shot Resolution</span>
+              </div>
+              <p className="text-3xl font-bold text-white">78<span className="text-lg text-zinc-400 ml-1">%</span></p>
+              <p className="text-[11px] text-zinc-500 mt-2 leading-relaxed">
+                Resolução na primeira interação sem necessidade de acompanhamento
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div variants={staggerItem}>
+          <Card className="bg-zinc-900/60 border-zinc-800/50 hover:border-blue-500/30 transition-colors">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <MessageSquare className="h-4 w-4 text-blue-400" />
+                <span className="text-xs text-zinc-400">Mensagens Salvas (Bundling)</span>
+              </div>
+              <p className="text-3xl font-bold text-white">234</p>
+              <p className="text-[11px] text-zinc-500 mt-2 leading-relaxed">
+                Mensagens WhatsApp agrupadas este mês, reduzindo tarifas
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Response Time Chart */}
+        <motion.div variants={staggerItem} className="lg:col-span-2">
+          <Card className="bg-zinc-900/60 border-zinc-800/50">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-white text-base">Tempo de Resposta — Últimos 7 dias</CardTitle>
+                <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30" variant="outline">
+                  <TrendingUp className="h-3 w-3 mr-1" />
+                  -24%
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={responseTimeChartConfig} className="h-[220px] w-full">
+                <LineChart data={RESPONSE_TIME_DATA} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                  <XAxis
+                    dataKey="day"
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fill: '#71717a', fontSize: 12 }}
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fill: '#71717a', fontSize: 12 }}
+                    tickFormatter={(v) => `${v}s`}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line
+                    type="monotone"
+                    dataKey="seconds"
+                    stroke="#3b82f6"
+                    strokeWidth={2.5}
+                    dot={{ fill: '#3b82f6', r: 4, strokeWidth: 0 }}
+                    activeDot={{ r: 6, fill: '#3b82f6', stroke: '#0a0a0f', strokeWidth: 2 }}
+                  />
+                </LineChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Airbnb Algorithm Health */}
+        <motion.div variants={staggerItem}>
+          <Card className="bg-zinc-900/60 border-zinc-800/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-white text-base">Saúde do Algoritmo Airbnb</CardTitle>
+              <CardDescription className="text-zinc-500 text-xs">Seu posicionamento nos resultados</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-sm text-zinc-300">Taxa de Resposta</span>
+                  <span className="text-sm font-semibold text-emerald-400">98%</span>
+                </div>
+                <Progress value={98} className="h-2 bg-zinc-800 [&>div]:bg-emerald-500" />
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-sm text-zinc-300">Taxa de Aceitação</span>
+                  <span className="text-sm font-semibold text-emerald-400">100%</span>
+                </div>
+                <Progress value={100} className="h-2 bg-zinc-800 [&>div]:bg-emerald-500" />
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-sm text-zinc-300">Comprometimento</span>
+                  <span className="text-sm font-semibold text-blue-400">95%</span>
+                </div>
+                <Progress value={95} className="h-2 bg-zinc-800 [&>div]:bg-blue-500" />
+              </div>
+
+              <Separator className="bg-zinc-800/50" />
+
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
+                <p className="text-xs text-emerald-300">
+                  Superhost: todos os critérios atingidos
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* Automation Activity Log */}
+      <motion.div variants={staggerItem}>
+        <Card className="bg-zinc-900/60 border-zinc-800/50">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-white text-base">Log de Automação</CardTitle>
+              <Badge className="bg-blue-500/15 text-blue-400 border-blue-500/30" variant="outline">
+                <Activity className="h-3 w-3 mr-1" />
+                Ao vivo
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="max-h-72">
+              <div className="space-y-2">
+                {MOCK_AUTOMATION_LOG.map((log) => {
+                  const typeIcons: Record<string, React.ElementType> = {
+                    'auto-reply': MessageSquare,
+                    instruction: CheckCircle2,
+                    update: RefreshCw,
+                    reminder: Bell,
+                  };
+                  const typeColors: Record<string, string> = {
+                    'auto-reply': 'text-blue-400 bg-blue-500/15',
+                    instruction: 'text-emerald-400 bg-emerald-500/15',
+                    update: 'text-amber-400 bg-amber-500/15',
+                    reminder: 'text-purple-400 bg-purple-500/15',
+                  };
+                  const Icon = typeIcons[log.type] || Activity;
+                  const color = typeColors[log.type] || 'text-zinc-400 bg-zinc-500/15';
+
+                  return (
+                    <div
+                      key={log.id}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/20 hover:bg-zinc-800/40 transition-colors"
+                    >
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${color}`}>
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-white truncate">{log.action}</p>
+                        <p className="text-xs text-zinc-500 truncate">{log.detail}</p>
+                      </div>
+                      <span className="text-[11px] text-zinc-500 shrink-0">{log.time}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </motion.div>
+  );
+
+  // ─── Tab: Configurações ────────────────────────────────────────────────
+
+  const TabConfig = () => (
+    <motion.div
+      key="config"
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+      className="space-y-6"
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Profile */}
+        <motion.div variants={staggerItem}>
+          <Card className="bg-zinc-900/60 border-zinc-800/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-white text-base">Perfil</CardTitle>
+              <CardDescription className="text-zinc-500 text-xs">Informações da sua conta</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs text-zinc-400 font-medium">Nome</label>
+                <Input
+                  defaultValue="Ricardo Mendes"
+                  className="bg-zinc-800/50 border-zinc-700/50 text-white focus:border-blue-500/50 focus:ring-blue-500/20"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs text-zinc-400 font-medium">E-mail</label>
+                <Input
+                  defaultValue="ricardo@exemplo.com"
+                  className="bg-zinc-800/50 border-zinc-700/50 text-white focus:border-blue-500/50 focus:ring-blue-500/20"
+                  type="email"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs text-zinc-400 font-medium">Telefone</label>
+                <Input
+                  defaultValue="+55 21 99999-0000"
+                  className="bg-zinc-800/50 border-zinc-700/50 text-white focus:border-blue-500/50 focus:ring-blue-500/20"
+                  type="tel"
+                />
+              </div>
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                Salvar Alterações
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Airbnb OAuth + Plan */}
+        <motion.div variants={staggerItem} className="space-y-4">
+          {/* Airbnb Connection */}
+          <Card className="bg-zinc-900/60 border-zinc-800/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-white text-base">Conexão Airbnb</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/30">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/15 flex items-center justify-center">
+                    <Key className="h-5 w-5 text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-white font-medium">OAuth Airbnb</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <CircleCheck className="h-3 w-3 text-emerald-400" />
+                      <span className="text-xs text-emerald-400">Conectado</span>
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-zinc-800/40 border-zinc-700/50 text-zinc-300 hover:text-white hover:border-blue-500/40"
+                >
+                  Reconectar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Plan Info */}
+          <Card className="bg-gradient-to-br from-blue-600/10 to-blue-800/5 border-blue-500/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-white text-base flex items-center gap-2">
+                <Crown className="h-4 w-4 text-amber-400" />
+                Seu Plano
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-lg font-bold text-white">Pro Airbnb</p>
+                  <p className="text-xs text-zinc-400">R$ 147/mês · Até 5 imóveis</p>
+                </div>
+                <Badge className="bg-blue-500/15 text-blue-400 border-blue-500/30" variant="outline">
+                  Ativo
+                </Badge>
+              </div>
+              <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                Fazer Upgrade para Enterprise
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Notifications */}
+        <motion.div variants={staggerItem}>
+          <Card className="bg-zinc-900/60 border-zinc-800/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-white text-base">Notificações</CardTitle>
+              <CardDescription className="text-zinc-500 text-xs">Configure quais alertas deseja receber</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/15 flex items-center justify-center">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-white">Nova reserva</p>
+                    <p className="text-xs text-zinc-500">Quando um hóspede reserva</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={notifNewReservation}
+                  onCheckedChange={setNotifNewReservation}
+                />
+              </div>
+              <Separator className="bg-zinc-800/50" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center">
+                    <CircleX className="h-4 w-4 text-red-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-white">Cancelamento</p>
+                    <p className="text-xs text-zinc-500">Quando uma reserva é cancelada</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={notifCancellation}
+                  onCheckedChange={setNotifCancellation}
+                />
+              </div>
+              <Separator className="bg-zinc-800/50" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center">
+                    <Star className="h-4 w-4 text-amber-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-white">Review recebida</p>
+                    <p className="text-xs text-zinc-500">Quando um hóspede deixa avaliação</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={notifReview}
+                  onCheckedChange={setNotifReview}
+                />
+              </div>
+              <Separator className="bg-zinc-800/50" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center">
+                    <MessageSquare className="h-4 w-4 text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-white">Mensagem de hóspede</p>
+                    <p className="text-xs text-zinc-500">Quando não respondido em 5min</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={notifMessage}
+                  onCheckedChange={setNotifMessage}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Language Preference */}
+        <motion.div variants={staggerItem}>
+          <Card className="bg-zinc-900/60 border-zinc-800/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-white text-base">Idioma</CardTitle>
+              <CardDescription className="text-zinc-500 text-xs">Preferência de idioma da interface</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <label className="text-xs text-zinc-400 font-medium">Idioma da interface</label>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    🇧🇷 Português (BR)
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-zinc-800/40 border-zinc-700/50 text-zinc-300 hover:text-white"
+                  >
+                    🇺🇸 English
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-zinc-800/40 border-zinc-700/50 text-zinc-300 hover:text-white"
+                  >
+                    🇪🇸 Español
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+
+  // ─── Tab Renderer ─────────────────────────────────────────────────────
+
+  const renderTab = () => {
+    switch (activeTab) {
+      case 'propriedades':
+        return <TabPropriedades />;
+      case 'sincronizacao':
+        return <TabSincronizacao />;
+      case 'automacao':
+        return <TabAutomacao />;
+      case 'config':
+        return <TabConfig />;
+    }
+  };
+
+  // ─── Main Layout ──────────────────────────────────────────────────────
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col">
+      {/* Top Navigation Bar */}
+      <header className="h-14 border-b border-zinc-800/60 bg-[#0a0a0f]/95 backdrop-blur-sm flex items-center justify-between px-4 sticky top-0 z-50">
+        <div className="flex items-center gap-3">
+          {/* Mobile menu trigger */}
+          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+            <SheetTrigger asChild>
+              <button
+                className="lg:hidden p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors"
+                aria-label="Abrir menu"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="left" className="bg-[#0f0f17] border-zinc-800/60 w-64 p-0">
+              <SheetHeader className="p-4 border-b border-zinc-800/60">
+                <SheetTitle className="flex items-center gap-2">
+                  <ZellaLogo size={28} />
+                  <span className="text-white text-sm font-semibold">Zélla</span>
+                </SheetTitle>
+              </SheetHeader>
+              <div className="p-3">
+                <SidebarNav activeTab={activeTab} onTabChange={setActiveTab} onNavigate={() => setSidebarOpen(false)} />
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          <ZellaLogo size={32} />
+          <Separator orientation="vertical" className="h-6 bg-zinc-800" />
+          <span className="text-sm font-medium text-zinc-300 hidden sm:inline">
+            Dashboard Airbnb
+          </span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2">
+            <Avatar className="h-7 w-7 bg-blue-600/20 border border-blue-500/30">
+              <AvatarFallback className="bg-blue-600/20 text-blue-300 text-xs font-medium">
+                {userInitials}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-sm text-zinc-300">{userName}</span>
+          </div>
+          <button
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+            aria-label="Sair"
+            title="Sair"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
+      </header>
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Desktop Sidebar */}
+        <aside className="hidden lg:flex flex-col w-56 border-r border-zinc-800/60 bg-[#0a0a0f] shrink-0">
+          <div className="flex-1 py-4 overflow-y-auto">
+            <SidebarNav activeTab={activeTab} onTabChange={setActiveTab} />
+          </div>
+          {/* Plan Badge */}
+          <div className="p-3 border-t border-zinc-800/60">
+            <div className="p-3 rounded-lg bg-blue-600/10 border border-blue-500/20">
+              <div className="flex items-center gap-2 mb-1">
+                <Crown className="h-3.5 w-3.5 text-amber-400" />
+                <span className="text-xs font-semibold text-white">Pro Airbnb</span>
+              </div>
+              <p className="text-[10px] text-zinc-400">R$ 147/mês · 3/5 imóveis</p>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+            <AnimatePresence mode="wait">
+              {renderTab()}
+            </AnimatePresence>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}

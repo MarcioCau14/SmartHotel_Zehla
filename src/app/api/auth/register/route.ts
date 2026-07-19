@@ -8,8 +8,9 @@ const registerSchema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
   phone: z.string().optional(),
-  pousadaName: z.string().min(2, 'Nome da pousada é obrigatório'),
+  pousadaName: z.string().min(2, 'Nome da propriedade é obrigatório'),
   cnpjOrCpf: z.string().optional(),
+  niche: z.enum(['pousada', 'airbnb']).default('pousada'),
 });
 
 export async function POST(request: NextRequest) {
@@ -41,6 +42,19 @@ export async function POST(request: NextRequest) {
 
     const passwordHash = await bcrypt.hash(data.password, 12);
 
+    // Determine the default agent name and prompt based on niche
+    const agentConfig = data.niche === 'airbnb'
+      ? {
+          agentId: 'agent-1',
+          agentName: 'Anfitrião ZÉLLA',
+          systemPrompt: 'Você é o anfitrião virtual do imóvel Airbnb. Seja simpático, profissional e use emojis moderados. Ajude hóspedes com check-in, regras da casa e dicas locais. Responda em português brasileiro.',
+        }
+      : {
+          agentId: 'agent-1',
+          agentName: 'Recepcionista ZÉLLA',
+          systemPrompt: 'Você é a recepcionista virtual da pousada. Seja simpática, profissional e use emojis moderados. Responda em português brasileiro.',
+        };
+
     // Executamos todo o onboarding em uma única transação garantindo integridade
     const result = await db.$transaction(async (tx) => {
       // 1. Criar o Tenant
@@ -52,6 +66,7 @@ export async function POST(request: NextRequest) {
           phone: data.phone,
           plan: 'trial',
           status: 'active',
+          niche: data.niche,
           trialStart: new Date(),
           trialEnd: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
           property: {
@@ -62,9 +77,9 @@ export async function POST(request: NextRequest) {
           },
           agentConfigs: {
             create: {
-              agentId: 'agent-1',
-              agentName: 'Recepcionista ZÉLLA',
-              systemPrompt: 'Você é a recepcionista virtual da pousada. Seja simpática, profissional e use emojis moderados. Responda em português brasileiro.',
+              agentId: agentConfig.agentId,
+              agentName: agentConfig.agentName,
+              systemPrompt: agentConfig.systemPrompt,
               temperature: 0.7,
               isActive: true,
             },
@@ -94,7 +109,7 @@ export async function POST(request: NextRequest) {
       const faqs = [
         {
           question: 'Qual é a senha do Wi-Fi?',
-          answer: 'A rede Wi-Fi da pousada é "Pousada_Zehla_Guest" e a senha de acesso é "zehla2026".',
+          answer: 'A rede Wi-Fi é "Zehla_Guest" e a senha de acesso é "zehla2026".',
           category: 'geral',
         },
         {
@@ -104,32 +119,32 @@ export async function POST(request: NextRequest) {
         },
         {
           question: 'Qual o horário do café da manhã?',
-          answer: 'O café da manhã é servido diariamente em nosso salão principal das 07:30 às 10:00.',
+          answer: 'O café da manhã é servido diariamente das 07:30 às 10:00.',
           category: 'servicos',
         },
         {
-          question: 'A pousada possui estacionamento?',
-          answer: 'Sim, dispomos de estacionamento privativo e gratuito para nossos hóspedes, sem necessidade de reserva prévia.',
+          question: 'Possui estacionamento?',
+          answer: 'Sim, dispomos de estacionamento privativo e gratuito, sem necessidade de reserva prévia.',
           category: 'geral',
         },
         {
-          question: 'A pousada aceita animais de estimação?',
+          question: 'Aceita animais de estimação?',
           answer: 'Aceitamos pets de pequeno porte mediante aviso prévio e taxa de higienização de R$ 50 por estadia.',
           category: 'politicas',
         },
         {
           question: 'Qual a política de cancelamento?',
-          answer: 'O cancelamento é gratuito e integral se realizado em até 7 dias antes da data de check-in programada.',
+          answer: 'O cancelamento é gratuito se realizado em até 7 dias antes da data de check-in programada.',
           category: 'politicas',
         },
         {
           question: 'Quais as formas de pagamento aceitas?',
-          answer: 'Aceitamos pagamentos via PIX, cartões de crédito e débito (bandeiras Visa, Mastercard, Elo).',
+          answer: 'Aceitamos pagamentos via PIX, cartões de crédito e débito (Visa, Mastercard, Elo).',
           category: 'financeiro',
         },
         {
           question: 'Qual a voltagem das tomadas?',
-          answer: 'A voltagem padrão em todas as tomadas e chalés da pousada é 220V.',
+          answer: 'A voltagem padrão em todas as tomadas é 220V.',
           category: 'geral',
         },
       ];
@@ -153,6 +168,7 @@ export async function POST(request: NextRequest) {
         name: result.tenant.name,
         email: result.tenant.email,
         plan: result.tenant.plan,
+        niche: (result.tenant as any).niche,
         trialEnd: result.tenant.trialEnd,
       },
       userId: result.tenant.id,

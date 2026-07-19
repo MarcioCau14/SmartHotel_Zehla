@@ -1,92 +1,212 @@
 'use client';
 
-import { useState, Suspense } from 'react';
-// signIn is loaded dynamically to avoid bundling next-auth (which pulls Prisma) on the client
+import { useState, Suspense, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Toaster, toast } from 'sonner';
+import { ZellaLogo } from '@/components/brand/ZellaLogo';
 import {
+  Mail,
   Lock,
   User,
   Loader2,
-  Zap,
-  CheckCircle2,
-  Activity,
-  Sparkles,
+  Building2,
+  Key,
   Eye,
   EyeOff,
-  ShieldCheck
+  ChevronDown,
+  CheckCircle2,
+  ArrowRight,
+  ShieldCheck,
+  Sparkles,
 } from 'lucide-react';
 
+// ─── Google SVG Icon ────────────────────────────────────────
+function GoogleIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+    </svg>
+  );
+}
+
+// ─── Animation Variants ─────────────────────────────────────
+const fadeUp = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -12 },
+};
+
+const stagger = {
+  animate: { transition: { staggerChildren: 0.06 } },
+};
+
+// ─── Main Page ──────────────────────────────────────────────
 export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#0a0a0d] p-4 text-white">
-          <div className="flex flex-col items-center gap-2">
+        <div className="min-h-screen flex items-center justify-center bg-[#0a0a0d] p-4">
+          <div className="flex flex-col items-center gap-3">
             <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
             <span className="text-zinc-400 text-sm">Carregando...</span>
           </div>
         </div>
       }
     >
-      <LoginForm />
+      <LoginContent />
     </Suspense>
   );
 }
 
-function LoginForm() {
+type ViewMode = 'signin' | 'signup' | 'magic-sent';
+
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/ddc';
+  const magicLoginParam = searchParams.get('magicLogin');
+  const magicEmailParam = searchParams.get('email');
+  const magicRedirectParam = searchParams.get('redirect');
+  const errorParam = searchParams.get('error');
 
   const [isLoading, setIsLoading] = useState(false);
-  const [mode, setMode] = useState<'login' | 'register'>('login');
-  
-  // Password reveal states
+  const [viewMode, setViewMode] = useState<ViewMode>('signin');
+  const [showCredentials, setShowCredentials] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Form states
-  const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [registerData, setRegisterData] = useState({
+  // Sign in form
+  const [credentialData, setCredentialData] = useState({ email: '', password: '' });
+
+  // Magic link form
+  const [magicEmail, setMagicEmailState] = useState('');
+  const [magicDevUrl, setMagicDevUrl] = useState<string | null>(null);
+
+  // Sign up form
+  const [signUpData, setSignUpData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
     phone: '',
-    pousadaName: '',
-    cnpjOrCpf: '',
+    propertyName: '',
+    niche: 'pousada' as 'pousada' | 'airbnb',
   });
-
   const [agreedTerms, setAgreedTerms] = useState(false);
 
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
+  // Handle magic link auto-login
+  useEffect(() => {
+    if (magicLoginParam === 'true' && magicEmailParam) {
+      const doMagicLogin = async () => {
+        setIsLoading(true);
+        try {
+          const response = await fetch('/api/auth/magic-verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: magicEmailParam }),
+          });
 
-    if (!loginData.email || !loginData.password) {
+          if (response.ok) {
+            const data = await response.json();
+            if (data.tempPassword) {
+              const { signIn } = await import('next-auth/react');
+              const result = await signIn('credentials', {
+                email: magicEmailParam,
+                password: data.tempPassword,
+                redirect: false,
+              });
+              if (result?.ok) {
+                toast.success('Login realizado com sucesso!');
+                await new Promise(r => setTimeout(r, 500));
+                const redirectPath = magicRedirectParam || '/ddc';
+                router.push(redirectPath);
+                router.refresh();
+              } else {
+                toast.error('Erro no login mágico. Tente novamente.');
+              }
+            }
+          } else {
+            toast.error('Erro na verificação do link mágico.');
+          }
+        } catch (err) {
+          console.error('[Magic Login] Error:', err);
+          toast.error('Erro de conexão.');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      doMagicLogin();
+    }
+  }, [magicLoginParam, magicEmailParam, magicRedirectParam, router]);
+
+  // Show error from URL params
+  useEffect(() => {
+    if (errorParam) {
+      const errorMessages: Record<string, string> = {
+        'invalid-token': 'Token inválido. Tente novamente.',
+        'token-not-found': 'Link não encontrado ou já usado.',
+        'token-expired': 'Link expirado. Solicite um novo.',
+        'service-unavailable': 'Serviço indisponível no momento.',
+        'internal-error': 'Erro interno. Tente novamente.',
+      };
+      toast.error(errorMessages[errorParam] || 'Erro na autenticação.');
+    }
+  }, [errorParam]);
+
+  // ── Magic Link ──────────────────────────────────────────
+  const handleMagicLink = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!magicEmail || !magicEmail.includes('@')) {
+      toast.error('Digite um e-mail válido.');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/auth/magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: magicEmail }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setViewMode('magic-sent');
+        if (data.devUrl) {
+          setMagicDevUrl(data.devUrl);
+        }
+        toast.success('Link mágico enviado!');
+      } else {
+        toast.error(data.error || 'Erro ao enviar link.');
+      }
+    } catch {
+      toast.error('Erro de conexão.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [magicEmail]);
+
+  // ── Credentials Login ───────────────────────────────────
+  const handleCredentialLogin = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!credentialData.email || !credentialData.password) {
       toast.error('Preencha o login e a senha.');
       return;
     }
-
     setIsLoading(true);
-
     try {
-      // Dynamic import to avoid bundling next-auth (Prisma) on client
       const { signIn } = await import('next-auth/react');
-
       const result = await signIn('credentials', {
-        email: loginData.email,
-        password: loginData.password,
+        email: credentialData.email,
+        password: credentialData.password,
         redirect: false,
       });
-
-      console.log('[Login] signIn result:', { ok: result?.ok, error: result?.error, status: result?.status });
-
       if (result?.error) {
-        // NextAuth returns 'CredentialsSignin' for invalid credentials
         if (result.error === 'CredentialsSignin') {
           toast.error('Login ou senha incorretos.');
         } else {
@@ -94,438 +214,627 @@ function LoginForm() {
         }
       } else if (result?.ok) {
         toast.success('Login realizado com sucesso!');
-        // Wait for session cookie to propagate
         await new Promise(r => setTimeout(r, 500));
         router.push(callbackUrl);
         router.refresh();
       } else {
-        // result is null/undefined — unexpected
-        toast.error('Erro inesperado ao fazer login. Tente novamente.');
+        toast.error('Erro inesperado ao fazer login.');
       }
-    } catch (err) {
-      console.error('[Login] Exception:', err);
-      toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
+    } catch {
+      toast.error('Erro de conexão.');
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [credentialData, callbackUrl, router]);
 
-  async function handleRegister(e: React.FormEvent) {
+  // ── Google OAuth ────────────────────────────────────────
+  const handleGoogleLogin = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const { signIn } = await import('next-auth/react');
+      await signIn('google', { callbackUrl });
+    } catch {
+      toast.error('Erro ao conectar com Google.');
+      setIsLoading(false);
+    }
+  }, [callbackUrl]);
+
+  // ── Register ────────────────────────────────────────────
+  const handleRegister = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (registerData.password !== registerData.confirmPassword) {
+    if (signUpData.password !== signUpData.confirmPassword) {
       toast.error('As senhas não coincidem.');
       return;
     }
-
-    if (registerData.password.length < 6) {
+    if (signUpData.password.length < 6) {
       toast.error('A senha deve ter pelo menos 6 caracteres.');
       return;
     }
-
     if (!agreedTerms) {
-      toast.error('Você deve concordar com os Termos de Uso e a Política de Privacidade.');
+      toast.error('Você deve concordar com os Termos de Uso.');
       return;
     }
-
     setIsLoading(true);
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: registerData.name,
-          email: registerData.email,
-          password: registerData.password,
-          phone: registerData.phone,
-          pousadaName: registerData.pousadaName,
-          cnpjOrCpf: registerData.cnpjOrCpf,
+          name: signUpData.name,
+          email: signUpData.email,
+          password: signUpData.password,
+          phone: signUpData.phone,
+          pousadaName: signUpData.propertyName,
+          niche: signUpData.niche,
         }),
       });
-      
       const data = await response.json();
       if (response.ok) {
-        toast.success('Conta criada com sucesso! Acessando...');
+        toast.success('Conta criada com sucesso!');
         const { signIn } = await import('next-auth/react');
         const result = await signIn('credentials', {
-          email: registerData.email,
-          password: registerData.password,
+          email: signUpData.email,
+          password: signUpData.password,
           redirect: false,
         });
         if (result?.ok) {
-          router.push(callbackUrl);
+          const niche = signUpData.niche;
+          const redirectPath = niche === 'airbnb' ? '/ddc/airbnb' : '/ddc/pousada';
+          router.push(redirectPath);
           router.refresh();
         }
       } else {
         toast.error(data.error || 'Erro ao criar conta.');
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('Erro ao criar conta. Tente novamente.');
     } finally {
       setIsLoading(false);
     }
+  }, [signUpData, agreedTerms, router]);
+
+  // ── Loading overlay ─────────────────────────────────────
+  if (magicLoginParam === 'true' && isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0d]">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
+          <span className="text-zinc-400 text-sm">Entrando...</span>
+        </div>
+        <Toaster position="top-center" richColors />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2 bg-[#0a0a0d] text-white select-none">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#0a0a0d] text-white px-4 py-8">
       <Toaster position="top-center" richColors />
 
-      {/* COLUNA ESQUERDA: PAINEL DE DESTAQUE (Garante estar no lado ESQUERDO e com altura da tela fixa) */}
-      <div className="hidden lg:flex lg:order-1 lg:col-start-1 lg:col-end-2 bg-[#121216] border-r border-white/[0.04] p-12 lg:p-20 flex-col justify-between h-screen sticky top-0 overflow-hidden">
-        {/* Header da Marca */}
-        <div className="flex items-center gap-3">
-          <div>
-            <span className="font-extrabold text-white text-xl block leading-none tracking-tight">
-              Seu Zélla
-            </span>
-          </div>
-        </div>
-
-        {/* Copy Principal */}
-        <div className="my-auto space-y-8 max-w-md">
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-white leading-tight tracking-tight font-serif">
-            Tudo que você precisa para ativar o <span className="text-[#3B82F6]">Seu Zélla na sua pousada</span>
-          </h2>
-
-          <div className="space-y-6">
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-lg bg-[#1a1a24] border border-white/[0.06] flex items-center justify-center text-emerald-400 shrink-0">
-                <Zap className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="font-bold text-white text-sm">Seu Zélla no Whatsapp em minutos.</h4>
-                <p className="text-zinc-500 text-xs mt-1">
-                  Sem burocracia ou processos complexos de homologação. Comece a responder imediatamente.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-lg bg-[#1a1a24] border border-white/[0.06] flex items-center justify-center text-emerald-400 shrink-0">
-                <CheckCircle2 className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="font-bold text-white text-sm">FAQs e Calendário iCal nativos</h4>
-                <p className="text-zinc-500 text-xs mt-1">
-                  Importe as regras de hospedagem e sincronize com Booking e Airbnb em segundos.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-lg bg-[#1a1a24] border border-white/[0.06] flex items-center justify-center text-emerald-400 shrink-0">
-                <Activity className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="font-bold text-white text-sm">Dashboard completo.</h4>
-                <p className="text-zinc-500 text-xs mt-1">
-                  Acompanhe tudo em tempo real. Assuma o controle das conversas quando quiser.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Esquerdo */}
-        <p className="text-zinc-600 text-xs">
-          © 2026 Seu Zélla. Todos os direitos reservados.
-        </p>
+      {/* Background gradient effects */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/[0.03] rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/[0.03] rounded-full blur-3xl" />
       </div>
 
-      {/* COLUNA DIREITA: FORMULÁRIO COMPACTO DE ALTA DENSIDADE (Garante estar no lado DIREITO e com rolagem própria) */}
-      <div className="flex flex-col lg:order-2 lg:col-start-2 lg:col-end-3 min-h-screen lg:h-screen lg:overflow-y-auto bg-[#0a0a0d] p-8 sm:p-12 lg:p-16">
-        <div className="w-full max-w-xl mx-auto my-auto py-6 flex flex-col justify-center">
-          
-          {mode === 'login' ? (
-            <div className="space-y-6 max-w-md w-full mx-auto py-8">
-              <div>
-                <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                  Acesse sua conta
-                </h3>
+      <div className="relative w-full max-w-md mx-auto">
+        <AnimatePresence mode="wait">
+          {/* ═══════════════════ SIGN IN VIEW ═══════════════════ */}
+          {viewMode === 'signin' && (
+            <motion.div
+              key="signin"
+              variants={stagger}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="flex flex-col items-center gap-6"
+            >
+              {/* Logo */}
+              <motion.div variants={fadeUp} className="mb-2">
+                <ZellaLogo size={64} />
+              </motion.div>
+
+              {/* Title */}
+              <motion.div variants={fadeUp} className="text-center">
+                <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                  Bem-vindo ao Seu Zélla
+                </h1>
                 <p className="text-zinc-400 text-sm mt-2">
-                  Gerencie as reservas e acompanhe a IA da sua pousada
+                  Seu zelador digital inteligente
                 </p>
-              </div>
+              </motion.div>
 
-              <form onSubmit={handleLogin} noValidate className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email" className="text-zinc-300 text-xs font-semibold">Login *</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                    <Input
-                      id="login-email"
-                      type="text"
-                      placeholder="123"
-                      className="pl-10 bg-[#121216] border-white/[0.06] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
-                      value={loginData.email}
-                      onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="login-password" className="text-zinc-300 text-xs font-semibold">Senha *</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                    <Input
-                      id="login-password"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="123"
-                      className="pl-10 pr-10 bg-[#121216] border-white/[0.06] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
-                      value={loginData.password}
-                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-
+              {/* Google OAuth */}
+              <motion.div variants={fadeUp} className="w-full">
                 <Button
-                  type="submit"
-                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold rounded-xl mt-6 cursor-pointer active:scale-[0.98] transition-all"
+                  type="button"
+                  variant="outline"
+                  className="w-full h-12 bg-[#121216] border-white/[0.08] hover:bg-[#1a1a24] hover:border-white/[0.14] text-white font-medium rounded-xl cursor-pointer transition-all"
+                  onClick={handleGoogleLogin}
                   disabled={isLoading}
                 >
+                  <GoogleIcon className="w-5 h-5 mr-3" />
+                  Continuar com Google
+                </Button>
+              </motion.div>
+
+              {/* Divider */}
+              <motion.div variants={fadeUp} className="w-full flex items-center gap-3">
+                <div className="flex-1 h-px bg-white/[0.06]" />
+                <span className="text-zinc-500 text-xs font-medium">ou entre com seu e-mail</span>
+                <div className="flex-1 h-px bg-white/[0.06]" />
+              </motion.div>
+
+              {/* Magic Link Form */}
+              <motion.form variants={fadeUp} onSubmit={handleMagicLink} className="w-full space-y-3">
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <Input
+                    type="email"
+                    placeholder="seu@email.com"
+                    className="pl-10 h-12 bg-[#121216] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
+                    value={magicEmail}
+                    onChange={(e) => setMagicEmailState(e.target.value)}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold rounded-xl cursor-pointer active:scale-[0.98] transition-all"
+                  disabled={isLoading || !magicEmail}
+                >
                   {isLoading ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Acessando...</>
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Enviando...</>
                   ) : (
-                    'Entrar no Painel'
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Enviar link mágico
+                    </>
                   )}
                 </Button>
-              </form>
+              </motion.form>
 
-              <p className="text-center text-zinc-500 text-sm mt-8">
-                Não possui uma conta?{' '}
+              {/* Divider for credentials */}
+              <motion.div variants={fadeUp} className="w-full flex items-center gap-3">
+                <div className="flex-1 h-px bg-white/[0.06]" />
                 <button
                   type="button"
-                  onClick={() => {
-                    setMode('register');
-                    setShowPassword(false);
-                  }}
-                  className="text-emerald-400 hover:underline font-semibold"
+                  className="text-zinc-500 text-xs font-medium hover:text-zinc-300 cursor-pointer flex items-center gap-1 transition-colors"
+                  onClick={() => setShowCredentials(!showCredentials)}
                 >
-                  Criar conta
+                  ou use login tradicional
+                  <ChevronDown className={`h-3 w-3 transition-transform ${showCredentials ? 'rotate-180' : ''}`} />
                 </button>
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-5 w-full">
-              <div>
-                <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                  Crie sua pousada
-                </h3>
-              </div>
+                <div className="flex-1 h-px bg-white/[0.06]" />
+              </motion.div>
 
-              <form onSubmit={handleRegister} className="space-y-4">
-                
-                {/* GRID DE CAMPOS: DENSIDADE MÁXIMA DE INFORMAÇÃO */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-                  
-                  {/* Nome Completo */}
-                  <div className="space-y-1.5 col-span-1">
-                    <Label htmlFor="reg-name" className="text-zinc-300 text-xs font-semibold">Nome completo *</Label>
-                    <Input
-                      id="reg-name"
-                      placeholder="Seu nome completo"
-                      className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2"
-                      value={registerData.name}
-                      onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  {/* E-mail */}
-                  <div className="space-y-1.5 col-span-1">
-                    <Label htmlFor="reg-email" className="text-zinc-300 text-xs font-semibold">E-mail *</Label>
-                    <Input
-                      id="reg-email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2"
-                      value={registerData.email}
-                      onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  {/* Senha */}
-                  <div className="space-y-1.5 col-span-1">
-                    <Label htmlFor="reg-password" className="text-zinc-300 text-xs font-semibold">Senha *</Label>
+              {/* Expandable Credentials Form */}
+              <AnimatePresence>
+                {showCredentials && (
+                  <motion.form
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                    onSubmit={handleCredentialLogin}
+                    className="w-full space-y-3 overflow-hidden"
+                  >
                     <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                       <Input
-                        id="reg-password"
+                        type="text"
+                        placeholder="E-mail ou login"
+                        className="pl-10 h-11 bg-[#121216] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
+                        value={credentialData.email}
+                        onChange={(e) => setCredentialData({ ...credentialData, email: e.target.value })}
+                      />
+                    </div>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                      <Input
                         type={showPassword ? 'text' : 'password'}
-                        placeholder="Mínimo 8 caracteres"
-                        className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2 pr-10"
-                        value={registerData.password}
-                        onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-                        required
+                        placeholder="Senha"
+                        className="pl-10 pr-10 h-11 bg-[#121216] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
+                        value={credentialData.password}
+                        onChange={(e) => setCredentialData({ ...credentialData, password: e.target.value })}
                       />
                       <button
                         type="button"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 cursor-pointer"
                         onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
-                  </div>
-
-                  {/* Confirmar Senha */}
-                  <div className="space-y-1.5 col-span-1">
-                    <Label htmlFor="reg-confirm-password" className="text-zinc-300 text-xs font-semibold">Confirmar senha *</Label>
-                    <div className="relative">
-                      <Input
-                        id="reg-confirm-password"
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        placeholder="Repita a senha"
-                        className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2 pr-10"
-                        value={registerData.confirmPassword}
-                        onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
-                        required
-                      />
-                      <button
-                        type="button"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      >
-                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Separador de Seção "SUA POUSADA" */}
-                  <div className="col-span-2 pt-1">
-                    <div className="relative flex items-center">
-                      <div className="flex-grow border-t border-white/[0.06]"></div>
-                      <span className="flex-shrink mx-4 text-[9px] text-zinc-500 font-bold tracking-widest uppercase">
-                        Sua Pousada
-                      </span>
-                      <div className="flex-grow border-t border-white/[0.06]"></div>
-                    </div>
-                  </div>
-
-                  {/* Nome da Pousada (Largura total/col-span 2) */}
-                  <div className="space-y-1.5 col-span-2">
-                    <Label htmlFor="reg-pousada" className="text-zinc-300 text-xs font-semibold">Nome da sua pousada *</Label>
-                    <Input
-                      id="reg-pousada"
-                      placeholder="Minha Pousada Premium"
-                      className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2 w-full"
-                      value={registerData.pousadaName}
-                      onChange={(e) => setRegisterData({ ...registerData, pousadaName: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  {/* CNPJ ou CPF */}
-                  <div className="space-y-1.5 col-span-1">
-                    <Label htmlFor="reg-cnpj" className="text-zinc-300 text-xs font-semibold">CNPJ ou CPF *</Label>
-                    <Input
-                      id="reg-cnpj"
-                      placeholder="CNPJ ou CPF"
-                      className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2"
-                      value={registerData.cnpjOrCpf}
-                      onChange={(e) => setRegisterData({ ...registerData, cnpjOrCpf: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  {/* WhatsApp ou Telefone */}
-                  <div className="space-y-1.5 col-span-1">
-                    <Label htmlFor="reg-phone" className="text-zinc-300 text-xs font-semibold">WhatsApp ou Telefone *</Label>
-                    <Input
-                      id="reg-phone"
-                      placeholder="(11) 99999-9999"
-                      className="bg-[#121216] border-white/[0.08] text-white placeholder:text-zinc-500 rounded-lg py-2"
-                      value={registerData.phone}
-                      onChange={(e) => setRegisterData({ ...registerData, phone: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  {/* Explicador de Dados (Largura Inteira) */}
-                  <p className="text-[11px] text-zinc-500 leading-normal col-span-2">
-                    Seu nome, e-mail e telefone são usados para criar e proteger o acesso à sua conta — não usamos esses dados para outra finalidade sem te avisar.
-                  </p>
-
-                  {/* Checkbox Termos de Uso (Col-span 1 no desktop) */}
-                  <div className="flex items-start gap-3 mt-1.5 col-span-1">
-                    <input
-                      id="terms-checkbox"
-                      type="checkbox"
-                      checked={agreedTerms}
-                      onChange={(e) => setAgreedTerms(e.target.checked)}
-                      className="w-4.5 h-4.5 mt-0.5 rounded border-white/[0.08] bg-[#121216] text-emerald-500 focus:ring-emerald-500/20"
-                    />
-                    <Label htmlFor="terms-checkbox" className="text-zinc-400 text-[11px] leading-snug font-normal cursor-pointer select-none">
-                      Concordo com os <a href="#" className="text-emerald-400 hover:underline">Termos de Uso</a> e a <a href="#" className="text-emerald-400 hover:underline">Política de Privacidade</a>.
-                    </Label>
-                  </div>
-
-                  {/* Cloudflare Turnstile Mock (Col-span 1 no desktop - Lado a lado com os termos) */}
-                  <div className="bg-[#121216]/60 border border-white/[0.06] rounded-lg p-2.5 flex items-center justify-between col-span-1 text-[10px] text-zinc-400 font-medium h-fit shrink-0">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 rounded-full shrink-0">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                      </div>
-                      <span>Sucesso!</span>
-                    </div>
-                    <div className="flex items-center gap-1 opacity-70">
-                      <ShieldCheck className="w-3.5 h-3.5 text-zinc-500" />
-                      <span className="font-mono text-[8px] text-zinc-500">Turnstile</span>
-                    </div>
-                  </div>
-
-                  {/* Botão de Envio (Largura Inteira) */}
-                  <div className="col-span-2 pt-1">
                     <Button
                       type="submit"
-                      className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold rounded-lg cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                      variant="outline"
+                      className="w-full h-11 bg-[#121216] border-white/[0.08] hover:bg-[#1a1a24] text-white font-medium rounded-xl cursor-pointer transition-all"
                       disabled={isLoading}
                     >
-                      {isLoading ? (
-                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Criando sua pousada...</>
-                      ) : (
-                        <>
-                          <Sparkles className="w-4.5 h-4.5" />
-                          Criar minha pousada
-                        </>
-                      )}
+                      {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                      Entrar com senha
                     </Button>
-                  </div>
+                  </motion.form>
+                )}
+              </AnimatePresence>
 
+              {/* Sign up link */}
+              <motion.div variants={fadeUp} className="text-center pt-2">
+                <p className="text-zinc-500 text-sm">
+                  Não tem conta?{' '}
+                  <button
+                    type="button"
+                    onClick={() => { setViewMode('signup'); setShowPassword(false); setShowConfirmPassword(false); }}
+                    className="text-emerald-400 hover:underline font-semibold cursor-pointer"
+                  >
+                    Criar conta
+                  </button>
+                </p>
+              </motion.div>
+
+              {/* Dev bypass hint */}
+              <motion.div variants={fadeUp} className="w-full">
+                <div className="bg-[#121216] border border-white/[0.04] rounded-lg p-3 flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-zinc-600 shrink-0" />
+                  <p className="text-[10px] text-zinc-600">
+                    Modo dev: use <span className="text-zinc-400 font-mono">123</span> / <span className="text-zinc-400 font-mono">123</span> para acesso rápido
+                  </p>
                 </div>
-              </form>
-
-              <p className="text-center text-zinc-500 text-sm mt-5">
-                Já tem uma conta?{' '}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode('login');
-                    setShowPassword(false);
-                  }}
-                  className="text-emerald-400 hover:underline font-semibold"
-                >
-                  Fazer login
-                </button>
-              </p>
-            </div>
+              </motion.div>
+            </motion.div>
           )}
 
-          {/* Rodapé Final */}
-          <div className="border-t border-white/[0.04] pt-4 mt-6 text-center">
-            <p className="text-zinc-600 text-[10px]">
-              © 2026 SEU ZÉLLA — O zelador da sua pousada.
-            </p>
-          </div>
+          {/* ═══════════════════ MAGIC LINK SENT VIEW ═══════════════════ */}
+          {viewMode === 'magic-sent' && (
+            <motion.div
+              key="magic-sent"
+              variants={stagger}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="flex flex-col items-center gap-6"
+            >
+              {/* Checkmark animation */}
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                className="w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center"
+              >
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: 'spring', stiffness: 300, damping: 12 }}
+                >
+                  <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+                </motion.div>
+              </motion.div>
 
+              <motion.div variants={fadeUp} className="text-center">
+                <h2 className="text-xl sm:text-2xl font-bold text-white">
+                  Link mágico enviado!
+                </h2>
+                <p className="text-zinc-400 text-sm mt-2">
+                  Enviamos um link para <span className="text-emerald-400 font-medium">{magicEmail}</span>
+                </p>
+                <p className="text-zinc-500 text-xs mt-1">
+                  Verifique sua caixa de entrada e clique no link para acessar.
+                </p>
+              </motion.div>
+
+              {/* Dev mode link display */}
+              {magicDevUrl && (
+                <motion.div variants={fadeUp} className="w-full">
+                  <div className="bg-emerald-500/[0.06] border border-emerald-500/20 rounded-xl p-4 space-y-2">
+                    <p className="text-emerald-400 text-xs font-semibold flex items-center gap-1.5">
+                      <Sparkles className="h-3 w-3" /> Modo Desenvolvimento
+                    </p>
+                    <p className="text-zinc-400 text-[11px]">
+                      Clique no link abaixo para simular o acesso:
+                    </p>
+                    <a
+                      href={magicDevUrl}
+                      className="text-emerald-400 text-xs underline break-all hover:text-emerald-300 transition-colors"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {magicDevUrl}
+                    </a>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Resend button */}
+              <motion.div variants={fadeUp} className="w-full space-y-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-12 bg-[#121216] border-white/[0.08] hover:bg-[#1a1a24] text-white font-medium rounded-xl cursor-pointer transition-all"
+                  onClick={async () => {
+                    setIsLoading(true);
+                    try {
+                      const response = await fetch('/api/auth/magic-link', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: magicEmail }),
+                      });
+                      const data = await response.json();
+                      if (response.ok) {
+                        toast.success('Link reenviado!');
+                        if (data.devUrl) setMagicDevUrl(data.devUrl);
+                      } else {
+                        toast.error(data.error || 'Erro ao reenviar.');
+                      }
+                    } catch {
+                      toast.error('Erro de conexão.');
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  }}
+                  disabled={isLoading}
+                >
+                  {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mail className="mr-2 h-4 w-4" />}
+                  Reenviar link
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full text-zinc-400 hover:text-white cursor-pointer"
+                  onClick={() => { setViewMode('signin'); setMagicDevUrl(null); }}
+                >
+                  Voltar ao login
+                </Button>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* ═══════════════════ SIGN UP VIEW ═══════════════════ */}
+          {viewMode === 'signup' && (
+            <motion.div
+              key="signup"
+              variants={stagger}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="flex flex-col items-center gap-5"
+            >
+              {/* Logo */}
+              <motion.div variants={fadeUp} className="mb-1">
+                <ZellaLogo size={52} />
+              </motion.div>
+
+              {/* Title */}
+              <motion.div variants={fadeUp} className="text-center">
+                <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                  Crie sua conta
+                </h1>
+                <p className="text-zinc-400 text-sm mt-1">
+                  Comece a usar o Seu Zélla gratuitamente
+                </p>
+              </motion.div>
+
+              {/* Google OAuth */}
+              <motion.div variants={fadeUp} className="w-full">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-12 bg-[#121216] border-white/[0.08] hover:bg-[#1a1a24] hover:border-white/[0.14] text-white font-medium rounded-xl cursor-pointer transition-all"
+                  onClick={handleGoogleLogin}
+                  disabled={isLoading}
+                >
+                  <GoogleIcon className="w-5 h-5 mr-3" />
+                  Continuar com Google
+                </Button>
+              </motion.div>
+
+              {/* Divider */}
+              <motion.div variants={fadeUp} className="w-full flex items-center gap-3">
+                <div className="flex-1 h-px bg-white/[0.06]" />
+                <span className="text-zinc-500 text-xs font-medium">ou cadastre-se com e-mail</span>
+                <div className="flex-1 h-px bg-white/[0.06]" />
+              </motion.div>
+
+              {/* Registration form */}
+              <motion.form variants={fadeUp} onSubmit={handleRegister} className="w-full space-y-3">
+                {/* Name */}
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <Input
+                    placeholder="Nome completo"
+                    className="pl-10 h-11 bg-[#121216] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
+                    value={signUpData.name}
+                    onChange={(e) => setSignUpData({ ...signUpData, name: e.target.value })}
+                    required
+                  />
+                </div>
+
+                {/* Email */}
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <Input
+                    type="email"
+                    placeholder="seu@email.com"
+                    className="pl-10 h-11 bg-[#121216] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
+                    value={signUpData.email}
+                    onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
+                    required
+                  />
+                </div>
+
+                {/* Phone */}
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">📱</span>
+                  <Input
+                    type="tel"
+                    placeholder="(11) 99999-9999"
+                    className="pl-10 h-11 bg-[#121216] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
+                    value={signUpData.phone}
+                    onChange={(e) => setSignUpData({ ...signUpData, phone: e.target.value })}
+                  />
+                </div>
+
+                {/* Password & Confirm */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                    <Input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Senha"
+                      className="pl-10 pr-9 h-11 bg-[#121216] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
+                      value={signUpData.password}
+                      onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 cursor-pointer"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                    <Input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      placeholder="Confirmar"
+                      className="pl-10 pr-9 h-11 bg-[#121216] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
+                      value={signUpData.confirmPassword}
+                      onChange={(e) => setSignUpData({ ...signUpData, confirmPassword: e.target.value })}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 cursor-pointer"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Niche Selector */}
+                <div className="space-y-2">
+                  <Label className="text-zinc-300 text-xs font-semibold">Seu tipo de hospedagem</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSignUpData({ ...signUpData, niche: 'pousada' })}
+                      className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                        signUpData.niche === 'pousada'
+                          ? 'border-emerald-500 bg-emerald-500/[0.06]'
+                          : 'border-white/[0.06] bg-[#121216] hover:border-white/[0.12]'
+                      }`}
+                    >
+                      <Building2 className={`h-6 w-6 ${signUpData.niche === 'pousada' ? 'text-emerald-400' : 'text-zinc-500'}`} />
+                      <span className={`text-sm font-semibold ${signUpData.niche === 'pousada' ? 'text-emerald-400' : 'text-zinc-400'}`}>
+                        Pousada / Hotel
+                      </span>
+                      {signUpData.niche === 'pousada' && (
+                        <motion.div
+                          layoutId="niche-indicator"
+                          className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5 text-zinc-950" />
+                        </motion.div>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSignUpData({ ...signUpData, niche: 'airbnb' })}
+                      className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                        signUpData.niche === 'airbnb'
+                          ? 'border-blue-500 bg-blue-500/[0.06]'
+                          : 'border-white/[0.06] bg-[#121216] hover:border-white/[0.12]'
+                      }`}
+                    >
+                      <Key className={`h-6 w-6 ${signUpData.niche === 'airbnb' ? 'text-blue-400' : 'text-zinc-500'}`} />
+                      <span className={`text-sm font-semibold ${signUpData.niche === 'airbnb' ? 'text-blue-400' : 'text-zinc-400'}`}>
+                        Anfitrião Airbnb
+                      </span>
+                      {signUpData.niche === 'airbnb' && (
+                        <motion.div
+                          layoutId="niche-indicator"
+                          className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                        </motion.div>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Property Name */}
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <Input
+                    placeholder={signUpData.niche === 'airbnb' ? 'Nome do seu imóvel' : 'Nome da sua pousada'}
+                    className="pl-10 h-11 bg-[#121216] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
+                    value={signUpData.propertyName}
+                    onChange={(e) => setSignUpData({ ...signUpData, propertyName: e.target.value })}
+                    required
+                  />
+                </div>
+
+                {/* Terms */}
+                <div className="flex items-start gap-3">
+                  <input
+                    id="terms-check"
+                    type="checkbox"
+                    checked={agreedTerms}
+                    onChange={(e) => setAgreedTerms(e.target.checked)}
+                    className="mt-1 w-4 h-4 rounded border-white/[0.12] bg-[#121216] text-emerald-500 focus:ring-emerald-500/20"
+                  />
+                  <Label htmlFor="terms-check" className="text-zinc-400 text-xs leading-snug font-normal cursor-pointer select-none">
+                    Concordo com os{' '}
+                    <a href="#" className="text-emerald-400 hover:underline">Termos de Uso</a>
+                    {' '}e a{' '}
+                    <a href="#" className="text-emerald-400 hover:underline">Política de Privacidade</a>.
+                  </Label>
+                </div>
+
+                {/* Submit */}
+                <Button
+                  type="submit"
+                  className={`w-full h-12 font-bold rounded-xl cursor-pointer active:scale-[0.98] transition-all ${
+                    signUpData.niche === 'airbnb'
+                      ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                      : 'bg-emerald-500 hover:bg-emerald-600 text-zinc-950'
+                  }`}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Criando conta...</>
+                  ) : (
+                    <>
+                      <ArrowRight className="mr-2 h-4 w-4" />
+                      Criar minha conta
+                    </>
+                  )}
+                </Button>
+              </motion.form>
+
+              {/* Back to login */}
+              <motion.div variants={fadeUp} className="text-center pt-1">
+                <p className="text-zinc-500 text-sm">
+                  Já tem conta?{' '}
+                  <button
+                    type="button"
+                    onClick={() => { setViewMode('signin'); setShowPassword(false); }}
+                    className="text-emerald-400 hover:underline font-semibold cursor-pointer"
+                  >
+                    Fazer login
+                  </button>
+                </p>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Footer */}
+        <div className="mt-8 text-center">
+          <p className="text-zinc-600 text-[10px]">
+            © 2026 SEU ZÉLLA — O zelador digital inteligente.
+          </p>
         </div>
       </div>
     </div>

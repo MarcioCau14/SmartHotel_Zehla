@@ -1,5 +1,7 @@
 import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
+import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import { db, isDatabaseAvailable } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { getServerSession } from 'next-auth';
@@ -13,6 +15,7 @@ const DEMO_USER = {
   role: 'owner' as const,
   tenantId: 'demo-tenant-id',
   plan: 'pro' as const,
+  niche: 'pousada' as const,
 };
 
 /** Check if we're running on Vercel (serverless — no persistent SQLite) */
@@ -21,7 +24,16 @@ function isVercelServerless(): boolean {
 }
 
 export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(db as any),
   providers: [
+    // ── Google OAuth ──────────────────────────────────────────
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      allowDangerousEmailAccountLinking: true,
+    }),
+
+    // ── Credentials (existing) ────────────────────────────────
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -53,6 +65,7 @@ export const authOptions: NextAuthOptions = {
                   role: firstTenant.role || 'owner',
                   tenantId: firstTenant.id,
                   plan: firstTenant.plan || 'pro',
+                  niche: (firstTenant as any).niche || 'pousada',
                 };
               }
             }
@@ -74,6 +87,7 @@ export const authOptions: NextAuthOptions = {
               role: 'owner',
               tenantId: 'mock-tenant-id',
               plan: 'pro',
+              niche: 'pousada',
             };
           }
           try {
@@ -88,6 +102,7 @@ export const authOptions: NextAuthOptions = {
                   role: firstTenant.role,
                   tenantId: firstTenant.id,
                   plan: firstTenant.plan,
+                  niche: (firstTenant as any).niche || 'pousada',
                 };
               }
             }
@@ -101,6 +116,7 @@ export const authOptions: NextAuthOptions = {
             role: 'owner',
             tenantId: 'mock-tenant-id',
             plan: 'pro',
+            niche: 'pousada',
           };
         }
 
@@ -135,6 +151,7 @@ export const authOptions: NextAuthOptions = {
                 role: tenant.role,
                 tenantId: tenant.id,
                 plan: tenant.plan,
+                niche: (tenant as any).niche || 'pousada',
               };
             }
           }
@@ -152,11 +169,83 @@ export const authOptions: NextAuthOptions = {
     maxAge: 24 * 60 * 60, // 24 hours
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account, profile }) {
+      // For OAuth providers (Google), ensure a Tenant exists
+      if (account?.provider === 'google' && user.email) {
+        try {
+          const dbOk = await isDatabaseAvailable();
+          if (dbOk) {
+            // Check if a tenant exists for this email
+            const existingTenant = await db.tenant.findUnique({
+              where: { email: user.email },
+            });
+            if (!existingTenant) {
+              // Create a new tenant for OAuth users
+              const newTenant = await db.tenant.create({
+                data: {
+                  name: user.name || user.email.split('@')[0],
+                  email: user.email,
+                  plan: 'trial',
+                  status: 'active',
+                  niche: 'pousada',
+                  trialStart: new Date(),
+                  trialEnd: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                },
+              });
+              // Link the User to the Tenant
+              if (user.id) {
+                await db.user.update({
+                  where: { id: user.id },
+                  data: { tenant: { connect: { id: newTenant.id } } },
+                });
+              }
+            } else {
+              // Link existing tenant to user if not linked
+              if (user.id) {
+                const existingUser = await db.user.findUnique({
+                  where: { id: user.id },
+                });
+                if (existingUser && !existingUser.tenantId) {
+                  await db.user.update({
+                    where: { id: user.id },
+                    data: { tenant: { connect: { id: existingTenant.id } } },
+                  });
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.error('[auth] Error during Google OAuth sign-in:', err);
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user, account }) {
       if (user) {
         token.tenantId = (user as any).tenantId;
         token.role = (user as any).role;
         token.plan = (user as any).plan;
+        token.niche = (user as any).niche;
+
+        // For OAuth users, look up tenant info
+        if (account?.provider === 'google') {
+          try {
+            const dbOk = await isDatabaseAvailable();
+            if (dbOk && user.email) {
+              const tenant = await db.tenant.findUnique({
+                where: { email: user.email },
+              });
+              if (tenant) {
+                token.tenantId = tenant.id;
+                token.role = tenant.role;
+                token.plan = tenant.plan;
+                token.niche = (tenant as any).niche || 'pousada';
+              }
+            }
+          } catch (err) {
+            console.error('[auth] Error looking up tenant in JWT callback:', err);
+          }
+        }
       }
       return token;
     },
@@ -165,12 +254,22 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).tenantId = (token as any).tenantId;
         (session.user as any).role = (token as any).role;
         (session.user as any).plan = (token as any).plan;
+        (session.user as any).niche = (token as any).niche;
       }
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      // Allows callbackUrl from signIn() calls
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      // Allows callback URLs on the same origin
+      if (new URL(url).origin === baseUrl) return url;
+      // Default redirect based on niche
+      return baseUrl + '/ddc';
     },
   },
   pages: {
     signIn: '/login',
+    verifyRequest: '/login?mode=verify',
   },
   secret: process.env.NEXTAUTH_SECRET || 'zehla-demo-secret-2026-prod',
   debug: process.env.NODE_ENV === 'development',
@@ -208,7 +307,7 @@ export async function requireTenant() {
     redirect('/login');
   }
 
-  const tenantId = session.user.tenantId;
+  const tenantId = (session.user as any).tenantId;
   if (!tenantId) {
     redirect('/login');
   }

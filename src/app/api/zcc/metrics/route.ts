@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { verifyZCCAccessOrReject } from '@/lib/zcc-security';
+import { getAggregates, getActiveTenantIds, getBurnRate, getRevenue } from '@/lib/telemetry-store';
 
 export async function GET(request: NextRequest) {
   // ── Security Gate V3 — 6-Layer Protection ──
@@ -163,6 +164,51 @@ export async function GET(request: NextRequest) {
       bullmq: 'not_used' as const,
     };
 
+    // ── Telemetry enrichment from in-memory store ───────────────
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let telemetryData: Record<string, any> = {};
+    try {
+      const telemetryAggregates = getAggregates();
+      const telemetryTenantIds = getActiveTenantIds();
+      const telemetryBurnRates = telemetryTenantIds.map(id => getBurnRate(id));
+      const telemetryRevenues = telemetryTenantIds.map(id => getRevenue(id));
+
+      // Enrich messages processed with telemetry data
+      const telemetryMessagesSent = telemetryAggregates.burnRate.totalMessagesSent;
+      const telemetryMessagesBundled = telemetryAggregates.burnRate.totalMessagesBundled;
+      const totalMessagesWithTelemetry = totalMessagesProcessed + telemetryMessagesSent;
+
+      // Enrich revenue with telemetry payment events
+      const telemetryRevenue = telemetryAggregates.revenue.totalAmount;
+
+      telemetryData = {
+        totalMessagesWithTelemetry,
+        telemetryMessagesSent,
+        telemetryMessagesBundled,
+        telemetryRevenue,
+        burnRate: {
+          totalCostUsd: telemetryAggregates.burnRate.totalCostUsd,
+          totalSavingsUsd: telemetryAggregates.burnRate.totalSavingsUsd,
+          savingsRate: telemetryAggregates.burnRate.savingsRate,
+          perTenant: telemetryBurnRates,
+        },
+        revenueTelemetry: {
+          totalAmount: telemetryRevenue,
+          byCurrency: telemetryAggregates.revenue.byCurrency,
+          bySource: telemetryAggregates.revenue.bySource,
+          perTenant: telemetryRevenues,
+        },
+        eventCounts: telemetryAggregates.eventCounts,
+        categoryCounts: telemetryAggregates.categoryCounts,
+        activeTelemetryTenants: telemetryTenantIds.length,
+      };
+
+      // Override totalMessagesProcessed with enriched value
+      totalMessagesProcessed = totalMessagesWithTelemetry;
+    } catch {
+      // Telemetry enrichment failed — continue with DB-only data
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -185,6 +231,7 @@ export async function GET(request: NextRequest) {
           parceiro: { clients: parceiroClients, mrr: parceiroMrr, referrals: parceiroReferrals },
         },
         systemStatus,
+        telemetry: telemetryData,
       },
     });
   } catch (error) {

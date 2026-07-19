@@ -26,6 +26,9 @@ const SKIP_LOG_PATHS = ['/api/health', '/api/readiness', '/_next/', '/favicon.ic
 
 const PROTECTED_PAGE_PATHS = ['/ddc', '/zcc', '/dashboard', '/config', '/tenants', '/campaigns', '/leads', '/targets', '/agents', '/roi', '/swipe-templates'];
 
+/** Routes that trigger niche-based smart routing */
+const SMART_ROUTER_PATHS = ['/ddc', '/ddc/'];
+
 /** ZCC God Mode access token — permite preview do /zcc sem login NextAuth */
 const ZCC_GODMODE_TOKEN = 'zella-ctrl-2026';
 const ZCC_GODMODE_COOKIE = 'zcc_godmode';
@@ -377,6 +380,34 @@ export async function middleware(request: NextRequest) {
     // Nenhuma camada de acesso teve sucesso — redirect genérico para /login
     // NÃO revela se ZCC existe, qual camada falhou, ou se rate limiting está ativo
     return silentReject(request, ip, userAgent, 'denied');
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // SMART ROUTER — Niche-Based DDC Routing
+  // ═══════════════════════════════════════════════════════════════
+  // When a user visits /ddc (generic), redirect to the niche-specific route:
+  // - niche === "airbnb" → /ddc/airbnb
+  // - niche === "pousada" or default → /ddc/pousada
+  // This ensures the user always lands on the correct dashboard.
+  // ═══════════════════════════════════════════════════════════════
+
+  if (SMART_ROUTER_PATHS.includes(pathname)) {
+    try {
+      const token = await getToken({
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET,
+      });
+
+      const niche = (token as any)?.niche || 'pousada';
+      const targetPath = niche === 'airbnb' ? '/ddc/airbnb' : '/ddc/pousada';
+
+      // Redirect to niche-specific dashboard
+      const redirectUrl = new URL(targetPath, request.url);
+      return NextResponse.redirect(redirectUrl);
+    } catch {
+      // If token can't be decoded, fall through to normal auth flow
+      // (will redirect to /login if not authenticated)
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════
