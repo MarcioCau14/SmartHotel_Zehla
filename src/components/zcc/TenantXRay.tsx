@@ -102,9 +102,9 @@ const unifiedTenants: UnifiedTenant[] = [
 // ── Agent Swarm Stats ─────────────────────────────────────────────────────────
 
 const swarmStats = {
-  pousadasSwarm: { agents: 4, successRate: 96.8, avgLatency: 180, intentsResolved: 12847, stuck: 2 },
-  airbnbSwarm: { agents: 3, successRate: 94.2, avgLatency: 210, intentsResolved: 8934, stuck: 1 },
-  financeSwarm: { agents: 2, successRate: 98.1, avgLatency: 95, intentsResolved: 5621, stuck: 0 },
+  pousadasSwarm: { agents: 0, successRate: 0, avgLatency: 0, intentsResolved: 0, stuck: 0 },
+  airbnbSwarm: { agents: 0, successRate: 0, avgLatency: 0, intentsResolved: 0, stuck: 0 },
+  financeSwarm: { agents: 0, successRate: 0, avgLatency: 0, intentsResolved: 0, stuck: 0 },
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -141,7 +141,7 @@ export function TenantXRay() {
   // Churn stats
   const activeCount = tenants.filter(t => !t.killSwitchActive).length;
   const frozenCount = tenants.filter(t => t.killSwitchActive).length;
-  const churnRate = ((frozenCount / tenants.length) * 100).toFixed(1);
+  const churnRate = tenants.length > 0 ? ((frozenCount / tenants.length) * 100).toFixed(1) : '0.0';
 
   const nicheConfig = {
     pousadas: { color: 'var(--zcc-kinpaku)', label: 'Pousadas', badge: 'zcc-badge-gold' },
@@ -188,7 +188,7 @@ export function TenantXRay() {
           { label: 'TOTAL TENANTS', value: tenants.length, color: 'var(--zcc-champagne)' },
           { label: 'CHURN RATE', value: `${churnRate}%`, color: parseFloat(churnRate) > 10 ? '#ef4444' : '#10b981' },
           { label: 'MRR TOTAL', value: `R$ ${tenants.reduce((s,t) => s + t.planPrice, 0).toLocaleString('pt-BR')}`, color: 'var(--zcc-kinpaku)' },
-          { label: 'BRAIN AVG', value: `${(tenants.filter(t=>t.brainAccuracy > 0).reduce((s,t) => s + t.brainAccuracy, 0) / tenants.filter(t=>t.brainAccuracy > 0).length).toFixed(1)}%`, color: 'var(--zcc-patina)' },
+          { label: 'BRAIN AVG', value: tenants.filter(t=>t.brainAccuracy > 0).length > 0 ? `${(tenants.filter(t=>t.brainAccuracy > 0).reduce((s,t) => s + t.brainAccuracy, 0) / tenants.filter(t=>t.brainAccuracy > 0).length).toFixed(1)}%` : '—', color: 'var(--zcc-patina)' },
           { label: 'CONGELADOS', value: frozenCount, color: frozenCount > 0 ? '#ef4444' : 'var(--zcc-text-muted)' },
         ].map((stat, i) => (
           <motion.div key={stat.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}

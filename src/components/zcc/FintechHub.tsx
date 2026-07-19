@@ -98,13 +98,13 @@ const paymentOptions: PaymentOption[] = [
 ];
 
 const dailyVolume = [
-  { day: 'Seg', pix: 4200, card: 1800 },
-  { day: 'Ter', pix: 3800, card: 2100 },
-  { day: 'Qua', pix: 5100, card: 1600 },
-  { day: 'Qui', pix: 6300, card: 2400 },
-  { day: 'Sex', pix: 7200, card: 3200 },
-  { day: 'Sáb', pix: 8500, card: 2800 },
-  { day: 'Dom', pix: 5900, card: 1500 },
+  { day: 'Seg', pix: 0, card: 0 },
+  { day: 'Ter', pix: 0, card: 0 },
+  { day: 'Qua', pix: 0, card: 0 },
+  { day: 'Qui', pix: 0, card: 0 },
+  { day: 'Sex', pix: 0, card: 0 },
+  { day: 'Sáb', pix: 0, card: 0 },
+  { day: 'Dom', pix: 0, card: 0 },
 ];
 
 const statusConfig = {
@@ -180,7 +180,7 @@ export function FintechHub() {
         </div>
         <div className="zcc-panel p-4">
           <CheckCircle className="w-4 h-4 mb-2" style={{ color: 'var(--zcc-kinpaku)' }} />
-          <div className="zcc-stat-value">98.4%</div>
+          <div className="zcc-stat-value">—</div>
           <div className="zcc-eyebrow mt-1">SUCESSO PAGAMENTO</div>
         </div>
         <div className="zcc-panel p-4">

@@ -58,24 +58,8 @@ interface FeedEntry {
 // ---------------------------------------------------------------------------
 
 const feedMessages: Omit<FeedEntry, 'id' | 'timestamp'>[] = [
-  { type: 'price', message: 'Preco ajustado +12% -> Pousada Serenity' },
-  { type: 'lead', message: 'Lead qualificado -> Chales da Montanha' },
-  { type: 'payment', message: 'PIX confirmado R$480 -> Refugio das Nuvens' },
-  { type: 'message', message: 'WhatsApp auto-reply enviado -> Casa da Serra' },
-  { type: 'review', message: 'Review 5* respondida -> Pousada Horizonte' },
-  { type: 'price', message: 'Preco ajustado -5% -> Villa das Flores' },
-  { type: 'lead', message: 'Lead convertido em reserva -> Eco Lodge' },
-  { type: 'payment', message: 'PIX confirmado R$1.280 -> Fazenda Vista Bela' },
-  { type: 'support', message: 'Ticket resolvido automaticamente #4821' },
-  { type: 'message', message: 'Check-in reminder enviado -> 14 hospedes' },
-  { type: 'price', message: 'Dynamic pricing ativado feriado -> 7 pousadas' },
-  { type: 'lead', message: 'Lead score 94% -> Pousada Bela Vista' },
-  { type: 'payment', message: 'PIX confirmado R$750 -> Chales das Nuvens' },
-  { type: 'review', message: 'Sentimento negativo detectado -> #review-772' },
-  { type: 'support', message: 'Disparo WhatsApp em lote -> 23 contatos' },
-  { type: 'message', message: 'Upsell suite premium sugerido -> Guest #1089' },
-  { type: 'price', message: 'Dynamic pricing ativado feriado -> 7 pousadas' },
-  { type: 'lead', message: 'Lead recapturado apos 48h -> Eco Lodge' },
+  // Feed zerado — sem clientes ativos ainda
+  // Quando as Zélla Pousadas/Airbnb Testes forem criadas, o feed será alimentado em tempo real
 ];
 
 // ---------------------------------------------------------------------------

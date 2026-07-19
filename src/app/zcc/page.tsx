@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import {
-  Brain, ArrowLeft, Bell, Building2, Activity, Settings,
+  Brain, ArrowLeft, Bell, Building2, Activity,
   Users, Zap, Shield, DollarSign, Key, TrendingUp,
   Home, Globe, Flame, Command,
 } from 'lucide-react';
@@ -23,7 +23,7 @@ import { globalMetrics, airbnbMetrics, parceiroMetrics } from '@/lib/zcc-clients
 
 // ── Tab Configuration ──────────────────────────────────────────────────────────
 
-type ZCCTab = 'overview' | 'pulse' | 'cerebro' | 'financeiro' | 'airbnb' | 'burnrate' | 'tenants' | 'tokens' | 'settings';
+type ZCCTab = 'overview' | 'pulse' | 'cerebro' | 'financeiro' | 'airbnb' | 'burnrate' | 'tenants' | 'tokens';
 
 const tabs: { id: ZCCTab; label: string; icon: React.ElementType; desc: string; group: 'core' | 'ops' | 'config' }[] = [
   { id: 'overview', label: 'Visão Geral', icon: Command, desc: 'Command Center', group: 'core' },
@@ -34,7 +34,6 @@ const tabs: { id: ZCCTab; label: string; icon: React.ElementType; desc: string; 
   { id: 'burnrate', label: 'Burn Rate', icon: Flame, desc: 'Custos API WhatsApp', group: 'ops' },
   { id: 'tenants', label: 'Tenants', icon: Users, desc: 'Raio-X & Kill Switch', group: 'ops' },
   { id: 'tokens', label: 'Tokens & IA', icon: Key, desc: 'LLMs & API Keys', group: 'config' },
-  { id: 'settings', label: 'Config', icon: Settings, desc: 'Sistema', group: 'config' },
 ];
 
 const tabGroups = [
@@ -334,57 +333,7 @@ export default function ZCCPage() {
               </div>
             )}
 
-            {/* ===== TAB: SETTINGS ===== */}
-            {activeTab === 'settings' && (
-              <div className="space-y-5">
-                <div className="zcc-panel p-5">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Settings className="w-4 h-4" style={{ color: 'var(--zcc-kinpaku)' }} />
-                    <h3 className="text-sm font-semibold" style={{ color: 'var(--zcc-champagne)' }}>Configurações do Sistema</h3>
-                  </div>
 
-                  {/* Pricing Matrix */}
-                  <div className="mb-6">
-                    <div className="zcc-eyebrow mb-3">MATRIZ DE PREÇOS VIGENTE</div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {Object.entries(globalMetrics.pricing).map(([key, price]) => (
-                        <div key={key} className="zcc-panel p-3">
-                          <div className="zcc-eyebrow">{key.toUpperCase()}</div>
-                          <div className="text-lg font-bold font-mono" style={{ color: price === 0 ? 'var(--zcc-text-muted)' : 'var(--zcc-kinpaku)' }}>
-                            {price === 0 ? 'GRÁTIS' : `R$${price}`}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Niche Rules */}
-                  <div>
-                    <div className="zcc-eyebrow mb-3">REGRAS POR NICHO</div>
-                    <div className="space-y-2">
-                      <div className="p-3 rounded" style={{ background: 'var(--zcc-lacquer-sunken)', border: '1px solid rgba(212,168,67,0.06)' }}>
-                        <div className="text-[10px] font-mono font-bold" style={{ color: 'var(--zcc-kinpaku)' }}>Pousadas</div>
-                        <div className="text-[9px] font-mono" style={{ color: 'var(--zcc-text-secondary)' }}>
-                          Planos visíveis: TRIAL, LITE, PRO, MAX · Pagamento: PIX ou Cartão
-                        </div>
-                      </div>
-                      <div className="p-3 rounded" style={{ background: 'var(--zcc-lacquer-sunken)', border: '1px solid rgba(74,154,154,0.06)' }}>
-                        <div className="text-[10px] font-mono font-bold" style={{ color: 'var(--zcc-patina)' }}>Anfitriões Airbnb</div>
-                        <div className="text-[9px] font-mono" style={{ color: 'var(--zcc-text-secondary)' }}>
-                          Planos visíveis: PRO (R$397) e MAX (R$797) · Pagamento: Exclusivo Cartão de Crédito
-                        </div>
-                      </div>
-                      <div className="p-3 rounded" style={{ background: 'var(--zcc-lacquer-sunken)', border: '1px solid rgba(196,84,84,0.06)' }}>
-                        <div className="text-[10px] font-mono font-bold" style={{ color: '#c45454' }}>Parceiro Zélla</div>
-                        <div className="text-[9px] font-mono" style={{ color: 'var(--zcc-text-secondary)' }}>
-                          Plano único: R$247/mês × 24 meses (preço congelado) · Badge Zélla Partner no Link-in-Bio
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </motion.div>
         </AnimatePresence>
       </main>

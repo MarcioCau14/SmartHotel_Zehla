@@ -118,7 +118,7 @@ export function BurnRateCenter() {
 
   const totalMonthlyWhatsApp = tenantCosts.reduce((s, t) => s + t.whatsappCostMonth, 0);
   const totalMRR = tenantCosts.reduce((s, t) => s + t.monthlyPrice, 0);
-  const overallRatio = totalMonthlyWhatsApp / totalMRR;
+  const overallRatio = totalMRR > 0 ? totalMonthlyWhatsApp / totalMRR : 0;
   const anomalyCount = tenantCosts.filter(t => t.anomaly).length;
   const totalMessagesWeek = tenantCosts.reduce((s, t) => s + t.messagesWeek, 0);
 
