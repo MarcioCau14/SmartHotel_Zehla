@@ -121,6 +121,7 @@ export function CerebroZella() {
 
   // ---- Feed state ----
   const [feed, setFeed] = useState<FeedEntry[]>(() => {
+    if (feedMessages.length === 0) return []; // No clients yet — empty feed
     const baseTime = Date.now();
     return Array.from({ length: 6 }, (_, i) => {
       const msg = feedMessages[i % feedMessages.length];
@@ -132,6 +133,7 @@ export function CerebroZella() {
   const feedEndRef = useRef<HTMLDivElement>(null);
 
   const addFeedEntry = useCallback(() => {
+    if (feedMessages.length === 0) return; // No clients — no feed entries
     const msg = feedMessages[feedIndexRef.current % feedMessages.length];
     feedIndexRef.current += 1;
     const entry: FeedEntry = {
@@ -362,6 +364,13 @@ export function CerebroZella() {
           </div>
           <div className="flex-1 max-h-72 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
             <AnimatePresence initial={false}>
+              {feed.length === 0 && (
+                <div className="text-center py-8">
+                  <Activity className="w-5 h-5 mx-auto mb-2 text-neutral-600" />
+                  <p className="text-xs text-neutral-600 font-mono">Nenhum cliente ativo — feed vazio</p>
+                  <p className="text-[9px] text-neutral-700 font-mono mt-1">Conecte Zélla Pousadas/Airbnb Testes para ver decisões em tempo real</p>
+                </div>
+              )}
               {feed.map((entry) => (
                 <motion.div key={entry.id} initial={{ opacity: 0, x: -16, height: 0 }} animate={{ opacity: 1, x: 0, height: 'auto' }}
                   exit={{ opacity: 0, x: 16 }} transition={{ duration: 0.35 }}
