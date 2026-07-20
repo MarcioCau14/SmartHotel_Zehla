@@ -14,10 +14,8 @@ export function HeroSection() {
     setMounted(true);
   }, []);
 
-  // Rotating hero words — niche-specific to avoid cross-contamination
-  const rotatingPhrases = isPousada
-    ? ['pelo WhatsApp.', 'sua pousada.']
-    : ['pelo WhatsApp.', 'seu imóvel.'];
+  // Rotating hero words — ALL 3 phrases rotate together regardless of niche
+  const rotatingPhrases = ['pelo WhatsApp.', 'seu imóvel.', 'sua pousada.'];
   const rotatingPhrasesLength = rotatingPhrases.length;
   const [phraseIdx, setPhraseIdx] = useState(0);
   useEffect(() => {
@@ -26,7 +24,7 @@ export function HeroSection() {
       setPhraseIdx((prev) => (prev + 1) % rotatingPhrasesLength);
     }, 2800);
     return () => clearInterval(interval);
-  }, [rotatingPhrasesLength, niche]);
+  }, [rotatingPhrasesLength]);
 
   return (
     <section className="relative flex items-center overflow-hidden bg-[#0a0a0a]">
