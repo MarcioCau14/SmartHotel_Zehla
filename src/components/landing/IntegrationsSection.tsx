@@ -14,9 +14,9 @@ import {
 } from 'lucide-react';
 import { useNiche } from '@/contexts/NicheContext';
 
-function getIntegrations(niche: 'pousadas' | 'anfitrioes' | 'parceiro') {
-  const isPousadas = niche === 'pousadas';
-  const isAnfitrioes = niche === 'anfitrioes';
+function getIntegrations(niche: 'pousada' | 'airbnb') {
+  const isPousada = niche === 'pousada';
+  const isAirbnb = niche === 'airbnb';
   return [
     {
       icon: MessageSquare,
@@ -35,9 +35,9 @@ function getIntegrations(niche: 'pousadas' | 'anfitrioes' | 'parceiro') {
     {
       icon: Calendar,
       name: 'iCal Sync',
-      description: isPousadas
+      description: isPousada
         ? 'Exporte calendários para Booking.com, Decolar e outras OTAs. Importe reservas via URL iCal (em expansão).'
-        : isAnfitrioes
+        : isAirbnb
         ? 'Exporte calendários para Airbnb, Booking.com e outras plataformas. Importe reservas via URL iCal (em expansão).'
         : 'Exporte e importe calendários via URL iCal. Sincronize com qualquer plataforma que aceite o formato (em expansão).',
       status: 'Ativo',
@@ -84,8 +84,8 @@ function getIntegrations(niche: 'pousadas' | 'anfitrioes' | 'parceiro') {
 export function IntegrationsSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  const { isPousadas, isAnfitrioes, isParceiro } = useNiche();
-  const niche: 'pousadas' | 'anfitrioes' | 'parceiro' = isPousadas ? 'pousadas' : isAnfitrioes ? 'anfitrioes' : 'parceiro';
+  const { isPousada, isAirbnb } = useNiche();
+  const niche: 'pousada' | 'airbnb' = isPousada ? 'pousada' : 'airbnb';
   const integrations = getIntegrations(niche);
 
   return (
@@ -110,7 +110,7 @@ export function IntegrationsSection() {
             <span className="text-purple-400 font-bold">nada desconectado</span>
           </h2>
           <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
-            O Zélla se integra com as ferramentas que {isPousadas ? 'sua pousada' : isAnfitrioes ? 'seus imóveis' : 'seu negócio'} já usa. Sem webhooks lentos, sem dados desatualizados — conexão direta em tempo real.
+            O Zélla se integra com as ferramentas que {isPousada ? 'sua pousada' : isAirbnb ? 'seus imóveis' : 'seu negócio'} já usa. Sem webhooks lentos, sem dados desatualizados — conexão direta em tempo real.
           </p>
         </motion.div>
 

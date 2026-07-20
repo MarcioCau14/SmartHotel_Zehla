@@ -24,7 +24,7 @@ export function TestimonialsSection() {
   const content = getNicheContent(niche);
   const testimonials = content.testimonials;
 
-  const headerText = niche === 'pousadas' ? 'O que os pousadeiros dizem' : niche === 'anfitrioes' ? 'O que os anfitriões dizem' : 'O que os parceiros dizem';
+  const headerText = niche === 'pousada' ? 'O que os pousadeiros dizem' : niche === 'airbnb' ? 'O que os anfitriões dizem' : 'O que os parceiros dizem';
 
   return (
     <section ref={ref} id="depoimentos" className="parallax-section parallax-grid py-28 sm:py-36 lg:py-44">
@@ -46,9 +46,9 @@ export function TestimonialsSection() {
             <span className="text-amber-400">sobre o Zélla</span>
           </h2>
           <p className="text-neutral-400 text-lg max-w-xl mx-auto">
-            {niche === 'pousadas'
+            {niche === 'pousada'
               ? 'Pousadeiros que já usam o Zélla para vender mais e atender melhor pelo WhatsApp.'
-              : niche === 'anfitrioes'
+              : niche === 'airbnb'
               ? 'Anfitriões que já usam o Zélla para escalar seus imóveis e atender melhor pelo WhatsApp.'
               : 'Parceiros que já economizam com o plano PRO por preço de parceiro.'}
           </p>

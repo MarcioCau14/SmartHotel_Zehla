@@ -53,10 +53,10 @@ export function DDCHeader({
   aiStatus,
   notificationCount,
   onOpenNotifications,
-  currentPlan = 'trial'
+  currentPlan = 'gratuito'
 }: DDCHeaderProps) {
   const router = useRouter();
-  const planDisplay = PLAN_DISPLAY[currentPlan] || PLAN_DISPLAY.trial;
+  const planDisplay = PLAN_DISPLAY[currentPlan] || PLAN_DISPLAY.gratuito;
   const [mounted, setMounted] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [pulseActive, setPulseActive] = useState(true);

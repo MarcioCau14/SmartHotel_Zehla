@@ -71,9 +71,9 @@ export async function GET(request: NextRequest) {
 
       // Determine niche
       const propertyType = tenant.property?.type;
-      let niche = 'pousadas';
-      if (tenant.plan === 'parceiro') niche = 'parceiro';
-      else if (propertyType === 'airbnb' || (tenant.airbSubscriptions?.length ?? 0) > 0) niche = 'anfitrioes';
+      let niche = 'pousada';
+      if (tenant.plan === 'airbnb') niche = 'airbnb';
+      else if (propertyType === 'airbnb' || (tenant.airbSubscriptions?.length ?? 0) > 0) niche = 'airbnb';
 
       const costRatio = monthlyPrice > 0 ? whatsappCostMonth / monthlyPrice : 0;
 

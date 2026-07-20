@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Building2, Key, Crown } from 'lucide-react';
+import { Building2, Key } from 'lucide-react';
 import type { NicheType } from '@/contexts/NicheContext';
 
 interface NicheToggleProps {
@@ -10,27 +10,21 @@ interface NicheToggleProps {
 }
 
 const options: { value: NicheType; label: string; icon: typeof Building2 }[] = [
-  { value: 'pousadas', label: 'Para Pousadas', icon: Building2 },
-  { value: 'anfitrioes', label: 'Para Anfitriões', icon: Key },
-  { value: 'parceiro', label: 'Seja Parceiro Zélla', icon: Crown },
+  { value: 'pousada', label: 'Para Pousadas', icon: Building2 },
+  { value: 'airbnb', label: 'Para Anfitriões', icon: Key },
 ];
 
 function getActiveStyle(value: NicheType) {
   switch (value) {
-    case 'pousadas':
+    case 'pousada':
       return {
         background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(16, 185, 129, 0.12))',
         border: '1px solid rgba(16, 185, 129, 0.3)',
       };
-    case 'anfitrioes':
+    case 'airbnb':
       return {
         background: 'linear-gradient(135deg, rgba(65, 105, 225, 0.25), rgba(65, 105, 225, 0.12))',
         border: '1px solid rgba(65, 105, 225, 0.3)',
-      };
-    case 'parceiro':
-      return {
-        background: 'linear-gradient(135deg, rgba(217, 165, 32, 0.25), rgba(217, 165, 32, 0.12))',
-        border: '1px solid rgba(217, 165, 32, 0.35)',
       };
   }
 }
@@ -68,7 +62,7 @@ export function NicheToggle({ niche, onNicheChange }: NicheToggleProps) {
                 }}
               />
             )}
-            <Icon className={`w-4 h-4 sm:w-5 sm:h-5 relative z-10 ${option.value === 'parceiro' ? 'text-amber-400' : ''}`} />
+            <Icon className={`w-4 h-4 sm:w-5 sm:h-5 relative z-10`} />
             <span className="relative z-10">{option.label}</span>
           </motion.button>
         );

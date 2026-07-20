@@ -10,7 +10,7 @@ export function FinalCTASection() {
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  const { isPousadas, isAnfitrioes, isParceiro } = useNiche();
+  const { isPousada, isAirbnb } = useNiche();
 
   return (
     <section ref={ref} className="py-28 sm:py-36 lg:py-44 relative overflow-hidden">
@@ -45,13 +45,13 @@ export function FinalCTASection() {
 
           {/* Headline */}
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-8 leading-tight">
-            {isPousadas ? 'Sua pousada merece' : isAnfitrioes ? 'Seus imóveis merecem' : 'Seu negócio merece'}
+            {isPousada ? 'Sua pousada merece' : 'Seus imóveis merecem'}
             <br />
             <span className="text-blue-500 font-bold">um Zelador 24h por 7</span>
           </h2>
 
           <p className="text-neutral-400 text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed">
-            Imagine ter um atendente que nunca dorme, nunca erra o preço e ainda envia sua chave PIX na hora. O ZÉLLA cuida do seu WhatsApp enquanto você {isParceiro ? 'foca no seu negócio' : 'cuida dos seus hóspedes'}. Comece grátis e veja resultados em 48 horas.
+            Imagine ter um atendente que nunca dorme, nunca erra o preço e ainda envia sua chave PIX na hora. O ZÉLLA cuida do seu WhatsApp enquanto você cuida dos seus hóspedes. Comece grátis e veja resultados em 48 horas.
           </p>
 
           {/* CTAs */}
@@ -64,11 +64,11 @@ export function FinalCTASection() {
               className="group px-10 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-xl hover:from-emerald-400 hover:to-emerald-500 transition-all duration-300 shadow-xl shadow-emerald-500/30 hover:shadow-emerald-500/50 cursor-pointer text-lg"
             >
               <span className="flex items-center gap-2">
-                {isParceiro ? 'Garantir vaga de Parceiro' : 'Grátis por 7 dias'}
+                {'Grátis por 7 dias'}
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </span>
             </button>
-            {!isParceiro && (
+            {(
               <button
                 onClick={() => router.push('/parceiro')}
                 className="px-8 py-4 rounded-xl border border-amber-500/20 bg-amber-500/5 text-amber-300 font-semibold hover:bg-amber-500/10 hover:border-amber-500/30 transition-all duration-300 cursor-pointer"

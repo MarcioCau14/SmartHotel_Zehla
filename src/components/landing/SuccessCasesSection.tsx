@@ -127,54 +127,6 @@ const anfitrioesCases: CaseStudy[] = [
   },
 ];
 
-const parceiroCases: CaseStudy[] = [
-  {
-    id: 'hotel-central',
-    name: 'Hotel Central',
-    location: 'Belo Horizonte, MG',
-    avatar: '/avatar-serenity.jpg',
-    quote: 'Como parceiro, paguei R$247/mês pelo plano PRO completo — R$150 a menos que o regular. Em 3 meses já economizei R$450 e o preço vai ficar congelado por 24 meses. Ainda ganho o selo no Link-in-Bio para fixar no Instagram!',
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    videoThumb: '/pousada-vista.jpg',
-    stats: [
-      { metric: 'Economia', value: 'R$3.600', description: 'Economia em 24 meses' },
-      { metric: 'Respostas', value: '< 8s', description: 'Tempo médio de resposta' },
-      { metric: 'Reservas', value: '+35%', description: 'Aumento em 90 dias' },
-    ],
-    tags: ['Parceiro PRO', 'Selo exclusivo', 'Preço congelado'],
-  },
-  {
-    id: 'rede-sol',
-    name: 'Rede Sol Nascente',
-    location: 'Salvador, BA',
-    avatar: '/avatar-solmar.svg',
-    quote: 'O selo de parceiro me dá credibilidade na hora de fechar contratos. E o preço congelado por 24 meses é a melhor condição que já vi no mercado.',
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    videoThumb: '/pousada-piscina.jpg',
-    stats: [
-      { metric: 'ROI', value: '18x', description: 'Retorno sobre investimento' },
-      { metric: 'Economia', value: 'R$150/mês', description: 'Desconto vs. PRO regular' },
-      { metric: 'Credibilidade', value: 'Selo', description: 'Selo exclusivo de parceiro' },
-    ],
-    tags: ['3 unidades', 'Rede', 'Parceiro fundador'],
-  },
-  {
-    id: 'flat-premium',
-    name: 'Flat Premium',
-    location: 'Curitiba, PR',
-    avatar: '/avatar-chale.svg',
-    quote: 'Entrei no programa parceiro logo no início. O preço congelado e o suporte VIP fazem toda a diferença. Hoje atendo 3x mais sem aumentar equipe.',
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    videoThumb: '/pousada-chale.jpg',
-    stats: [
-      { metric: 'Atendimento', value: '3x mais', description: 'Atendimentos realizados' },
-      { metric: 'Automação', value: '91%', description: 'Mensagens sem intervenção' },
-      { metric: 'Economia', value: 'R$3.600', description: 'Em 24 meses de parceria' },
-    ],
-    tags: ['2 flats', 'Urbano', 'Parceiro pioneiro'],
-  },
-];
-
 function VideoModal({ videoUrl, onClose }: { videoUrl: string; onClose: () => void }) {
   return (
     <motion.div
@@ -308,30 +260,19 @@ function CaseCard({ study, index }: { study: CaseStudy; index: number }) {
 export function SuccessCasesSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  const { isAnfitrioes, isParceiro } = useNiche();
+  const { isAirbnb } = useNiche();
 
-  const activeCases = isParceiro ? parceiroCases : isAnfitrioes ? anfitrioesCases : pousadasCases;
+  const activeCases = isAirbnb ? anfitrioesCases : pousadasCases;
 
-  const headerTitle = isParceiro
-    ? (<>Parceiros reais, <span className="text-amber-400 font-bold">resultados reais</span></>)
-    : isAnfitrioes
+  const headerTitle = isAirbnb
     ? (<>Anfitriões reais, <span className="text-amber-400 font-bold">resultados reais</span></>)
     : (<>Pousadas reais, <span className="text-amber-400 font-bold">resultados reais</span></>);
 
-  const headerDesc = isParceiro
-    ? 'Veja como parceiros de diferentes regiões do Brasil economizam e crescem com o programa Parceiro Zélla.'
-    : isAnfitrioes
+  const headerDesc = isAirbnb
     ? 'Veja como anfitriões de diferentes regiões do Brasil transformaram seu atendimento e aumentaram suas reservas com o Zélla.'
     : 'Veja como pousadas de diferentes regiões do Brasil transformaram seu atendimento e aumentaram suas reservas com o Zélla.';
 
-  const bottomStats = isParceiro
-    ? [
-        { icon: MessageSquare, value: '50.000+', label: 'Mensagens IA/mês' },
-        { icon: TrendingUp, value: 'R$3.600', label: 'Economia por parceiro em 24 meses' },
-        { icon: Calendar, value: '100+', label: 'Parceiros ativos' },
-        { icon: Star, value: '4.9/5', label: 'Satisfação dos parceiros' },
-      ]
-    : isAnfitrioes
+  const bottomStats = isAirbnb
     ? [
         { icon: MessageSquare, value: '50.000+', label: 'Mensagens IA/mês' },
         { icon: TrendingUp, value: '35%', label: 'Aumento médio em reservas' },

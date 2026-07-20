@@ -18,14 +18,14 @@ const painIconMap: Record<string, LucideIcon> = {
 export function DashboardPreviewSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  const { niche, isPousadas, isAnfitrioes } = useNiche();
+  const { niche, isPousada, isAirbnb } = useNiche();
   const content = getNicheContent(niche);
   const dashboard = content.dashboard;
 
-  const accentColor = isPousadas ? 'emerald' : isAnfitrioes ? 'blue' : 'amber';
-  const accentBg = isPousadas ? 'bg-emerald-500/10' : isAnfitrioes ? 'bg-blue-500/10' : 'bg-amber-500/10';
-  const accentBorder = isPousadas ? 'border-emerald-500/20' : isAnfitrioes ? 'border-blue-500/20' : 'border-amber-500/20';
-  const accentText = isPousadas ? 'text-emerald-400' : isAnfitrioes ? 'text-blue-400' : 'text-amber-400';
+  const accentColor = isPousada ? 'emerald' : isAirbnb ? 'blue' : 'amber';
+  const accentBg = isPousada ? 'bg-emerald-500/10' : isAirbnb ? 'bg-blue-500/10' : 'bg-amber-500/10';
+  const accentBorder = isPousada ? 'border-emerald-500/20' : isAirbnb ? 'border-blue-500/20' : 'border-amber-500/20';
+  const accentText = isPousada ? 'text-emerald-400' : isAirbnb ? 'text-blue-400' : 'text-amber-400';
 
   return (
     <section ref={ref} className="relative py-24 sm:py-32 bg-[#08080a] overflow-hidden border-t border-white/[0.02]">
@@ -119,7 +119,7 @@ export function DashboardPreviewSection() {
             <div className="pt-6">
               <Link
                 href="#precos"
-                className={`inline-flex items-center gap-2 px-6 py-3 ${isPousadas ? 'bg-emerald-500 hover:bg-emerald-600' : isAnfitrioes ? 'bg-blue-500 hover:bg-blue-600' : 'bg-amber-500 hover:bg-amber-600'} text-white font-bold rounded-xl transition-all duration-200 shadow-lg ${isPousadas ? 'shadow-emerald-500/10' : isAnfitrioes ? 'shadow-blue-500/10' : 'shadow-amber-500/10'} text-sm sm:text-base cursor-pointer hover:translate-x-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${isPousadas ? 'focus-visible:outline-emerald-500' : isAnfitrioes ? 'focus-visible:outline-blue-500' : 'focus-visible:outline-amber-500'}`}
+                className={`inline-flex items-center gap-2 px-6 py-3 ${isPousada ? 'bg-emerald-500 hover:bg-emerald-600' : isAirbnb ? 'bg-blue-500 hover:bg-blue-600' : 'bg-amber-500 hover:bg-amber-600'} text-white font-bold rounded-xl transition-all duration-200 shadow-lg ${isPousada ? 'shadow-emerald-500/10' : isAirbnb ? 'shadow-blue-500/10' : 'shadow-amber-500/10'} text-sm sm:text-base cursor-pointer hover:translate-x-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${isPousada ? 'focus-visible:outline-emerald-500' : isAirbnb ? 'focus-visible:outline-blue-500' : 'focus-visible:outline-amber-500'}`}
               >
                 Quero ter esse controle
                 <span className="text-base">→</span>
@@ -155,7 +155,7 @@ export function DashboardPreviewSection() {
                     </span>
                   </div>
                   <div className={`flex items-center gap-1.5 ${accentText} font-medium text-[10px]`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${isPousadas ? 'bg-emerald-500' : isAnfitrioes ? 'bg-blue-500' : 'bg-amber-500'} animate-ping`} />
+                    <span className={`w-1.5 h-1.5 rounded-full ${isPousada ? 'bg-emerald-500' : isAirbnb ? 'bg-blue-500' : 'bg-amber-500'} animate-ping`} />
                     Conectado
                   </div>
                 </div>
@@ -174,7 +174,7 @@ export function DashboardPreviewSection() {
                         <div className="flex justify-between items-center">
                           <span className={`font-bold ${i === 0 ? 'text-zinc-200' : 'text-zinc-400'}`}>{msg.name || 'Hóspede'}</span>
                           {msg.sender === 'bot' ? (
-                            <span className={`text-[7px] px-1 py-0.5 ${isPousadas ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : isAnfitrioes ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : 'bg-amber-500/10 border-amber-500/20 text-amber-400'} border rounded-sm`}>IA ATIVA</span>
+                            <span className={`text-[7px] px-1 py-0.5 ${isPousada ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : isAirbnb ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : 'bg-amber-500/10 border-amber-500/20 text-amber-400'} border rounded-sm`}>IA ATIVA</span>
                           ) : (
                             <span className="text-[7px] px-1 py-0.5 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-sm">RESERVA</span>
                           )}
@@ -202,16 +202,16 @@ export function DashboardPreviewSection() {
                             <span className={`text-[8px] ${accentText} mr-1 font-semibold flex items-center gap-1`}>
                               ZÉLLA (IA)
                               {msg.confidence && (
-                                <span className={`px-1 py-[0.5px] ${isPousadas ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' : isAnfitrioes ? 'bg-blue-500/20 border-blue-500/30 text-blue-400' : 'bg-amber-500/20 border-amber-500/30 text-amber-400'} border text-[6px] font-bold rounded-sm`}>
+                                <span className={`px-1 py-[0.5px] ${isPousada ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' : isAirbnb ? 'bg-blue-500/20 border-blue-500/30 text-blue-400' : 'bg-amber-500/20 border-amber-500/30 text-amber-400'} border text-[6px] font-bold rounded-sm`}>
                                   {msg.confidence} Confiança
                                 </span>
                               )}
                             </span>
-                            <div className={`${isPousadas ? 'bg-emerald-950/40 border-emerald-500/20 text-emerald-300' : isAnfitrioes ? 'bg-blue-950/40 border-blue-500/20 text-blue-300' : 'bg-amber-950/40 border-amber-500/20 text-amber-300'} border p-2.5 rounded-2xl rounded-tr-sm text-[11px] leading-relaxed`}>
+                            <div className={`${isPousada ? 'bg-emerald-950/40 border-emerald-500/20 text-emerald-300' : isAirbnb ? 'bg-blue-950/40 border-blue-500/20 text-blue-300' : 'bg-amber-950/40 border-amber-500/20 text-amber-300'} border p-2.5 rounded-2xl rounded-tr-sm text-[11px] leading-relaxed`}>
                               {msg.text}
                             </div>
                             {msg.actions && (
-                              <span className={`text-[7px] ${isPousadas ? 'text-emerald-500/70' : isAnfitrioes ? 'text-blue-500/70' : 'text-amber-500/70'} font-semibold tracking-wide mt-0.5`}>
+                              <span className={`text-[7px] ${isPousada ? 'text-emerald-500/70' : isAirbnb ? 'text-blue-500/70' : 'text-amber-500/70'} font-semibold tracking-wide mt-0.5`}>
                                 ⚡ Ações do ZÉLLA: {msg.actions}
                               </span>
                             )}
@@ -223,14 +223,14 @@ export function DashboardPreviewSection() {
                     {/* Barra de Ação */}
                     <div className="p-3 bg-[#111114] border-t border-white/[0.04] flex items-center justify-between shrink-0">
                       <span className="text-[9px] text-zinc-500 font-medium">
-                        {isPousadas ? 'Hóspede está aguardando o link...' : isAnfitrioes ? 'Notificação de reserva enviada...' : 'Economia de R$100/mês confirmada...'}
+                        {isPousada ? 'Hóspede está aguardando o link...' : isAirbnb ? 'Notificação de reserva enviada...' : 'Economia de R$100/mês confirmada...'}
                       </span>
                       <button
                         type="button"
-                        className={`px-3 py-1.5 ${accentBg} border ${isPousadas ? 'border-emerald-500/35 hover:bg-emerald-500/20 text-emerald-400' : isAnfitrioes ? 'border-blue-500/35 hover:bg-blue-500/20 text-blue-400' : 'border-amber-500/35 hover:bg-amber-500/20 text-amber-400'} font-bold rounded-lg flex items-center gap-1.5 transition-all duration-200 cursor-pointer shadow-md ${isPousadas ? 'shadow-emerald-500/5' : isAnfitrioes ? 'shadow-blue-500/5' : 'shadow-amber-500/5'} active:scale-95`}
+                        className={`px-3 py-1.5 ${accentBg} border ${isPousada ? 'border-emerald-500/35 hover:bg-emerald-500/20 text-emerald-400' : isAirbnb ? 'border-blue-500/35 hover:bg-blue-500/20 text-blue-400' : 'border-amber-500/35 hover:bg-amber-500/20 text-amber-400'} font-bold rounded-lg flex items-center gap-1.5 transition-all duration-200 cursor-pointer shadow-md ${isPousada ? 'shadow-emerald-500/5' : isAirbnb ? 'shadow-blue-500/5' : 'shadow-amber-500/5'} active:scale-95`}
                       >
                         <Hand className="w-3.5 h-3.5" />
-                        {isPousadas ? 'Assumir Conversa' : isAnfitrioes ? 'Aprovar Reserva' : 'Ver Economia'}
+                        {isPousada ? 'Assumir Conversa' : isAirbnb ? 'Aprovar Reserva' : 'Ver Economia'}
                       </button>
                     </div>
                   </div>

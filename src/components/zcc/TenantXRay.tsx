@@ -15,7 +15,7 @@ import { tenClientFriends, airbnbHosts, parceirosZella, globalMetrics as _global
 interface UnifiedTenant {
   id: string;
   name: string;
-  niche: 'pousadas' | 'anfitrioes' | 'parceiro';
+  niche: 'pousada' | 'airbnb' | 'airbnb';
   plan: string;
   planPrice: number;
   status: 'ACTIVE' | 'ONBOARDING' | 'TRIAL' | 'BETA_TESTER' | 'EARLY_ADOPTER';
@@ -44,7 +44,7 @@ const staticTenants: UnifiedTenant[] = [
   ...tenClientFriends.map(c => ({
     id: c.id,
     name: c.name,
-    niche: 'pousadas' as const,
+    niche: 'pousada' as const,
     plan: c.plan === 'fundador' ? 'FUNDADOR' : c.plan.toUpperCase(),
     planPrice: c.plan === 'fundador' ? 297 : c.plan === 'pro' ? 397 : 797,
     status: c.status as UnifiedTenant['status'],
@@ -62,7 +62,7 @@ const staticTenants: UnifiedTenant[] = [
   ...airbnbHosts.map(h => ({
     id: h.id,
     name: h.name,
-    niche: 'anfitrioes' as const,
+    niche: 'airbnb' as const,
     plan: h.plan.toUpperCase(),
     planPrice: h.plan === 'pro' ? 397 : 797,
     status: h.status as UnifiedTenant['status'],
@@ -81,7 +81,7 @@ const staticTenants: UnifiedTenant[] = [
   ...parceirosZella.map(p => ({
     id: p.id,
     name: p.name,
-    niche: 'parceiro' as const,
+    niche: 'airbnb' as const,
     plan: 'PARCEIRO',
     planPrice: p.planPrice,
     status: p.status as UnifiedTenant['status'],
@@ -113,7 +113,7 @@ export function TenantXRay() {
   const [tenants, setTenants] = useState<UnifiedTenant[]>(staticTenants);
   const [tenantsLoading, setTenantsLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filterNiche, setFilterNiche] = useState<'all' | 'pousadas' | 'anfitrioes' | 'parceiro'>('all');
+  const [filterNiche, setFilterNiche] = useState<'all' | 'pousada' | 'airbnb' | 'airbnb'>('all');
   const [filterPlan, setFilterPlan] = useState<string>('all');
   const [selectedTenant, setSelectedTenant] = useState<UnifiedTenant | null>(null);
   const [confirmKillId, setConfirmKillId] = useState<string | null>(null);
@@ -130,7 +130,7 @@ export function TenantXRay() {
             const apiTenants: UnifiedTenant[] = json.data.map((t: any) => ({
               id: t.id,
               name: t.name,
-              niche: t.niche || 'pousadas',
+              niche: t.niche || 'pousada',
               plan: (t.plan || 'trial').toUpperCase(),
               planPrice: t.planPrice ?? 0,
               status: (t.status || 'ACTIVE').toUpperCase() as UnifiedTenant['status'],
@@ -315,7 +315,7 @@ export function TenantXRay() {
           />
         </div>
         <div className="flex gap-1.5">
-          {(['all', 'pousadas', 'anfitrioes', 'parceiro'] as const).map(n => (
+          {(['all', 'pousada', 'airbnb', 'airbnb'] as const).map(n => (
             <button key={n} onClick={() => setFilterNiche(n)}
               className={`zcc-tab ${filterNiche === n ? 'zcc-tab-active' : ''}`}>
               {n === 'all' ? 'Todos' : nicheConfig[n].label}

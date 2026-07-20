@@ -104,8 +104,8 @@ export function LinkInBioDDC({ currentPlan, isBetaPartner, propertyName, isLinkI
   const isLite = currentPlan === 'lite';
   const isPro = currentPlan === 'pro';
   const isMax = currentPlan === 'max';
-  const isTrial = currentPlan === 'trial';
-  const hasFullAccess = isLite || isPro || isMax || isTrial;
+  const isGratuito = currentPlan === 'gratuito';
+  const hasFullAccess = isLite || isPro || isMax || isGratuito;
   const canAddMoreLinks = hasFullAccess;
   const canCustomColor = hasFullAccess;
   const canEditSlug = hasFullAccess;

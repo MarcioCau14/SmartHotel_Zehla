@@ -45,9 +45,9 @@ export function FAQSection() {
   const content = getNicheContent(niche);
   const faqs = content.faqs;
 
-  const headerText = niche === 'pousadas'
+  const headerText = niche === 'pousada'
     ? 'Perguntas frequentes sobre Pousadas'
-    : niche === 'anfitrioes'
+    : niche === 'airbnb'
     ? 'Perguntas frequentes sobre Anfitriões'
     : 'Perguntas frequentes sobre Parceiros';
 

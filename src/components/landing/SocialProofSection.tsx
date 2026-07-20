@@ -39,13 +39,13 @@ interface StatItem {
   borderColor: string;
 }
 
-function getStats(niche: 'pousadas' | 'anfitrioes' | 'parceiro'): StatItem[] {
+function getStats(niche: 'pousada' | 'airbnb'): StatItem[] {
   return [
     {
       icon: Hotel,
       value: 100,
       suffix: '+',
-      label: niche === 'pousadas' ? 'Pousadas Atendidas' : niche === 'anfitrioes' ? 'Imóveis Atendidos' : 'Parceiros Ativos',
+      label: niche === 'pousada' ? 'Pousadas Atendidas' : 'Imóveis Atendidos',
       description: 'Em todo o litoral brasileiro, de Florianópolis a Ubatuba',
       color: 'from-emerald-500/20 to-emerald-900/10',
       iconColor: 'text-emerald-400',
@@ -66,7 +66,7 @@ function getStats(niche: 'pousadas' | 'anfitrioes' | 'parceiro'): StatItem[] {
       value: 35,
       suffix: '%',
       label: 'Aumento em Reservas',
-      description: niche === 'pousadas' ? 'Média das pousadas parceiras nos primeiros 90 dias' : niche === 'anfitrioes' ? 'Média dos imóveis atendidos nos primeiros 90 dias' : 'Média dos parceiros Zélla nos primeiros 90 dias',
+      description: niche === 'pousada' ? 'Média das pousadas parceiras nos primeiros 90 dias' : 'Média dos imóveis atendidos nos primeiros 90 dias',
       color: 'from-amber-500/20 to-amber-900/10',
       iconColor: 'text-amber-400',
       borderColor: 'border-amber-500/20',
@@ -85,8 +85,8 @@ function getStats(niche: 'pousadas' | 'anfitrioes' | 'parceiro'): StatItem[] {
       icon: Users,
       value: 15000,
       suffix: '+',
-      label: niche === 'pousadas' ? 'Hóspedes Atendidos' : niche === 'anfitrioes' ? 'Hóspedes Atendidos' : 'Atendimentos Realizados',
-      description: niche === 'parceiro' ? 'Realizados pelo Zélla nos últimos 12 meses' : 'Pelo Zélla nos últimos 12 meses',
+      label: 'Hóspedes Atendidos',
+      description: 'Pelo Zélla nos últimos 12 meses',
       color: 'from-teal-500/20 to-teal-900/10',
       iconColor: 'text-teal-400',
       borderColor: 'border-teal-500/20',
@@ -95,7 +95,7 @@ function getStats(niche: 'pousadas' | 'anfitrioes' | 'parceiro'): StatItem[] {
       icon: Star,
       value: 98,
       suffix: '%',
-      label: niche === 'pousadas' ? 'Satisfação dos Hóspedes' : niche === 'anfitrioes' ? 'Satisfação dos Hóspedes' : 'Satisfação dos Parceiros',
+      label: 'Satisfação dos Hóspedes',
       description: 'Avaliação média do atendimento via IA',
       color: 'from-rose-500/20 to-rose-900/10',
       iconColor: 'text-rose-400',
@@ -132,7 +132,7 @@ export function SocialProofSection() {
             <span className="text-emerald-400 font-bold">mede em resultados</span>
           </h2>
           <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
-            {niche === 'pousadas' ? 'Pousadas de todo o Brasil já transformaram seu atendimento com o Zélla.' : niche === 'anfitrioes' ? 'Anfitriões de todo o Brasil já transformaram seu atendimento com o Zélla.' : 'Parceiros de todo o Brasil já transformaram sua operação com o Zélla.'} Veja o impacto real nos números.
+            {niche === 'pousada' ? 'Pousadas de todo o Brasil já transformaram seu atendimento com o Zélla.' : 'Anfitriões de todo o Brasil já transformaram seu atendimento com o Zélla.'} Veja o impacto real nos números.
           </p>
         </motion.div>
 

@@ -15,7 +15,7 @@ import { tenClientFriends, airbnbHosts } from '@/lib/zcc-clients-data';
 interface TenantCost {
   id: string;
   name: string;
-  niche: 'pousadas' | 'anfitrioes' | 'parceiro';
+  niche: 'pousada' | 'airbnb' | 'airbnb';
   plan: string;
   monthlyPrice: number;
   whatsappCostWeek: number;
@@ -54,7 +54,7 @@ const tenantCosts: TenantCost[] = [
     return {
       id: c.id,
       name: c.name,
-      niche: 'pousadas' as const,
+      niche: 'pousada' as const,
       plan: c.plan.toUpperCase(),
       monthlyPrice: planPrice,
       whatsappCostWeek: Math.round(weekCost * 100) / 100,
@@ -78,7 +78,7 @@ const tenantCosts: TenantCost[] = [
     return {
       id: h.id,
       name: h.name,
-      niche: 'anfitrioes' as const,
+      niche: 'airbnb' as const,
       plan: h.plan.toUpperCase(),
       monthlyPrice: planPrice,
       whatsappCostWeek: Math.round(weekCost * 100) / 100,

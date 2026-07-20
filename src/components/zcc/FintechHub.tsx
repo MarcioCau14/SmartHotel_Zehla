@@ -24,7 +24,7 @@ const zehlaProductsBase = [
     icon: '🧪',
     price: 0,
     description: 'Teste gratuito 14 dias — 50 msgs + Link-in-Bio',
-    niche: 'pousadas',
+    niche: 'pousada',
     badgeClass: 'zcc-badge-muted',
   },
   {
@@ -33,7 +33,7 @@ const zehlaProductsBase = [
     icon: '🏠',
     price: 197,
     description: 'IA 24/7 + 500 msgs + Link-in-Bio — Pousadas',
-    niche: 'pousadas',
+    niche: 'pousada',
     badgeClass: 'zcc-badge',
   },
   {
@@ -69,7 +69,7 @@ const zehlaProductsBase = [
     icon: '🤝',
     price: 247,
     description: 'PRO completo R$247/mês × 24 meses + Selo parceiro Link-in-Bio + Instagram',
-    niche: 'parceiro',
+    niche: 'airbnb',
     badgeClass: 'zcc-badge-gold',
   },
 ];
@@ -291,17 +291,17 @@ export function FintechHub() {
                     </div>
                   ))}
                 </div>
-                {key === 'pousadas' && (
+                {key === 'pousada' && (
                   <div className="text-[10px] p-2 rounded-lg" style={{ background: 'rgba(212,168,67,0.06)', border: '1px solid rgba(212,168,67,0.1)', color: 'var(--zcc-text-muted)' }}>
                     Pousadas em Beta — MRR atual R$0 (gratuidade até 01/08/2026)
                   </div>
                 )}
-                {key === 'anfitrioes' && (
+                {key === 'airbnb' && (
                   <div className="text-[10px] p-2 rounded-lg" style={{ background: 'rgba(74,154,154,0.06)', border: '1px solid rgba(74,154,154,0.1)', color: 'var(--zcc-text-muted)' }}>
                     Anfitriões: SOMENTE PRO + MAX (sem Trial/Lite)
                   </div>
                 )}
-                {key === 'parceiro' && (
+                {key === 'airbnb' && (
                   <div className="text-[10px] p-2 rounded-lg" style={{ background: 'rgba(212,168,67,0.06)', border: '1px solid rgba(212,168,67,0.1)', color: 'var(--zcc-text-muted)' }}>
                     R$247/mês × 24 meses congelados + Selo Link-in-Bio + Instagram
                   </div>
@@ -359,7 +359,7 @@ export function FintechHub() {
                 </div>
                 <div className="mt-2 pt-1.5 border-t" style={{ borderColor: 'var(--zcc-hairline)' }}>
                   <span className="text-[10px]" style={{ color: 'var(--zcc-text-muted)' }}>
-                    Nicho: {product.niche === 'pousadas' ? 'Pousadas' : product.niche === 'anfitrioes' ? 'Airbnb' : product.niche === 'parceiro' ? 'Parceiro' : product.niche === 'pousadas+anfitrioes' ? 'Pousadas + Airbnb' : 'Todos'}
+                    Nicho: {product.niche === 'pousada' ? 'Pousadas' : product.niche === 'airbnb' ? 'Airbnb' : product.niche === 'airbnb' ? 'Parceiro' : product.niche === 'pousada+airbnb' ? 'Pousadas + Airbnb' : 'Todos'}
                   </span>
                 </div>
               </div>

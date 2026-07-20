@@ -26,7 +26,7 @@ interface ComparisonRow {
   cloudbedsBad?: boolean;
 }
 
-function getComparisons(niche: 'pousadas' | 'anfitrioes' | 'parceiro'): ComparisonRow[] {
+function getComparisons(niche: 'pousada' | 'airbnb'): ComparisonRow[] {
   return [
     {
       feature: 'WhatsApp IA Nativo',
@@ -37,7 +37,7 @@ function getComparisons(niche: 'pousadas' | 'anfitrioes' | 'parceiro'): Comparis
       cloudbedsBad: true,
     },
     {
-      feature: niche === 'parceiro' ? 'IA Preditiva para Atendimento' : 'IA Preditiva para Hóspedes',
+      feature: niche === 'airbnb' ? 'IA Preditiva para Atendimento' : 'IA Preditiva para Hóspedes',
       icon: Brain,
       zehla: true,
       zehlaHighlight: true,
@@ -62,7 +62,7 @@ function getComparisons(niche: 'pousadas' | 'anfitrioes' | 'parceiro'): Comparis
     {
       feature: 'Entende Mercado BR',
       icon: Globe,
-      zehla: niche === 'pousadas' ? 'Feito para pousadas brasileiras' : niche === 'anfitrioes' ? 'Feito para anfitriões brasileiros' : 'Feito para parceiros brasileiros',
+      zehla: niche === 'pousada' ? 'Feito para pousadas brasileiras' : niche === 'airbnb' ? 'Feito para anfitriões brasileiros' : 'Feito para parceiros brasileiros',
       zehlaHighlight: true,
       cloudbeds: 'Foco em hotéis globais',
       cloudbedsBad: true,
@@ -76,7 +76,7 @@ function getComparisons(niche: 'pousadas' | 'anfitrioes' | 'parceiro'): Comparis
       cloudbedsBad: true,
     },
     {
-      feature: niche === 'parceiro' ? 'Resposta a Contatos' : 'Resposta a Hóspedes',
+      feature: niche === 'airbnb' ? 'Resposta a Contatos' : 'Resposta a Hóspedes',
       icon: Clock,
       zehla: '< 8 segundos (24/7)',
       zehlaHighlight: true,
@@ -132,8 +132,8 @@ function CellValue({ value, highlight, bad }: { value: string | boolean; highlig
 export function WhyZehlaSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  const { isPousadas, isAnfitrioes } = useNiche();
-  const comparisons = getComparisons(isPousadas ? 'pousadas' : isAnfitrioes ? 'anfitrioes' : 'parceiro');
+  const { isPousada, isAirbnb } = useNiche();
+  const comparisons = getComparisons(isPousada ? 'pousada' : 'airbnb');
 
   return (
     <section ref={ref} className="relative py-28 sm:py-36 lg:py-44 bg-[#0a0a0a] overflow-hidden">
@@ -153,12 +153,12 @@ export function WhyZehlaSection() {
             <span className="text-emerald-400 text-xs font-medium uppercase tracking-wider">Comparativo Direto</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6">
-            Por que {isPousadas ? 'pousadas' : isAnfitrioes ? 'anfitriões' : 'parceiros'} trocam o{' '}
+            Por que {isPousada ? 'pousadas' : 'anfitriões'} trocam o{' '}
             <span className="text-blue-400 font-bold">Cloudbeds</span>{' '}
             pelo <span className="text-emerald-400 font-bold">Zélla</span>?
           </h2>
           <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
-            Feito no Brasil, em português, com IA nativa no WhatsApp. Veja como o Zélla supera o Cloudbeds em cada ponto crítico {isPousadas ? 'para sua pousada' : isAnfitrioes ? 'para seus imóveis' : 'para sua operação'}.
+            Feito no Brasil, em português, com IA nativa no WhatsApp. Veja como o Zélla supera o Cloudbeds em cada ponto crítico {isPousada ? 'para sua pousada' : isAirbnb ? 'para seus imóveis' : 'para sua operação'}.
           </p>
         </motion.div>
 

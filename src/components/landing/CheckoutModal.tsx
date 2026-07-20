@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import type { NicheType } from '@/contexts/NicheContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield,
@@ -43,7 +44,7 @@ interface CheckoutModalProps {
   planName: string;
   price: number;
   paymentMethod: 'pix' | 'cartao';
-  niche: 'pousadas' | 'anfitrioes' | 'parceiro';
+  niche: NicheType;
 }
 
 type ModalState = 'form' | 'loading' | 'success' | 'error';
@@ -87,7 +88,7 @@ export function CheckoutModal({
     email: '',
     phone: '',
     propertyName: '',
-    niche: niche === 'anfitrioes' ? 'airbnb' : 'pousada',
+    niche: niche,
   });
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -99,7 +100,7 @@ export function CheckoutModal({
       email: '',
       phone: '',
       propertyName: '',
-      niche: niche === 'anfitrioes' ? 'airbnb' : 'pousada',
+      niche: niche,
     });
     setErrors({});
   }, [niche]);
@@ -144,7 +145,7 @@ export function CheckoutModal({
             name: formData.name,
             phone: formData.phone,
             propertyName: formData.propertyName,
-            niche: formData.niche === 'airbnb' ? 'airbnb' : 'pousada',
+            niche: formData.niche,
             planType: planId,
             paymentMethod: paymentMethod,
           }),

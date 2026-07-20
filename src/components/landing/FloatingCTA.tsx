@@ -6,7 +6,7 @@ import { useNiche } from '@/contexts/NicheContext';
 
 export function FloatingCTA() {
   const [isVisible, setIsVisible] = useState(false);
-  const { isPousadas, isAnfitrioes } = useNiche();
+  const { isPousada, isAirbnb } = useNiche();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,7 +33,7 @@ export function FloatingCTA() {
         <div className="flex items-center gap-3">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
           <p className="text-zinc-200 text-sm sm:text-base font-medium text-center sm:text-left">
-            Teste grátis por 7 dias {isPousadas ? 'o zelador de sua pousada.' : isAnfitrioes ? 'o co-anfitrião dos seus imóveis.' : 'o plano Parceiro Zélla.'}
+            Teste grátis por 7 dias {isPousada ? 'o zelador de sua pousada.' : isAirbnb ? 'o co-anfitrião dos seus imóveis.' : 'o assistente do seu negócio.'}
           </p>
         </div>
 

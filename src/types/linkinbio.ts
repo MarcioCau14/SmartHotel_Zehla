@@ -47,8 +47,8 @@ export interface ExpirationConfig {
 }
 
 export const PLAN_EXPIRATION_CONFIG: Record<PlanTier, ExpirationConfig> = {
-  trial: {
-    plan: 'trial',
+  gratuito: {
+    plan: 'gratuito',
     daysBeforeNotification: 2,
     notificationType: 'expiry_warning',
   },
@@ -67,6 +67,11 @@ export const PLAN_EXPIRATION_CONFIG: Record<PlanTier, ExpirationConfig> = {
     daysBeforeNotification: 2,
     notificationType: 'payment_overdue',
   },
+  parceiro: {
+    plan: 'parceiro',
+    daysBeforeNotification: 2,
+    notificationType: 'payment_overdue',
+  },
 };
 
 // LITE: Link-in-Bio liberado enquanto plano ativo (sem limite de dias)
@@ -76,7 +81,7 @@ export const LITE_LINKINBIO_DAYS = 0; // 0 = sem expiração enquanto assinante
 export const BETA_PARTNERSHIP_MONTHS = 24;
 export const BETA_MONTHLY_PRICE = 247; // R$ 247/mês
 
-export function getLinkInBioExpiryDate(plan: PlanTier, _startDate: Date): Date | null {
+export function getLinkInBioExpiryDate(_plan: PlanTier, _startDate: Date): Date | null {
   // LITE/PRO/MAX: sem expiração enquanto plano estiver ativo
   return null;
 }
@@ -91,7 +96,7 @@ export function getDaysUntilExpiry(expiresAt: Date | null | undefined): number |
 export function isLinkInBioActive(profile: LinkInBioProfile): boolean {
   if (!profile.isActive) return false;
   // LITE/PRO/MAX: ativo enquanto o plano estiver pago (isActive = true)
-  if (profile.plan === 'lite' || profile.plan === 'pro' || profile.plan === 'max') {
+  if (profile.plan === 'lite' || profile.plan === 'pro' || profile.plan === 'max' || profile.plan === 'parceiro') {
     return true;
   }
   // Beta: enquanto vigente

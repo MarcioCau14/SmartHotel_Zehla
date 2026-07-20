@@ -89,8 +89,8 @@ export function LinkInBioConfig({ currentPlan, isBetaPartner, propertyName, slug
   const isLite = currentPlan === 'lite';
   const isPro = currentPlan === 'pro';
   const isMax = currentPlan === 'max';
-  const isTrial = currentPlan === 'trial';
-  const hasFullAccess = isPro || isMax || isTrial;
+  const isGratuito = currentPlan === 'gratuito';
+  const hasFullAccess = isPro || isMax || isGratuito;
   const hasLiteAccess = isLite; // LITE gets 60 days
 
   // LITE limitations
@@ -237,13 +237,6 @@ export function LinkInBioConfig({ currentPlan, isBetaPartner, propertyName, slug
     updatedAt: new Date(),
   }), [propertyName, subtitle, bgImageUrl, accentColor, rating, reviewCount, whatsappNumber, instagramHandle, links, dbSlug, currentPlan, isBetaPartner]);
 
-  // ── LITE Lock Banner ─────────────────────────────────────────────────────
-  const LiteLockBadge = ({ feature }: { feature: string }) => (
-    <span className="inline-flex items-center gap-1 text-[9px] text-amber-400/70 bg-amber-500/5 border border-amber-500/10 px-1.5 py-0.5 rounded ml-2">
-      PRO+
-    </span>
-  );
-
   // ── Render ────────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
@@ -361,7 +354,7 @@ export function LinkInBioConfig({ currentPlan, isBetaPartner, propertyName, slug
         </div>
       )}
 
-      {/* ── PLAN GATE: No access (trial without linkinbio) ─────────────────── */}
+      {/* ── PLAN GATE: No access (gratuito without linkinbio) ─────────────────── */}
       {!hasFullAccess && !hasLiteAccess && (
         <div className="bg-[#121216] border border-white/[0.04] rounded-xl p-6 space-y-5">
           <div className="flex items-start gap-4">
@@ -415,7 +408,7 @@ export function LinkInBioConfig({ currentPlan, isBetaPartner, propertyName, slug
             <div className="space-y-1">
               <label className="block text-[11px] font-semibold text-zinc-300 flex items-center gap-2">
                 Seu link personalizado
-                {!canEditSlug && <LiteLockBadge feature="slug" />}
+                {!canEditSlug && <span className="inline-flex items-center gap-1 text-[9px] text-amber-400/70 bg-amber-500/5 border border-amber-500/10 px-1.5 py-0.5 rounded ml-2">PRO+</span>}
               </label>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] text-zinc-500 whitespace-nowrap">seuzella.com/</span>
@@ -479,7 +472,7 @@ export function LinkInBioConfig({ currentPlan, isBetaPartner, propertyName, slug
             <div className="space-y-2">
               <label className="block text-[11px] font-semibold text-zinc-300 flex items-center gap-2">
                 Cor de destaque
-                {!canCustomizeColor && <LiteLockBadge feature="cor" />}
+                {!canCustomizeColor && <span className="inline-flex items-center gap-1 text-[9px] text-amber-400/70 bg-amber-500/5 border border-amber-500/10 px-1.5 py-0.5 rounded ml-2">PRO+</span>}
               </label>
               <div className="flex gap-2 flex-wrap">
                 {(isLite ? ['#10b981'] : ACCENT_PRESETS).map((c) => (
@@ -503,7 +496,7 @@ export function LinkInBioConfig({ currentPlan, isBetaPartner, propertyName, slug
             <div className="space-y-2">
               <label className="block text-[11px] font-semibold text-zinc-300 flex items-center gap-2">
                 <ImageIcon className="w-3 h-3" /> Imagem de Fundo
-                {!canChangeBackground && <LiteLockBadge feature="fundo" />}
+                {!canChangeBackground && <span className="inline-flex items-center gap-1 text-[9px] text-amber-400/70 bg-amber-500/5 border border-amber-500/10 px-1.5 py-0.5 rounded ml-2">PRO+</span>}
               </label>
               {canChangeBackground ? (
                 <>

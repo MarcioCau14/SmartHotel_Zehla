@@ -6,6 +6,9 @@ import { db, isDatabaseAvailable } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
+import type { PlanTier } from '@/lib/plan-features';
+import type { NicheType } from '@/contexts/NicheContext';
+import { migratePlanLegacy } from '@/lib/plan-features';
 
 /** Safe demo user returned when DB is unavailable (e.g. Vercel serverless without SQLite) */
 const DEMO_USER = {
@@ -14,8 +17,8 @@ const DEMO_USER = {
   name: 'Demo Zélla',
   role: 'owner' as const,
   tenantId: 'demo-tenant-id',
-  plan: 'pro' as const,
-  niche: 'pousada' as const,
+  plan: 'pro' as PlanTier,
+  niche: 'pousada' as NicheType,
   isDemoUser: true, // Flag para middleware permitir acesso ZCC temporário
 };
 
@@ -65,7 +68,7 @@ export const authOptions: NextAuthOptions = {
                   name: firstTenant.name,
                   role: firstTenant.role || 'owner',
                   tenantId: firstTenant.id,
-                  plan: firstTenant.plan || 'pro',
+                  plan: migratePlanLegacy(firstTenant.plan || 'gratuito'),
                   niche: (firstTenant as any).niche || 'pousada',
                   isDemoUser: true, // Flag para middleware permitir acesso ZCC temporário
                 };
@@ -88,8 +91,8 @@ export const authOptions: NextAuthOptions = {
               name: 'Usuário Convidado',
               role: 'owner',
               tenantId: 'mock-tenant-id',
-              plan: 'pro',
-              niche: 'pousada',
+              plan: 'pro' as PlanTier,
+              niche: 'pousada' as NicheType,
             };
           }
           try {
@@ -103,7 +106,7 @@ export const authOptions: NextAuthOptions = {
                   name: firstTenant.name,
                   role: firstTenant.role,
                   tenantId: firstTenant.id,
-                  plan: firstTenant.plan,
+                  plan: migratePlanLegacy(firstTenant.plan),
                   niche: (firstTenant as any).niche || 'pousada',
                 };
               }
@@ -117,8 +120,8 @@ export const authOptions: NextAuthOptions = {
             name: 'Usuário Convidado',
             role: 'owner',
             tenantId: 'mock-tenant-id',
-            plan: 'pro',
-            niche: 'pousada',
+            plan: 'pro' as PlanTier,
+            niche: 'pousada' as NicheType,
           };
         }
 
@@ -152,7 +155,7 @@ export const authOptions: NextAuthOptions = {
                 name: tenant.name,
                 role: tenant.role,
                 tenantId: tenant.id,
-                plan: tenant.plan,
+                plan: migratePlanLegacy(tenant.plan),
                 niche: (tenant as any).niche || 'pousada',
               };
             }
@@ -187,7 +190,7 @@ export const authOptions: NextAuthOptions = {
                 data: {
                   name: user.name || user.email.split('@')[0],
                   email: user.email,
-                  plan: 'trial',
+                  plan: 'gratuito',
                   status: 'active',
                   niche: 'pousada',
                   trialStart: new Date(),
@@ -244,7 +247,7 @@ export const authOptions: NextAuthOptions = {
               if (tenant) {
                 token.tenantId = tenant.id;
                 token.role = tenant.role;
-                token.plan = tenant.plan;
+                token.plan = migratePlanLegacy(tenant.plan);
                 token.niche = (tenant as any).niche || 'pousada';
               }
             }

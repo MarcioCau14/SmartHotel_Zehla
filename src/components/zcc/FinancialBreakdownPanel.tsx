@@ -196,7 +196,7 @@ export function FinancialBreakdownPanel() {
           <h3 className="text-sm font-semibold" style={{ color: 'var(--zcc-champagne)' }}>Comparação por Nicho</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {(['pousadas', 'airbnb', 'parceiro'] as const).map((nicheKey, i) => {
+          {(['pousada', 'airbnb', 'airbnb'] as const).map((nicheKey, i) => {
             const config = nicheConfig[nicheKey];
             const nicheData = data.nicheComparison[nicheKey];
             const Icon = config.icon;

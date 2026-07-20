@@ -1,27 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { verifyZCCAccessOrReject } from '@/lib/zcc-security';
+import { migratePlanLegacy } from '@/lib/plan-features';
 
-type TenantNiche = 'pousadas' | 'anfitrioes' | 'parceiro';
+type TenantNiche = 'pousada' | 'airbnb';
 
 const POUSADA_TYPES = ['pousada', 'hotel', 'hostel', 'chalé', 'resort'];
 
 const PLAN_PRICING: Record<string, number> = {
+  gratuito: 0,
+  lite: 197,
+  pro: 397,
+  max: 797,
+  parceiro: 247,
+  // Legacy keys (for old DB values)
   trial: 0,
   starter: 147,
-  pro: 297,
   business: 597,
   airb_pro: 397,
   airb_max: 797,
-  parceiro: 97,
 };
 
 function determineNiche(plan: string, propertyType?: string): TenantNiche {
-  if (plan === 'parceiro') return 'parceiro';
-  if (propertyType === 'airbnb') return 'anfitrioes';
-  if (POUSADA_TYPES.includes(propertyType || '')) return 'pousadas';
-  // Fallback: if they have Airbnb subscriptions, they're anfitrioes
-  return 'pousadas';
+  if (propertyType === 'airbnb') return 'airbnb';
+  if (POUSADA_TYPES.includes(propertyType || '')) return 'pousada';
+  // Fallback: if they have Airbnb subscriptions, they're airbnb
+  return 'pousada';
 }
 
 export async function GET(request: NextRequest) {
@@ -77,8 +81,9 @@ export async function GET(request: NextRequest) {
         const niche = determineNiche(tenant.plan, propertyType);
 
         // Determine plan price
-        let planPrice = PLAN_PRICING[tenant.plan] ?? 0;
-        if (niche === 'anfitrioes' && tenant.airbSubscriptions.length > 0) {
+        const migratedPlan = migratePlanLegacy(tenant.plan || '');
+        let planPrice = PLAN_PRICING[migratedPlan] ?? PLAN_PRICING[tenant.plan] ?? 0;
+        if (niche === 'airbnb' && tenant.airbSubscriptions.length > 0) {
           planPrice = tenant.airbSubscriptions[0].amount;
         }
         const activeSub = tenant.subscriptions.find(s => s.status === 'active');
@@ -126,9 +131,10 @@ export async function GET(request: NextRequest) {
 
         // Brain accuracy (mock placeholder based on plan)
         const brainAccuracy =
-          tenant.plan === 'business' ? 96 :
-          tenant.plan === 'pro' ? 91 :
-          tenant.plan === 'starter' ? 85 :
+          migratedPlan === 'max' ? 96 :
+          migratedPlan === 'pro' ? 91 :
+          migratedPlan === 'lite' ? 85 :
+          migratedPlan === 'parceiro' ? 80 :
           78;
 
         // LGPD: derive ownerInitials from name, no raw email/phone
@@ -139,7 +145,7 @@ export async function GET(request: NextRequest) {
           id: tenant.id,
           name: tenant.name,
           niche,
-          plan: tenant.plan,
+          plan: migratedPlan,
           planPrice,
           status: tenant.status,
           city: tenant.property?.city ?? '',

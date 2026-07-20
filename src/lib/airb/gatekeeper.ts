@@ -7,7 +7,7 @@ import { db, isDatabaseAvailable } from '@/lib/db';
 
 // ── Types ──────────────────────────────────────────────────────
 
-export type AirBPlanType = 'airb_pro' | 'airb_max';
+export type AirBPlanType = 'airb_lite' | 'airb_pro' | 'airb_max';
 
 export type EntitlementAction =
   | 'CREATE_PROPERTY'
@@ -28,6 +28,7 @@ export interface EntitlementResult {
 // ── Constants ──────────────────────────────────────────────────
 
 export const PROPERTY_LIMITS: Record<AirBPlanType, { maxProperties: number; maxConcurrentScrapes: number }> = {
+  airb_lite: { maxProperties: 2, maxConcurrentScrapes: 1 },
   airb_pro: { maxProperties: 4, maxConcurrentScrapes: 1 },
   airb_max: { maxProperties: 12, maxConcurrentScrapes: 3 },
 };
@@ -38,6 +39,7 @@ export const FEATURE_GATES: Record<AirBPlanType, {
   maxActiveConversations: number;
   prioritySupport: boolean;
 }> = {
+  airb_lite: { conciergeRAG: true, aiConversations: true, maxActiveConversations: 20, prioritySupport: false },
   airb_pro: { conciergeRAG: true, aiConversations: true, maxActiveConversations: 50, prioritySupport: false },
   airb_max: { conciergeRAG: true, aiConversations: true, maxActiveConversations: 200, prioritySupport: true },
 };
@@ -100,16 +102,16 @@ export async function checkEntitlement(
   if (!airbSubscription) {
     // Derive from tenant plan for backwards compatibility
     const tenant = await db.tenant.findUnique({ where: { id: tenantId } });
-    const tenantPlan = tenant?.plan || 'trial';
+    const tenantPlan = tenant?.plan || 'gratuito';
     
-    // Map: max/business → airb_max, pro/starter → airb_pro, others → no access
-    if (tenantPlan === 'max' || tenantPlan === 'business') {
+    // Map: max → airb_max, pro → airb_pro, lite → airb_lite, gratuito → airb_lite (demo)
+    if (tenantPlan === 'max') {
       planType = 'airb_max';
-    } else if (tenantPlan === 'pro' || tenantPlan === 'starter') {
+    } else if (tenantPlan === 'pro') {
       planType = 'airb_pro';
     } else {
-      // trial/lite — allow demo access with pro limits for now
-      planType = 'airb_pro';
+      // gratuito/lite/parceiro — allow demo access with lite limits for now
+      planType = 'airb_lite';
     }
   } else {
     planType = airbSubscription.planType as AirBPlanType;

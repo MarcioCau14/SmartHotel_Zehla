@@ -14,21 +14,21 @@ import {
 import { useNiche } from '@/contexts/NicheContext';
 
 /* ─────────── ROADMAP DATA ─────────── */
-function getRoadmapPhases(niche: 'pousadas' | 'anfitrioes' | 'parceiro') {
-  const isPousadas = niche === 'pousadas';
-  const isAnfitrioes = niche === 'anfitrioes';
+function getRoadmapPhases(niche: 'pousada' | 'airbnb') {
+  const isPousada = niche === 'pousada';
+  const isAirbnb = niche === 'airbnb';
   return [
     {
       phase: 'Fase 1',
       status: 'available' as const,
       title: 'iCal Export & Import',
-      desc: isPousadas
+      desc: isPousada
         ? 'Exporte seu calendário de disponibilidade para Booking.com, Decolar e qualquer OTA que aceite iCal. Importe reservas externas automaticamente. Já disponível hoje.'
-        : isAnfitrioes
+        : isAirbnb
         ? 'Exporte seu calendário de disponibilidade para Airbnb, Booking.com e qualquer plataforma que aceite iCal. Importe reservas externas automaticamente. Já disponível hoje.'
         : 'Exporte seu calendário para qualquer plataforma que aceite iCal. Importe reservas externas automaticamente. Já disponível hoje.',
       features: [
-        isPousadas ? 'Feed iCal por quarto' : 'Feed iCal por propriedade',
+        isPousada ? 'Feed iCal por quarto' : 'Feed iCal por propriedade',
         'Importação de reservas via URL iCal',
         'Atualização automática a cada 15 minutos',
       ],
@@ -39,7 +39,7 @@ function getRoadmapPhases(niche: 'pousadas' | 'anfitrioes' | 'parceiro') {
       title: 'Conexão Direta com Canais',
       desc: 'Estamos trabalhando na conexão via API com os principais canais de reserva do mercado brasileiro. Em desenvolvimento — vamos liberar conforme cada integração for testada e validada.',
       features: [
-        isPousadas ? 'API Booking.com & Decolar' : isAnfitrioes ? 'API Booking.com & Airbnb' : 'API dos principais canais',
+        isPousada ? 'API Booking.com & Decolar' : isAirbnb ? 'API Booking.com & Airbnb' : 'API dos principais canais',
         'Sincronização de disponibilidade e preços',
         'Painel unificado de reservas',
       ],
@@ -88,8 +88,8 @@ const statusConfig = {
 export function ChannelManagerSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
-  const { isPousadas, isAnfitrioes, isParceiro } = useNiche();
-  const niche: 'pousadas' | 'anfitrioes' | 'parceiro' = isPousadas ? 'pousadas' : isAnfitrioes ? 'anfitrioes' : 'parceiro';
+  const { isPousada, isAirbnb } = useNiche();
+  const niche: 'pousada' | 'airbnb' = isPousada ? 'pousada' : 'airbnb';
   const roadmapPhases = getRoadmapPhases(niche);
 
   return (
@@ -121,7 +121,7 @@ export function ChannelManagerSection() {
           </h2>
 
           <p className="text-neutral-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-            Comece hoje com exportação iCal para sincronizar disponibilidade com {isPousadas ? 'Booking.com, Decolar e outras OTAs' : isAnfitrioes ? 'Airbnb, Booking.com e outras plataformas' : 'suas plataformas de reserva'}. Estamos evoluindo o Channel Manager com responsabilidade — cada nova integração só chega quando está realmente pronta e testada.
+            Comece hoje com exportação iCal para sincronizar disponibilidade com {isPousada ? 'Booking.com, Decolar e outras OTAs' : isAirbnb ? 'Airbnb, Booking.com e outras plataformas' : 'suas plataformas de reserva'}. Estamos evoluindo o Channel Manager com responsabilidade — cada nova integração só chega quando está realmente pronta e testada.
           </p>
         </motion.div>
 

@@ -1,6 +1,10 @@
 // ZEHLA DDC - Cognitive OS Command Center
 // Component Exports
 
+// Shared Shell Components (PASSO 3 — Unified DDC Architecture)
+export { DDCShell, DDCSidebar, NICHE_THEME } from './DDCShell';
+export type { NavItem } from './DDCShell';
+
 // Main Components
 export { DDCHeader } from './DDCHeader';
 export { RevenueMetrics } from './RevenueMetrics';
@@ -21,5 +25,5 @@ export { PipelineStage } from './PipelineStage';
 export { TrainingCard } from './TrainingCard';
 export { AIStatusBadge, AIStatusDot, AIStatusCard } from './AIStatusBadge';
 
-// Types
-// (Removed unused type exports to resolve compilation mismatches)
+// AirB
+export { ZellaAirBTab } from './ZellaAirBTab';

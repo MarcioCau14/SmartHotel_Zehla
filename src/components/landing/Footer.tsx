@@ -10,7 +10,7 @@ import { useNiche } from '@/contexts/NicheContext';
 export function Footer() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-50px' });
-  const { isPousadas, isAnfitrioes, isParceiro } = useNiche();
+  const { isPousada, isAirbnb } = useNiche();
 
   const navigationLinks = [
     { label: 'Como funciona', href: '#como-funciona' },
@@ -56,7 +56,7 @@ export function Footer() {
           </div>
             
             <p className="text-neutral-500 text-xs leading-relaxed max-w-sm">
-              Plataforma inteligente de automação de reservas e atendimento 24/7 com inteligência artificial, {isPousadas ? 'feita especificamente para pousadas e hotéis boutique brasileiros' : isAnfitrioes ? 'feita especificamente para anfitriões Airbnb e gestores de imóveis' : 'feita especificamente para parceiros que querem o melhor custo-benefício'}. {isParceiro ? 'Impulsione seu negócio e economize sem complicação.' : 'Converta mais hóspedes e impulsione seu negócio sem complicação.'}
+              Plataforma inteligente de automação de reservas e atendimento 24/7 com inteligência artificial, {isPousada ? 'feita especificamente para pousadas e hotéis boutique brasileiros' : 'feita especificamente para anfitriões Airbnb e gestores de imóveis'}. Converta mais hóspedes e impulsione seu negócio sem complicação.
             </p>
 
             {/* Social Links */}

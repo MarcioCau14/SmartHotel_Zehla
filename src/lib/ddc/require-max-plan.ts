@@ -3,8 +3,8 @@
 // ==============================================================================
 // Verifica se o tenant possui assinatura MAX ativa.
 // CRÍTICO: Consulta a tabela Subscription (NÃO Tenant.plan).
-// O campo Tenant.plan usa valores (trial|starter|pro|business)
-// O campo Subscription.planType usa valores (gratuito|lite|pro|max)
+// O campo Tenant.plan usa valores (gratuito|lite|pro|max|parceiro)
+// O campo Subscription.planType usa valores (gratuito|lite|pro|max|parceiro)
 // "max" só existe em Subscription.planType.
 // ==============================================================================
 

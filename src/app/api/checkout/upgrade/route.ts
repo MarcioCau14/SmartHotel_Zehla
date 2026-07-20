@@ -4,9 +4,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { createError } from '@/lib/error-handler';
 import { authRatelimit } from '@/lib/rate-limit';
+import { migratePlanLegacy, type PlanTier } from '@/lib/plan-features';
 
-const PLAN_ORDER = ['gratuito', 'lite', 'pro', 'max'] as const;
-type PlanType = (typeof PLAN_ORDER)[number];
+const PLAN_ORDER: PlanTier[] = ['gratuito', 'lite', 'pro', 'max', 'parceiro'];
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,14 +30,14 @@ export async function POST(request: NextRequest) {
       return createError(403, 'FORBIDDEN', 'Cannot perform upgrade for another tenant');
     }
 
-    if (!PLAN_ORDER.includes(newPlanType as PlanType)) {
+    if (!PLAN_ORDER.includes(newPlanType as PlanTier)) {
       return createError(400, 'INVALID_PLAN', `Invalid plan: ${newPlanType}. Valid: ${PLAN_ORDER.join(', ')}`);
     }
 
-    const method = paymentMethod || (newPlanType === 'pro' || newPlanType === 'max' ? 'cartao' : 'pix');
+    const method = paymentMethod || (newPlanType === 'pro' || newPlanType === 'max' || newPlanType === 'parceiro' ? 'cartao' : 'pix');
 
-    if ((newPlanType === 'pro' || newPlanType === 'max') && method === 'pix') {
-      return createError(400, 'INVALID_PAYMENT_METHOD', 'Os planos PRO e MAX só aceitam pagamento via Cartão de Crédito.');
+    if ((newPlanType === 'pro' || newPlanType === 'max' || newPlanType === 'parceiro') && method === 'pix') {
+      return createError(400, 'INVALID_PAYMENT_METHOD', 'Os planos PRO, MAX e PARCEIRO só aceitam pagamento via Cartão de Crédito.');
     }
 
     const subscription = await db.subscription.findFirst({
@@ -48,20 +48,21 @@ export async function POST(request: NextRequest) {
       return createError(404, 'SUBSCRIPTION_NOT_FOUND', 'No active subscription found for this tenant');
     }
 
-    const currentPlan = subscription.planType as PlanType;
+    const currentPlan = migratePlanLegacy(subscription.planType || '');
     const currentIdx = PLAN_ORDER.indexOf(currentPlan);
-    const newIdx = PLAN_ORDER.indexOf(newPlanType as PlanType);
+    const newIdx = PLAN_ORDER.indexOf(newPlanType as PlanTier);
 
     if (newIdx <= currentIdx) {
       return createError(400, 'CANNOT_DOWNGRADE', `Cannot downgrade via upgrade endpoint. Current: ${currentPlan}, Requested: ${newPlanType}. Use /api/checkout/downgrade instead.`);
     }
 
     // Cálculo pró-rata com base no método de pagamento
-    const pricing = {
+    const pricing: Record<PlanTier, number> = {
       gratuito: 0,
-      lite: method === 'pix' ? 197 : 247,
+      lite: 197,
       pro: 397,
       max: 797,
+      parceiro: 247,
     };
 
     const newPrice = pricing[newPlanType as keyof typeof pricing];

@@ -16,16 +16,12 @@ const allPlatforms = [
 ]
 
 export default function BookingPlatformsMarquee() {
-  const { isPousadas, isAnfitrioes, isParceiro } = useNiche()
+  const { isPousada, isAirbnb } = useNiche()
 
   // Parceiro niche: filter out Airbnb from platform list
-  const platforms = isParceiro
-    ? allPlatforms.filter(p => p !== 'Airbnb')
-    : allPlatforms
+  const platforms = allPlatforms
 
-  const headlineAccent = isParceiro
-    ? 'plataformas de atendimento do Brasil'
-    : 'plataformas de hospedagem do Brasil'
+  const headlineAccent = 'plataformas de hospedagem do Brasil'
 
   return (
     <section className="py-16 bg-gradient-to-b from-transparent via-zinc-950/50 to-transparent border-y border-zinc-800">
@@ -46,7 +42,7 @@ export default function BookingPlatformsMarquee() {
 
         {/* Description */}
         <p className="text-neutral-400 text-base sm:text-lg max-w-2xl mx-auto mb-8">
-          {isPousadas ? 'Conecte sua pousada a todas as principais plataformas de reservas e pagamentos em um único painel.' : isAnfitrioes ? 'Conecte seus imóveis a todas as principais plataformas de reservas e pagamentos em um único painel.' : 'Conecte sua operação a todas as principais plataformas de reservas e pagamentos em um único painel.'}
+          {isPousada ? 'Conecte sua pousada a todas as principais plataformas de reservas e pagamentos em um único painel.' : 'Conecte seus imóveis a todas as principais plataformas de reservas e pagamentos em um único painel.'}
           Sincronização automática de disponibilidade e preços em tempo real.
         </p>
 

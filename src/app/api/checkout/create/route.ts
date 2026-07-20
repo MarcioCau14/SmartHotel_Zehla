@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       });
       await db.tenant.update({
         where: { id: tenant.id },
-        data: { plan: 'trial', subscriptionAt: new Date() },
+        data: { plan: 'gratuito', subscriptionAt: new Date() },
       });
       return NextResponse.json({ success: true, subscriptionId: subscription.id, redirectUrl: '/ddc', message: 'Trial iniciado com sucesso!' });
     }

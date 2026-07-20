@@ -9,7 +9,7 @@ interface CTASectionProps {
 }
 
 export function CTASection({ onNavigate }: CTASectionProps) {
-  const { isPousadas, isAnfitrioes } = useNiche();
+  const { isPousada, isAirbnb } = useNiche();
   return (
     <section className="py-24 px-4 sm:px-6 lg:px-8">
       <motion.div
@@ -26,7 +26,7 @@ export function CTASection({ onNavigate }: CTASectionProps) {
         <div className="relative z-10">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-neutral-100 mb-4">
             Pronto para transformar{' '}
-            <span className="text-emerald-400 font-bold">{isPousadas ? 'sua pousada?' : isAnfitrioes ? 'seus imóveis?' : 'seu negócio?'}</span>
+            <span className="text-emerald-400 font-bold">{isPousada ? 'sua pousada?' : isAirbnb ? 'seus imóveis?' : 'seu negócio?'}</span>
           </h2>
           <p className="text-neutral-400 text-lg mb-8 max-w-2xl mx-auto">
             Comece seu teste gratuito de 7 dias. Sem cartão. Sem compromisso.

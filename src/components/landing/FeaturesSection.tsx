@@ -43,13 +43,13 @@ const featureIconMap: Record<string, LucideIcon> = {
 };
 
 function WhatsAppMockup() {
-  const { isPousadas, isAnfitrioes } = useNiche();
+  const { isPousada, isAirbnb } = useNiche();
   const [animationStep, setAnimationStep] = useState(0);
 
   // Niche-specific chat data
-  const businessName = isPousadas ? 'Pousada Serenity' : isAnfitrioes ? 'Flat Copacabana' : 'Parceiro Zélla';
-  const roomName = isPousadas ? 'Chalé Vista Mar' : isAnfitrioes ? 'Apartamento Vista Mar' : 'Sua Operação';
-  const greeting = isPousadas ? 'Seja muito bem-vindo à Pousada Serenity. 🌸' : isAnfitrioes ? 'Seja muito bem-vindo ao Apartamento Copacabana. 🌊' : 'Seja muito bem-vindo. ✨';
+  const businessName = isPousada ? 'Pousada Serenity' : isAirbnb ? 'Flat Copacabana' : 'Parceiro Zélla';
+  const roomName = isPousada ? 'Chalé Vista Mar' : isAirbnb ? 'Apartamento Vista Mar' : 'Sua Operação';
+  const greeting = isPousada ? 'Seja muito bem-vindo à Pousada Serenity. 🌸' : isAirbnb ? 'Seja muito bem-vindo ao Apartamento Copacabana. 🌊' : 'Seja muito bem-vindo. ✨';
 
   useEffect(() => {
       const timers = [
@@ -233,7 +233,7 @@ function FeatureMockup({ type }: { type: string }) {
 export function FeaturesSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-50px' });
-  const { niche, isPousadas, isAnfitrioes } = useNiche();
+  const { niche, isPousada, isAirbnb } = useNiche();
   const content = getNicheContent(niche);
   const features = content.features;
 
@@ -248,7 +248,7 @@ export function FeaturesSection() {
           className="text-center mb-24"
         >
           <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-8 tracking-tight">
-            Funcionalidades que <span className={isPousadas ? 'text-emerald-500 font-bold' : isAnfitrioes ? 'text-blue-500 font-bold' : 'text-amber-500 font-bold'}>transformam</span>
+            Funcionalidades que <span className={isPousada ? 'text-emerald-500 font-bold' : isAirbnb ? 'text-blue-500 font-bold' : 'text-amber-500 font-bold'}>transformam</span>
           </h2>
           <AnimatePresence mode="wait">
             <motion.p
@@ -259,9 +259,9 @@ export function FeaturesSection() {
               transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
               className="text-neutral-400 text-lg max-w-2xl mx-auto"
             >
-              {isPousadas
+              {isPousada
                 ? 'O ZÉLLA vai ser seu zelador com funcionalidades inovadoras. São funções que vão te dar mais tempo para fazer sua pousada decolar.'
-                : isAnfitrioes
+                : isAirbnb
                 ? 'O ZÉLLA é seu co-anfitrião digital. Funcionalidades que automatizam tudo — do check-in ao atendimento — para você escalar sem estresse.'
                 : 'O ZÉLLA é seu parceiro de negócio. Funcionalidades completas do plano PRO com preço congelado — para você economizar e crescer.'
               }
@@ -281,7 +281,7 @@ export function FeaturesSection() {
           >
             {features.map((feature, i) => {
               const IconComponent = featureIconMap[feature.icon] || MessageSquare;
-              const accentColor = isPousadas ? 'emerald' : isAnfitrioes ? 'blue' : 'amber';
+              const accentColor = isPousada ? 'emerald' : isAirbnb ? 'blue' : 'amber';
 
               return (
                 <motion.div
@@ -298,15 +298,15 @@ export function FeaturesSection() {
                     {/* Badge bar */}
                     <div className="flex items-center gap-3 mb-8">
                       <div className={`w-10 h-10 rounded-xl ${
-                        isPousadas
+                        isPousada
                           ? 'bg-emerald-500/10 border border-emerald-500/20'
-                          : isAnfitrioes
+                          : isAirbnb
                           ? 'bg-blue-500/10 border border-blue-500/20'
                           : 'bg-amber-500/10 border border-amber-500/20'
                       } flex items-center justify-center shrink-0`}>
-                        <IconComponent className={`w-5 h-5 ${isPousadas ? 'text-emerald-400' : isAnfitrioes ? 'text-blue-400' : 'text-amber-400'}`} />
+                        <IconComponent className={`w-5 h-5 ${isPousada ? 'text-emerald-400' : isAirbnb ? 'text-blue-400' : 'text-amber-400'}`} />
                       </div>
-                      <span className={`${isPousadas ? 'text-emerald-400' : isAnfitrioes ? 'text-blue-400' : 'text-amber-400'} text-xs font-bold uppercase tracking-wider`}>
+                      <span className={`${isPousada ? 'text-emerald-400' : isAirbnb ? 'text-blue-400' : 'text-amber-400'} text-xs font-bold uppercase tracking-wider`}>
                         {feature.badge}
                       </span>
                     </div>
@@ -361,7 +361,7 @@ export function FeaturesSection() {
                               transition={{ duration: 0.4, delay: 0.3 + si * 0.1 }}
                               className="relative p-5 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300 group/stat"
                             >
-                              <StatIcon className={`w-4 h-4 ${isPousadas ? 'text-emerald-500/60' : isAnfitrioes ? 'text-blue-500/60' : 'text-amber-500/60'} mb-2.5 block`} />
+                              <StatIcon className={`w-4 h-4 ${isPousada ? 'text-emerald-500/60' : isAirbnb ? 'text-blue-500/60' : 'text-amber-500/60'} mb-2.5 block`} />
                               <div className="text-2xl font-bold text-white tracking-tight">{s.val}</div>
                               <div className="text-[11px] text-neutral-400 font-semibold mt-1">{s.label}</div>
                               {'sublabel' in s && s.sublabel && (
@@ -384,15 +384,15 @@ export function FeaturesSection() {
                             transition={{ duration: 0.3, delay: 0.5 + pi * 0.06 }}
                             className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[12px] font-medium transition-all duration-200 ${
                               p.accent
-                                ? isPousadas
+                                ? isPousada
                                   ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400'
-                                  : isAnfitrioes
+                                  : isAirbnb
                                   ? 'bg-blue-500/10 border border-blue-500/25 text-blue-400'
                                   : 'bg-amber-500/10 border border-amber-500/25 text-amber-400'
                                 : 'bg-white/[0.03] border border-white/[0.06] text-neutral-400 hover:text-neutral-200 hover:bg-white/[0.05]'
                             }`}
                           >
-                            <Check className={`w-3 h-3 ${p.accent ? (isPousadas ? 'text-emerald-400' : isAnfitrioes ? 'text-blue-400' : 'text-amber-400') : 'text-neutral-600'}`} />
+                            <Check className={`w-3 h-3 ${p.accent ? (isPousada ? 'text-emerald-400' : isAirbnb ? 'text-blue-400' : 'text-amber-400') : 'text-neutral-600'}`} />
                             {p.text}
                           </motion.span>
                         ))}
@@ -405,7 +405,7 @@ export function FeaturesSection() {
                         initial={{ opacity: 0 }}
                         animate={isInView ? { opacity: 1 } : {}}
                         transition={{ duration: 0.5, delay: 0.7 }}
-                        className={`text-neutral-600 text-xs italic border-l-2 ${isPousadas ? 'border-emerald-500/30' : isAnfitrioes ? 'border-blue-500/30' : 'border-amber-500/30'} pl-3`}
+                        className={`text-neutral-600 text-xs italic border-l-2 ${isPousada ? 'border-emerald-500/30' : isAirbnb ? 'border-blue-500/30' : 'border-amber-500/30'} pl-3`}
                       >
                         {feature.bottomLine}
                       </motion.p>

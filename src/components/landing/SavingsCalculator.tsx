@@ -29,7 +29,7 @@ const CUSTO_ZELLA_PARCEIRO = 247;     // R$/mês plano Parceiro Zélla
 export function SavingsCalculator() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  const { isPousadas, isAnfitrioes, isParceiro } = useNiche();
+  const { isPousada, isAirbnb } = useNiche();
 
   const [contatosMes, setContatosMes] = useState(80);
   const [valorMedio, setValorMedio] = useState(350);
@@ -37,8 +37,8 @@ export function SavingsCalculator() {
   // --------------------------------------------------------------------------
   // Matemática verificada
   // --------------------------------------------------------------------------
-  const custoZellaMensal = isParceiro ? CUSTO_ZELLA_PARCEIRO : CUSTO_ZELLA_PRO;
-  const estadiaMedia = isParceiro ? 1 : ESTADIA_MEDIA_HOSPEDAGEM; // Parceiro: ticket único
+  const custoZellaMensal = CUSTO_ZELLA_PRO;
+  const estadiaMedia = ESTADIA_MEDIA_HOSPEDAGEM;
 
   const calc = useMemo(() => {
     // Conversões
@@ -101,8 +101,8 @@ export function SavingsCalculator() {
             <span className="text-emerald-400 text-xs font-medium">Simulador de Resultados</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6 tracking-tight">
-            {isPousadas ? 'Quanto sua pousada' : isAnfitrioes ? 'Quanto seus imóveis' : 'Quanto seu negócio'}{' '}
-            <span className="text-emerald-400 font-bold">{isPousadas || isAnfitrioes ? 'ganha com o Zélla?' : 'economiza com o Zélla?'}</span>
+            {isPousada ? 'Quanto sua pousada' : 'Quanto seus imóveis'}{' '}
+            <span className="text-emerald-400 font-bold">ganha com o Zélla?</span>
           </h2>
           <p className="text-neutral-400 text-lg sm:text-xl max-w-2xl mx-auto">
             Insira os dados reais da sua operação e veja o impacto no seu faturamento
@@ -154,7 +154,7 @@ export function SavingsCalculator() {
                 {/* Input 2: Valor médio */}
                 <div className="space-y-3">
                   <label className="block text-neutral-300 text-sm font-medium">
-                    {isPousadas ? 'Diária média da pousada' : isAnfitrioes ? 'Valor médio por noite do imóvel' : 'Ticket médio do atendimento'}
+                    {isPousada ? 'Diária média da pousada' : 'Valor médio por noite do imóvel'}
                   </label>
                   <div className="flex items-center gap-3">
                     <button
@@ -176,7 +176,7 @@ export function SavingsCalculator() {
                     </button>
                   </div>
                   <p className="text-neutral-500 text-[11px]">
-                    {isPousadas ? 'Valor médio cobrado por noite de hospedagem' : isAnfitrioes ? 'Valor médio cobrado por noite no imóvel' : 'Valor médio por atendimento realizado'}
+                    {isPousada ? 'Valor médio cobrado por noite de hospedagem' : 'Valor médio cobrado por noite no imóvel'}
                   </p>
                 </div>
               </div>
@@ -192,7 +192,7 @@ export function SavingsCalculator() {
                 <div className="text-2xl sm:text-3xl font-extrabold text-emerald-400">
                   +{calc.conversoesAMais}
                 </div>
-                <div className="text-neutral-500 text-xs mt-1">{isParceiro ? 'atendimentos/mês' : 'reservas/mês'}</div>
+                <div className="text-neutral-500 text-xs mt-1">reservas/mês</div>
               </div>
 
               {/* Receita extra mensal */}
@@ -242,7 +242,7 @@ export function SavingsCalculator() {
                 </div>
                 <div className="space-y-2 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-neutral-500">{isParceiro ? 'Atendimentos/mês' : 'Reservas/mês'}</span>
+                    <span className="text-neutral-500">Reservas/mês</span>
                     <span className="text-neutral-300 font-semibold">{calc.conversoesSem}</span>
                   </div>
                   <div className="flex justify-between">
@@ -251,7 +251,7 @@ export function SavingsCalculator() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Resposta após horas</span>
-                    <span className="text-red-400/80 font-medium">{isParceiro ? 'Perde oportunidades' : 'Perde hóspedes'}</span>
+                    <span className="text-red-400/80 font-medium">Perde hóspedes</span>
                   </div>
                 </div>
                 <div className="mt-3 h-2.5 rounded-full bg-white/[0.04] overflow-hidden">
@@ -273,7 +273,7 @@ export function SavingsCalculator() {
                 </div>
                 <div className="space-y-2 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-neutral-500">{isParceiro ? 'Atendimentos/mês' : 'Reservas/mês'}</span>
+                    <span className="text-neutral-500">Reservas/mês</span>
                     <span className="text-emerald-300 font-bold">{calc.conversoesCom} <span className="text-emerald-500">(+{calc.conversoesAMais})</span></span>
                   </div>
                   <div className="flex justify-between">
@@ -303,7 +303,7 @@ export function SavingsCalculator() {
                 </div>
                 <div>
                   <div className="text-sm font-bold text-white">{fmt(ECONOMIA_RECEPCIONISTA)}/mês</div>
-                  <div className="text-[11px] text-neutral-500">{isParceiro ? 'Economia com automação de atendimento' : 'Economia recepcionista noturno'}</div>
+                  <div className="text-[11px] text-neutral-500">Economia recepcionista noturno</div>
                 </div>
               </div>
 
@@ -314,7 +314,7 @@ export function SavingsCalculator() {
                 </div>
                 <div>
                   <div className="text-sm font-bold text-white">{fmt(custoZellaMensal)}/mês</div>
-                  <div className="text-[11px] text-neutral-500">{isParceiro ? 'Investimento no plano Parceiro PRO' : 'Investimento no plano PRO'}</div>
+                  <div className="text-[11px] text-neutral-500">Investimento no plano PRO</div>
                 </div>
               </div>
 
@@ -338,7 +338,7 @@ export function SavingsCalculator() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-[11px] text-neutral-500 leading-relaxed">
                 <div className="flex items-start gap-2">
                   <span className="w-1 h-1 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
-                  <span>Sem Zélla: <strong className="text-neutral-400">20% de conversão</strong> — resposta demorada perde {isParceiro ? 'oportunidades para concorrentes' : isAnfitrioes ? 'hóspedes para concorrentes' : 'hóspedes para concorrentes'}</span>
+                  <span>Sem Zélla: <strong className="text-neutral-400">20% de conversão</strong> — resposta demorada perde hóspedes para concorrentes</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="w-1 h-1 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
@@ -346,15 +346,15 @@ export function SavingsCalculator() {
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="w-1 h-1 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-                  <span>Estadia média: <strong className="text-neutral-400">{isParceiro ? '1 atendimento' : '2,5 noites'}</strong> por {isParceiro ? 'atendimento' : 'reserva'} (média do setor)</span>
+                  <span>Estadia média: <strong className="text-neutral-400">2,5 noites</strong> por reserva (média do setor)</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="w-1 h-1 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-                  <span>{isParceiro ? 'Economia com automação' : 'Economia recepcionista'}: <strong className="text-neutral-400">R$ 1.200/mês</strong> {isParceiro ? 'com automação de atendimento' : 'cobrindo madrugadas e fins de semana'}</span>
+                  <span>Economia recepcionista: <strong className="text-neutral-400">R$ 1.200/mês</strong> cobrindo madrugadas e fins de semana</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="w-1 h-1 rounded-full bg-purple-500 mt-1.5 shrink-0" />
-                  <span>Receita extra = {isParceiro ? 'atendimentos adicionais × ticket médio' : isAnfitrioes ? 'reservas adicionais × valor médio × 2,5 noites' : 'reservas adicionais × diária × 2,5 noites'}</span>
+                  <span>Receita extra = reservas adicionais × {isPousada ? 'diária' : 'valor médio'} × 2,5 noites</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="w-1 h-1 rounded-full bg-purple-500 mt-1.5 shrink-0" />

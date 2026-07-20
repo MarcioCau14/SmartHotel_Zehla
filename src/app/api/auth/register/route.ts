@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
           email: data.email,
           passwordHash,
           phone: data.phone,
-          plan: 'trial',
+          plan: 'gratuito',
           status: 'active',
           niche: data.niche,
           trialStart: new Date(),

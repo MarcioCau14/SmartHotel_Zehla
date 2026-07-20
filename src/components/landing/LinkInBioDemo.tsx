@@ -284,10 +284,10 @@ const CHAT_PAUSE_AFTER_COMPLETE = 3000; // pause after full conversation before 
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 export function LinkInBioDemo() {
-  const { isAnfitrioes, isParceiro, isPousadas } = useNiche();
+  const { isAirbnb, isPousada } = useNiche();
 
-  const profile = isParceiro ? parceiroProfile : isAnfitrioes ? anfitriaoProfile : pousadaProfile;
-  const libButtons = isParceiro ? parceiroButtons : isAnfitrioes ? anfitriaoButtons : pousadaButtons;
+  const profile = isAirbnb ? anfitriaoProfile : pousadaProfile;
+  const libButtons = isAirbnb ? anfitriaoButtons : pousadaButtons;
   const chatMessages = profile.chatMessages;
 
   const TOTAL_CHAT_DURATION = chatMessages.length * CHAT_MSG_INTERVAL + CHAT_PAUSE_AFTER_COMPLETE;
@@ -672,13 +672,13 @@ export function LinkInBioDemo() {
                                   </div>
                                 </div>
                                 <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-2 text-center">
-                                  <p className="text-[6px] text-emerald-400/70 uppercase font-medium">{isParceiro ? 'Valor mensal' : 'Total PIX'}</p>
+                                  <p className="text-[6px] text-emerald-400/70 uppercase font-medium">Total PIX</p>
                                   <p className="text-emerald-400 text-base font-black">{profile.roomPriceTotal}</p>
                                   <p className="text-[6.5px] text-neutral-400">{profile.roomPriceBreakdown}</p>
                                 </div>
                               </div>
                               <div className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-[8px] font-bold text-center py-1.5 rounded-lg mt-1.5 flex items-center justify-center gap-1">
-                                <span>{isParceiro ? 'Garantir vaga de parceiro' : 'Reservar via WhatsApp'}</span>
+                                <span>Reservar via WhatsApp</span>
                                 <MessageSquare className="w-3 h-3" />
                               </div>
                             </div>
@@ -870,7 +870,7 @@ export function LinkInBioDemo() {
                     <div className="grid grid-cols-3 gap-1 pt-1 pb-1">
                       {[
                         { label: '4.9', sub: 'Avaliação' },
-                        { label: '500+', sub: isPousadas ? 'Hóspedes' : isAnfitrioes ? 'Hóspedes' : 'Atendimentos' },
+                        { label: '500+', sub: 'Hóspedes' },
                         { label: '100%', sub: 'Satisfação' },
                       ].map((stat) => (
                         <div key={stat.label} className="text-center">
@@ -951,7 +951,7 @@ export function LinkInBioDemo() {
                         {msg.confirmation && (
                           <div className="mt-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-1.5">
                             <p className="text-emerald-400 text-[8px] font-bold flex items-center gap-1">
-                              <span>✓</span> {isParceiro ? 'Vaga Confirmada' : 'Reserva Confirmada'} #ZR-4821
+                              <span>✓</span> Reserva Confirmada #ZR-4821
                             </p>
                           </div>
                         )}

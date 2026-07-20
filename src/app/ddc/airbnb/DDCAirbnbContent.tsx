@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LineChart,
@@ -10,23 +9,15 @@ import {
   YAxis,
   CartesianGrid,
 } from 'recharts';
-import { ZellaLogo } from '@/components/brand/ZellaLogo';
+import { DDCShell, type NavItem } from '@/components/ddc/DDCShell';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
 import {
   ChartContainer,
   ChartTooltip,
@@ -37,7 +28,6 @@ import {
   RefreshCw,
   Bot,
   Settings,
-  LogOut,
   TrendingUp,
   DollarSign,
   ArrowUpRight,
@@ -45,7 +35,6 @@ import {
   Clock,
   ShieldCheck,
   ChevronRight,
-  Menu,
   Star,
   Zap,
   Plus,
@@ -208,11 +197,11 @@ const staggerItem = {
 
 // ─── Sidebar Navigation Items ───────────────────────────────────────────────
 
-const NAV_ITEMS: { key: AirbnbTab; label: string; icon: React.ElementType }[] = [
-  { key: 'propriedades', label: 'Painel de Propriedades', icon: Home },
-  { key: 'sincronizacao', label: 'Sincronização', icon: CalendarDays },
-  { key: 'automacao', label: 'Automação', icon: Bot },
-  { key: 'config', label: 'Configurações', icon: Settings },
+const airbnbNavItems: NavItem[] = [
+  { id: 'propriedades', label: 'Painel de Propriedades', icon: <Home className="size-4" /> },
+  { id: 'sincronizacao', label: 'Sincronização', icon: <CalendarDays className="size-4" /> },
+  { id: 'automacao', label: 'Automação', icon: <Bot className="size-4" /> },
+  { id: 'config', label: 'Configurações', icon: <Settings className="size-4" /> },
 ];
 
 // ─── Format Helpers ─────────────────────────────────────────────────────────
@@ -228,49 +217,10 @@ function formatCompactBRL(value: number): string {
   return formatBRL(value);
 }
 
-// ─── Sidebar Navigation Component ───────────────────────────────────────────
-
-interface SidebarNavProps {
-  activeTab: AirbnbTab;
-  onTabChange: (tab: AirbnbTab) => void;
-  onNavigate?: () => void;
-}
-
-function SidebarNav({ activeTab, onTabChange, onNavigate }: SidebarNavProps) {
-  return (
-    <nav className="flex flex-col gap-1 px-3" role="navigation" aria-label="Menu principal">
-      {NAV_ITEMS.map((item) => {
-        const Icon = item.icon;
-        const isActive = activeTab === item.key;
-        return (
-          <button
-            key={item.key}
-            onClick={() => {
-              onTabChange(item.key);
-              onNavigate?.();
-            }}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 w-full text-left ${
-              isActive
-                ? 'bg-blue-600/15 text-blue-400 border border-blue-500/20'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent'
-            }`}
-            aria-current={isActive ? 'page' : undefined}
-          >
-            <Icon className="h-4 w-4 shrink-0" />
-            <span>{item.label}</span>
-          </button>
-        );
-      })}
-    </nav>
-  );
-}
-
 // ─── Main Component ─────────────────────────────────────────────────────────
 
 export default function DDCAirbnbContent() {
-  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<AirbnbTab>('propriedades');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [calendarDays] = useState<CalendarDay[]>(generateCalendarDays);
 
   // Notification toggles
@@ -278,14 +228,6 @@ export default function DDCAirbnbContent() {
   const [notifCancellation, setNotifCancellation] = useState(true);
   const [notifReview, setNotifReview] = useState(true);
   const [notifMessage, setNotifMessage] = useState(false);
-
-  const userName = session?.user?.name || 'Anfitrião';
-  const userInitials = userName
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
 
   // Summary stats
   const totalProperties = MOCK_PROPERTIES.length;
@@ -1074,86 +1016,16 @@ export default function DDCAirbnbContent() {
   // ─── Main Layout ──────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col">
-      {/* Top Navigation Bar */}
-      <header className="h-14 border-b border-zinc-800/60 bg-[#0a0a0f]/95 backdrop-blur-sm flex items-center justify-between px-4 sticky top-0 z-50">
-        <div className="flex items-center gap-3">
-          {/* Mobile menu trigger */}
-          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-            <SheetTrigger asChild>
-              <button
-                className="lg:hidden p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors"
-                aria-label="Abrir menu"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-            </SheetTrigger>
-            <SheetContent side="left" className="bg-[#0f0f17] border-zinc-800/60 w-64 p-0">
-              <SheetHeader className="p-4 border-b border-zinc-800/60">
-                <SheetTitle className="flex items-center gap-2">
-                  <ZellaLogo size={28} />
-                  <span className="text-white text-sm font-semibold">Zélla</span>
-                </SheetTitle>
-              </SheetHeader>
-              <div className="p-3">
-                <SidebarNav activeTab={activeTab} onTabChange={setActiveTab} onNavigate={() => setSidebarOpen(false)} />
-              </div>
-            </SheetContent>
-          </Sheet>
-
-          <ZellaLogo size={32} />
-          <Separator orientation="vertical" className="h-6 bg-zinc-800" />
-          <span className="text-sm font-medium text-zinc-300 hidden sm:inline">
-            Dashboard Airbnb
-          </span>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2">
-            <Avatar className="h-7 w-7 bg-blue-600/20 border border-blue-500/30">
-              <AvatarFallback className="bg-blue-600/20 text-blue-300 text-xs font-medium">
-                {userInitials}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-sm text-zinc-300">{userName}</span>
-          </div>
-          <button
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-            aria-label="Sair"
-            title="Sair"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
-        </div>
-      </header>
-
-      <div className="flex flex-1 overflow-hidden">
-        {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex flex-col w-56 border-r border-zinc-800/60 bg-[#0a0a0f] shrink-0">
-          <div className="flex-1 py-4 overflow-y-auto">
-            <SidebarNav activeTab={activeTab} onTabChange={setActiveTab} />
-          </div>
-          {/* Plan Badge */}
-          <div className="p-3 border-t border-zinc-800/60">
-            <div className="p-3 rounded-lg bg-blue-600/10 border border-blue-500/20">
-              <div className="flex items-center gap-2 mb-1">
-                <Crown className="h-3.5 w-3.5 text-amber-400" />
-                <span className="text-xs font-semibold text-white">Pro Airbnb</span>
-              </div>
-              <p className="text-[10px] text-zinc-400">R$ 147/mês · 3/5 imóveis</p>
-            </div>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-            <AnimatePresence mode="wait">
-              {renderTab()}
-            </AnimatePresence>
-          </div>
-        </main>
-      </div>
-    </div>
+    <DDCShell
+      niche="airbnb"
+      navItems={airbnbNavItems}
+      activeTab={activeTab}
+      onTabChange={(id) => setActiveTab(id as AirbnbTab)}
+      propertyName="Airbnb Host"
+    >
+      <AnimatePresence mode="wait">
+        {renderTab()}
+      </AnimatePresence>
+    </DDCShell>
   );
 }

@@ -9,12 +9,12 @@ interface DynamicHeroTextProps {
 }
 
 export function DynamicHeroText({ className }: DynamicHeroTextProps) {
-  const { niche, isPousadas, isAnfitrioes } = useNiche();
+  const { niche, isPousada, isAirbnb } = useNiche();
 
   // Niche-specific rotating phrases to avoid cross-contamination
-  const phrases = isPousadas
+  const phrases = isPousada
     ? ['pelo WhatsApp.', 'a sua pousada.']
-    : isAnfitrioes
+    : isAirbnb
     ? ['pelo WhatsApp.', 'o seu imóvel.']
     : ['pelo WhatsApp.', 'seu negócio.'];
 

@@ -16,10 +16,18 @@ enum LeadStatus {
   BLACKLISTED
 }
 
+// Fonte da verdade absoluta para planos:
+// GRATUITO = plano free (7 dias trial)
+// LITE = plano básico
+// PRO = plano profissional
+// MAX = plano premium
+// PARCEIRO = parceiro Zélla (Link-in-Bio + comissão)
 enum Plan {
+  GRATUITO
   LITE
   PRO
   MAX
+  PARCEIRO
 }
 
 // ===== USER & POST (from backup) =====
@@ -58,7 +66,7 @@ model Tenant {
   phone          String?
   phoneAlt       String? // WhatsApp atendimento ao hóspede
   role           String    @default("owner") // owner | admin | staff
-  plan           String    @default("trial") // trial | starter | pro | business
+  plan           String    @default("gratuito") // gratuito | lite | pro | max | parceiro
   status         String    @default("active") // active | suspended | churned
   trialStart     DateTime?
   trialEnd       DateTime?
@@ -825,7 +833,7 @@ model Message {
 model Subscription {
   id                 String    @id @default(cuid())
   tenantId           String
-  planType           String // gratuito | lite | pro | max
+  planType           String // gratuito | lite | pro | max | parceiro
   status             String    @default("pending") // pending | active | canceled | expired
   paymentMethod      String // pix | cartao
   amount             Float
@@ -1377,9 +1385,9 @@ model AirBScrapingJob {
 model AirBSubscription {
   id                  String   @id @default(cuid())
   tenantId            String
-  planType            String   // airb_pro | airb_max (NEVER "pro" or "max" plain!)
+  planType            String   // airb_lite | airb_pro | airb_max
   status              String   @default("active") // active | past_due | cancelled | expired
-  propertyLimit       Int      // PRO=4, MAX=12
+  propertyLimit       Int      // LITE=2, PRO=4, MAX=12
   currentPropertyCount Int     @default(0) // Denormalized for fast queries
   amount              Float    // 397.0 (PRO) | 797.0 (MAX)
   paymentMethod       String?  // pix | cartao

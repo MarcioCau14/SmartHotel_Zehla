@@ -102,7 +102,7 @@ export default function DDCDashboardContent() {
   // Local state — navigation
   const [activeTab, setActiveTab] = useState('overview');
   const [propertyName, setPropertyName] = useState('Minha Pousada');
-  const [currentPlan, setCurrentPlan] = useState<PlanTier>('trial');
+  const [currentPlan, setCurrentPlan] = useState<PlanTier>('gratuito');
   const [isBetaPartner, setIsBetaPartner] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(true);
 
@@ -332,14 +332,14 @@ export default function DDCDashboardContent() {
         const name = d.name || 'Minha Pousada';
         setPropertyName(name);
         setEditPropertyName(name);
-        setCurrentPlan(d.plan || 'trial');
+        setCurrentPlan(d.plan || 'gratuito');
       })
       .catch(() => {
         setPropertyName('Minha Pousada');
         setEditPropertyName('Minha Pousada');
-        // Keep session plan if available, otherwise default to trial
+        // Keep session plan if available, otherwise default to gratuito
         if (!(session?.user as any)?.plan) {
-          setCurrentPlan('trial' as PlanTier);
+          setCurrentPlan('gratuito' as PlanTier);
         }
       });
   }, [session]);
@@ -1605,7 +1605,7 @@ export default function DDCDashboardContent() {
                   )}
 
                   {/* ── Cancel Subscription Section ── */}
-                  {currentPlan !== 'trial' && (
+                  {currentPlan !== 'gratuito' && (
                     <div className="pt-4 border-t border-white/[0.04]">
                       <button
                         onClick={() => { setShowCancelFlow(true); setCancelStep('warning'); }}
@@ -1687,12 +1687,12 @@ export default function DDCDashboardContent() {
       />
 
       {/* Plan Upgrade Banner (LITE sees PRO nudge, PRO sees MAX nudge) */}
-      {currentPlan !== 'trial' && currentPlan !== 'max' && (
+      {currentPlan !== 'gratuito' && currentPlan !== 'max' && (
         <PlanUpgradeBanner currentPlan={currentPlan} />
       )}
 
       {/* Trial Banner */}
-      {currentPlan === 'trial' && (
+      {currentPlan === 'gratuito' && (
         <div className="bg-gradient-to-r from-emerald-950/40 via-zinc-900 to-[#0a0a0f] border-b border-emerald-500/10 px-6 py-2.5 flex items-center justify-between gap-4 flex-wrap select-none">
           <div className="flex items-center gap-2">
             <span className="flex h-2 w-2 relative shrink-0">

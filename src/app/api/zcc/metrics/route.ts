@@ -87,9 +87,9 @@ export async function GET(request: NextRequest) {
     for (const tenant of allTenants) {
       const propertyType = tenant.property?.type || 'pousada';
       const isAirbnb = propertyType === 'airbnb' || (tenant.airbSubscriptions?.length ?? 0) > 0;
-      const isParceiro = tenant.plan === 'parceiro';
+      const isAirbnb = tenant.plan === 'parceiro';
 
-      if (isParceiro) {
+      if (isAirbnb) {
         const sub = tenant.subscriptions.find(s => s.status === 'active');
         mrrParceiro += sub?.amount ?? 97;
       } else if (isAirbnb) {

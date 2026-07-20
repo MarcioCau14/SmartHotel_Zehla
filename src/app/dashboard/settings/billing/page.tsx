@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 export default function BillingPage() {
   const router = useRouter();
-  const [currentPlan, setCurrentPlan] = useState('pro');
+  const [currentPlan, setCurrentPlan] = useState<string>('pro');
   const [tenantId, setTenantId] = useState('');
   const [loading, setLoading] = useState(false);
   const [upgradeModal, setUpgradeModal] = useState(false);
@@ -26,10 +26,11 @@ export default function BillingPage() {
 
   // Dados reais dos planos
   const planos = {
-    gratuito: { name: 'TRIAL', price: 0 },
+    gratuito: { name: 'GRATUITO', price: 0 },
     lite: { name: 'LITE', price: 197 },
     pro: { name: 'PRO', price: 397 },
-    max: { name: 'MAX', price: 797 }
+    max: { name: 'MAX', price: 797 },
+    parceiro: { name: 'PARCEIRO', price: 0 }
   };
 
   const handleUpgrade = async () => {
@@ -129,7 +130,7 @@ export default function BillingPage() {
             <button 
               onClick={() => {
                  setSelectedPlan(
-                   currentPlan === 'gratuito' || currentPlan === 'trial'
+                   currentPlan === 'gratuito'
                      ? 'lite'
                      : currentPlan === 'lite'
                      ? 'pro'
@@ -148,7 +149,7 @@ export default function BillingPage() {
                 setSelectedPlan(currentPlan === 'max' ? 'pro' : 'lite');
                 setDowngradeModal(true);
               }}
-              disabled={currentPlan === 'lite' || currentPlan === 'gratuito' || currentPlan === 'trial'}
+              disabled={currentPlan === 'lite' || currentPlan === 'gratuito' || currentPlan === 'parceiro'}
               className="flex items-center gap-2 px-6 py-2.5 bg-transparent border border-border hover:bg-accent hover:text-accent-foreground font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               <ArrowDownCircle className="w-5 h-5" />

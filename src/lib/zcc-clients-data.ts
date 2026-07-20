@@ -15,11 +15,11 @@ export interface ClientFriend {
   city: string;
   state: string;
   rooms: number;
-  plan: 'fundador' | 'lite' | 'pro' | 'max' | 'parceiro';
+  plan: 'gratuito' | 'lite' | 'pro' | 'max' | 'parceiro';
   status: 'BETA_TESTER' | 'EARLY_ADOPTER' | 'ACTIVE' | 'ONBOARDING';
   avatar: string; // initials
   color: string; // tailwind bg color
-  niche: 'pousadas' | 'anfitrioes' | 'parceiro';
+  niche: 'pousada' | 'airbnb';
   // Métricas atuais
   totalReservations: number;
   monthlyRevenue: number;
@@ -170,12 +170,12 @@ export const globalMetrics = {
   earlyAdopters: 0,
   monthlyGrowth: 0,
   // Niche breakdown
-  pousadas: {
+  pousada: {
     clients: 0,
     revenue: 0,
     reservations: 0,
   },
-  anfitrioes: {
+  airbnb: {
     clients: 0,
     revenue: 0,
     reservations: 0,
@@ -193,12 +193,12 @@ export const globalMetrics = {
   linkinbioStandaloneMRR: 0,
   // Matriz de preços vigente (mantida como referência)
   pricing: {
-    trial: 0,
+    gratuito: 0,
     lite: 197,
     liteCard: 247,
     pro: 397,
     max: 797,
-    betaPartner: 247,
+    parceiro: 247,
     linkinbioStandalone: 47,
   },
 };

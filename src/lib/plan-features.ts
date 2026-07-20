@@ -1,11 +1,14 @@
 // ==============================================================================
-// ZEHLA SmartHotel — Plan Feature Matrix
+// SEUZÉLLA.COM — Plan Feature Matrix (UNIFIED TAXONOMY)
 // ==============================================================================
-// Define EXATAMENTE o que cada plano entrega no DDC.
-// Regra: cada upgrade (LITE→PRO→MAX) deve dobrar a percepção de valor.
+// Fonte da verdade absoluta para planos: GRATUITO | LITE | PRO | MAX | PARCEIRO
+// Espelhado em: prisma/schema.prisma (enum Plan), auth.ts, middleware.ts
+//
+// Regra: cada upgrade (GRATUITO→LITE→PRO→MAX) dobra a percepção de valor.
+// PARCEIRO é um plano à parte (Link-in-Bio + comissão de indicação).
 // ==============================================================================
 
-export type PlanTier = 'trial' | 'lite' | 'pro' | 'max';
+export type PlanTier = 'gratuito' | 'lite' | 'pro' | 'max' | 'parceiro';
 
 export interface FeatureDef {
   id: string;
@@ -19,12 +22,12 @@ export interface FeatureDef {
 
 // ── Feature Matrix ─────────────────────────────────────────────────────────────
 
-export const PLAN_TIER_ORDER: PlanTier[] = ['trial', 'lite', 'pro', 'max'];
+export const PLAN_TIER_ORDER: PlanTier[] = ['gratuito', 'lite', 'pro', 'max', 'parceiro'];
 
 export const PLAN_DISPLAY: Record<PlanTier, { name: string; label: string; color: string; badgeBg: string; badgeBorder: string; badgeText: string; price: number; priceLabel: string }> = {
-  trial: {
-    name: 'Trial',
-    label: 'TRIAL',
+  gratuito: {
+    name: 'Gratuito',
+    label: 'GRATUITO',
     color: 'text-zinc-400',
     badgeBg: 'bg-zinc-500/10',
     badgeBorder: 'border-zinc-500/30',
@@ -62,10 +65,20 @@ export const PLAN_DISPLAY: Record<PlanTier, { name: string; label: string; color
     price: 797,
     priceLabel: 'R$797/mês',
   },
+  parceiro: {
+    name: 'Parceiro',
+    label: 'PARCEIRO',
+    color: 'text-purple-400',
+    badgeBg: 'bg-purple-500/10',
+    badgeBorder: 'border-purple-500/30',
+    badgeText: 'text-purple-400',
+    price: 247,
+    priceLabel: 'R$247/mês',
+  },
 };
 
 // Tier hierarchy for comparison
-const TIER_LEVEL: Record<PlanTier, number> = { trial: 0, lite: 1, pro: 2, max: 3 };
+const TIER_LEVEL: Record<PlanTier, number> = { gratuito: 0, lite: 1, pro: 2, max: 3, parceiro: 1 };
 
 export function tierLevel(tier: PlanTier): number {
   return TIER_LEVEL[tier] ?? 0;
@@ -91,7 +104,7 @@ export const DDC_TABS: TabDef[] = [
   {
     id: 'overview',
     label: 'Dashboard',
-    minTier: 'trial',
+    minTier: 'gratuito',
     upgradeTarget: 'lite',
     lockedLabel: 'Dashboard Geral',
     lockedDescription: 'Acesse métricas em tempo real, receita, conversão e status da IA.',
@@ -100,7 +113,7 @@ export const DDC_TABS: TabDef[] = [
   {
     id: 'messages',
     label: 'Mensagens',
-    minTier: 'trial',
+    minTier: 'gratuito',
     upgradeTarget: 'lite',
     lockedLabel: 'Mensagens AI',
     lockedDescription: 'Acompanhe em tempo real todas as conversas da IA com seus hóspedes.',
@@ -109,7 +122,7 @@ export const DDC_TABS: TabDef[] = [
   {
     id: 'guests',
     label: 'Hóspedes',
-    minTier: 'pro', // BLOQUEADO no LITE e Trial
+    minTier: 'pro',
     upgradeTarget: 'pro',
     lockedLabel: 'CRM de Hóspedes',
     lockedDescription: 'Pipeline completo com score de IA: Cold → Warm → Hot → Reservado → Perdido.',
@@ -118,7 +131,7 @@ export const DDC_TABS: TabDef[] = [
   {
     id: 'training',
     label: 'Treinamento',
-    minTier: 'pro', // BLOQUEADO no LITE e Trial
+    minTier: 'pro',
     upgradeTarget: 'pro',
     lockedLabel: 'Centro de Treinamento',
     lockedDescription: 'Treine a IA para responder exatamente do jeito que sua pousada atende.',
@@ -136,7 +149,7 @@ export const DDC_TABS: TabDef[] = [
   {
     id: 'analytics',
     label: 'Analytics',
-    minTier: 'pro', // BLOQUEADO no LITE e Trial
+    minTier: 'pro',
     upgradeTarget: 'pro',
     lockedLabel: 'Analytics Avançado',
     lockedDescription: 'Gráficos detalhados de desempenho, tendências e relatórios comparativos.',
@@ -145,7 +158,7 @@ export const DDC_TABS: TabDef[] = [
   {
     id: 'settings',
     label: 'Configurações',
-    minTier: 'trial',
+    minTier: 'gratuito',
     upgradeTarget: 'lite',
     lockedLabel: 'Configurações',
     lockedDescription: 'Personalize o WhatsApp AI, dados da propriedade e integrações.',
@@ -176,21 +189,21 @@ export const SETTINGS_FEATURES: SettingsFeature[] = [
   {
     id: 'whatsapp-ai',
     label: 'WhatsApp AI',
-    minTier: 'trial',
+    minTier: 'gratuito',
     upgradeTarget: 'lite',
     lockedDescription: 'Configure o tom e comportamento da IA no WhatsApp.',
   },
   {
     id: 'property-info',
     label: 'Dados da Propriedade',
-    minTier: 'trial',
+    minTier: 'gratuito',
     upgradeTarget: 'lite',
     lockedDescription: 'Nome, telefone, horários de check-in/out.',
   },
   {
     id: 'checkin-hours',
     label: 'Horários Check-in/out',
-    minTier: 'trial',
+    minTier: 'gratuito',
     upgradeTarget: 'lite',
     lockedDescription: 'Defina horários personalizados.',
   },
@@ -232,7 +245,7 @@ export const SETTINGS_FEATURES: SettingsFeature[] = [
   {
     id: 'faturamento',
     label: 'Faturamento',
-    minTier: 'trial',
+    minTier: 'gratuito',
     upgradeTarget: 'lite',
     lockedDescription: 'Gerencie assinatura e acompanhe cotas.',
   },
@@ -248,21 +261,21 @@ export interface QuickActionDef {
 }
 
 export const QUICK_ACTIONS: QuickActionDef[] = [
-  { id: 'dashboard', label: 'Dashboard', minTier: 'trial', upgradeTarget: 'lite' },
-  { id: 'messages', label: 'Mensagens', minTier: 'trial', upgradeTarget: 'lite' },
+  { id: 'dashboard', label: 'Dashboard', minTier: 'gratuito', upgradeTarget: 'lite' },
+  { id: 'messages', label: 'Mensagens', minTier: 'gratuito', upgradeTarget: 'lite' },
   { id: 'guests', label: 'Hóspedes', minTier: 'pro', upgradeTarget: 'pro' },
   { id: 'training', label: 'Treinamento', minTier: 'pro', upgradeTarget: 'pro' },
   { id: 'bookings', label: 'Reservas', minTier: 'lite', upgradeTarget: 'lite' },
   { id: 'analytics', label: 'Analytics', minTier: 'pro', upgradeTarget: 'pro' },
-  { id: 'notifications', label: 'Notificações', minTier: 'trial', upgradeTarget: 'lite' },
-  { id: 'settings', label: 'Configurações', minTier: 'trial', upgradeTarget: 'lite' },
+  { id: 'notifications', label: 'Notificações', minTier: 'gratuito', upgradeTarget: 'lite' },
+  { id: 'settings', label: 'Configurações', minTier: 'gratuito', upgradeTarget: 'lite' },
   { id: 'airb', label: 'Zélla AirB', minTier: 'pro', upgradeTarget: 'pro' },
 ];
 
 // ── Feature highlights por plano (para upgrade nudges) ────────────────────────
 
 export const PLAN_HIGHLIGHTS: Record<PlanTier, { headline: string; features: string[]; valueProposition: string }> = {
-  trial: {
+  gratuito: {
     headline: 'Comece a testar agora mesmo',
     features: ['IA 24/7 respondendo hóspedes', 'Checkout PIX integrado', 'Dashboard de métricas'],
     valueProposition: 'Para conhecer o Zélla na prática antes de assinar.',
@@ -308,6 +321,17 @@ export const PLAN_HIGHLIGHTS: Record<PlanTier, { headline: string; features: str
     ],
     valueProposition: 'Para redes e pousadas de alto padrão que querem um parceiro estratégico.',
   },
+  parceiro: {
+    headline: 'Parceiro Zélla — Ganhe indicando',
+    features: [
+      'Selo Parceiro Zélla verificado',
+      'Link-in-Bio profissional personalizado',
+      'Comissão por indicação convertida',
+      'Dashboard de indicações',
+      'Acesso antecipado a novas features',
+    ],
+    valueProposition: 'Para quem quer monetizar sua rede e ser parceiro oficial Zélla.',
+  },
 };
 
 // ── Link-in-Bio Standalone (sem Zélla IA) ────────────────────────────────────
@@ -337,4 +361,22 @@ export function getUpgradePrice(currentTier: PlanTier): { target: PlanTier; curr
   const current = PLAN_DISPLAY[currentTier].price;
   const nextPrice = PLAN_DISPLAY[next].price;
   return { target: next, currentPrice: current, newPrice: nextPrice, diff: nextPrice - current };
+}
+
+// ── Legacy Migration Helper ───────────────────────────────────────────────────
+// Converte valores antigos para a nova taxonomia
+export function migratePlanLegacy(oldPlan: string): PlanTier {
+  const map: Record<string, PlanTier> = {
+    trial: 'gratuito',
+    starter: 'lite',
+    professional: 'pro',
+    business: 'max',
+    gratuito: 'gratuito',
+    lite: 'lite',
+    pro: 'pro',
+    max: 'max',
+    parceiro: 'parceiro',
+    fundador: 'max', // fundador → max
+  };
+  return map[oldPlan.toLowerCase()] || 'gratuito';
 }

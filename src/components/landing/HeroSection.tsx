@@ -7,7 +7,7 @@ import { useNiche } from '@/contexts/NicheContext';
 import { NicheToggle } from './NicheToggle';
 
 export function HeroSection() {
-  const { niche, setNiche, isPousadas, isAnfitrioes, isParceiro } = useNiche();
+  const { niche, setNiche, isPousada, isAirbnb } = useNiche();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -15,11 +15,9 @@ export function HeroSection() {
   }, []);
 
   // Rotating hero words — niche-specific to avoid cross-contamination
-  const rotatingPhrases = isPousadas
+  const rotatingPhrases = isPousada
     ? ['pelo WhatsApp.', 'a sua pousada.']
-    : isAnfitrioes
-    ? ['pelo WhatsApp.', 'o seu imóvel.']
-    : ['pelo WhatsApp.', 'seu negócio.'];
+    : ['pelo WhatsApp.', 'o seu imóvel.'];
   const rotatingPhrasesLength = rotatingPhrases.length;
   const [phraseIdx, setPhraseIdx] = useState(0);
   useEffect(() => {
@@ -78,9 +76,9 @@ export function HeroSection() {
 
             <p className="text-base sm:text-lg md:text-xl text-neutral-400 leading-relaxed mb-12 max-w-2xl mx-auto">
               {!mounted ? 'O zelador digital que responde 24hs por 7. Atende os hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para pousadas.' :
-              isPousadas
+              isPousada
                 ? 'O zelador digital que responde 24hs por 7. Atende os hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para pousadas.'
-                : isAnfitrioes
+                : isAirbnb
                 ? 'O zelador digital que responde 24hs por 7. Atende seus hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para anfitriões Airbnb. O Zélla AirB é seu co-anfitrião digital.'
                 : 'O programa de parceria que congela seu preço por 24 meses. Plano PRO completo por R$247/mês com selo exclusivo de parceiro no Link-in-Bio.'}
             </p>
@@ -112,20 +110,12 @@ export function HeroSection() {
               className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 text-xs sm:text-sm text-neutral-400 font-medium mt-8"
             >
               <div className="flex -space-x-2.5">
-                {(isParceiro
-                  ? [
-                      { name: 'Hotel Central', img: '/avatar-serenity.jpg' },
-                      { name: 'Rede Sol Nascente', img: '/pousada-vista.jpg' },
-                      { name: 'Operação Premium', img: '/pousada-chale.jpg' },
-                      { name: 'Flat Premium', img: '/pousada-jardim.jpg' },
-                    ]
-                  : [
-                      { name: isAnfitrioes ? 'Flat Copacabana' : 'Pousada Serenity', img: '/avatar-serenity.jpg' },
-                      { name: isAnfitrioes ? 'Chalé Campos' : 'Pousada Sol & Mar', img: '/pousada-vista.jpg' },
-                      { name: isAnfitrioes ? 'Apartamento Centro' : 'Chalé da Montanha', img: '/pousada-chale.jpg' },
-                      { name: isAnfitrioes ? 'Studio Paulista' : 'Recanto Verde', img: '/pousada-jardim.jpg' },
-                    ]
-                ).map((p, i) => (
+                {([
+                      { name: isAirbnb ? 'Flat Copacabana' : 'Pousada Serenity', img: '/avatar-serenity.jpg' },
+                      { name: isAirbnb ? 'Chalé Campos' : 'Pousada Sol & Mar', img: '/pousada-vista.jpg' },
+                      { name: isAirbnb ? 'Apartamento Centro' : 'Chalé da Montanha', img: '/pousada-chale.jpg' },
+                      { name: isAirbnb ? 'Studio Paulista' : 'Recanto Verde', img: '/pousada-jardim.jpg' },
+                    ]).map((p, i) => (
                   <div key={i} className="w-8 h-8 rounded-full p-[1.5px] bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 shadow-sm relative" style={{ zIndex: 40 - i * 10 }}>
                     <div className="w-full h-full rounded-full border border-[#0a0a0a] overflow-hidden bg-zinc-900">
                       <img
@@ -137,7 +127,7 @@ export function HeroSection() {
                   </div>
                 ))}
               </div>
-              <span className="sm:border-l sm:border-white/10 sm:pl-6 text-neutral-300 font-bold">{isPousadas ? '+100 pousadas já atendem melhor com o Zélla' : isAnfitrioes ? '+100 anfitriões já atendem melhor com o Zélla' : '+100 parceiros já economizam com o Zélla'}</span>
+              <span className="sm:border-l sm:border-white/10 sm:pl-6 text-neutral-300 font-bold">{isPousada ? '+100 pousadas já atendem melhor com o Zélla' : '+100 anfitriões já atendem melhor com o Zélla'}</span>
             </motion.div>
 
             {/* ── CTA button — below social proof ── */}
@@ -148,7 +138,7 @@ export function HeroSection() {
               transition={{ duration: 0.3, delay: 0.75 }}
               className="mt-7"
             >
-              {niche === 'parceiro' ? (
+              {niche === 'airbnb' ? (
                 <a
                   href="/parceiro"
                   className="group inline-flex items-center justify-center gap-2.5 px-10 py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-extrabold rounded-2xl hover:from-amber-400 hover:to-amber-500 transition-all duration-200 shadow-2xl shadow-amber-500/30 hover:shadow-amber-500/50 text-base active:scale-95 hover:scale-[1.03]"
@@ -163,7 +153,7 @@ export function HeroSection() {
                     if (el) el.scrollIntoView({ behavior: 'smooth' });
                   }}
                   className={`group inline-flex items-center justify-center gap-2.5 px-10 py-4 font-extrabold rounded-2xl transition-all duration-200 shadow-2xl text-base active:scale-95 hover:scale-[1.03] ${
-                    niche === 'pousadas'
+                    niche === 'pousada'
                       ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-400 hover:to-emerald-500 shadow-emerald-500/30 hover:shadow-emerald-500/50'
                       : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-400 hover:to-blue-500 shadow-blue-500/30 hover:shadow-blue-500/50'
                   }`}

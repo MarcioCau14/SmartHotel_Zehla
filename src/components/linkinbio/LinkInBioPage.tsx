@@ -175,7 +175,7 @@ export function LinkInBioPage({ profile, isPreview = false }: { profile: LinkInB
           </div>
 
           {/* WhatsApp attendance indicator — Zélla IA atende todos os planos pagos */}
-          {(profile.plan === 'lite' || profile.plan === 'pro' || profile.plan === 'max') && (
+          {(profile.plan === 'lite' || profile.plan === 'pro' || profile.plan === 'max' || profile.plan === 'parceiro') && (
             <div className="w-full mt-4 flex items-center justify-center gap-2 text-[10px] text-zinc-500">
               <Bot className="w-3 h-3 text-emerald-500/60" />
               <span>Atendido por <span className="text-emerald-400/80 font-semibold">Zélla IA</span></span>

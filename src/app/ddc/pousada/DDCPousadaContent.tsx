@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LineChart,
@@ -15,7 +14,7 @@ import {
   BarChart,
   Bar,
 } from 'recharts';
-import { ZellaLogo } from '@/components/brand/ZellaLogo';
+import { DDCShell, type NavItem } from '@/components/ddc/DDCShell';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,13 +24,6 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
 import {
   Table,
   TableBody,
@@ -51,7 +43,6 @@ import {
   Users,
   Brain,
   Settings,
-  LogOut,
   TrendingUp,
   DollarSign,
   CreditCard,
@@ -73,7 +64,6 @@ import {
   Building2,
   ShieldCheck,
   ChevronRight,
-  Menu,
   Star,
   Zap,
   Plus,
@@ -260,7 +250,7 @@ function getTrainingStatusIcon(status: string) {
 
 // ─── Sidebar Navigation Items ────────────────────────────────────────────────
 
-const sidebarItems: { id: PousadaTab; label: string; icon: React.ReactNode }[] = [
+const pousadaNavItems: NavItem[] = [
   { id: 'financeiro', label: 'Visão Financeira', icon: <LayoutDashboard className="size-4" /> },
   { id: 'hospedes', label: 'Controle de Hóspedes', icon: <Users className="size-4" /> },
   { id: 'cerebro', label: 'Cérebro da Pousada', icon: <Brain className="size-4" /> },
@@ -270,19 +260,9 @@ const sidebarItems: { id: PousadaTab; label: string; icon: React.ReactNode }[] =
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export default function DDCPousadaContent() {
-  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<PousadaTab>('financeiro');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [trainingUrl, setTrainingUrl] = useState('');
   const [isTraining, setIsTraining] = useState(false);
-
-  const userName = session?.user?.name || 'Proprietário';
-  const userInitials = userName
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
 
   // Computed metrics
   const totalMRR = useMemo(() => {
@@ -293,31 +273,6 @@ export default function DDCPousadaContent() {
   const conversionRate = 34.7;
   const totalGuests = Object.values(kanbanGuests).flat().length;
   const confirmedCount = kanbanGuests['confirmado'].length + kanbanGuests['checkin-hoje'].length;
-
-  // ─── Sidebar Component ──────────────────────────────────────────────────
-
-  const sidebarContent = (
-    <nav className="flex flex-col gap-1 p-3" role="navigation" aria-label="Navegação principal">
-      {sidebarItems.map((item) => (
-        <button
-          key={item.id}
-          onClick={() => {
-            setActiveTab(item.id);
-            setSidebarOpen(false);
-          }}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 w-full text-left ${
-            activeTab === item.id
-              ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
-              : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent'
-          }`}
-          aria-current={activeTab === item.id ? 'page' : undefined}
-        >
-          {item.icon}
-          <span>{item.label}</span>
-        </button>
-      ))}
-    </nav>
-  );
 
   // ─── Tab Content ────────────────────────────────────────────────────────
 
@@ -939,104 +894,19 @@ export default function DDCPousadaContent() {
   // ─── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col">
-      {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-b border-zinc-800/60" role="banner">
-        <div className="flex items-center justify-between h-14 px-4">
-          {/* Left: Mobile Menu + Logo */}
-          <div className="flex items-center gap-3">
-            {/* Mobile sidebar trigger */}
-            <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="lg:hidden text-zinc-400 hover:text-white hover:bg-zinc-800">
-                  <Menu className="size-5" />
-                  <span className="sr-only">Abrir menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="bg-[#111118] border-zinc-800 p-0 w-64">
-                <SheetHeader className="p-4 pb-0">
-                  <SheetTitle className="text-white flex items-center gap-2">
-                    <ZellaLogo size={28} />
-                  </SheetTitle>
-                </SheetHeader>
-                {sidebarContent}
-              </SheetContent>
-            </Sheet>
-
-            <ZellaLogo size={32} />
-            <Separator orientation="vertical" className="h-6 bg-zinc-800 hidden sm:block" />
-            <span className="text-sm font-medium text-zinc-400 hidden sm:block">Dashboard Pousada</span>
-          </div>
-
-          {/* Right: User info + Logout */}
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2">
-              <Avatar className="size-8 border border-zinc-700">
-                <AvatarFallback className="bg-emerald-500/10 text-emerald-400 text-xs font-medium">
-                  {userInitials}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm text-zinc-300">{userName}</span>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10"
-              title="Sair"
-            >
-              <LogOut className="size-4" />
-              <span className="sr-only">Sair da conta</span>
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <div className="flex flex-1">
-        {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex flex-col w-56 border-r border-zinc-800/60 bg-[#0a0a0f] shrink-0" role="complementary">
-          <div className="p-4">
-            <div className="flex items-center gap-2 mb-4">
-              <Building2 className="size-4 text-emerald-400" />
-              <span className="text-xs text-zinc-500 uppercase tracking-wider">Pousada</span>
-            </div>
-          </div>
-          <Separator className="bg-zinc-800/60" />
-          {sidebarContent}
-          <div className="mt-auto p-4">
-            <Separator className="bg-zinc-800/60 mb-4" />
-            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3">
-              <div className="flex items-center gap-2 mb-1">
-                <Zap className="size-3.5 text-emerald-400" />
-                <span className="text-xs font-medium text-emerald-400">Plano Pro</span>
-              </div>
-              <p className="text-[11px] text-zinc-500">12 dias restantes</p>
-            </div>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 p-4 sm:p-6 overflow-auto" role="main">
-          {/* Tab Label Header */}
-          <div className="mb-6">
-            <h1 className="text-xl sm:text-2xl font-bold text-white">
-              {sidebarItems.find((i) => i.id === activeTab)?.label}
-            </h1>
-            <p className="text-sm text-zinc-500 mt-1">
-              {activeTab === 'financeiro' && 'Acompanhe a saúde financeira da sua pousada em tempo real'}
-              {activeTab === 'hospedes' && 'Gerencie o fluxo de hóspedes do atendimento ao check-in'}
-              {activeTab === 'cerebro' && 'Treine a IA com as informações da sua pousada'}
-              {activeTab === 'config' && 'Configure seu perfil, plano e integrações'}
-            </p>
-          </div>
-
-          <AnimatePresence mode="wait">
-            {activeTab === 'financeiro' && <div key="financeiro">{renderFinanceiro()}</div>}
-            {activeTab === 'hospedes' && <div key="hospedes">{renderHospedes()}</div>}
-            {activeTab === 'cerebro' && <div key="cerebro">{renderCerebro()}</div>}
-            {activeTab === 'config' && <div key="config">{renderConfig()}</div>}
-          </AnimatePresence>
-        </main>
-      </div>
-    </div>
+    <DDCShell
+      niche="pousada"
+      navItems={pousadaNavItems}
+      activeTab={activeTab}
+      onTabChange={(id) => setActiveTab(id as PousadaTab)}
+      propertyName="Pousada Paraíso"
+    >
+      <AnimatePresence mode="wait">
+        {activeTab === 'financeiro' && <div key="financeiro">{renderFinanceiro()}</div>}
+        {activeTab === 'hospedes' && <div key="hospedes">{renderHospedes()}</div>}
+        {activeTab === 'cerebro' && <div key="cerebro">{renderCerebro()}</div>}
+        {activeTab === 'config' && <div key="config">{renderConfig()}</div>}
+      </AnimatePresence>
+    </DDCShell>
   );
 }
