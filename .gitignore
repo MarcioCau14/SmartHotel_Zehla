@@ -61,4 +61,4 @@ server.log
 # DB file
 db/*.db
 # Worklog
-worklog.md
+worklog.md.env.local
