@@ -5,23 +5,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Toaster, toast } from 'sonner';
 import { ZellaLogo } from '@/components/brand/ZellaLogo';
 import {
-  Mail,
-  Lock,
-  User,
-  Loader2,
-  Building2,
-  Key,
-  Eye,
-  EyeOff,
-  ChevronDown,
-  CheckCircle2,
-  ArrowRight,
-  ShieldCheck,
-  Sparkles,
+  Mail, Lock, User, Loader2, Eye, EyeOff,
+  ChevronDown, CheckCircle2, ArrowRight, ShieldCheck, Sparkles,
+  LayoutDashboard,
 } from 'lucide-react';
 
 // ─── Google SVG Icon ────────────────────────────────────────
@@ -52,10 +41,10 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#0a0a0d] p-4">
+        <div className="min-h-screen flex items-center justify-center bg-[#080b14] p-4">
           <div className="flex flex-col items-center gap-3">
             <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
-            <span className="text-zinc-400 text-sm">Carregando...</span>
+            <span className="text-zinc-500 text-sm">Carregando...</span>
           </div>
         </div>
       }
@@ -75,6 +64,12 @@ function LoginContent() {
   const magicEmailParam = searchParams.get('email');
   const magicRedirectParam = searchParams.get('redirect');
   const errorParam = searchParams.get('error');
+
+  // Determine context from callback URL
+  const isZCC = callbackUrl.startsWith('/zcc');
+  const isDDC = callbackUrl.startsWith('/ddc');
+  const contextLabel = isZCC ? 'ZCC — Central Control' : isDDC ? 'DDC — Painel do Cliente' : 'Dashboard';
+  const contextIcon = isZCC ? ShieldCheck : LayoutDashboard;
 
   const [isLoading, setIsLoading] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('signin');
@@ -123,20 +118,19 @@ function LoginContent() {
                 redirect: false,
               });
               if (result?.ok) {
-                toast.success('Login realizado com sucesso!');
+                toast.success('Acesso autorizado!');
                 await new Promise(r => setTimeout(r, 500));
                 const redirectPath = magicRedirectParam || '/ddc';
                 router.push(redirectPath);
                 router.refresh();
               } else {
-                toast.error('Erro no login mágico. Tente novamente.');
+                toast.error('Credenciais inválidas.');
               }
             }
           } else {
-            toast.error('Erro na verificação do link mágico.');
+            toast.error('Link expirado ou inválido.');
           }
-        } catch (err) {
-          console.error('[Magic Login] Error:', err);
+        } catch {
           toast.error('Erro de conexão.');
         } finally {
           setIsLoading(false);
@@ -150,7 +144,7 @@ function LoginContent() {
   useEffect(() => {
     if (errorParam) {
       const errorMessages: Record<string, string> = {
-        'invalid-token': 'Token inválido. Tente novamente.',
+        'invalid-token': 'Token inválido. Solicite um novo link.',
         'token-not-found': 'Link não encontrado ou já usado.',
         'token-expired': 'Link expirado. Solicite um novo.',
         'service-unavailable': 'Serviço indisponível no momento.',
@@ -177,10 +171,8 @@ function LoginContent() {
       const data = await response.json();
       if (response.ok) {
         setViewMode('magic-sent');
-        if (data.devUrl) {
-          setMagicDevUrl(data.devUrl);
-        }
-        toast.success('Link mágico enviado!');
+        if (data.devUrl) setMagicDevUrl(data.devUrl);
+        toast.success('Link de acesso enviado!');
       } else {
         toast.error(data.error || 'Erro ao enviar link.');
       }
@@ -195,7 +187,7 @@ function LoginContent() {
   const handleCredentialLogin = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!credentialData.email || !credentialData.password) {
-      toast.error('Preencha o login e a senha.');
+      toast.error('Preencha login e senha.');
       return;
     }
     setIsLoading(true);
@@ -207,18 +199,12 @@ function LoginContent() {
         redirect: false,
       });
       if (result?.error) {
-        if (result.error === 'CredentialsSignin') {
-          toast.error('Login ou senha incorretos.');
-        } else {
-          toast.error(`Erro no login: ${result.error}`);
-        }
+        toast.error(result.error === 'CredentialsSignin' ? 'Login ou senha incorretos.' : `Erro: ${result.error}`);
       } else if (result?.ok) {
-        toast.success('Login realizado com sucesso!');
+        toast.success('Acesso autorizado!');
         await new Promise(r => setTimeout(r, 500));
         router.push(callbackUrl);
         router.refresh();
-      } else {
-        toast.error('Erro inesperado ao fazer login.');
       }
     } catch {
       toast.error('Erro de conexão.');
@@ -247,11 +233,11 @@ function LoginContent() {
       return;
     }
     if (signUpData.password.length < 6) {
-      toast.error('A senha deve ter pelo menos 6 caracteres.');
+      toast.error('Senha deve ter pelo menos 6 caracteres.');
       return;
     }
     if (!agreedTerms) {
-      toast.error('Você deve concordar com os Termos de Uso.');
+      toast.error('Aceite os Termos de Uso.');
       return;
     }
     setIsLoading(true);
@@ -270,7 +256,7 @@ function LoginContent() {
       });
       const data = await response.json();
       if (response.ok) {
-        toast.success('Conta criada com sucesso!');
+        toast.success('Conta criada!');
         const { signIn } = await import('next-auth/react');
         const result = await signIn('credentials', {
           email: signUpData.email,
@@ -278,8 +264,7 @@ function LoginContent() {
           redirect: false,
         });
         if (result?.ok) {
-          const niche = signUpData.niche;
-          const redirectPath = niche === 'airbnb' ? '/ddc/airbnb' : '/ddc/pousada';
+          const redirectPath = signUpData.niche === 'airbnb' ? '/ddc/airbnb' : '/ddc/pousada';
           router.push(redirectPath);
           router.refresh();
         }
@@ -287,7 +272,7 @@ function LoginContent() {
         toast.error(data.error || 'Erro ao criar conta.');
       }
     } catch {
-      toast.error('Erro ao criar conta. Tente novamente.');
+      toast.error('Erro ao criar conta.');
     } finally {
       setIsLoading(false);
     }
@@ -296,29 +281,33 @@ function LoginContent() {
   // ── Loading overlay ─────────────────────────────────────
   if (magicLoginParam === 'true' && isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0d]">
+      <div className="min-h-screen flex items-center justify-center bg-[#080b14]">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
-          <span className="text-zinc-400 text-sm">Entrando...</span>
+          <span className="text-zinc-500 text-sm">Verificando acesso...</span>
         </div>
         <Toaster position="top-center" richColors />
       </div>
     );
   }
 
+  const ContextIcon = contextIcon;
+
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#0a0a0d] text-white px-4 py-8">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#080b14] text-white px-4 py-8">
       <Toaster position="top-center" richColors />
 
-      {/* Background gradient effects */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/[0.03] rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/[0.03] rounded-full blur-3xl" />
+      {/* Background — subtle grid pattern, NO marketing gradients */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-30">
+        <div className="absolute inset-0" style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0)',
+          backgroundSize: '40px 40px',
+        }} />
       </div>
 
       <div className="relative w-full max-w-md mx-auto">
         <AnimatePresence mode="wait">
-          {/* ═══════════════════ SIGN IN VIEW ═══════════════════ */}
+          {/* ═══════════ SIGN IN VIEW ═══════════ */}
           {viewMode === 'signin' && (
             <motion.div
               key="signin"
@@ -328,18 +317,22 @@ function LoginContent() {
               exit="exit"
               className="flex flex-col items-center gap-6"
             >
-              {/* Logo */}
-              <motion.div variants={fadeUp} className="mb-2">
-                <ZellaLogo size={64} />
+              {/* Logo + Context Badge */}
+              <motion.div variants={fadeUp} className="flex flex-col items-center gap-3">
+                <ZellaLogo size={56} />
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.06]">
+                  <ContextIcon className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-400 uppercase">{contextLabel}</span>
+                </div>
               </motion.div>
 
-              {/* Title */}
+              {/* Title — Dashboard Auth Gate */}
               <motion.div variants={fadeUp} className="text-center">
-                <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                  Bem-vindo ao Seu Zélla
+                <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                  Acesse seu Dashboard
                 </h1>
-                <p className="text-zinc-400 text-sm mt-2">
-                  Seu zelador digital inteligente
+                <p className="text-zinc-500 text-sm mt-1">
+                  Faça login para entrar no painel
                 </p>
               </motion.div>
 
@@ -348,7 +341,7 @@ function LoginContent() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-12 bg-[#121216] border-white/[0.08] hover:bg-[#1a1a24] hover:border-white/[0.14] text-white font-medium rounded-xl cursor-pointer transition-all"
+                  className="w-full h-12 bg-[#0d1117] border-white/[0.08] hover:bg-[#161b22] hover:border-white/[0.14] text-white font-medium rounded-xl cursor-pointer transition-all"
                   onClick={handleGoogleLogin}
                   disabled={isLoading}
                 >
@@ -360,25 +353,25 @@ function LoginContent() {
               {/* Divider */}
               <motion.div variants={fadeUp} className="w-full flex items-center gap-3">
                 <div className="flex-1 h-px bg-white/[0.06]" />
-                <span className="text-zinc-500 text-xs font-medium">ou entre com seu e-mail</span>
+                <span className="text-zinc-600 text-[10px] font-mono tracking-wider uppercase">ou e-mail</span>
                 <div className="flex-1 h-px bg-white/[0.06]" />
               </motion.div>
 
               {/* Magic Link Form */}
               <motion.form variants={fadeUp} onSubmit={handleMagicLink} className="w-full space-y-3">
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
                   <Input
                     type="email"
                     placeholder="seu@email.com"
-                    className="pl-10 h-12 bg-[#121216] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
+                    className="pl-10 h-12 bg-[#0d1117] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-600 rounded-xl"
                     value={magicEmail}
                     onChange={(e) => setMagicEmailState(e.target.value)}
                   />
                 </div>
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold rounded-xl cursor-pointer active:scale-[0.98] transition-all"
+                  className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl cursor-pointer active:scale-[0.98] transition-all"
                   disabled={isLoading || !magicEmail}
                 >
                   {isLoading ? (
@@ -386,21 +379,21 @@ function LoginContent() {
                   ) : (
                     <>
                       <Sparkles className="mr-2 h-4 w-4" />
-                      Enviar link mágico
+                      Enviar link de acesso
                     </>
                   )}
                 </Button>
               </motion.form>
 
-              {/* Divider for credentials */}
+              {/* Credentials toggle */}
               <motion.div variants={fadeUp} className="w-full flex items-center gap-3">
                 <div className="flex-1 h-px bg-white/[0.06]" />
                 <button
                   type="button"
-                  className="text-zinc-500 text-xs font-medium hover:text-zinc-300 cursor-pointer flex items-center gap-1 transition-colors"
+                  className="text-zinc-600 text-[10px] font-mono tracking-wider uppercase hover:text-zinc-400 cursor-pointer flex items-center gap-1 transition-colors"
                   onClick={() => setShowCredentials(!showCredentials)}
                 >
-                  ou use login tradicional
+                  login com senha
                   <ChevronDown className={`h-3 w-3 transition-transform ${showCredentials ? 'rotate-180' : ''}`} />
                 </button>
                 <div className="flex-1 h-px bg-white/[0.06]" />
@@ -418,27 +411,27 @@ function LoginContent() {
                     className="w-full space-y-3 overflow-hidden"
                   >
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
                       <Input
                         type="text"
-                        placeholder="E-mail ou login"
-                        className="pl-10 h-11 bg-[#121216] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
+                        placeholder="E-mail"
+                        className="pl-10 h-11 bg-[#0d1117] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-600 rounded-xl"
                         value={credentialData.email}
                         onChange={(e) => setCredentialData({ ...credentialData, email: e.target.value })}
                       />
                     </div>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
                       <Input
                         type={showPassword ? 'text' : 'password'}
                         placeholder="Senha"
-                        className="pl-10 pr-10 h-11 bg-[#121216] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
+                        className="pl-10 pr-10 h-11 bg-[#0d1117] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-600 rounded-xl"
                         value={credentialData.password}
                         onChange={(e) => setCredentialData({ ...credentialData, password: e.target.value })}
                       />
                       <button
                         type="button"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 cursor-pointer"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 cursor-pointer"
                         onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -447,11 +440,11 @@ function LoginContent() {
                     <Button
                       type="submit"
                       variant="outline"
-                      className="w-full h-11 bg-[#121216] border-white/[0.08] hover:bg-[#1a1a24] text-white font-medium rounded-xl cursor-pointer transition-all"
+                      className="w-full h-11 bg-[#0d1117] border-white/[0.08] hover:bg-[#161b22] text-white font-medium rounded-xl cursor-pointer transition-all"
                       disabled={isLoading}
                     >
                       {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                      Entrar com senha
+                      Entrar
                     </Button>
                   </motion.form>
                 )}
@@ -459,7 +452,7 @@ function LoginContent() {
 
               {/* Sign up link */}
               <motion.div variants={fadeUp} className="text-center pt-2">
-                <p className="text-zinc-500 text-sm">
+                <p className="text-zinc-600 text-sm">
                   Não tem conta?{' '}
                   <button
                     type="button"
@@ -471,19 +464,19 @@ function LoginContent() {
                 </p>
               </motion.div>
 
-              {/* Dev bypass hint */}
+              {/* Dev bypass */}
               <motion.div variants={fadeUp} className="w-full">
-                <div className="bg-[#121216] border border-white/[0.04] rounded-lg p-3 flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-zinc-600 shrink-0" />
-                  <p className="text-[10px] text-zinc-600">
-                    Modo dev: use <span className="text-zinc-400 font-mono">123</span> / <span className="text-zinc-400 font-mono">123</span> para acesso rápido
+                <div className="bg-[#0d1117] border border-white/[0.04] rounded-lg p-3 flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-zinc-700 shrink-0" />
+                  <p className="text-[10px] text-zinc-700">
+                    Dev: <span className="text-zinc-500 font-mono">123</span> / <span className="text-zinc-500 font-mono">123</span>
                   </p>
                 </div>
               </motion.div>
             </motion.div>
           )}
 
-          {/* ═══════════════════ MAGIC LINK SENT VIEW ═══════════════════ */}
+          {/* ═══════════ MAGIC LINK SENT VIEW ═══════════ */}
           {viewMode === 'magic-sent' && (
             <motion.div
               key="magic-sent"
@@ -493,7 +486,6 @@ function LoginContent() {
               exit="exit"
               className="flex flex-col items-center gap-6"
             >
-              {/* Checkmark animation */}
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -510,26 +502,20 @@ function LoginContent() {
               </motion.div>
 
               <motion.div variants={fadeUp} className="text-center">
-                <h2 className="text-xl sm:text-2xl font-bold text-white">
-                  Link mágico enviado!
-                </h2>
-                <p className="text-zinc-400 text-sm mt-2">
-                  Enviamos um link para <span className="text-emerald-400 font-medium">{magicEmail}</span>
+                <h2 className="text-xl font-bold text-white">Link de acesso enviado!</h2>
+                <p className="text-zinc-500 text-sm mt-2">
+                  Enviamos para <span className="text-emerald-400 font-medium">{magicEmail}</span>
                 </p>
-                <p className="text-zinc-500 text-xs mt-1">
-                  Verifique sua caixa de entrada e clique no link para acessar.
+                <p className="text-zinc-600 text-xs mt-1">
+                  Verifique sua caixa de entrada e clique no link.
                 </p>
               </motion.div>
 
-              {/* Dev mode link display */}
               {magicDevUrl && (
                 <motion.div variants={fadeUp} className="w-full">
                   <div className="bg-emerald-500/[0.06] border border-emerald-500/20 rounded-xl p-4 space-y-2">
                     <p className="text-emerald-400 text-xs font-semibold flex items-center gap-1.5">
-                      <Sparkles className="h-3 w-3" /> Modo Desenvolvimento
-                    </p>
-                    <p className="text-zinc-400 text-[11px]">
-                      Clique no link abaixo para simular o acesso:
+                      <Sparkles className="h-3 w-3" /> Modo Dev
                     </p>
                     <a
                       href={magicDevUrl}
@@ -543,12 +529,11 @@ function LoginContent() {
                 </motion.div>
               )}
 
-              {/* Resend button */}
               <motion.div variants={fadeUp} className="w-full space-y-3">
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-12 bg-[#121216] border-white/[0.08] hover:bg-[#1a1a24] text-white font-medium rounded-xl cursor-pointer transition-all"
+                  className="w-full h-12 bg-[#0d1117] border-white/[0.08] hover:bg-[#161b22] text-white font-medium rounded-xl cursor-pointer transition-all"
                   onClick={async () => {
                     setIsLoading(true);
                     try {
@@ -578,7 +563,7 @@ function LoginContent() {
                 <Button
                   type="button"
                   variant="ghost"
-                  className="w-full text-zinc-400 hover:text-white cursor-pointer"
+                  className="w-full text-zinc-500 hover:text-white cursor-pointer"
                   onClick={() => { setViewMode('signin'); setMagicDevUrl(null); }}
                 >
                   Voltar ao login
@@ -587,7 +572,7 @@ function LoginContent() {
             </motion.div>
           )}
 
-          {/* ═══════════════════ SIGN UP VIEW ═══════════════════ */}
+          {/* ═══════════ SIGN UP VIEW ═══════════ */}
           {viewMode === 'signup' && (
             <motion.div
               key="signup"
@@ -597,19 +582,17 @@ function LoginContent() {
               exit="exit"
               className="flex flex-col items-center gap-5"
             >
-              {/* Logo */}
-              <motion.div variants={fadeUp} className="mb-1">
-                <ZellaLogo size={52} />
+              <motion.div variants={fadeUp} className="flex flex-col items-center gap-3">
+                <ZellaLogo size={48} />
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.06]">
+                  <LayoutDashboard className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-400 uppercase">DDC — Painel do Cliente</span>
+                </div>
               </motion.div>
 
-              {/* Title */}
               <motion.div variants={fadeUp} className="text-center">
-                <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                  Crie sua conta
-                </h1>
-                <p className="text-zinc-400 text-sm mt-1">
-                  Comece a usar o Seu Zélla gratuitamente
-                </p>
+                <h1 className="text-xl font-bold text-white tracking-tight">Criar conta</h1>
+                <p className="text-zinc-500 text-sm mt-1">Ative seu dashboard Zélla</p>
               </motion.div>
 
               {/* Google OAuth */}
@@ -617,189 +600,146 @@ function LoginContent() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-12 bg-[#121216] border-white/[0.08] hover:bg-[#1a1a24] hover:border-white/[0.14] text-white font-medium rounded-xl cursor-pointer transition-all"
+                  className="w-full h-12 bg-[#0d1117] border-white/[0.08] hover:bg-[#161b22] hover:border-white/[0.14] text-white font-medium rounded-xl cursor-pointer transition-all"
                   onClick={handleGoogleLogin}
                   disabled={isLoading}
                 >
                   <GoogleIcon className="w-5 h-5 mr-3" />
-                  Continuar com Google
+                  Cadastrar com Google
                 </Button>
               </motion.div>
 
               {/* Divider */}
               <motion.div variants={fadeUp} className="w-full flex items-center gap-3">
                 <div className="flex-1 h-px bg-white/[0.06]" />
-                <span className="text-zinc-500 text-xs font-medium">ou cadastre-se com e-mail</span>
+                <span className="text-zinc-600 text-[10px] font-mono tracking-wider uppercase">ou preencha</span>
                 <div className="flex-1 h-px bg-white/[0.06]" />
               </motion.div>
 
-              {/* Registration form */}
+              {/* Registration Form */}
               <motion.form variants={fadeUp} onSubmit={handleRegister} className="w-full space-y-3">
-                {/* Name */}
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
                   <Input
-                    placeholder="Nome completo"
-                    className="pl-10 h-11 bg-[#121216] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
+                    type="text"
+                    placeholder="Seu nome"
+                    className="pl-10 h-11 bg-[#0d1117] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-600 rounded-xl"
                     value={signUpData.name}
                     onChange={(e) => setSignUpData({ ...signUpData, name: e.target.value })}
                     required
                   />
                 </div>
-
-                {/* Email */}
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
                   <Input
                     type="email"
                     placeholder="seu@email.com"
-                    className="pl-10 h-11 bg-[#121216] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
+                    className="pl-10 h-11 bg-[#0d1117] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-600 rounded-xl"
                     value={signUpData.email}
                     onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
                     required
                   />
                 </div>
 
-                {/* Phone */}
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">📱</span>
-                  <Input
-                    type="tel"
-                    placeholder="(11) 99999-9999"
-                    className="pl-10 h-11 bg-[#121216] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
-                    value={signUpData.phone}
-                    onChange={(e) => setSignUpData({ ...signUpData, phone: e.target.value })}
-                  />
-                </div>
-
-                {/* Password & Confirm */}
+                {/* Niche Selector — Pousada vs Airbnb */}
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                    <Input
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Senha"
-                      className="pl-10 pr-9 h-11 bg-[#121216] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
-                      value={signUpData.password}
-                      onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 cursor-pointer"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                    </button>
-                  </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                    <Input
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="Confirmar"
-                      className="pl-10 pr-9 h-11 bg-[#121216] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
-                      value={signUpData.confirmPassword}
-                      onChange={(e) => setSignUpData({ ...signUpData, confirmPassword: e.target.value })}
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 cursor-pointer"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    >
-                      {showConfirmPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Niche Selector */}
-                <div className="space-y-2">
-                  <Label className="text-zinc-300 text-xs font-semibold">Seu tipo de hospedagem</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setSignUpData({ ...signUpData, niche: 'pousada' })}
-                      className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                        signUpData.niche === 'pousada'
-                          ? 'border-emerald-500 bg-emerald-500/[0.06]'
-                          : 'border-white/[0.06] bg-[#121216] hover:border-white/[0.12]'
-                      }`}
-                    >
-                      <Building2 className={`h-6 w-6 ${signUpData.niche === 'pousada' ? 'text-emerald-400' : 'text-zinc-500'}`} />
-                      <span className={`text-sm font-semibold ${signUpData.niche === 'pousada' ? 'text-emerald-400' : 'text-zinc-400'}`}>
-                        Pousada / Hotel
-                      </span>
-                      {signUpData.niche === 'pousada' && (
-                        <motion.div
-                          layoutId="niche-indicator"
-                          className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5 text-zinc-950" />
-                        </motion.div>
-                      )}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSignUpData({ ...signUpData, niche: 'airbnb' })}
-                      className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                        signUpData.niche === 'airbnb'
-                          ? 'border-blue-500 bg-blue-500/[0.06]'
-                          : 'border-white/[0.06] bg-[#121216] hover:border-white/[0.12]'
-                      }`}
-                    >
-                      <Key className={`h-6 w-6 ${signUpData.niche === 'airbnb' ? 'text-blue-400' : 'text-zinc-500'}`} />
-                      <span className={`text-sm font-semibold ${signUpData.niche === 'airbnb' ? 'text-blue-400' : 'text-zinc-400'}`}>
-                        Anfitrião Airbnb
-                      </span>
-                      {signUpData.niche === 'airbnb' && (
-                        <motion.div
-                          layoutId="niche-indicator"
-                          className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                        </motion.div>
-                      )}
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSignUpData({ ...signUpData, niche: 'pousada' })}
+                    className={`flex flex-col items-center gap-1 p-3 rounded-xl border transition-all cursor-pointer ${
+                      signUpData.niche === 'pousada'
+                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                        : 'bg-[#0d1117] border-white/[0.06] text-zinc-500 hover:border-white/[0.12]'
+                    }`}
+                  >
+                    <span className="text-lg">🏨</span>
+                    <span className="text-xs font-bold">Pousada</span>
+                    <span className="text-[9px] opacity-60">LITE · PRO · MAX</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSignUpData({ ...signUpData, niche: 'airbnb' })}
+                    className={`flex flex-col items-center gap-1 p-3 rounded-xl border transition-all cursor-pointer ${
+                      signUpData.niche === 'airbnb'
+                        ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                        : 'bg-[#0d1117] border-white/[0.06] text-zinc-500 hover:border-white/[0.12]'
+                    }`}
+                  >
+                    <span className="text-lg">🏠</span>
+                    <span className="text-xs font-bold">Airbnb</span>
+                    <span className="text-[9px] opacity-60">PRO · MAX</span>
+                  </button>
                 </div>
 
                 {/* Property Name */}
                 <div className="relative">
-                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <LayoutDashboard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
                   <Input
-                    placeholder={signUpData.niche === 'airbnb' ? 'Nome do seu imóvel' : 'Nome da sua pousada'}
-                    className="pl-10 h-11 bg-[#121216] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-500 rounded-xl"
+                    type="text"
+                    placeholder={signUpData.niche === 'pousada' ? 'Nome da pousada' : 'Seu nome de anfitrião'}
+                    className="pl-10 h-11 bg-[#0d1117] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-600 rounded-xl"
                     value={signUpData.propertyName}
                     onChange={(e) => setSignUpData({ ...signUpData, propertyName: e.target.value })}
+                  />
+                </div>
+
+                {/* Password fields */}
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Senha (mín. 6 caracteres)"
+                    className="pl-10 pr-10 h-11 bg-[#0d1117] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-600 rounded-xl"
+                    value={signUpData.password}
+                    onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
                     required
                   />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 cursor-pointer"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
+                  <Input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="Confirmar senha"
+                    className="pl-10 pr-10 h-11 bg-[#0d1117] border-white/[0.08] focus:border-emerald-500/50 focus:ring-emerald-500/20 text-white placeholder:text-zinc-600 rounded-xl"
+                    value={signUpData.confirmPassword}
+                    onChange={(e) => setSignUpData({ ...signUpData, confirmPassword: e.target.value })}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 cursor-pointer"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
 
                 {/* Terms */}
-                <div className="flex items-start gap-3">
+                <label className="flex items-start gap-2 cursor-pointer">
                   <input
-                    id="terms-check"
                     type="checkbox"
                     checked={agreedTerms}
                     onChange={(e) => setAgreedTerms(e.target.checked)}
-                    className="mt-1 w-4 h-4 rounded border-white/[0.12] bg-[#121216] text-emerald-500 focus:ring-emerald-500/20"
+                    className="mt-1 accent-emerald-500"
                   />
-                  <Label htmlFor="terms-check" className="text-zinc-400 text-xs leading-snug font-normal cursor-pointer select-none">
+                  <span className="text-[11px] text-zinc-500 leading-relaxed">
                     Concordo com os{' '}
-                    <a href="#" className="text-emerald-400 hover:underline">Termos de Uso</a>
+                    <a href="/legal/termos-uso" className="text-emerald-400 hover:underline" target="_blank">Termos de Uso</a>
                     {' '}e a{' '}
-                    <a href="#" className="text-emerald-400 hover:underline">Política de Privacidade</a>.
-                  </Label>
-                </div>
+                    <a href="/legal/politica-privacidade" className="text-emerald-400 hover:underline" target="_blank">Política de Privacidade</a>
+                  </span>
+                </label>
 
-                {/* Submit */}
                 <Button
                   type="submit"
-                  className={`w-full h-12 font-bold rounded-xl cursor-pointer active:scale-[0.98] transition-all ${
-                    signUpData.niche === 'airbnb'
-                      ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                      : 'bg-emerald-500 hover:bg-emerald-600 text-zinc-950'
-                  }`}
+                  className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl cursor-pointer active:scale-[0.98] transition-all"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -807,19 +747,19 @@ function LoginContent() {
                   ) : (
                     <>
                       <ArrowRight className="mr-2 h-4 w-4" />
-                      Criar minha conta
+                      Criar conta e acessar dashboard
                     </>
                   )}
                 </Button>
               </motion.form>
 
               {/* Back to login */}
-              <motion.div variants={fadeUp} className="text-center pt-1">
-                <p className="text-zinc-500 text-sm">
+              <motion.div variants={fadeUp} className="text-center">
+                <p className="text-zinc-600 text-sm">
                   Já tem conta?{' '}
                   <button
                     type="button"
-                    onClick={() => { setViewMode('signin'); setShowPassword(false); }}
+                    onClick={() => setViewMode('signin')}
                     className="text-emerald-400 hover:underline font-semibold cursor-pointer"
                   >
                     Fazer login
@@ -829,13 +769,6 @@ function LoginContent() {
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Footer */}
-        <div className="mt-8 text-center">
-          <p className="text-zinc-600 text-[10px]">
-            © 2026 SEU ZÉLLA — O zelador digital inteligente.
-          </p>
-        </div>
       </div>
     </div>
   );
