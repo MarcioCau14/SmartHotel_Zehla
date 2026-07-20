@@ -105,7 +105,7 @@ export default function ZCCPage() {
   const { data: apiData, loading: metricsLoading } = useZCCMetrics();
 
   // API data with static fallback
-  const totalMRR = apiData?.mrr?.total ?? (airbnbMetrics.proCount * 397 + airbnbMetrics.maxCount * 797 + parceiroMetrics.monthlyMRR + globalMetrics.pousadas.revenue);
+  const totalMRR = apiData?.mrr?.total ?? (airbnbMetrics.proCount * 397 + airbnbMetrics.maxCount * 797 + parceiroMetrics.monthlyMRR + globalMetrics.pousada.revenue);
   const totalClients = apiData?.totalClients ?? globalMetrics.totalClients;
   const apiGlobalMetrics = apiData ? {
     ...globalMetrics,
@@ -113,13 +113,13 @@ export default function ZCCPage() {
     totalReservations: apiData.totalReservations ?? globalMetrics.totalReservations,
     totalMessagesProcessed: apiData.totalMessagesProcessed ?? globalMetrics.totalMessagesProcessed,
     avgOccupancy: apiData.avgOccupancy ?? globalMetrics.avgOccupancy,
-    avgBrainAccuracy: apiData.nicheBreakdown?.pousadas ? globalMetrics.avgBrainAccuracy : globalMetrics.avgBrainAccuracy,
+    avgBrainAccuracy: apiData.nicheBreakdown?.pousada ? globalMetrics.avgBrainAccuracy : globalMetrics.avgBrainAccuracy,
     totalPriceAdjustments: apiData.totalPriceAdjustments ?? globalMetrics.totalPriceAdjustments,
     monthlyGrowth: apiData.monthlyGrowth ?? globalMetrics.monthlyGrowth,
-    pousadas: {
-      clients: apiData.nicheBreakdown?.pousadas?.clients ?? globalMetrics.pousadas.clients,
-      revenue: apiData.nicheBreakdown?.pousadas?.revenue ?? globalMetrics.pousadas.revenue,
-      reservations: apiData.nicheBreakdown?.pousadas?.reservations ?? globalMetrics.pousadas.reservations,
+    pousada: {
+      clients: apiData.nicheBreakdown?.pousada?.clients ?? globalMetrics.pousada.clients,
+      revenue: apiData.nicheBreakdown?.pousada?.revenue ?? globalMetrics.pousada.revenue,
+      reservations: apiData.nicheBreakdown?.pousada?.reservations ?? globalMetrics.pousada.reservations,
     },
   } : globalMetrics;
   const apiAirbnbMetrics = apiData ? {
@@ -279,12 +279,12 @@ export default function ZCCPage() {
                         <span className="zcc-badge-gold">BETA</span>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <div><div className="zcc-eyebrow">CLIENTES</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-champagne)' }}>{apiGlobalMetrics.pousadas.clients}</div></div>
-                        <div><div className="zcc-eyebrow">RECEITA</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-kinpaku)' }}>R$ {(apiGlobalMetrics.pousadas.revenue / 1000).toFixed(1)}k</div></div>
-                        <div><div className="zcc-eyebrow">RESERVAS</div><div className="text-sm font-bold font-mono" style={{ color: 'var(--zcc-patina)' }}>{apiGlobalMetrics.pousadas.reservations.toLocaleString('pt-BR')}</div></div>
+                        <div><div className="zcc-eyebrow">CLIENTES</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-champagne)' }}>{apiGlobalMetrics.pousada.clients}</div></div>
+                        <div><div className="zcc-eyebrow">RECEITA</div><div className="text-lg font-bold font-mono" style={{ color: 'var(--zcc-kinpaku)' }}>R$ {(apiGlobalMetrics.pousada.revenue / 1000).toFixed(1)}k</div></div>
+                        <div><div className="zcc-eyebrow">RESERVAS</div><div className="text-sm font-bold font-mono" style={{ color: 'var(--zcc-patina)' }}>{apiGlobalMetrics.pousada.reservations.toLocaleString('pt-BR')}</div></div>
                         <div><div className="zcc-eyebrow">BRAIN AVG</div><div className="text-sm font-bold font-mono" style={{ color: '#10b981' }}>{apiGlobalMetrics.avgBrainAccuracy}%</div></div>
                       </div>
-                      <MiniSparkline data={sparkline(apiGlobalMetrics.pousadas.revenue, 5000)} color="#d4a843" width={200} height={28} />
+                      <MiniSparkline data={sparkline(apiGlobalMetrics.pousada.revenue, 5000)} color="#d4a843" width={200} height={28} />
                     </div>
 
                     {/* Airbnb */}

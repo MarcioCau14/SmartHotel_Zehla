@@ -131,7 +131,7 @@ export function DDCSidebar({
       <div className="p-4 border-b border-white/[0.06]">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 border border-white/[0.08] flex items-center justify-center">
-            <ZellaLogo size={20} variant="icon" />
+            <ZellaLogo size={20} />
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-sm font-bold text-white tracking-tight truncate">

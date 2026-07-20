@@ -805,11 +805,11 @@ export default function DDCPousadaContent() {
           <div className="flex items-center gap-4">
             <Avatar className="size-16 border-2 border-emerald-500/30">
               <AvatarFallback className="bg-emerald-500/10 text-emerald-400 text-lg font-bold">
-                {userInitials}
+                {scannedData.propertyName.split(' ').map(n => n[0]).join('').slice(0, 2)}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="text-white font-semibold text-lg">Pousada Recanto Verde</h3>
+              <h3 className="text-white font-semibold text-lg">{scannedData.propertyName}</h3>
               <p className="text-zinc-400 text-sm">CNPJ: 12.345.678/0001-90</p>
             </div>
           </div>
