@@ -449,3 +449,35 @@ Stage Summary:
 - Security: HMAC-SHA256 signatures, timing-safe comparison, plan-based access control
 - Schema: whatsappPhoneNumber + whatsappBusinessId added to Tenant
 - Deployed: https://smart-hotel-zehla.vercel.app ✅
+
+---
+Task ID: 5-6
+Agent: main
+Task: Fix broken landing page (remove AnimatedLogo overlay) + apply UI/UX Pro Max skill enhancements + deploy
+
+Work Log:
+- Diagnosed the broken landing page: AnimatedLogo.tsx was inserted above the hero headline with a placeholder SVG "Z" that drew over the main copy
+- Removed AnimatedLogo import and rendering from HeroSection.tsx
+- Cloned and reviewed ui-ux-pro-max-skill from GitHub for enhancement guidelines
+- Applied UI/UX skill enhancements via subagent:
+  - Added prefers-reduced-motion support (useReducedMotion + CSS media query)
+  - Staggered hero entrance animations (Badge → Headline → Subtitle → Toggle → CTA)
+  - Floating ambient glow orbs animation
+  - CTA shimmer gradient effect
+  - Reduced PainPoints minHeight from 200vh → 150vh
+  - Reduced HowItWorks minHeight from 250vh → 180vh
+  - Added focus-visible accessibility rings
+  - Added active:scale-[0.98] press feedback
+- Fixed em dash parsing error in HowItWorksSection.tsx
+- Fixed focus-ring invalid Tailwind class references across 5 components
+- Verified with Agent Browser (desktop + mobile)
+- Committed and pushed to GitHub
+- Deployed to Vercel: https://smart-hotel-zehla.vercel.app/
+
+Stage Summary:
+- Landing page is fully restored and enhanced
+- AnimatedLogo overlay removed
+- UI/UX Pro Max skill enhancements applied
+- Accessibility: prefers-reduced-motion, focus-visible rings
+- Performance: reduced excessive scroll heights (200vh→150vh, 250vh→180vh)
+- Deployed successfully to production
