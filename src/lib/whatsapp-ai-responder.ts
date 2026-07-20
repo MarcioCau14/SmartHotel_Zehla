@@ -224,7 +224,7 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
   // 4.1. Validar cota de mensagens e hóspedes do tenant baseado no seu plano
   const planType = await getEffectivePlan(tenantId);
 
-  if (planType === 'trial') {
+  if (planType === 'gratuito') {
     // Limite de 5 hóspedes nos últimos 7 dias
     const guestLimit = 5;
     const guestsCount = await db.guest.count({

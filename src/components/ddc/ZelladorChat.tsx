@@ -118,7 +118,7 @@ function ActiveZelladorChat() {
       // Adicionar resposta do Zellador
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: data.data.response },
+        { role: 'assistant', content: data.data?.response ?? 'Sem resposta' },
       ]);
     } catch {
       setError('Erro de conexão. Verifique sua internet e tente novamente.');
@@ -164,7 +164,7 @@ function ActiveZelladorChat() {
         <AnimatePresence mode="popLayout">
           {messages.map((msg, i) => (
             <motion.div
-              key={i}
+              key={msg.id ?? i}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}

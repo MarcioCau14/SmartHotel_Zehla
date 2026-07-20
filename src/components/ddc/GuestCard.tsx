@@ -67,7 +67,7 @@ export function GuestCard({
                   guest.status === 'closed' ? 'from-emerald-500 to-green-500' :
                   'from-gray-500 to-slate-500'
                 } text-white text-xs font-bold`}>
-                  {guest.name.split(' ').map(n => n[0]).join('')}
+                  {(guest.name ?? '?').split(' ').map(n => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
               <div>

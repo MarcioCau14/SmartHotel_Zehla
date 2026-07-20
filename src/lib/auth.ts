@@ -280,7 +280,13 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
     verifyRequest: '/login?mode=verify',
   },
-  secret: process.env.NEXTAUTH_SECRET || 'zehla-demo-secret-2026-prod',
+  secret: (() => {
+    const secret = process.env.NEXTAUTH_SECRET;
+    if (!secret && process.env.NODE_ENV === 'production') {
+      throw new Error('NEXTAUTH_SECRET environment variable is required in production');
+    }
+    return secret || 'zehla-dev-secret-not-for-production';
+  })(),
   debug: process.env.NODE_ENV === 'development',
 };
 

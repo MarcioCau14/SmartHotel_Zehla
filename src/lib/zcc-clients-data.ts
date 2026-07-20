@@ -11,10 +11,13 @@ export interface ClientFriend {
   name: string;
   cnpj: string;
   ownerInitials: string;
+  owner?: string;
   region: string;
   city: string;
   state: string;
   rooms: number;
+  whatsapp?: string;
+  email?: string;
   plan: 'gratuito' | 'lite' | 'pro' | 'max' | 'parceiro';
   status: 'BETA_TESTER' | 'EARLY_ADOPTER' | 'ACTIVE' | 'ONBOARDING';
   avatar: string; // initials
@@ -44,6 +47,7 @@ export interface AirbnbHost {
   id: string;
   name: string;
   ownerInitials: string;
+  owner?: string;
   region: string;
   city: string;
   state: string;

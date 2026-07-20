@@ -168,26 +168,27 @@ export function ZellaSimulator({ niche, propertyData }: ZellaSimulatorProps) {
       const json = await res.json();
 
       if (json.success && json.data) {
+        const bundling = json.data?.bundling ?? { isBundled: false, bundledCount: 1, tariffsUsed: 1, tariffsWithoutBundling: 1, economyPercent: 0, metaCostSaved: 0, metaCostPerTariff: 0.0068, metaCostTotal: 0.0068 };
         const zellaMsg: SimulatorMessage = {
           id: `zella-${Date.now()}`,
           role: 'zella',
-          content: json.data.response,
+          content: json.data?.response ?? 'Erro na resposta.',
           timestamp: new Date(),
-          isBundled: json.data.bundling.isBundled,
-          bundledCount: json.data.bundling.bundledCount,
+          isBundled: bundling.isBundled,
+          bundledCount: bundling.bundledCount,
         };
 
         setMessages(prev => [...prev, zellaMsg]);
 
         // Show economy badge if bundled
-        if (json.data.bundling.isBundled && json.data.bundling.bundledCount >= 2) {
+        if (bundling.isBundled && bundling.bundledCount >= 2) {
           const economy: EconomyData = {
-            messagesCount: json.data.bundling.bundledCount,
-            tariffsUsed: json.data.bundling.tariffsUsed,
-            economyPercent: json.data.bundling.economyPercent,
-            metaCostSaved: json.data.bundling.metaCostSaved,
-            metaCostPerTariff: json.data.bundling.metaCostPerTariff,
-            metaCostTotal: json.data.bundling.metaCostTotal,
+            messagesCount: bundling.bundledCount,
+            tariffsUsed: bundling.tariffsUsed,
+            economyPercent: bundling.economyPercent,
+            metaCostSaved: bundling.metaCostSaved,
+            metaCostPerTariff: bundling.metaCostPerTariff,
+            metaCostTotal: bundling.metaCostTotal,
           };
           setEconomyBadge(economy);
 

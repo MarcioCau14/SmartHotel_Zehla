@@ -34,7 +34,13 @@ export interface ZCCSecurityResult {
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-const ZCC_GODMODE_TOKEN = 'zella-ctrl-2026';
+const ZCC_GODMODE_TOKEN = (() => {
+  const token = process.env.ZCC_GODMODE_TOKEN;
+  if (!token && process.env.NODE_ENV === 'production') {
+    console.error('[ZCC-SECURITY] ZCC_GODMODE_TOKEN env var is not set — production requires an explicit token');
+  }
+  return token || 'zella-ctrl-2026-dev-only';
+})();
 const ZCC_GODMODE_COOKIE = 'zcc_godmode';
 
 const RATE_LIMIT_MAX = 5;
@@ -217,7 +223,7 @@ export async function verifyZCCAccess(request: NextRequest): Promise<ZCCSecurity
   try {
     const token = await getToken({
       req: request,
-      secret: process.env.NEXTAUTH_SECRET || 'zehla-demo-secret-2026-prod',
+      secret: process.env.NEXTAUTH_SECRET || 'zehla-dev-secret-not-for-production',
     });
     // Verifica flag isDemoUser no JWT (setada pelo bypass 123/123)
     if (token && (token as any).isDemoUser === true) {
@@ -232,7 +238,7 @@ export async function verifyZCCAccess(request: NextRequest): Promise<ZCCSecurity
   try {
     const token = await getToken({
       req: request,
-      secret: process.env.NEXTAUTH_SECRET || 'zehla-demo-secret-2026-prod',
+      secret: process.env.NEXTAUTH_SECRET || 'zehla-dev-secret-not-for-production',
     });
     if (token?.email) {
       const adminEmails = (process.env.ZCC_ADMIN_EMAILS || '')

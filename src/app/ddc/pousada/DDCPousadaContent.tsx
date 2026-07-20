@@ -807,7 +807,7 @@ export default function DDCPousadaContent() {
           <div className="flex items-center gap-4">
             <Avatar className="size-16 border-2 border-emerald-500/30">
               <AvatarFallback className="bg-emerald-500/10 text-emerald-400 text-lg font-bold">
-                {scannedData.propertyName.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                {(scannedData.propertyName ?? '?').split(' ').map(n => n[0]).join('').slice(0, 2)}
               </AvatarFallback>
             </Avatar>
             <div>

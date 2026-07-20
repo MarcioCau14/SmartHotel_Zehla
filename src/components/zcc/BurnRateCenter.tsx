@@ -49,7 +49,7 @@ const tenantCosts: TenantCost[] = [
     const costPerMsg = 0.025; // R$0.025 per service message
     const weekCost = msgs * costPerMsg;
     const monthCost = weekCost * 4.3;
-    const planPrice = c.plan === 'fundador' ? 297 : c.plan === 'pro' ? 397 : 797;
+    const planPrice = c.plan === 'gratuito' ? 0 : c.plan === 'pro' ? 397 : c.plan === 'max' ? 797 : c.plan === 'lite' ? 197 : 247;
     const ratio = monthCost / planPrice;
     return {
       id: c.id,
@@ -166,7 +166,7 @@ export function BurnRateCenter() {
         setSimulateError(data.error || 'Erro na simulação');
         return;
       }
-      const costUsd = data.data.costRecord.costUsd;
+      const costUsd = data.data?.costRecord?.costUsd ?? 0;
       setTotalSimulatedCost(prev => Math.round((prev + costUsd) * 10000) / 10000);
       setSimulateCount(prev => prev + 1);
       setCostFlash(true);
@@ -254,7 +254,7 @@ export function BurnRateCenter() {
         return;
       }
       setOneShotActive(true);
-      const costUsd = data.data.costRecord.costUsd;
+      const costUsd = data.data?.costRecord?.costUsd ?? 0;
       setTotalSimulatedCost(prev => Math.round((prev + costUsd) * 10000) / 10000);
       setSimulateCount(prev => prev + 1);
       setCostFlash(true);
@@ -291,10 +291,9 @@ export function BurnRateCenter() {
     { category: 'Outros (webhooks, retry)', cost: totalMonthlyWhatsApp * 0.05, percentage: 5 },
   ];
 
-  const nicheConfig = {
-    pousadas: { color: 'var(--zcc-kinpaku)', label: 'Pousadas', badge: 'zcc-badge-gold' },
-    anfitrioes: { color: 'var(--zcc-patina)', label: 'Airbnb', badge: 'zcc-badge-patina' },
-    parceiro: { color: '#c45454', label: 'Parceiro', badge: 'zcc-badge-danger' },
+  const nicheConfig: Record<string, { color: string; label: string; badge: string }> = {
+    pousada: { color: 'var(--zcc-kinpaku)', label: 'Pousadas', badge: 'zcc-badge-gold' },
+    airbnb: { color: 'var(--zcc-patina)', label: 'Airbnb', badge: 'zcc-badge-patina' },
   };
 
   return (

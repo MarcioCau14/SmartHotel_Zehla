@@ -24,6 +24,9 @@ export interface MagicScanResult {
   rating?: number;
   totalRooms?: number;
   description?: string;
+  priceRange?: string;
+  policies?: string;
+  highlights?: string[];
 }
 
 interface MagicScannerProps {
@@ -84,7 +87,7 @@ export function MagicScanner({ niche, onComplete }: MagicScannerProps) {
       }
 
       const json = await response.json();
-      const data: MagicScanResult = json.data;
+      const data: MagicScanResult = json.data ?? { propertyName: '', amenities: [], checkInTime: '14:00', checkOutTime: '12:00', aiVoiceTone: '', source: 'website' };
       setPhase('complete');
 
       // Brief pause to show "complete" state, then trigger parent

@@ -61,7 +61,7 @@ export function GuestCRMPipeline({
   const filteredGuests = useMemo(() => {
     return (guestsToDisplay || []).filter((guest: Guest) => {
       const matchesSearch =
-        guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (guest.name?.toLowerCase() ?? '').includes(searchQuery.toLowerCase()) ||
         (guest.phoneNumber || guest.phone || '').includes(searchQuery);
       return matchesSearch;
     });
@@ -221,7 +221,7 @@ export function GuestCRMPipeline({
                           {/* Avatar */}
                           <Avatar className="w-10 h-10 flex-shrink-0">
                             <AvatarFallback className={`bg-gradient-to-br ${guest.status === 'hot' ? 'from-orange-500 to-red-500' : guest.status === 'closed' ? 'from-emerald-500 to-green-500' : 'from-violet-500 to-purple-600'} text-white text-xs font-bold`}>
-                              {guest.avatar || guest.name.split(' ').map((n: string) => n[0]).join('')}
+                              {guest.avatar || (guest.name ?? '?').split(' ').map((n: string) => n[0]).join('')}
                             </AvatarFallback>
                           </Avatar>
 

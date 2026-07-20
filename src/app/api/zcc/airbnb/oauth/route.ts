@@ -112,10 +112,13 @@ export async function POST(request: NextRequest) {
       )
     );
 
+    // Strip sensitive token fields from the response
+    const { accessToken: _at, refreshToken: _rt, ...safeOauthToken } = oauthToken;
+
     return NextResponse.json({
       success: true,
       data: {
-        oauthToken,
+        oauthToken: safeOauthToken,
         importedProperties,
         importedCount: importedProperties.length,
       },

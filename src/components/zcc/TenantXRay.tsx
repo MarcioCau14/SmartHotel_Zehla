@@ -45,8 +45,8 @@ const staticTenants: UnifiedTenant[] = [
     id: c.id,
     name: c.name,
     niche: 'pousada' as const,
-    plan: c.plan === 'fundador' ? 'FUNDADOR' : c.plan.toUpperCase(),
-    planPrice: c.plan === 'fundador' ? 297 : c.plan === 'pro' ? 397 : 797,
+    plan: c.plan === 'gratuito' ? 'GRATUITO' : c.plan.toUpperCase(),
+    planPrice: c.plan === 'gratuito' ? 0 : c.plan === 'pro' ? 397 : c.plan === 'max' ? 797 : c.plan === 'lite' ? 197 : 247,
     status: c.status as UnifiedTenant['status'],
     city: c.city,
     state: c.state,
@@ -183,10 +183,9 @@ export function TenantXRay() {
   const frozenCount = tenants.filter(t => t.killSwitchActive).length;
   const churnRate = tenants.length > 0 ? ((frozenCount / tenants.length) * 100).toFixed(1) : '0.0';
 
-  const nicheConfig = {
-    pousadas: { color: 'var(--zcc-kinpaku)', label: 'Pousadas', badge: 'zcc-badge-gold' },
-    anfitrioes: { color: 'var(--zcc-patina)', label: 'Airbnb', badge: 'zcc-badge-patina' },
-    parceiro: { color: '#c45454', label: 'Parceiro', badge: 'zcc-badge-danger' },
+  const nicheConfig: Record<string, { color: string; label: string; badge: string }> = {
+    pousada: { color: 'var(--zcc-kinpaku)', label: 'Pousadas', badge: 'zcc-badge-gold' },
+    airbnb: { color: 'var(--zcc-patina)', label: 'Airbnb', badge: 'zcc-badge-patina' },
   };
 
   const brainConfig = {

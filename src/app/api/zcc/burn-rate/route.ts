@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyZCCAccessOrReject } from '@/lib/zcc-security';
 
 // ═══════════════════════════════════════════════════════════════
 // ZCC BURN RATE — Taxímetro Global de Tarifas Meta
@@ -36,6 +37,9 @@ interface BurnRateEvent {
 
 // POST — Record a new telemetry event
 export async function POST(request: NextRequest) {
+  const security = await verifyZCCAccessOrReject(request);
+  if (!security.allowed) return security.response!;
+
   let body: BurnRateEvent;
   try {
     body = await request.json();
@@ -93,7 +97,10 @@ export async function POST(request: NextRequest) {
 }
 
 // GET — Read current burn rate stats
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const security = await verifyZCCAccessOrReject(request);
+  if (!security.allowed) return security.response!;
+
   return NextResponse.json({
     success: true,
     data: {

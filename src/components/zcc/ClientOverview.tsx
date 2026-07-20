@@ -73,7 +73,7 @@ const brainConfig: Record<
 };
 
 const planLabels: Record<ClientFriend['plan'], string> = {
-  fundador: 'Fundador',
+  gratuito: 'Gratuito',
   lite: 'Lite',
   pro: 'Pro',
   max: 'Max',
@@ -81,7 +81,7 @@ const planLabels: Record<ClientFriend['plan'], string> = {
 };
 
 const planPrices: Record<ClientFriend['plan'], string> = {
-  fundador: 'R$0 (Beta)',
+  gratuito: 'R$0',
   lite: 'R$197/mês',
   pro: 'R$397/mês',
   max: 'R$797/mês',
@@ -184,7 +184,7 @@ export function ClientOverview() {
       list = list.filter(
         (c) =>
           c.name.toLowerCase().includes(q) ||
-          c.owner.toLowerCase().includes(q) ||
+          c.owner?.toLowerCase().includes(q) ||
           c.city.toLowerCase().includes(q)
       );
     }
@@ -683,7 +683,7 @@ function ClientDetailPanel({
               {client.name}
             </h2>
             <p className="text-xs text-[var(--zcc-text-muted)]">
-              {client.city}, {client.state} · {client.owner}
+              {client.city}, {client.state}{client.owner ? ` · ${client.owner}` : ''}
             </p>
           </div>
           <span className={`zcc-badge ${sCfg.badgeClass} ml-2`}>
@@ -707,9 +707,9 @@ function ClientDetailPanel({
             </h3>
             <div className="space-y-2 text-sm">
               <InfoRow label="CNPJ" value={client.cnpj} />
-              <InfoRow label="WhatsApp" value={client.whatsapp} />
-              <InfoRow label="Email" value={client.email} />
-              <InfoRow label="Proprietário" value={client.owner} />
+              <InfoRow label="WhatsApp" value={client.whatsapp ?? '—'} />
+              <InfoRow label="Email" value={client.email ?? '—'} />
+              <InfoRow label="Proprietário" value={client.owner ?? '—'} />
               <InfoRow
                 label="Ativado em"
                 value={new Date(client.activatedAt).toLocaleDateString('pt-BR')}

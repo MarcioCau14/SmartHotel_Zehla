@@ -29,7 +29,7 @@ export function ConversationCard({
   onReply,
   onEscalate
 }: ConversationCardProps) {
-  const lastMessage = conversation.messages[conversation.messages.length - 1];
+  const lastMessage = conversation.messages?.[conversation.messages.length - 1];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -73,7 +73,7 @@ export function ConversationCard({
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
                 <span className="text-xs font-bold text-white">
-                  {conversation.guestName.split(' ').map(n => n[0]).join('')}
+                  {(conversation.guestName ?? 'G').split(' ').map(n => n[0]).join('')}
                 </span>
               </div>
               <div>

@@ -133,7 +133,7 @@ export function PipelineStage({
               className="w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 border-2 border-white/[0.08] flex items-center justify-center text-[8px] text-white font-bold"
               style={{ zIndex: 3 - index }}
             >
-              {guest.name.split(' ').map(n => n[0]).join('')}
+              {(guest.name ?? '?').split(' ').map(n => n[0]).join('')}
             </div>
           ))}
           {guests.length > 3 && (

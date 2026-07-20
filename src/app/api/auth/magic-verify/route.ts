@@ -43,7 +43,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      tempPassword,
     });
   } catch (error) {
     console.error('[Magic Verify] Error:', error);

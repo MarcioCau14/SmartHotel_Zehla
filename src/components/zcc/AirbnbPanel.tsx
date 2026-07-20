@@ -628,7 +628,7 @@ export function AirbnbPanel() {
                         </div>
                         <div>
                           <div className="font-medium" style={{ color: 'var(--zcc-champagne)' }}>{host.name}</div>
-                          <div className="text-[10px]" style={{ color: 'var(--zcc-text-muted)' }}>{host.owner} • {host.city}/{host.state}</div>
+                          <div className="text-[10px]" style={{ color: 'var(--zcc-text-muted)' }}>{host.owner ?? host.ownerInitials} • {host.city}/{host.state}</div>
                         </div>
                       </div>
                     </td>
@@ -675,7 +675,7 @@ export function AirbnbPanel() {
               </div>
               <div>
                 <h3 className="text-sm font-semibold" style={{ color: 'var(--zcc-champagne)' }}>{selectedHost.name}</h3>
-                <div className="text-[10px]" style={{ color: 'var(--zcc-text-muted)' }}>{selectedHost.owner} • {selectedHost.city}/{selectedHost.state}</div>
+                <div className="text-[10px]" style={{ color: 'var(--zcc-text-muted)' }}>{selectedHost.owner ?? selectedHost.ownerInitials} • {selectedHost.city}/{selectedHost.state}</div>
               </div>
               <span className={planConfig[selectedHost.plan].badgeClass}>{planConfig[selectedHost.plan].label}</span>
               {selectedHost.superhost && <span className="zcc-badge-gold">SUPERHOST</span>}

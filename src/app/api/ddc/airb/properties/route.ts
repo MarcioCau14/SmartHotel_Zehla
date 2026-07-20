@@ -23,9 +23,9 @@ const demoProperties = [
     checkinTime: '15:00',
     checkoutTime: '11:00',
     wifiName: 'VistaMar_WiFi',
-    wifiPassword: 'praia2024',
+    wifiPassword: '****2024',
     lockProvider: 'smart',
-    lockCode: '4821',
+    lockCode: '****21',
     latitude: -27.4407,
     longitude: -48.4903,
     amenities: '["Wi-Fi","Ar-condicionado","Cozinha","Estacionamento","Piscina","Churrasqueira"]',
@@ -57,9 +57,9 @@ const demoProperties = [
     checkinTime: '14:00',
     checkoutTime: '10:00',
     wifiName: 'StudioCopacabana',
-    wifiPassword: 'rio2024',
+    wifiPassword: '****2024',
     lockProvider: 'nuki',
-    lockCode: '1593',
+    lockCode: '****93',
     latitude: -22.9711,
     longitude: -43.1823,
     amenities: '["Wi-Fi","Smart TV","Ar-condicionado","Cozinha americana","Elevador"]',
@@ -91,9 +91,9 @@ const demoProperties = [
     checkinTime: '16:00',
     checkoutTime: '12:00',
     wifiName: 'CasaPiscina_WiFi',
-    wifiPassword: 'campos2024',
+    wifiPassword: '****2024',
     lockProvider: 'august',
-    lockCode: '7720',
+    lockCode: '****20',
     latitude: -22.7388,
     longitude: -45.5922,
     amenities: '["Wi-Fi","Lareira","Piscina aquecida","Churrasqueira","Estacionamento","Cozinha completa","Máquina de lavar"]',
@@ -109,12 +109,25 @@ const demoProperties = [
   },
 ];
 
+/** Mask sensitive fields (wifiPassword, lockCode) before sending to the client */
+function maskSensitiveFields(property: Record<string, any>) {
+  if (property.wifiPassword) {
+    property.wifiConfigured = true;
+    delete property.wifiPassword;
+  }
+  if (property.lockCode) {
+    property.lockConfigured = true;
+    delete property.lockCode;
+  }
+  return property;
+}
+
 // GET /api/ddc/airb/properties — List all Airbnb properties for tenant
 export async function GET() {
   try {
     const dbAvailable = await isDatabaseAvailable();
     if (!dbAvailable) {
-      return NextResponse.json({ success: true, data: demoProperties });
+      return NextResponse.json({ success: true, data: demoProperties.map(p => maskSensitiveFields({ ...p })) });
     }
 
     const tenantId = await resolveTenantId();
@@ -128,7 +141,7 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ success: true, data: properties });
+    return NextResponse.json({ success: true, data: properties.map(p => maskSensitiveFields({ ...p } as Record<string, any>)) });
   } catch (error) {
     console.error('[AIRB] Error listing properties:', error);
     return NextResponse.json({ success: false, error: 'Failed to list properties' }, { status: 500 });
@@ -194,7 +207,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, data: property }, { status: 201 });
+    return NextResponse.json({ success: true, data: maskSensitiveFields({ ...property } as Record<string, any>) }, { status: 201 });
   } catch (error) {
     console.error('[AIRB] Error creating property:', error);
     return NextResponse.json({ success: false, error: 'Failed to create property' }, { status: 500 });
@@ -246,7 +259,7 @@ export async function PATCH(request: NextRequest) {
       data: updateData,
     });
 
-    return NextResponse.json({ success: true, data: updated });
+    return NextResponse.json({ success: true, data: maskSensitiveFields({ ...updated } as Record<string, any>) });
   } catch (error) {
     console.error('[AIRB] Error updating property:', error);
     return NextResponse.json({ success: false, error: 'Failed to update property' }, { status: 500 });

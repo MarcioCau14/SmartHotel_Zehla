@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 // ═══════════════════════════════════════════════════════════════
 // MAGIC LINK — Mock Scraper Engine
@@ -27,6 +29,9 @@ interface MagicLinkResponse {
   rating: number;
   totalRooms: number;
   description: string;
+  priceRange: string;
+  policies: string;
+  highlights: string[];
 }
 
 // ── Mock Data Banks by Source ──────────────────────────────────
@@ -43,6 +48,9 @@ const POUSADA_MOCKS: Record<string, MagicLinkResponse> = {
     rating: 4.87,
     totalRooms: 12,
     description: 'Pousada encantadora rodeada pela Mata Atlântica, a 5 min do centro histórico. Quartos com varanda e vista para o jardim.',
+    priceRange: 'R$ 350 — R$ 780',
+    policies: 'Cancelamento gratuito até 48h antes. Após esse prazo, cobrança de 1 diária.',
+    highlights: ['Mata Atlântica', 'Centro histórico', 'Café incluso'],
   },
   booking: {
     propertyName: 'Pousada Vila dos Coqueiros',
@@ -55,6 +63,9 @@ const POUSADA_MOCKS: Record<string, MagicLinkResponse> = {
     rating: 4.72,
     totalRooms: 18,
     description: 'Refúgio à beira-mar com acesso exclusivo à praia. Ideal para casais e famílias que buscam tranquilidade.',
+    priceRange: 'R$ 420 — R$ 950',
+    policies: 'Cancelamento gratuito até 72h antes. No-show cobra 100% da estadia.',
+    highlights: ['Praia privativa', 'Spa incluso', 'Transfer grátis'],
   },
   website: {
     propertyName: 'Pousada Serra Limpa',
@@ -67,6 +78,9 @@ const POUSADA_MOCKS: Record<string, MagicLinkResponse> = {
     rating: 4.91,
     totalRooms: 8,
     description: 'Chalés exclusivos no coração da Serra da Mantiqueira. Experiência mountain com todo conforto.',
+    priceRange: 'R$ 550 — R$ 1.200',
+    policies: 'Cancelamento gratuito até 7 dias antes. Menos de 7 dias, reembolso de 50%.',
+    highlights: ['Serra da Mantiqueira', 'Aceita pets', 'Café colonial'],
   },
 };
 
@@ -82,6 +96,9 @@ const AIRBNB_MOCKS: Record<string, MagicLinkResponse> = {
     rating: 4.92,
     totalRooms: 2,
     description: 'Studio reformado com vista panorâmica da Praia de Copacabana. Localização privilegiada entre os postos 5 e 6.',
+    priceRange: 'R$ 280 — R$ 650',
+    policies: 'Cancelamento gratuito até 24h antes. Taxa de limpeza de R$ 80 não reembolsável.',
+    highlights: ['Vista p/ mar', 'Copacabana', 'Portaria 24h'],
   },
   booking: {
     propertyName: 'Chalé Montanha & Canela',
@@ -94,6 +111,9 @@ const AIRBNB_MOCKS: Record<string, MagicLinkResponse> = {
     rating: 4.85,
     totalRooms: 3,
     description: 'Chalé aconchegante no coração da Serra Gaúcha. Perfeito para lua de mel ou fim de semana romântico.',
+    priceRange: 'R$ 480 — R$ 890',
+    policies: 'Cancelamento gratuito até 5 dias antes. Taxa de limpeza incluída na diária.',
+    highlights: ['Serra Gaúcha', 'Hidromassagem', 'Fogão a lenha'],
   },
   website: {
     propertyName: 'Studio Paulista Design',
@@ -106,11 +126,26 @@ const AIRBNB_MOCKS: Record<string, MagicLinkResponse> = {
     rating: 4.78,
     totalRooms: 1,
     description: 'Studio designer na Av. Paulista, próximo ao MASP e metrô. Ideal para viagens de negócios ou turismo urbano.',
+    priceRange: 'R$ 220 — R$ 450',
+    policies: 'Cancelamento gratuito até 48h antes. Check-in auto com cofre de chaves.',
+    highlights: ['Av. Paulista', 'MASP', 'Coworking'],
   },
 };
 
 export async function POST(request: NextRequest) {
   try {
+    // ── Auth check (optional during onboarding, required for production) ──
+    // NOTE: Authentication is optional here because this endpoint is used during
+    // the onboarding flow before a full session is established. For production,
+    // add proper rate-limiting and session enforcement.
+    const session = await getServerSession(authOptions);
+    if (!session && process.env.NODE_ENV === 'production') {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const body: MagicLinkRequest = await request.json();
     const { url, niche, source } = body;
 

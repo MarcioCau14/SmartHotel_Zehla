@@ -102,14 +102,15 @@ export async function getMetaCostSummary(
 
 const BUDGET_OVERRIDE = process.env.META_BUDGET_ENFORCEMENT_DISABLED === "true";
 
-const BUDGET_LIMITS: Record<string, number> = {
-  trial: parseFloat(process.env.META_BUDGET_TRIAL_USD || "3.40"),
+type PlanKey = "gratuito" | "lite" | "pro" | "max" | "parceiro";
+
+const BUDGET_LIMITS: Record<PlanKey, number> = {
+  gratuito: parseFloat(process.env.META_BUDGET_GRATUITO_USD || "3.40"),
   lite: parseFloat(process.env.META_BUDGET_LITE_USD || "12.00"),   // ~350 msgs/mês — viável para R$197
   pro: parseFloat(process.env.META_BUDGET_PRO_USD || "34.00"),
   max: parseFloat(process.env.META_BUDGET_MAX_USD || "68.00"),
+  parceiro: parseFloat(process.env.META_BUDGET_PARCEIRO_USD || "34.00"),
 };
-
-type PlanKey = "trial" | "lite" | "pro" | "max";
 
 // Simple in-memory cache (serverless-safe, lazy cleanup)
 interface CacheEntry {
@@ -226,7 +227,7 @@ export async function checkMetaBudget(tenantId: string): Promise<{
 
   // 2. Determine budget limit based on plan
   const plan: PlanKey = await getEffectivePlan(tenantId);
-  const budgetLimitUsd = BUDGET_LIMITS[plan] ?? BUDGET_LIMITS.trial;
+  const budgetLimitUsd = BUDGET_LIMITS[plan] ?? BUDGET_LIMITS.gratuito;
 
   // 3. Enforce
   const usagePercent = budgetLimitUsd > 0 ? Math.round((currentSpendUsd / budgetLimitUsd) * 100) : 0;
