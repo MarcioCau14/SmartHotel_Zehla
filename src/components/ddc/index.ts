@@ -25,5 +25,9 @@ export { PipelineStage } from './PipelineStage';
 export { TrainingCard } from './TrainingCard';
 export { AIStatusBadge, AIStatusDot, AIStatusCard } from './AIStatusBadge';
 
+// Magic Scanner (Onboarding)
+export { MagicScanner } from './MagicScanner';
+export type { MagicScanResult } from './MagicScanner';
+
 // AirB
 export { ZellaAirBTab } from './ZellaAirBTab';

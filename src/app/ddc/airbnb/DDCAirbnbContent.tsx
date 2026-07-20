@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LineChart,
@@ -10,6 +10,7 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { DDCShell, type NavItem } from '@/components/ddc/DDCShell';
+import { MagicScanner, type MagicScanResult } from '@/components/ddc/MagicScanner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,6 +50,9 @@ import {
   Bell,
   Key,
   Crown,
+  Sparkles,
+  MapPin,
+  Wifi,
 } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -222,12 +226,22 @@ function formatCompactBRL(value: number): string {
 export default function DDCAirbnbContent() {
   const [activeTab, setActiveTab] = useState<AirbnbTab>('propriedades');
   const [calendarDays] = useState<CalendarDay[]>(generateCalendarDays);
+  const [scannedData, setScannedData] = useState<MagicScanResult | null>(null);
 
-  // Notification toggles
+  // Notification toggles (must be declared before any early return)
   const [notifNewReservation, setNotifNewReservation] = useState(true);
   const [notifCancellation, setNotifCancellation] = useState(true);
   const [notifReview, setNotifReview] = useState(true);
   const [notifMessage, setNotifMessage] = useState(false);
+
+  const handleScanComplete = useCallback((result: MagicScanResult) => {
+    setScannedData(result);
+  }, []);
+
+  // Show Magic Scanner if no scan data yet
+  if (!scannedData) {
+    return <MagicScanner niche="airbnb" onComplete={handleScanComplete} />;
+  }
 
   // Summary stats
   const totalProperties = MOCK_PROPERTIES.length;
@@ -248,6 +262,51 @@ export default function DDCAirbnbContent() {
       variants={staggerContainer}
       className="space-y-6"
     >
+      {/* Scan Summary Banner — mostra dados extraídos do Magic Scanner */}
+      <Card className="bg-gradient-to-r from-blue-500/[0.08] to-indigo-500/[0.05] border-blue-500/20 overflow-hidden">
+        <CardContent className="p-5">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-blue-500/15 flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-blue-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-white font-semibold text-sm">{scannedData.propertyName}</h3>
+                <Badge className="bg-blue-500/15 text-blue-400 border-blue-500/30 text-[10px]">
+                  <CheckCircle2 className="w-3 h-3 mr-1" />iCal Sincronizado
+                </Badge>
+              </div>
+              <p className="text-zinc-400 text-xs mb-3">{scannedData.description || ''}</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-blue-400" />
+                  <span className="text-xs text-zinc-300">{scannedData.location || '—'}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-blue-400" />
+                  <span className="text-xs text-zinc-300">Check-in {scannedData.checkInTime} / Check-out {scannedData.checkOutTime}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Wifi className="w-3.5 h-3.5 text-blue-400" />
+                  <span className="text-xs text-zinc-300">{scannedData.amenities.length} comodidades</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Bot className="w-3.5 h-3.5 text-blue-400" />
+                  <span className="text-xs text-zinc-300 truncate">{(scannedData.aiVoiceTone || '').split('—')[0]}</span>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5 mt-3">
+                {scannedData.amenities.map((amenity) => (
+                  <Badge key={amenity} variant="outline" className="text-[10px] border-blue-500/20 text-blue-300 bg-blue-500/5">
+                    {amenity}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Summary Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <motion.div variants={staggerItem}>
@@ -1021,7 +1080,7 @@ export default function DDCAirbnbContent() {
       navItems={airbnbNavItems}
       activeTab={activeTab}
       onTabChange={(id) => setActiveTab(id as AirbnbTab)}
-      propertyName="Airbnb Host"
+      propertyName={scannedData.propertyName}
     >
       <AnimatePresence mode="wait">
         {renderTab()}
