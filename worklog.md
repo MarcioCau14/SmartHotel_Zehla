@@ -70,3 +70,25 @@ Stage Summary:
 - Login: https://smart-hotel-zehla.vercel.app/login → HTTP 200 ✅
 - Deploy ID: dpl_EgrbqJVyFYu8yTxUwgwfDCcjon7g
 - Route /api/ddc/magic-link confirmed in build output
+
+---
+Task ID: 12
+Agent: Main Agent
+Task: Investigate and resolve duplicate "my-project" on Vercel
+
+Work Log:
+- Used Vercel API to list all projects: found 2 projects linked to same GitHub repo
+- smart-hotel-zehla (prj_VVHW7kbyEyIEoRf3Orx01GyzGmk1): created 2026-05-13, ORIGINAL
+- my-project (prj_cLqM2vWLjZTrb30gruaILKUkDyFv): created 2026-07-17, DUPLICATE
+- Both connected to MarcioCau14/SmartHotel_Zehla repo → every git push triggered DOUBLE deploys
+- my-project had 0 successful deployments, all Error status
+- my-project URL: my-project-sigma-seven-51.vercel.app
+- DELETED my-project via Vercel API (DELETE /v9/projects/prj_cLqM2vWLjZTrb30gruaILKUkDyFv)
+- Verified: only smart-hotel-zehla remains, my-project URL returns 404
+- smart-hotel-zehla GitHub integration confirmed: repo MarcioCau14/SmartHotel_Zehla, branch main
+
+Stage Summary:
+- Root cause: my-project was likely created by a previous `vercel` command without specifying the project name, creating a second Vercel project linked to the same repo
+- Impact: double builds on every push (wasting build minutes), confusion about which URL to use
+- Resolution: my-project deleted, only smart-hotel-zehla remains
+- smart-hotel-zehla.vercel.app is the SOLE production URL
