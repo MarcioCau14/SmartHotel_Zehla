@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useNiche } from '@/contexts/NicheContext';
 import { NicheToggle } from './NicheToggle';
+import { AnimatedLogo } from './AnimatedLogo';
 
 export function HeroSection() {
   const { niche, setNiche, isPousada, isAirbnb } = useNiche();
@@ -43,6 +44,16 @@ export function HeroSection() {
             transition={{ duration: 0.8 }}
             className="flex flex-col items-center max-w-5xl mx-auto"
           >
+            {/* Animated Logo — SVG Line Drawing */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+              className="mb-8"
+            >
+              <AnimatedLogo width={90} delay={0.1} />
+            </motion.div>
+
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/[0.08] mb-8">
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />

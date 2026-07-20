@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { motion, AnimatePresence, useInView, useScroll, useTransform } from 'framer-motion';
 import {
   UserPlus,
   MessageSquare,
@@ -77,29 +77,48 @@ const colorMap: Record<string, { bg: string; border: string; text: string; glow:
   },
 };
 
-/* ─────────── STEP CARD ─────────── */
-function StepCard({ step, index, isInView }: { step: StepData; index: number; isInView: boolean }) {
+/* ─────────── SCROLL-LINKED STEP CARD ─────────── */
+function ParallaxStepCard({
+  step,
+  index,
+  scrollYProgress,
+}: {
+  step: StepData;
+  index: number;
+  scrollYProgress: ReturnType<typeof useScroll>['scrollYProgress'];
+}) {
   const c = colorMap[step.color];
   const IconComponent = iconMap[step.icon];
 
+  // Each step appears at a different scroll progress point
+  // Step 1: 0.05-0.25, Step 2: 0.3-0.5, Step 3: 0.55-0.75
+  const rangeStart = 0.05 + index * 0.28;
+  const rangeMid = rangeStart + 0.15;
+  const rangeEnd = rangeMid + 0.1;
+
+  const opacity = useTransform(scrollYProgress, [rangeStart, rangeMid, rangeEnd], [0, 1, 1]);
+  const y = useTransform(
+    scrollYProgress,
+    [rangeStart, rangeMid],
+    [80, 0]
+  );
+  const scale = useTransform(
+    scrollYProgress,
+    [rangeStart, rangeMid],
+    [0.92, 1]
+  );
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.7, delay: index * 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+      style={{ opacity, y, scale }}
       className="relative group"
     >
       {/* Desktop connector arrow */}
       {index < 2 && (
         <div className="hidden lg:flex absolute top-1/2 -right-5 z-20 items-center justify-center w-10 h-10">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.5, delay: index * 0.25 + 0.4 }}
-            className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center group-hover:bg-white/[0.08] group-hover:border-white/[0.15] transition-all duration-300"
-          >
+          <div className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center group-hover:bg-white/[0.08] group-hover:border-white/[0.15] transition-all duration-300">
             <ArrowRight className="w-3.5 h-3.5 text-neutral-600 group-hover:text-white transition-colors duration-300" />
-          </motion.div>
+          </div>
         </div>
       )}
 
@@ -140,20 +159,17 @@ function StepCard({ step, index, isInView }: { step: StepData; index: number; is
           ))}
         </div>
 
-        {/* Form fields preview (step 1 only, when fields are provided) */}
+        {/* Form fields preview (step 1 only) */}
         {step.fields && (
           <div className="space-y-2.5 pt-5 border-t border-white/[0.04]">
             {step.fields.map((field, idx) => (
-              <motion.div
+              <div
                 key={idx}
-                initial={{ opacity: 0, x: -10 }}
-                animate={isInView ? { opacity: 1, x: 0 } : {}}
-                transition={{ duration: 0.3, delay: index * 0.25 + 0.6 + idx * 0.06 }}
                 className="flex items-center gap-2.5"
               >
                 <div className={`w-1.5 h-1.5 rounded-full ${c.text.replace('text-', 'bg-')} opacity-60`} />
                 <span className="text-neutral-400 text-[12px]">{field}</span>
-              </motion.div>
+              </div>
             ))}
             <div className="flex items-center gap-2 mt-3 text-emerald-400/70 text-[11px]">
               <Mail className="w-3 h-3" />
@@ -167,12 +183,22 @@ function StepCard({ step, index, isInView }: { step: StepData; index: number; is
   );
 }
 
-/* ─────────── SECTION ─────────── */
+/* ─────────── SECTION — with Sticky Scroll Parallax ─────────── */
 export function HowItWorksSection() {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: '-80px' });
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(sectionRef, { once: true, margin: '-80px' });
   const { niche, isPousada, isAirbnb } = useNiche();
   const content = getNicheContent(niche);
+
+  // Scroll-linked progress for the entire section
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start start', 'end end'],
+  });
+
+  // Title stays fixed while steps animate in
+  const titleOpacity = useTransform(scrollYProgress, [0, 0.1, 0.8, 0.95], [1, 1, 1, 0]);
+  const titleY = useTransform(scrollYProgress, [0, 0.1, 0.8, 0.95], [0, 0, -20, -60]);
 
   // Niche-aware header text
   const headerTitle = isPousada
@@ -184,8 +210,8 @@ export function HowItWorksSection() {
     : 'Da URL do anúncio ao primeiro check-in virtual automaticamente. Sem precisar de técnico ou conhecimento técnico.';
 
   return (
-    <section ref={ref} id="como-funciona" className="relative py-28 sm:py-36 lg:py-44 overflow-hidden">
-      {/* Background grid pattern (Cloudbeds-inspired) */}
+    <section ref={sectionRef} id="como-funciona" className="relative overflow-hidden" style={{ minHeight: '250vh' }}>
+      {/* Background grid pattern */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
         style={{
           backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.5) 1px, transparent 1px)',
@@ -193,122 +219,130 @@ export function HowItWorksSection() {
         }}
       />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6">
-        {/* ── Header ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="text-center mb-20"
-        >
-          {/* Eyebrow */}
-          <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${isAirbnb ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-emerald-500/10 border border-emerald-500/20'} mb-6`}>
-            <Zap className={`w-3.5 h-3.5 ${isAirbnb ? 'text-blue-400' : 'text-emerald-400'}`} />
-            <span className={`${isAirbnb ? 'text-blue-400' : 'text-emerald-400'} text-xs font-semibold uppercase tracking-wider`}>Simples como 1-2-3</span>
-          </div>
-
-          <AnimatePresence mode="wait">
-            <motion.h2
-              key={`title-${niche}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
-              className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 leading-[1.1] tracking-tight"
+      {/* ── Sticky container ── */}
+      <div className="sticky top-0 h-screen overflow-y-auto flex items-center">
+        <div className="relative w-full py-20 sm:py-28">
+          <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6">
+            {/* ── Header (fixed via transform) ── */}
+            <motion.div
+              style={{ opacity: titleOpacity, y: titleY }}
+              className="text-center mb-16"
             >
-              {headerTitle}
-            </motion.h2>
-          </AnimatePresence>
+              {/* Eyebrow */}
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${isAirbnb ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-emerald-500/10 border border-emerald-500/20'} mb-6`}>
+                <Zap className={`w-3.5 h-3.5 ${isAirbnb ? 'text-blue-400' : 'text-emerald-400'}`} />
+                <span className={`${isAirbnb ? 'text-blue-400' : 'text-emerald-400'} text-xs font-semibold uppercase tracking-wider`}>Simples como 1-2-3</span>
+              </div>
 
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={`desc-${niche}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.4, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
-              className="text-neutral-400 text-base sm:text-lg max-w-xl mx-auto leading-relaxed"
+              <AnimatePresence mode="wait">
+                <motion.h2
+                  key={`title-${niche}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
+                  className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 leading-[1.1] tracking-tight"
+                >
+                  {headerTitle}
+                </motion.h2>
+              </AnimatePresence>
+
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={`desc-${niche}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.4, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
+                  className="text-neutral-400 text-base sm:text-lg max-w-xl mx-auto leading-relaxed"
+                >
+                  {headerDesc}
+                </motion.p>
+              </AnimatePresence>
+            </motion.div>
+
+            {/* ── Steps Grid — scroll-linked ── */}
+            <AnimatePresence mode="wait">
+              <div
+                key={`steps-${niche}`}
+                className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+              >
+                {content.steps.map((step, i) => (
+                  <ParallaxStepCard
+                    key={`${niche}-${step.num}`}
+                    step={step}
+                    index={i}
+                    scrollYProgress={scrollYProgress}
+                  />
+                ))}
+              </div>
+            </AnimatePresence>
+
+            {/* ── Bottom promise strip ── */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 1.0 }}
+              className={`mt-20 p-8 sm:p-10 rounded-2xl bg-gradient-to-r from-emerald-500/[0.06] via-blue-500/[0.04] to-violet-500/[0.06] border border-white/[0.06] text-center`}
             >
-              {headerDesc}
-            </motion.p>
-          </AnimatePresence>
-        </motion.div>
-
-        {/* ── Steps Grid ── */}
-        <AnimatePresence mode="wait">
-          <div
-            key={`steps-${niche}`}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-8"
-          >
-            {content.steps.map((step, i) => (
-              <StepCard key={`${niche}-${step.num}`} step={step} index={i} isInView={isInView} />
-            ))}
-          </div>
-        </AnimatePresence>
-
-        {/* ── Bottom promise strip ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 1.0 }}
-          className={`mt-20 p-8 sm:p-10 rounded-2xl bg-gradient-to-r from-emerald-500/[0.06] via-blue-500/[0.04] to-violet-500/[0.06] border border-white/[0.06] text-center`}
-        >
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10">
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center`}>
-                <Sparkles className={`w-5 h-5 text-emerald-400`} />
-              </div>
-              <div className="text-left">
-                <div className="text-white font-bold text-sm">Primeira reserva IA</div>
-                <div className="text-neutral-500 text-xs">Em até 24 horas</div>
-              </div>
-            </div>
-            <div className="hidden sm:block w-px h-10 bg-white/[0.08]" />
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                <Globe className="w-5 h-5 text-blue-400" />
-              </div>
-              <div className="text-left">
-                <div className="text-white font-bold text-sm">
-                  <span className="text-emerald-400">PT</span>
-                  <span className="text-neutral-600 mx-1.5">/</span>
-                  <span className="text-blue-400">ES</span>
-                  <span className="text-white ml-1.5">Bilíngue</span>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center`}>
+                    <Sparkles className={`w-5 h-5 text-emerald-400`} />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-white font-bold text-sm">Primeira reserva IA</div>
+                    <div className="text-neutral-500 text-xs">Em até 24 horas</div>
+                  </div>
                 </div>
-                <div className="text-neutral-500 text-xs">Atende em português e espanhol</div>
+                <div className="hidden sm:block w-px h-10 bg-white/[0.08]" />
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                    <Globe className="w-5 h-5 text-blue-400" />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-white font-bold text-sm">
+                      <span className="text-emerald-400">PT</span>
+                      <span className="text-neutral-600 mx-1.5">/</span>
+                      <span className="text-blue-400">ES</span>
+                      <span className="text-white ml-1.5">Bilíngue</span>
+                    </div>
+                    <div className="text-neutral-500 text-xs">Atende em português e espanhol</div>
+                  </div>
+                </div>
+                <div className="hidden sm:block w-px h-10 bg-white/[0.08]" />
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center`}>
+                    <Zap className={`w-5 h-5 text-violet-400`} />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-white font-bold text-sm">7 dias grátis</div>
+                    <div className="text-neutral-500 text-xs">Sem cartão de crédito</div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="hidden sm:block w-px h-10 bg-white/[0.08]" />
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center`}>
-                <Zap className={`w-5 h-5 text-violet-400`} />
-              </div>
-              <div className="text-left">
-                <div className="text-white font-bold text-sm">7 dias grátis</div>
-                <div className="text-neutral-500 text-xs">Sem cartão de crédito</div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+            </motion.div>
 
-        {/* ── CTA ── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.7, delay: 1.2 }}
-          className="text-center mt-14"
-        >
-          <button
-            onClick={() => {
-              const el = document.querySelector('#precos');
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className={`group inline-flex items-center gap-2 px-8 py-4 rounded-xl ${isAirbnb ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 shadow-blue-500/25 hover:shadow-blue-500/40' : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 shadow-emerald-500/25 hover:shadow-emerald-500/40'} text-white font-bold transition-all duration-300 shadow-lg cursor-pointer`}
-          >
-            Começar agora — grátis por 7 dias
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
-        </motion.div>
+            {/* ── CTA ── */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.7, delay: 1.2 }}
+              className="text-center mt-14"
+            >
+              <button
+                onClick={() => {
+                  const el = document.querySelector('#precos');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className={`group inline-flex items-center gap-2 px-8 py-4 rounded-xl ${isAirbnb ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 shadow-blue-500/25 hover:shadow-blue-500/40' : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 shadow-emerald-500/25 hover:shadow-emerald-500/40'} text-white font-bold transition-all duration-300 shadow-lg cursor-pointer`}
+              >
+                Começar agora — grátis por 7 dias
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </motion.div>
+          </div>
+        </div>
       </div>
     </section>
   );

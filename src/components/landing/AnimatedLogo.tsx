@@ -2,185 +2,154 @@
 
 import { motion } from 'framer-motion';
 
+// ═══════════════════════════════════════════════════════════════
+// ANIMATED LOGO — SVG Line Drawing Effect
+// ───────────────────────────────────────────────────────────
+// Efeito de entrada do logotipo desenhando na tela via
+// stroke-dashoffset / pathLength animation.
+//
+// ⚠️ INSTRUÇÕES PARA O DESIGNER:
+// Para substituir o placeholder, cole os paths do Illustrator
+// nos arrays LOGO_PATHS e LOGO_FILLS abaixo.
+//
+// Preparação no Illustrator:
+// 1. Limpe o vetor: SEM fills sólidos, apenas strokes
+// 2. Unifique as linhas (Object > Path > Outline Stroke)
+// 3. Exporte como SVG (Styling: Inline Style, NÃO minificar)
+// 4. Copie o atributo `d="..."` de cada <path> para LOGO_PATHS
+// 5. Para elementos com fill (ex: bolinha do "i"), adicione em LOGO_FILLS
+// ═══════════════════════════════════════════════════════════════
+
 interface AnimatedLogoProps {
+  /** Largura do SVG (altura é proporcional via viewBox) */
+  width?: number;
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
-  showText?: boolean;
-  animate?: boolean;
+  /** Delay antes de iniciar a animação (segundos) */
+  delay?: number;
 }
 
-const SIZE_MAP = {
-  sm: { mark: 28, text: 15, gap: 6 },
-  md: { mark: 36, text: 19, gap: 8 },
-  lg: { mark: 44, text: 24, gap: 10 },
-};
+// ── PLACEHOLDER: Substitua pelos paths reais do Illustrator ──
+// Cada string é o valor do atributo `d` de um <path> no SVG exportado.
+// O logotipo será desenhado stroke-first, depois os fills aparecem.
 
-export function AnimatedLogo({
-  className,
-  size = 'md',
-  showText = true,
-  animate = true,
-}: AnimatedLogoProps) {
-  const s = SIZE_MAP[size];
+const LOGO_PATHS: { d: string; strokeWidth?: number; duration?: number; delay?: number }[] = [
+  // ── Placeholder: Letra "Z" estilizada ──
+  {
+    d: 'M8 8 L32 8 L8 32 L32 32',
+    strokeWidth: 2.5,
+    duration: 0.8,
+    delay: 0,
+  },
+  // ── Placeholder: Arco decorativo superior ──
+  {
+    d: 'M4 20 Q20 4 36 20',
+    strokeWidth: 1.5,
+    duration: 0.6,
+    delay: 0.3,
+  },
+  // ── Placeholder: Linha horizontal base ──
+  {
+    d: 'M6 36 L34 36',
+    strokeWidth: 2,
+    duration: 0.4,
+    delay: 0.6,
+  },
+];
 
-  // Static version for when animate=false
-  if (!animate) {
-    return (
-      <div className={`inline-flex items-center ${className ?? ''}`} style={{ gap: s.gap }}>
-        <svg
-          width={s.mark}
-          height={s.mark}
-          viewBox="0 0 30 30"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-        >
-          <path d="M6.16 7.1h9.31l-1.3 1.85c-.2.29-.54.47-.9.47H6.16V7.1Z" fill="white" />
-          <polygon points="24.3,7.1 13.14,22.91 5.7,22.91 16.86,7.1" fill="white" />
-          <path d="M14.53 22.91h9.29v2.33h-9.29l1.31-1.86c.2-.29.54-.47.9-.47h-7.09v2.33h-2Z" fill="white" />
-        </svg>
-        {showText && (
-          <span className="text-white font-semibold tracking-tight" style={{ fontSize: s.text }}>
-            Seu Zélla
-          </span>
-        )}
-      </div>
-    );
-  }
+// ── PLACEHOLDER: Elementos com fill (bolinhas, detalhes) ──
+// Estes aparecem com fade-in após o stroke drawing completar.
 
-  // Animated version — sequence: bubble springs → typing dots → diagonal draws → text fades → 3s hold → loop
+const LOGO_FILLS: { d: string; duration?: number; delay?: number }[] = [
+  // ── Placeholder: Ponto decorativo ──
+  {
+    d: 'M20 14 C22 14 23 15 23 17 C23 19 22 20 20 20 C18 20 17 19 17 17 C17 15 18 14 20 14 Z',
+    duration: 0.4,
+    delay: 1.2,
+  },
+];
+
+export function AnimatedLogo({ width = 120, className = '', delay = 0 }: AnimatedLogoProps) {
+  const aspectRatio = 40 / 44; // viewBox width / height
+  const height = width / aspectRatio;
+
   return (
-    <div className={`inline-flex items-center ${className ?? ''}`} style={{ gap: s.gap }}>
-      <motion.svg
-        width={s.mark}
-        height={s.mark}
-        viewBox="0 0 30 30"
+    <motion.div
+      className={className}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, delay }}
+    >
+      <svg
+        width={width}
+        height={height}
+        viewBox="0 0 40 44"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
+        aria-label="Seu Zélla — Zelador Digital Inteligente"
+        role="img"
       >
-        {/* ── Top-left chat bubble ── */}
-        <motion.path
-          d="M6.16 7.1h9.31l-1.3 1.85c-.2.29-.54.47-.9.47H6.16V7.1Z"
-          fill="white"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{
-            scale: [0, 1.18, 0.94, 1.02, 1],
-            opacity: [0, 1, 1, 1, 1],
-          }}
-          transition={{
-            duration: 0.8,
-            ease: [0.34, 1.56, 0.64, 1],
-            times: [0, 0.4, 0.65, 0.85, 1],
-          }}
-          style={{ originX: '7px', originY: '8px' }}
-        />
-
-        {/* ── Bottom-right chat bubble (slight delay) ── */}
-        <motion.path
-          d="M14.53 22.91h9.29v2.33h-9.29l1.31-1.86c.2-.29.54-.47.9-.47h-7.09v2.33h-2Z"
-          fill="white"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{
-            scale: [0, 1.18, 0.94, 1.02, 1],
-            opacity: [0, 1, 1, 1, 1],
-          }}
-          transition={{
-            duration: 0.8,
-            delay: 0.15,
-            ease: [0.34, 1.56, 0.64, 1],
-            times: [0, 0.4, 0.65, 0.85, 1],
-          }}
-          style={{ originX: '23px', originY: '24px' }}
-        />
-
-        {/* ── Typing dots — top bubble ── */}
-        {[0, 1, 2].map((i) => (
-          <motion.circle
-            key={`td${i}`}
-            cx={8.5 + i * 2}
-            cy={8.2}
-            r={0.55}
-            fill="white"
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{
-              opacity: [0, 0, 1, 1, 0],
-              scale: [0, 0, 1, 1, 0],
-            }}
+        {/* ── Stroke Paths (Line Drawing Animation) ── */}
+        {LOGO_PATHS.map((path, i) => (
+          <motion.path
+            key={`stroke-${i}`}
+            d={path.d}
+            stroke="white"
+            strokeWidth={path.strokeWidth || 2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
             transition={{
-              duration: 0.7,
-              delay: 0.8 + i * 0.12,
-              ease: 'easeInOut',
-              times: [0, 0.1, 0.3, 0.7, 1],
+              pathLength: {
+                duration: path.duration || 0.8,
+                delay: delay + (path.delay || 0),
+                ease: [0.25, 0.46, 0.45, 0.94], // custom cubic-bezier
+              },
             }}
           />
         ))}
 
-        {/* ── Typing dots — bottom bubble ── */}
-        {[0, 1, 2].map((i) => (
-          <motion.circle
-            key={`bd${i}`}
-            cx={18.5 + i * 2}
-            cy={23.8}
-            r={0.55}
+        {/* ── Fill Paths (Fade-in after stroke) ── */}
+        {LOGO_FILLS.map((path, i) => (
+          <motion.path
+            key={`fill-${i}`}
+            d={path.d}
             fill="white"
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{
-              opacity: [0, 0, 1, 1, 0],
-              scale: [0, 0, 1, 1, 0],
-            }}
+            initial={{ fillOpacity: 0, pathLength: 0 }}
+            animate={{ fillOpacity: 1, pathLength: 1 }}
             transition={{
-              duration: 0.7,
-              delay: 0.9 + i * 0.12,
-              ease: 'easeInOut',
-              times: [0, 0.1, 0.3, 0.7, 1],
+              fillOpacity: {
+                duration: path.duration || 0.4,
+                delay: delay + (path.delay || 1.2),
+                ease: 'easeOut',
+              },
+              pathLength: {
+                duration: (path.duration || 0.4) * 0.8,
+                delay: delay + (path.delay || 1.2) - 0.2,
+                ease: [0.25, 0.46, 0.45, 0.94],
+              },
             }}
           />
         ))}
+      </svg>
+    </motion.div>
+  );
+}
 
-        {/* ── Diagonal stroke (Z center) — draws itself ── */}
-        <motion.polygon
-          points="24.3,7.1 13.14,22.91 5.7,22.91 16.86,7.1"
-          fill="white"
-          initial={{ opacity: 0, pathLength: 0 }}
-          animate={{
-            opacity: [0, 0, 1],
-            pathLength: [0, 0, 1],
-          }}
-          transition={{
-            duration: 1.2,
-            delay: 1.3,
-            ease: [0.25, 0.46, 0.45, 0.94],
-            times: [0, 0.1, 1],
-            pathLength: {
-              duration: 0.7,
-              delay: 1.5,
-              ease: [0.25, 0.46, 0.45, 0.94],
-            },
-          }}
-        />
-      </motion.svg>
+// ═══════════════════════════════════════════════════════════════
+// VARIANT: Full-width Hero Logo (larger, more dramatic)
+// ═══════════════════════════════════════════════════════════════
 
-      {/* ── Text "Seu Zélla" — fade + slide ── */}
-      {showText && (
-        <motion.span
-          className="text-white font-semibold tracking-tight"
-          style={{ fontSize: s.text }}
-          initial={{ opacity: 0, x: -6 }}
-          animate={{
-            opacity: [0, 0, 1],
-            x: [-6, -6, 0],
-          }}
-          transition={{
-            duration: 0.8,
-            delay: 2.2,
-            ease: [0.25, 0.46, 0.45, 0.94],
-            times: [0, 0.2, 1],
-          }}
-        >
-          Seu Zélla
-        </motion.span>
-      )}
-    </div>
+export function AnimatedLogoHero({ className = '' }: { className?: string }) {
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+    >
+      <AnimatedLogo width={80} delay={0.2} />
+    </motion.div>
   );
 }

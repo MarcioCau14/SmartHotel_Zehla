@@ -102,6 +102,65 @@ function StatsMarquee() {
   );
 }
 
+/* ─────────── CHAT BUBBLES FOR PARALLAX ─────────── */
+const chatBubbles = [
+  { text: 'Olá! Vocês têm quartos para este fim de semana?', from: 'guest', delay: 0 },
+  { text: 'Boa tarde! Temos o Suíte Jardim disponível. Posso enviar fotos e valores? 😊', from: 'zella', delay: 0.15 },
+  { text: 'Quanto fica a diária para 2 pessoas?', from: 'guest', delay: 0.25 },
+  { text: 'R$ 380/diária com café da manhã incluso. Quer reservar agora pelo PIX?', from: 'zella', delay: 0.4 },
+  { text: 'Aceita pet? Tenho um golden retriever 🐕', from: 'guest', delay: 0.55 },
+  { text: 'Sim! Aceitamos pets até 15kg com taxa de R$ 50/diária. Incluso caminha e potinho!', from: 'zella', delay: 0.7 },
+];
+
+function ParallaxChatBubbles({ scrollYProgress }: { scrollYProgress: ReturnType<typeof useScroll>['scrollYProgress'] }) {
+  // Each bubble moves at different speed for depth effect
+  // Mobile: reduce movement range by 60%
+  const getRange = (base: number) => typeof window !== 'undefined' && window.innerWidth < 768 ? base * 0.4 : base;
+
+  const y0 = useTransform(scrollYProgress, [0.1, 0.9], [getRange(120), getRange(-80)]);
+  const y1 = useTransform(scrollYProgress, [0.1, 0.9], [getRange(80), getRange(-120)]);
+  const y2 = useTransform(scrollYProgress, [0.1, 0.9], [getRange(100), getRange(-60)]);
+  const y3 = useTransform(scrollYProgress, [0.1, 0.9], [getRange(60), getRange(-100)]);
+  const y4 = useTransform(scrollYProgress, [0.1, 0.9], [getRange(140), getRange(-40)]);
+  const y5 = useTransform(scrollYProgress, [0.1, 0.9], [getRange(40), getRange(-140)]);
+  const yValues = [y0, y1, y2, y3, y4, y5];
+
+  const opacity = useTransform(scrollYProgress, [0.05, 0.2, 0.8, 0.95], [0, 1, 1, 0]);
+
+  return (
+    <motion.div style={{ opacity }} className="absolute inset-0 pointer-events-none overflow-hidden">
+      {chatBubbles.map((bubble, i) => (
+        <motion.div
+          key={i}
+          style={{ y: yValues[i] }}
+          className={`absolute ${
+            bubble.from === 'guest'
+              ? 'left-[5%] md:left-[8%]'
+              : 'right-[5%] md:right-[8%]'
+          } ${
+            i === 0 ? 'top-[8%]'
+              : i === 1 ? 'top-[20%]'
+              : i === 2 ? 'top-[35%]'
+              : i === 3 ? 'top-[50%]'
+              : i === 4 ? 'top-[65%]'
+              : 'top-[78%]'
+          }`}
+        >
+          <div className={`
+            px-4 py-2.5 rounded-2xl text-sm max-w-[220px] md:max-w-[280px] backdrop-blur-sm
+            ${bubble.from === 'guest'
+              ? 'bg-emerald-600/20 border border-emerald-500/20 text-emerald-100 rounded-bl-sm'
+              : 'bg-white/[0.06] border border-white/[0.08] text-zinc-200 rounded-br-sm'
+            }
+          `}>
+            <p className="text-[13px] leading-relaxed">{bubble.text}</p>
+          </div>
+        </motion.div>
+      ))}
+    </motion.div>
+  );
+}
+
 /* ─────────── SINGLE OPPORTUNITY CARD ─────────── */
 function OpportunityCard({ item, index, isInView }: { item: PainCard; index: number; isInView: boolean }) {
   const c = colorMap[item.color];
@@ -154,19 +213,18 @@ function OpportunityCard({ item, index, isInView }: { item: PainCard; index: num
   );
 }
 
-/* ─────────── MAIN SECTION ─────────── */
+/* ─────────── MAIN SECTION — with Sticky Parallax ─────────── */
 export function PainPointsSection() {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: '-80px' });
-  const { niche, isPousada, isAirbnb } = useNiche();
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(sectionRef, { once: true, margin: '-80px' });
+  const { niche, isPousada } = useNiche();
   const content = getNicheContent(niche);
 
-  // Parallax subtle effect for the section background
+  // Scroll-linked parallax for the ENTIRE sticky section
   const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start end', 'end start'],
+    target: sectionRef,
+    offset: ['start start', 'end end'],
   });
-  const bgY = useTransform(scrollYProgress, [0, 1], [40, -40]);
 
   // Niche-aware header text
   const headerTitle = isPousada
@@ -178,107 +236,109 @@ export function PainPointsSection() {
     : 'Veja como o Zélla transforma o WhatsApp dos seus imóveis em uma máquina de reservas — sem complicação e no seu tom de voz.';
 
   return (
-    <section ref={ref} className="relative py-28 sm:py-36 lg:py-44 bg-[#060608] overflow-hidden">
-      {/* Subtle parallax background orbs */}
-      <motion.div
-        style={{ y: bgY }}
-        className="absolute top-20 -left-40 w-[400px] h-[400px] rounded-full bg-emerald-500/[0.03] blur-[120px] pointer-events-none"
-      />
-      <motion.div
-        style={{ y: bgY }}
-        className="absolute bottom-20 -right-40 w-[350px] h-[350px] rounded-full bg-blue-500/[0.03] blur-[100px] pointer-events-none"
-      />
+    <section ref={sectionRef} className="relative bg-[#060608] overflow-hidden" style={{ minHeight: '200vh' }}>
+      {/* ── Sticky inner container ── */}
+      <div className="sticky top-0 h-screen overflow-y-auto flex items-center">
+        <div className="relative w-full py-20 sm:py-28">
+          {/* Parallax chat bubbles (background layer) */}
+          <ParallaxChatBubbles scrollYProgress={scrollYProgress} />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
-        {/* ── Header with editorial slash ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="text-center mb-16"
-        >
-          {/* Eyebrow with slash */}
-          <div className="inline-flex items-center gap-2 mb-6">
-            <span className="text-neutral-600 text-sm font-medium">/</span>
-            <span className={`text-emerald-400/80 text-xs font-semibold uppercase tracking-widest`}>
-              Por que o Zélla
-            </span>
-          </div>
+          {/* Subtle background orbs */}
+          <div className="absolute top-20 -left-40 w-[400px] h-[400px] rounded-full bg-emerald-500/[0.03] blur-[120px] pointer-events-none" />
+          <div className="absolute bottom-20 -right-40 w-[350px] h-[350px] rounded-full bg-blue-500/[0.03] blur-[100px] pointer-events-none" />
 
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 leading-[1.1] tracking-tight">
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={`title-${niche}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
-              >
-                {headerTitle}
-              </motion.span>
-            </AnimatePresence>
-            <br className="hidden sm:block" />
-            <span className={`bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent`}> um atendimento à altura</span>
-          </h2>
-
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={`desc-${niche}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.4, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
-              className="text-neutral-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed"
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
+            {/* ── Header with editorial slash ── */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="text-center mb-16"
             >
-              {headerDesc}
-            </motion.p>
-          </AnimatePresence>
-        </motion.div>
+              {/* Eyebrow with slash */}
+              <div className="inline-flex items-center gap-2 mb-6">
+                <span className="text-neutral-600 text-sm font-medium">/</span>
+                <span className={`text-emerald-400/80 text-xs font-semibold uppercase tracking-widest`}>
+                  Por que o Zélla
+                </span>
+              </div>
 
-        {/* ── Stats Marquee ── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          <StatsMarquee />
-        </motion.div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 leading-[1.1] tracking-tight">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={`title-${niche}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
+                  >
+                    {headerTitle}
+                  </motion.span>
+                </AnimatePresence>
+                <br className="hidden sm:block" />
+                <span className={`bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent`}> um atendimento à altura</span>
+              </h2>
 
-        {/* ── Bento Grid ── */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`grid-${niche}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6"
-          >
-            {content.painCards.map((item, i) => (
-              <OpportunityCard key={`${niche}-${item.title}`} item={item} index={i} isInView={isInView} />
-            ))}
-          </motion.div>
-        </AnimatePresence>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={`desc-${niche}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.4, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
+                  className="text-neutral-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed"
+                >
+                  {headerDesc}
+                </motion.p>
+              </AnimatePresence>
+            </motion.div>
 
-        {/* ── Bottom trust strip (Cloudbeds-inspired) ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.7 }}
-          className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 mt-16 pt-10 border-t border-white/[0.04]"
-        >
-          {[
-            { icon: Zap, text: 'Setup em 5 minutos' },
-            { icon: ShieldCheck, text: 'Sem cartão de crédito' },
-            { icon: Sparkles, text: isPousada ? 'IA treinada para pousadas' : 'IA treinada para anfitriões' },
-            { icon: TrendingUp, text: 'Resultados em 48h' },
-          ].map((t, i) => (
-            <div key={i} className="flex items-center gap-2 text-neutral-500 text-sm">
-              <t.icon className={`w-4 h-4 text-emerald-500/50`} />
-              <span>{t.text}</span>
-            </div>
-          ))}
-        </motion.div>
+            {/* ── Stats Marquee ── */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <StatsMarquee />
+            </motion.div>
+
+            {/* ── Bento Grid ── */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`grid-${niche}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6"
+              >
+                {content.painCards.map((item, i) => (
+                  <OpportunityCard key={`${niche}-${item.title}`} item={item} index={i} isInView={isInView} />
+                ))}
+              </motion.div>
+            </AnimatePresence>
+
+            {/* ── Bottom trust strip ── */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.7 }}
+              className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 mt-16 pt-10 border-t border-white/[0.04]"
+            >
+              {[
+                { icon: Zap, text: 'Setup em 5 minutos' },
+                { icon: ShieldCheck, text: 'Sem cartão de crédito' },
+                { icon: Sparkles, text: isPousada ? 'IA treinada para pousadas' : 'IA treinada para anfitriões' },
+                { icon: TrendingUp, text: 'Resultados em 48h' },
+              ].map((t, i) => (
+                <div key={i} className="flex items-center gap-2 text-neutral-500 text-sm">
+                  <t.icon className={`w-4 h-4 text-emerald-500/50`} />
+                  <span>{t.text}</span>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        </div>
       </div>
     </section>
   );
