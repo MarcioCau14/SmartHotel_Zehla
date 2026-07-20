@@ -16,8 +16,8 @@ export function HeroSection() {
 
   // Rotating hero words — niche-specific to avoid cross-contamination
   const rotatingPhrases = isPousada
-    ? ['pelo WhatsApp.', 'a sua pousada.']
-    : ['pelo WhatsApp.', 'o seu imóvel.'];
+    ? ['pelo WhatsApp.', 'sua pousada.']
+    : ['pelo WhatsApp.', 'seu imóvel.'];
   const rotatingPhrasesLength = rotatingPhrases.length;
   const [phraseIdx, setPhraseIdx] = useState(0);
   useEffect(() => {
@@ -57,7 +57,7 @@ export function HeroSection() {
             {/* Headline — ultra-bold, dominant for premium value perception (ollow.com.br inspired) */}
             <h1 className="text-[2.25rem] sm:text-[3.5rem] md:text-[4.5rem] lg:text-[5.25rem] xl:text-[6rem] font-satoshi font-extrabold tracking-tight leading-[1.05] text-white mb-8 text-center">
               <span className="block">O Zélla atende, vende e</span>
-              <span className="block text-blue-500 font-bold">
+              <span className="block whitespace-nowrap text-blue-500 font-bold">
                 reserva{' '}
                 <AnimatePresence mode="wait">
                   <motion.span
@@ -66,7 +66,7 @@ export function HeroSection() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -12 }}
                     transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
-                    className="inline-block whitespace-nowrap"
+                    className="inline-block"
                   >
                     {rotatingPhrases[phraseIdx]}
                   </motion.span>

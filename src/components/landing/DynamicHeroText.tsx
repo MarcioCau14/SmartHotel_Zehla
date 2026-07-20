@@ -13,9 +13,9 @@ export function DynamicHeroText({ className }: DynamicHeroTextProps) {
 
   // Niche-specific rotating phrases to avoid cross-contamination
   const phrases = isPousada
-    ? ['pelo WhatsApp.', 'a sua pousada.']
+    ? ['pelo WhatsApp.', 'sua pousada.']
     : isAirbnb
-    ? ['pelo WhatsApp.', 'o seu imóvel.']
+    ? ['pelo WhatsApp.', 'seu imóvel.']
     : ['pelo WhatsApp.', 'seu negócio.'];
 
   const [currentIndex, setCurrentIndex] = useState(0);
