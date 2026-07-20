@@ -24,7 +24,7 @@ export function FloatingCTA() {
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.04] bg-[#070709]/95 backdrop-blur-md transition-all duration-300 transform shadow-[0_-8px_30px_rgba(0,0,0,0.8)] ${
+      className={`fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.06] bg-[#09090b]/95 backdrop-blur-xl transition-all duration-300 transform shadow-[0_-8px_30px_rgba(0,0,0,0.8)] ${
         isVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'
       }`}
     >
@@ -40,7 +40,7 @@ export function FloatingCTA() {
         {/* Botão da Direita */}
         <Link
           href="#precos"
-          className="w-full sm:w-auto px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg text-center transition-all duration-200 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 text-sm cursor-pointer whitespace-nowrap active:scale-95"
+          className="w-full sm:w-auto px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold rounded-lg text-center transition-all duration-200 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 text-sm cursor-pointer whitespace-nowrap active:scale-[0.98]"
         >
           Teste grátis 7 dias
         </Link>

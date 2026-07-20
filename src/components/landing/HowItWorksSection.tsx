@@ -108,7 +108,7 @@ function StepCard({
         </div>
       )}
 
-      <div className={`relative p-7 sm:p-9 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.14] transition-all duration-500 h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black`}>
+      <div className={`relative p-7 sm:p-9 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.14] transition-all duration-500 h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#09090b]`}>
         {/* Hover glow */}
         <div className={`absolute -top-16 -right-16 w-32 h-32 rounded-full ${c.accent} blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none`} />
 
@@ -187,7 +187,7 @@ export function HowItWorksSection() {
     : 'Da URL do anúncio ao primeiro check-in virtual automaticamente. Sem precisar de técnico ou conhecimento técnico.';
 
   return (
-    <section ref={sectionRef} id="como-funciona" className="relative overflow-hidden py-24 sm:py-32 bg-[#0a0a0a]">
+    <section ref={sectionRef} id="como-funciona" className="relative overflow-hidden py-24 sm:py-32 bg-[#09090b]">
       {/* Background grid pattern */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
         style={{
@@ -207,7 +207,7 @@ export function HowItWorksSection() {
           {/* Eyebrow */}
           <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${isAirbnb ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-emerald-500/10 border border-emerald-500/20'} mb-5`}>
             <Zap className={`w-3.5 h-3.5 ${isAirbnb ? 'text-blue-400' : 'text-emerald-400'}`} />
-            <span className={`${isAirbnb ? 'text-blue-400' : 'text-emerald-400'} text-xs font-semibold uppercase tracking-wider`}>Simples como 1-2-3</span>
+            <span className={`${isAirbnb ? 'text-blue-400' : 'text-emerald-400'} text-[11px] font-semibold uppercase tracking-[0.04em]`}>Simples como 1-2-3</span>
           </div>
 
           <AnimatePresence mode="wait">
@@ -217,7 +217,7 @@ export function HowItWorksSection() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
-              className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-5 leading-[1.1] tracking-tight"
+              className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-5 leading-[1.08] tracking-[-0.02em]"
             >
               {headerTitle}
             </motion.h2>

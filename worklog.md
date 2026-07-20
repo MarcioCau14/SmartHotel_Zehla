@@ -510,3 +510,146 @@ Stage Summary:
 - HowItWorksSection: removed broken sticky+parallax, now clean section with proper animations
 - No more dark void or confusing floating chat bubbles below hero CTA
 - Page content flows naturally and professionally
+
+---
+Task ID: 3-c
+Agent: Section Flow Improver
+Task: Improve page.tsx with section dividers and background color refinements
+
+Work Log:
+- Read worklog.md for context on previous agent work (Tasks 1, 2, 3-a, 3-b)
+- Read current page.tsx to understand existing structure
+- Added inline SectionDivider component with subtle gradient separator (from-transparent via-white/[0.06] to-transparent)
+- Changed root container background from bg-[#0a0a0a] to bg-[#09090b] (Linear-style canvas color)
+- Added SectionDivider between 5 major section boundaries:
+  - HeroSection ↔ PainPointsSection
+  - PainPointsSection ↔ HowItWorksSection
+  - HowItWorksSection ↔ FeaturesSection
+  - FeaturesSection ↔ DashboardPreviewSection
+  - DashboardPreviewSection ↔ NicheSwitcherSection
+- Kept all existing component imports and their order exactly as-is
+- Kept footer sticky behavior (mt-auto)
+- Kept FloatingCTA
+- Ran lint: no new errors introduced (existing errors are from other test/stress-test files)
+- Verified dev server compiles successfully
+
+Stage Summary:
+- SectionDivider: subtle gradient line separator creating visual rhythm between major content blocks
+- Root bg color: #09090b (Linear canvas standard) for cleaner, slightly cooler dark tone
+- Section flow: smooth visual separation without jarring color transitions
+- No components removed, reordered, or modified — only wrapper structure enhanced
+
+---
+Task ID: 3-b
+Agent: Hero Redesign Agent
+Task: Redesign HeroSection with Linear/Framer/Stripe/Resend design system refinements
+
+Work Log:
+- Read worklog.md for context on previous agents' work (task 1–3a)
+- Read current HeroSection.tsx to understand existing implementation
+- Applied typography overhaul:
+  - Headline: `font-bold` (700) replacing `font-extrabold` (800) for editorial air (Stripe principle)
+  - Headline tracking: `tracking-[-0.03em]` mobile / `tracking-[-0.04em]` desktop (Linear aggressive negative tracking)
+  - Headline line-height: `leading-[1.05]` mobile / `leading-[1.02]` desktop (Framer tight leading)
+  - Subtitle: `text-[15px] sm:text-[17px] md:text-lg` replacing `text-base sm:text-lg md:text-xl` for compactness
+  - Eyebrow badge: `tracking-[0.04em]` positive tracking (Linear design)
+- Changed background from `bg-[#0a0a0a]` to `bg-[#09090b]` (Linear surface ladder)
+- Reduced ambient glow opacity:
+  - Emerald glow: 0.07 → 0.05
+  - Purple glow: 0.05 → 0.03
+  - (Resend atmospheric subtlety principle)
+- CTA button refinements (Linear/Supabase):
+  - `rounded-lg` (8px) replacing `rounded-2xl` (16px)
+  - `px-8 py-3.5 text-sm font-semibold` replacing `px-10 py-4 text-base font-extrabold`
+  - Arrow icon: `w-4 h-4` replacing `w-5 h-5` with subtler hover translate
+  - Hover scale: `1.02` replacing `1.03` for more restrained interaction
+  - Focus ring offset: `ring-offset-[#09090b]` to match new background
+- NicheToggle label: `tracking-[0.03em]` replacing `tracking-wider` for subtle positive tracking
+- Social proof refinements:
+  - Avatar size: `w-7 h-7` replacing `w-8 h-8` (slightly smaller)
+  - Avatar spacing: `-space-x-2` replacing `-space-x-2.5` (tighter)
+  - Avatar border: `border-[#09090b]` matching new background
+  - Social proof text: added `tracking-tight` on "+100 pousadas/anfitriões" text
+- Kept ALL existing text/copy, rotating phrases, animations, and functionality intact
+- Lint: no new errors introduced (existing errors are from other test/stress-test files)
+- Dev server: compiles successfully with no errors
+
+Stage Summary:
+- Typography: aggressive negative tracking + tight leading + lighter bold weight = editorial, premium feel
+- Background: #09090b surface ladder (cooler, more refined dark canvas)
+- Ambient glows: 29-40% more subtle (5% and 3% opacity) for atmospheric depth without distraction
+- CTAs: compact, sharper corners, restrained hover — Linear/Supabase refinement
+- Social proof: slightly smaller avatars with tracking-tight on metric text
+- All existing copy, rotating phrases, AnimatePresence, NicheToggle, stagger animations, shimmer, prefersReducedMotion support preserved
+
+---
+Task ID: 3-a
+Agent: Header Redesign Agent
+Task: Redesign Header component with active section navigation, niche-aware CTA, and improved mobile drawer
+
+Work Log:
+- Read existing Header.tsx, NicheContext.tsx, ZellaLogo.tsx, and page.tsx to understand current implementation
+- Identified section IDs on landing page: integracoes, calculadora, precos, faq
+- Rewrote `/home/z/my-project/src/components/landing/Header.tsx` with all requested improvements
+
+Changes Made:
+1. **Active Section Navigation**: Added IntersectionObserver that watches each nav section with `rootMargin: '-20% 0px -60% 0px'` to detect which section is currently in view. Active section stored in `activeSection` state.
+2. **Active nav indicators**: Active section link gets niche-colored text (emerald-400/blue-400/amber-400) with a small dot indicator beside the text and a subtle 1.5px underline below, both using Framer Motion `layoutId` for smooth spring transitions between sections.
+3. **Better scroll behavior**: Scrolled state uses `bg-[#09090b]/80 backdrop-blur-xl` with `border-b border-white/[0.06]` — matches Linear surface ladder canvas color.
+4. **NicheContext-aware CTA**: Imported `useNiche` from `@/contexts/NicheContext`. Created `NICHE_ACCENT` color map with emerald (pousada), blue (airbnb), and amber (parceiro/future) tokens. CTA button, nav indicators, focus rings all adapt to niche.
+5. **Better typography**: Nav links use `text-[13px] font-medium tracking-[-0.01em]` with smooth `transition-colors duration-200`.
+6. **Compact button radius**: Changed from `rounded-lg` to `rounded-[8px]` for Linear-style compact buttons.
+7. **Mobile menu improvements**:
+   - Replaced height-animation drawer with a floating card drawer (`fixed`, rounded-2xl, positioned below header)
+   - Added backdrop overlay with blur (`bg-black/40 backdrop-blur-sm`)
+   - Each nav item shows a dot indicator (colored when active, white/20 when inactive)
+   - Active items get subtle `bg-white/[0.04]` background highlight
+   - Better padding: `px-4 py-3 rounded-xl` for touch-friendly targets
+   - CTA uses `rounded-xl` with `active:scale-[0.98]` feedback
+8. **Smooth scroll on nav click**: Added `handleNavClick` that uses `scrollIntoView({ behavior: 'smooth' })` and closes mobile menu.
+9. **Kept all existing nav links**: Integrações, Calculadora, Preços, FAQ with same lgOnly behavior.
+10. **Kept "Testar por 7 dias" CTA button** with ArrowRight icon.
+
+Stage Summary:
+- Header now has active section detection via IntersectionObserver with animated indicators
+- CTA and all accent colors are niche-aware (emerald/blue/amber)
+- Scrolled state uses proper surface ladder color (#09090b) with backdrop-blur-xl
+- Typography: 13px medium weight with -0.01em tracking
+- Mobile drawer: floating card with backdrop, dot indicators, better touch targets
+- All existing functionality preserved (nav links, CTA, ZellaLogo, responsive behavior)
+
+---
+Task ID: 3
+Agent: main
+Task: Redesign landing page using awesome-design-md skill guidelines (Linear, Vercel, Stripe, Resend, Framer, Supabase design systems)
+
+Work Log:
+- Cloned VoltAgent/awesome-design-md repository (80+ design system references)
+- Studied 6 most relevant SaaS design systems: Linear, Vercel, Stripe, Resend, Framer, Supabase
+- Extracted key design principles applicable to Zélla's dark-canvas landing page
+- Delegated 3 parallel subagent tasks:
+  - 3-a: Header redesign with active nav highlighting + niche-aware CTA
+  - 3-b: HeroSection typography overhaul (negative tracking, tighter leading, editorial weight)
+  - 3-c: page.tsx with section dividers and consistent bg color
+- Applied design system refinements to PainPointsSection:
+  - Added id="integracoes" for nav anchor
+  - Eyebrow tracking-[0.04em] (positive tracking per Linear)
+  - H2 tracking-[-0.02em] + leading-[1.08] (negative tracking per Linear)
+  - Cards: rounded-xl (12px) instead of rounded-2xl (16px)
+  - StatsMarquee items: rounded-lg (8px) instead of rounded-xl
+  - Focus ring offset matching section bg
+- Applied design system refinements to HowItWorksSection:
+  - Canvas bg-[#09090b] instead of bg-[#0a0a0a]
+  - Same typography refinements (eyebrow, h2)
+  - Step cards: rounded-xl (12px) instead of rounded-2xl
+  - Focus ring offset matching section bg
+- Updated FloatingCTA: bg-[#09090b], border-white/[0.06], backdrop-blur-xl, active:scale-[0.98]
+- Verified: 14 headings, all sections render, CTA button scrolls to #precos, no errors
+
+Stage Summary:
+- Landing page redesigned with world-class SaaS design principles
+- Key improvements: negative letter-spacing on headlines, positive tracking on eyebrows, compact button radii (8px/12px), surface ladder bg colors, niche-aware header CTA, active section navigation indicators, gradient section dividers
+- All existing copy and content preserved
+- Typography: font-bold (700) instead of font-extrabold (800) for editorial air
+- Backgrounds unified to #09090b (Linear canvas standard)
+- Consistent rounded-xl cards, rounded-lg buttons across all sections

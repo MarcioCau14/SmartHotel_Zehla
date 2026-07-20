@@ -20,18 +20,31 @@ import { TrustBadgesSection } from '@/components/landing/TrustBadgesSection';
 import { Footer } from '@/components/landing/Footer';
 import { FloatingCTA } from '@/components/landing/FloatingCTA';
 
+function SectionDivider() {
+  return (
+    <div className="relative h-px w-full">
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+    </div>
+  );
+}
+
 export default function HomePage() {
   return (
     <NicheProvider>
-      <div className="min-h-screen flex flex-col bg-[#0a0a0a] text-white scroll-smooth">
+      <div className="min-h-screen flex flex-col bg-[#09090b] text-white scroll-smooth">
         <Header />
 
         <main className="flex-1">
           <HeroSection />
+          <SectionDivider />
           <PainPointsSection />
+          <SectionDivider />
           <HowItWorksSection />
+          <SectionDivider />
           <FeaturesSection />
+          <SectionDivider />
           <DashboardPreviewSection />
+          <SectionDivider />
           <NicheSwitcherSection />
           <BookingPlatformsMarquee />
           <section id="calculadora">

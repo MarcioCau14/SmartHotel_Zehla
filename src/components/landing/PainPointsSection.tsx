@@ -74,14 +74,14 @@ function StatsMarquee() {
   return (
     <div className="relative overflow-hidden py-6 mb-10">
       {/* Edge fade masks */}
-      <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-[#060608] to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-[#060608] to-transparent z-10 pointer-events-none" />
+      <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[#060608] to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[#060608] to-transparent z-10 pointer-events-none" />
 
       <div className="flex animate-marquee hover:[animation-play-state:paused] w-max gap-3">
         {[...scrollStats, ...scrollStats].map((s, i) => (
           <div
             key={i}
-            className="flex items-center gap-3 px-5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.05] shrink-0"
+            className="flex items-center gap-3 px-5 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.05] shrink-0"
           >
             <span className="text-xl font-semibold text-white tracking-tight">{s.val}</span>
             <span className="text-[11px] text-neutral-500 font-medium">{s.label}</span>
@@ -113,7 +113,7 @@ function OpportunityCard({ item, index, isInView, reducedMotion }: { item: PainC
       initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 24 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: reducedMotion ? 0.2 : 0.5, delay: reducedMotion ? 0 : index * 0.08, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
-      className={`group relative p-6 sm:p-7 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.14] hover:bg-white/[0.04] transition-all duration-500 cursor-default overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
+      className={`group relative p-6 sm:p-7 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.14] hover:bg-white/[0.04] transition-all duration-500 cursor-default overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#060608] ${
         isLarge ? 'lg:col-span-1' : ''
       }`}
     >
@@ -172,7 +172,7 @@ export function PainPointsSection() {
     : 'Veja como o Zélla transforma o WhatsApp dos seus imóveis em uma máquina de reservas — sem complicação e no seu tom de voz.';
 
   return (
-    <section ref={sectionRef} className="relative bg-[#060608] overflow-hidden py-24 sm:py-32">
+    <section ref={sectionRef} className="relative bg-[#060608] overflow-hidden py-24 sm:py-32" id="integracoes">
       {/* Subtle background orbs */}
       <div className="absolute top-20 -left-40 w-[400px] h-[400px] rounded-full bg-emerald-500/[0.03] blur-[120px] pointer-events-none" />
       <div className="absolute bottom-20 -right-40 w-[350px] h-[350px] rounded-full bg-blue-500/[0.03] blur-[100px] pointer-events-none" />
@@ -188,12 +188,12 @@ export function PainPointsSection() {
           {/* Eyebrow */}
           <div className="inline-flex items-center gap-2 mb-5">
             <span className="text-neutral-600 text-sm font-medium">/</span>
-            <span className="text-emerald-400/80 text-xs font-semibold uppercase tracking-widest">
+            <span className="text-emerald-400/80 text-[11px] font-semibold uppercase tracking-[0.04em]">
               Por que o Zélla
             </span>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-5 leading-[1.1] tracking-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-5 leading-[1.08] tracking-[-0.02em]">
             <AnimatePresence mode="wait">
               <motion.span
                 key={`title-${niche}`}
