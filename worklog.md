@@ -278,3 +278,45 @@ Stage Summary:
 - ZCC Telemetry: LGPD-compliant MRR tracking after each conversion
 - Security: HMAC-SHA256 mandatory in production, 5min replay protection, timing-safe comparison
 - Deployed: https://smart-hotel-zehla.vercel.app ✅
+
+---
+Task ID: 24-26
+Agent: Main Agent
+Task: ZellaSimulator — Bug Fix: Silent Message Drop During Processing
+
+Work Log:
+- Verified existing ZellaSimulator.tsx was already fully implemented (WhatsApp UI, bundling, economy badge)
+- Identified critical bug: `if (isProcessing) return` in handleSend() silently dropped messages
+- Root cause: When AI was processing a response, any new messages from the user were discarded
+- This undermined the core Message Bundling feature (users need to send rapid messages)
+
+FIX APPLIED:
+- Messages are ALWAYS added to the chat UI and bundling queue, regardless of isProcessing state
+- isProcessing only controls timer/API behavior, never blocks visual message display
+- Input field remains enabled during processing with dynamic placeholder
+- Placeholder changes to "Continue digitando... (agrupamento ativo)" during processing
+- Removed disabled={isProcessing} from input element
+- Removed isBundling from useCallback deps (was flagged by react-hooks/exhaustive-deps)
+- Guest message IDs now include random suffix to prevent key collisions
+- Updated Economy Badge: "Economia de Tráfego" → "⚡ One-Shot Resolution" (matching spec)
+- Badge text now reads: "O hóspede enviou X mensagens. O Zélla agrupou e utilizou apenas 1 requisição Meta. Você economizou Y% em tarifas."
+
+BROWSER VERIFICATION:
+- Login: 123/123 dev bypass ✅
+- All 3 rapid messages appear as guest bubbles ✅ (was ❌ before fix)
+- Bundling indicator "Zélla está agrupando o contexto..." ✅
+- 3 msgs → 1 resposta badge on bundled response ✅
+- Economy Badge: "⚡ One-Shot Resolution" showing 67% savings ✅
+- Bundled AI response addresses all 3 intents (pricing, availability, breakfast) ✅
+- Badge auto-hides after 8 seconds ✅
+
+COMMIT: 2fb34176
+PUSH: GitHub main ✅
+DEPLOY: Vercel production (smart-hotel-zehla.vercel.app) ✅
+
+Stage Summary:
+- Bug fix verified end-to-end with Agent Browser
+- Message Bundling now works flawlessly: 3 rapid messages → 1 bundled response → 67% economy
+- Economy Badge displays spec-compliant "One-Shot Resolution" text
+- Zero lint errors, zero TypeScript errors
+- Production deployed
