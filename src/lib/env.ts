@@ -60,3 +60,10 @@ export const ZEHLA_LOOP_API_KEY = process.env.ZEHLA_LOOP_API_KEY ?? '';
 // Meta Cost Guard
 export const META_COST_GUARD_ENABLED = process.env.META_COST_GUARD_ENABLED ?? 'false';
 export const META_COST_LIMIT_PER_MESSAGE = Number(process.env.META_COST_LIMIT_PER_MESSAGE ?? '0.10');
+
+// Meta WhatsApp Business API
+export const META_VERIFY_TOKEN = process.env.META_VERIFY_TOKEN ?? 'zella_dev_verify_token_2024';
+export const META_APP_SECRET = process.env.META_APP_SECRET ?? '';
+export const META_ACCESS_TOKEN = process.env.META_ACCESS_TOKEN ?? '';
+export const META_PHONE_NUMBER_ID = process.env.META_PHONE_NUMBER_ID ?? '';
+export const META_WABA_ID = process.env.META_WABA_ID ?? '';

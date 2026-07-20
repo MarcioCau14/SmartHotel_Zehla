@@ -12,6 +12,7 @@ import {
 import { DDCShell, type NavItem } from '@/components/ddc/DDCShell';
 import { MagicScanner, type MagicScanResult } from '@/components/ddc/MagicScanner';
 import { ZellaSimulator } from '@/components/ddc/ZellaSimulator';
+import { WhatsAppDeviceManager } from '@/components/ddc/WhatsAppDeviceManager';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,11 +55,12 @@ import {
   Sparkles,
   MapPin,
   Wifi,
+  Smartphone,
 } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type AirbnbTab = 'propriedades' | 'sincronizacao' | 'automacao' | 'simulador' | 'config';
+type AirbnbTab = 'propriedades' | 'sincronizacao' | 'automacao' | 'simulador' | 'whatsapp' | 'config';
 
 interface PropertyData {
   id: string;
@@ -207,6 +209,7 @@ const airbnbNavItems: NavItem[] = [
   { id: 'sincronizacao', label: 'Sincronização', icon: <CalendarDays className="size-4" /> },
   { id: 'automacao', label: 'Automação', icon: <Bot className="size-4" /> },
   { id: 'simulador', label: 'Simulador Zélla', icon: <MessageSquare className="size-4" /> },
+  { id: 'whatsapp', label: 'Connection Center', icon: <Smartphone className="size-4" /> },
   { id: 'config', label: 'Configurações', icon: <Settings className="size-4" /> },
 ];
 
@@ -1071,6 +1074,8 @@ export default function DDCAirbnbContent() {
         return <TabAutomacao />;
       case 'simulador':
         return <ZellaSimulator niche="airbnb" propertyData={scannedData} />;
+      case 'whatsapp':
+        return <WhatsAppDeviceManager niche="airbnb" propertyName={scannedData.propertyName} />;
       case 'config':
         return <TabConfig />;
     }

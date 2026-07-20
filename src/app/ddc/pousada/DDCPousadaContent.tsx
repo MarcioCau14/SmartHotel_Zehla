@@ -17,6 +17,7 @@ import {
 import { DDCShell, type NavItem } from '@/components/ddc/DDCShell';
 import { MagicScanner, type MagicScanResult } from '@/components/ddc/MagicScanner';
 import { ZellaSimulator } from '@/components/ddc/ZellaSimulator';
+import { WhatsAppDeviceManager } from '@/components/ddc/WhatsAppDeviceManager';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -71,11 +72,12 @@ import {
   Plus,
   MapPin,
   Bot,
+  Smartphone,
 } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type PousadaTab = 'financeiro' | 'hospedes' | 'cerebro' | 'simulador' | 'config';
+type PousadaTab = 'financeiro' | 'hospedes' | 'cerebro' | 'simulador' | 'whatsapp' | 'config';
 
 interface GuestCardData {
   id: string;
@@ -259,6 +261,7 @@ const pousadaNavItems: NavItem[] = [
   { id: 'hospedes', label: 'Controle de Hóspedes', icon: <Users className="size-4" /> },
   { id: 'cerebro', label: 'Cérebro da Pousada', icon: <Brain className="size-4" /> },
   { id: 'simulador', label: 'Simulador Zélla', icon: <MessageSquare className="size-4" /> },
+  { id: 'whatsapp', label: 'Connection Center', icon: <Smartphone className="size-4" /> },
   { id: 'config', label: 'Configurações', icon: <Settings className="size-4" /> },
 ];
 
@@ -968,6 +971,11 @@ export default function DDCPousadaContent() {
         {activeTab === 'simulador' && (
           <div key="simulador">
             <ZellaSimulator niche="pousada" propertyData={scannedData} />
+          </div>
+        )}
+        {activeTab === 'whatsapp' && (
+          <div key="whatsapp">
+            <WhatsAppDeviceManager niche="pousada" propertyName={scannedData.propertyName} />
           </div>
         )}
         {activeTab === 'config' && <div key="config">{renderConfig()}</div>}

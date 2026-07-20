@@ -65,6 +65,8 @@ model Tenant {
   passwordHash   String?
   phone          String?
   phoneAlt       String? // WhatsApp atendimento ao hóspede
+  whatsappPhoneNumber String? // Número WhatsApp Business API (E.164) — para roteamento de webhook
+  whatsappBusinessId  String? // WhatsApp Business Account ID (WABA) — para isolamento multi-tenant
   role           String    @default("owner") // owner | admin | staff
   plan           String    @default("gratuito") // gratuito | lite | pro | max | parceiro
   status         String    @default("active") // active | suspended | churned
