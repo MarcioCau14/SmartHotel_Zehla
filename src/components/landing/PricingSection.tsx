@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useNiche } from '@/contexts/NicheContext';
 import { getNicheContent } from '@/data/niche-content';
+import { CheckoutModal } from '@/components/landing/CheckoutModal';
 
 type PaymentMode = 'pix' | 'cartao';
 
@@ -293,54 +294,29 @@ export function PricingSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const [paymentMode, setPaymentMode] = useState<PaymentMode>('pix');
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [checkoutModal, setCheckoutModal] = useState<{
+    open: boolean;
+    planId: string;
+    planName: string;
+    price: number;
+    paymentMethod: 'pix' | 'cartao';
+  }>({ open: false, planId: '', planName: '', price: 0, paymentMethod: 'pix' });
   const router = useRouter();
   const { niche, isPousadas, isAnfitrioes, isParceiro } = useNiche();
   const content = getNicheContent(niche);
 
-  const handleSubscribe = async (planId: string, forcedPaymentMethod?: string) => {
-    setLoadingPlan(planId);
-
-    try {
-      // Get user info from a simple prompt (in production, this would be a modal form)
-      const email = prompt('Digite seu e-mail para continuar:');
-      const name = prompt('Digite seu nome completo:');
-
-      if (!email || !name) {
-        alert('Por favor, preencha todos os campos.');
-        setLoadingPlan(null);
-        return;
-      }
-
-      const response = await fetch('/api/checkout/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          name,
-          planType: planId,
-          paymentMethod: forcedPaymentMethod || paymentMode,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        if (data.redirectUrl) {
-          router.push(data.redirectUrl);
-        } else if (data.checkoutUrl) {
-          router.push(data.checkoutUrl);
-        }
-      } else {
-        alert('Erro ao criar checkout: ' + (data.error || 'Unknown error'));
-        setLoadingPlan(null);
-      }
-    } catch (error) {
-      console.error('Checkout error:', error);
-      alert('Erro ao processar sua solicitação. Tente novamente.');
-      setLoadingPlan(null);
-    }
+  const handleSubscribe = (planId: string, forcedPaymentMethod?: string) => {
+    const plan = plans.find(p => p.id === planId);
+    if (!plan) return;
+    const method = forcedPaymentMethod || paymentMode;
+    const price = method === 'pix' ? plan.pricePix : plan.priceCartao;
+    setCheckoutModal({
+      open: true,
+      planId,
+      planName: plan.name,
+      price,
+      paymentMethod: method as 'pix' | 'cartao',
+    });
   };
 
   return (
@@ -615,6 +591,17 @@ export function PricingSection() {
           </div>
         </motion.div>
       </div>
+
+      {/* Checkout Modal */}
+      <CheckoutModal
+        open={checkoutModal.open}
+        onClose={() => setCheckoutModal(prev => ({ ...prev, open: false }))}
+        planId={checkoutModal.planId}
+        planName={checkoutModal.planName}
+        price={checkoutModal.price}
+        paymentMethod={checkoutModal.paymentMethod}
+        niche={niche}
+      />
     </section>
   );
 }

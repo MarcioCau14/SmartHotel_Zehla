@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       return createError(400, 'MISSING_FIELDS', 'Campos obrigatórios ausentes');
     }
 
-    const validPlans = ['gratuito', 'lite', 'pro', 'max'];
+    const validPlans = ['gratuito', 'lite', 'pro', 'max', 'parceiro'];
     if (!validPlans.includes(planType)) {
       return createError(400, 'INVALID_PLAN', 'Plano inválido');
     }
@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
       lite: paymentMethod === 'pix' ? 197 : 247,
       pro: 397,
       max: 797,
+      parceiro: 247,
     };
 
     const amount = pricing[planType as keyof typeof pricing];
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
         where: { id: tenant.id },
         data: { plan: 'trial', subscriptionAt: new Date() },
       });
-      return NextResponse.json({ success: true, subscriptionId: subscription.id, redirectUrl: '/dashboard', message: 'Trial iniciado com sucesso!' });
+      return NextResponse.json({ success: true, subscriptionId: subscription.id, redirectUrl: '/ddc', message: 'Trial iniciado com sucesso!' });
     }
 
     if (paymentMethod === 'pix' && process.env.MP_ACCESS_TOKEN) {

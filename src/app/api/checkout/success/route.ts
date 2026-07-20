@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    return NextResponse.redirect(new URL('/dashboard?payment=success', request.url));
+    return NextResponse.redirect(new URL('/ddc?payment=success', request.url));
   } catch (error) {
     console.error('Payment success error:', error);
     return NextResponse.redirect(new URL('/?error=payment_failed', request.url));

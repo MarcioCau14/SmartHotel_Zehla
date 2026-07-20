@@ -10,9 +10,8 @@ export interface ClientFriend {
   id: string;
   name: string;
   cnpj: string;
-  whatsapp: string;
-  owner: string;
-  email: string;
+  ownerInitials: string;
+  region: string;
   city: string;
   state: string;
   rooms: number;
@@ -44,9 +43,8 @@ export interface ClientFriend {
 export interface AirbnbHost {
   id: string;
   name: string;
-  owner: string;
-  email: string;
-  whatsapp: string;
+  ownerInitials: string;
+  region: string;
   city: string;
   state: string;
   avatar: string;
@@ -95,16 +93,14 @@ export interface AirbnbHost {
 export interface ParceiroZella {
   id: string;
   name: string;
-  owner: string;
-  email: string;
-  whatsapp: string;
+  ownerInitials: string;
+  region: string;
   city: string;
   state: string;
   avatar: string;
   color: string;
   status: 'ACTIVE' | 'ONBOARDING';
   sealEnabled: boolean;
-  instagramProfile: string | null;
   linkInBioSlug: string;
   planPrice: number;
   frozenMonths: number;

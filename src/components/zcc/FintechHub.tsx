@@ -635,6 +635,58 @@ export function FintechHub() {
         </div>
       </div>
 
+      {/* ── MRR por Pacote ───────────────────────────────────────────────── */}
+      <div className="zcc-panel p-5">
+        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--zcc-champagne)' }}>
+          <BarChart3 className="w-4 h-4" style={{ color: 'var(--zcc-kinpaku)' }} />
+          MRR por Pacote
+        </h3>
+        <div className="overflow-x-auto zcc-scroll">
+          <table className="zcc-table w-full text-sm">
+            <thead>
+              <tr>
+                <th className="text-left px-3 py-2">Pacote</th>
+                <th className="text-right px-3 py-2">Assinantes</th>
+                <th className="text-right px-3 py-2">Preço</th>
+                <th className="text-right px-3 py-2">MRR</th>
+              </tr>
+            </thead>
+            <tbody>
+              {zehlaProducts.map(p => (
+                <tr key={p.id}>
+                  <td className="px-3 py-2 flex items-center gap-2" style={{ color: 'var(--zcc-champagne)' }}>
+                    <span>{p.icon}</span>
+                    <span>{p.name}</span>
+                  </td>
+                  <td className="px-3 py-2 text-right font-mono" style={{ color: 'var(--zcc-text-secondary)' }}>
+                    {p.subscribers}
+                  </td>
+                  <td className="px-3 py-2 text-right font-mono" style={{ color: 'var(--zcc-patina)' }}>
+                    R$ {p.price.toLocaleString('pt-BR')}
+                  </td>
+                  <td className="px-3 py-2 text-right font-mono font-semibold" style={{ color: 'var(--zcc-kinpaku)' }}>
+                    R$ {(p.price * p.subscribers).toLocaleString('pt-BR')}
+                  </td>
+                </tr>
+              ))}
+              <tr style={{ borderTop: '1px solid var(--zcc-border, rgba(255,255,255,0.08))' }}>
+                <td className="px-3 py-2 font-semibold" style={{ color: 'var(--zcc-champagne)' }}>Total SaaS</td>
+                <td className="px-3 py-2 text-right font-mono" style={{ color: 'var(--zcc-text-secondary)' }}>
+                  {zehlaProducts.reduce((s, p) => s + p.subscribers, 0)}
+                </td>
+                <td className="px-3 py-2 text-right font-mono" style={{ color: 'var(--zcc-text-muted)' }}>—</td>
+                <td className="px-3 py-2 text-right font-mono font-bold" style={{ color: 'var(--zcc-kinpaku)' }}>
+                  R$ {saasMRR.toLocaleString('pt-BR')}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-3 text-[10px]" style={{ color: 'var(--zcc-text-muted)' }}>
+          * MRR por pacote baseado em assinaturas ativas. Dados atualizados via /api/zcc/metrics.
+        </div>
+      </div>
+
       {/* ── Weekly volume table ───────────────────────────────────────────── */}
       <div className="zcc-panel p-5">
         <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--zcc-champagne)' }}>Volume Semanal — Transações de Hóspedes</h3>

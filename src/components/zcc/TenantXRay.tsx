@@ -21,8 +21,8 @@ interface UnifiedTenant {
   status: 'ACTIVE' | 'ONBOARDING' | 'TRIAL' | 'BETA_TESTER' | 'EARLY_ADOPTER';
   city: string;
   state: string;
-  owner: string;
-  whatsapp: string;
+  ownerInitials: string;
+  region: string;
   // Metrics
   revenue: number;
   aiMessagesProcessed: number;
@@ -50,8 +50,8 @@ const staticTenants: UnifiedTenant[] = [
     status: c.status as UnifiedTenant['status'],
     city: c.city,
     state: c.state,
-    owner: c.owner,
-    whatsapp: c.whatsapp,
+    ownerInitials: c.ownerInitials,
+    region: c.region || (c.city && c.state ? `${c.city} — ${c.state}` : 'N/A'),
     revenue: c.monthlyRevenue,
     aiMessagesProcessed: c.aiMessagesProcessed,
     conversionRate: c.conversionRate,
@@ -68,8 +68,8 @@ const staticTenants: UnifiedTenant[] = [
     status: h.status as UnifiedTenant['status'],
     city: h.city,
     state: h.state,
-    owner: h.owner,
-    whatsapp: h.whatsapp,
+    ownerInitials: h.ownerInitials,
+    region: h.region || (h.city && h.state ? `${h.city} — ${h.state}` : 'N/A'),
     revenue: h.monthlyRevenue,
     aiMessagesProcessed: h.aiMessagesProcessed,
     conversionRate: h.conversionRate,
@@ -87,8 +87,8 @@ const staticTenants: UnifiedTenant[] = [
     status: p.status as UnifiedTenant['status'],
     city: p.city,
     state: p.state,
-    owner: p.owner,
-    whatsapp: p.whatsapp,
+    ownerInitials: p.ownerInitials,
+    region: p.region || (p.city && p.state ? `${p.city} — ${p.state}` : 'N/A'),
     revenue: p.commissionEarned,
     aiMessagesProcessed: 0,
     conversionRate: 0,
@@ -136,8 +136,8 @@ export function TenantXRay() {
               status: (t.status || 'ACTIVE').toUpperCase() as UnifiedTenant['status'],
               city: t.city || '',
               state: t.state || '',
-              owner: t.owner || '',
-              whatsapp: t.whatsapp || '',
+              ownerInitials: t.ownerInitials || '',
+              region: t.region || (t.city && t.state ? `${t.city} — ${t.state}` : 'N/A'),
               revenue: t.revenue ?? 0,
               aiMessagesProcessed: t.aiMessagesProcessed ?? 0,
               conversionRate: t.conversionRate ?? 0,
@@ -172,7 +172,7 @@ export function TenantXRay() {
   }, []);
 
   const filtered = tenants.filter(t => {
-    if (search && !t.name.toLowerCase().includes(search.toLowerCase()) && !t.owner.toLowerCase().includes(search.toLowerCase())) return false;
+    if (search && !t.name.toLowerCase().includes(search.toLowerCase()) && !t.ownerInitials.toLowerCase().includes(search.toLowerCase()) && !t.region.toLowerCase().includes(search.toLowerCase())) return false;
     if (filterNiche !== 'all' && t.niche !== filterNiche) return false;
     if (filterPlan !== 'all' && t.plan !== filterPlan) return false;
     return true;
@@ -310,7 +310,7 @@ export function TenantXRay() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: 'var(--zcc-text-muted)' }} />
           <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Buscar tenant por nome ou proprietário..."
+            placeholder="Buscar tenant por nome, iniciais ou região..."
             className="zcc-input pl-9"
           />
         </div>
@@ -360,7 +360,7 @@ export function TenantXRay() {
                             {tenant.name}
                           </div>
                           <div className="text-[9px] font-mono" style={{ color: 'var(--zcc-text-muted)' }}>
-                            {tenant.owner} · {tenant.city}/{tenant.state}
+                            {tenant.ownerInitials} · {tenant.city}/{tenant.state}
                           </div>
                         </div>
                       </td>
@@ -478,8 +478,10 @@ export function TenantXRay() {
                 </div>
               </div>
               <div className="zcc-panel p-3">
-                <div className="zcc-eyebrow">WHATSAPP</div>
-                <div className="text-sm font-bold font-mono" style={{ color: 'var(--zcc-champagne)' }}>{selectedTenant.whatsapp}</div>
+                <div className="zcc-eyebrow">REGIÃO</div>
+                <div className="text-sm font-bold font-mono" style={{ color: 'var(--zcc-champagne)' }}>
+                  {selectedTenant.city && selectedTenant.state ? `${selectedTenant.city} — ${selectedTenant.state}` : 'N/A'}
+                </div>
               </div>
             </div>
 

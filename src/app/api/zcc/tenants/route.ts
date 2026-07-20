@@ -40,9 +40,6 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         name: true,
-        email: true,
-        phone: true,
-        phoneAlt: true,
         plan: true,
         status: true,
         createdAt: true,
@@ -134,6 +131,10 @@ export async function GET(request: NextRequest) {
           tenant.plan === 'starter' ? 85 :
           78;
 
+        // LGPD: derive ownerInitials from name, no raw email/phone
+        const ownerInitials = (tenant.name || '').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+        const region = (tenant.property?.city && tenant.property?.state) ? `${tenant.property.city} — ${tenant.property.state}` : 'N/A';
+
         return {
           id: tenant.id,
           name: tenant.name,
@@ -143,8 +144,8 @@ export async function GET(request: NextRequest) {
           status: tenant.status,
           city: tenant.property?.city ?? '',
           state: tenant.property?.state ?? '',
-          owner: tenant.email ?? '',
-          whatsapp: tenant.phoneAlt ?? tenant.phone ?? '',
+          ownerInitials,
+          region,
           revenue,
           aiMessagesProcessed,
           conversionRate,
@@ -164,7 +165,7 @@ export async function GET(request: NextRequest) {
     if (searchFilter) {
       filtered = filtered.filter(t =>
         t.name.toLowerCase().includes(searchFilter) ||
-        t.owner.toLowerCase().includes(searchFilter) ||
+        t.ownerInitials.toLowerCase().includes(searchFilter) ||
         t.city.toLowerCase().includes(searchFilter)
       );
     }

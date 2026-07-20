@@ -18,6 +18,8 @@ import { PulseCheck } from '@/components/zcc/PulseCheck';
 import { BurnRateCenter } from '@/components/zcc/BurnRateCenter';
 import { TenantXRay } from '@/components/zcc/TenantXRay';
 import { ClientOverview } from '@/components/zcc/ClientOverview';
+import { GeoMetricsPanel } from '@/components/zcc/GeoMetricsPanel';
+import { FinancialBreakdownPanel } from '@/components/zcc/FinancialBreakdownPanel';
 import { globalMetrics as _globalMetrics, airbnbMetrics as _airbnbMetrics, parceiroMetrics as _parceiroMetrics } from '@/lib/zcc-clients-data';
 
 // ── API Hydration Hook ───────────────────────────────────────────────────────
@@ -55,7 +57,7 @@ const parceiroMetrics = _parceiroMetrics;
 
 // ── Tab Configuration ──────────────────────────────────────────────────────────
 
-type ZCCTab = 'overview' | 'pulse' | 'cerebro' | 'financeiro' | 'airbnb' | 'burnrate' | 'tenants' | 'tokens';
+type ZCCTab = 'overview' | 'pulse' | 'cerebro' | 'financeiro' | 'airbnb' | 'burnrate' | 'tenants' | 'tokens' | 'geo' | 'financial';
 
 const tabs: { id: ZCCTab; label: string; icon: React.ElementType; desc: string; group: 'core' | 'ops' | 'config' }[] = [
   { id: 'overview', label: 'Visão Geral', icon: Command, desc: 'Command Center', group: 'core' },
@@ -66,6 +68,8 @@ const tabs: { id: ZCCTab; label: string; icon: React.ElementType; desc: string; 
   { id: 'burnrate', label: 'Burn Rate', icon: Flame, desc: 'Custos API WhatsApp', group: 'ops' },
   { id: 'tenants', label: 'Tenants', icon: Users, desc: 'Raio-X & Kill Switch', group: 'ops' },
   { id: 'tokens', label: 'Tokens & IA', icon: Key, desc: 'LLMs & API Keys', group: 'config' },
+  { id: 'geo', label: 'Geo', icon: Globe, desc: 'Métricas Geográficas', group: 'ops' },
+  { id: 'financial', label: 'Financeiro Detalhado', icon: DollarSign, desc: 'Breakdown & Churn', group: 'core' },
 ];
 
 // Group property kept for data organization, not rendered in UI
@@ -393,6 +397,12 @@ export default function ZCCPage() {
                 <SwarmOverview brainHealth={{}} />
               </div>
             )}
+
+            {/* ===== TAB: GEO ===== */}
+            {activeTab === 'geo' && <GeoMetricsPanel />}
+
+            {/* ===== TAB: FINANCIAL DETAIL ===== */}
+            {activeTab === 'financial' && <FinancialBreakdownPanel />}
 
 
           </motion.div>
