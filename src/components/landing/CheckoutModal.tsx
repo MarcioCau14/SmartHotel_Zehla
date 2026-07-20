@@ -151,9 +151,13 @@ export function CheckoutModal({
           }),
         });
 
-        const data = await response.json();
+        const json = await response.json();
 
-        if (data.success) {
+        // New API wraps data in { success: true, data: { ... } }
+        // Old API returned flat { success: true, subscriptionId, checkoutUrl, ... }
+        const data = json.data || json;
+
+        if (json.success) {
           setModalState('success');
           toast.success('Checkout criado com sucesso!');
 
@@ -173,7 +177,8 @@ export function CheckoutModal({
           }, 2000);
         } else {
           setModalState('error');
-          setErrorMessage(data.message || data.error || 'Falha ao processar checkout. Tente novamente.');
+          const errorMsg = data.message || json.error?.message || json.message || data.error || 'Falha ao processar checkout. Tente novamente.';
+          setErrorMessage(errorMsg);
           toast.error('Erro ao criar checkout');
         }
       } catch (error) {

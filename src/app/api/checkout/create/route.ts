@@ -4,97 +4,332 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { createError } from '@/lib/error-handler';
 import { authRatelimit } from '@/lib/rate-limit';
+import { type PlanTier } from '@/lib/plan-features';
+import crypto from 'crypto';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SEUZÉLLA — Checkout Session Creator (PASSO 1)
+// ═══════════════════════════════════════════════════════════════════════════════
+// Rota que transforma a intenção do cliente em um payload padronizado para o
+// Gateway de Pagamento (Mercado Pago / Stripe). Preparada para plugar as SDKs
+// reais quando as chaves de API forem configuradas.
+//
+// Fluxo:
+// 1. Valida campos obrigatórios (nome, email, plano, método de pagamento, nicho)
+// 2. Resolve ou cria o Tenant (autenticado ou guest)
+// 3. Cria a Subscription no banco (status: pending)
+// 4. Gera o payload padronizado para o Gateway
+// 5. Tenta criar a sessão de pagamento real (MP/Stripe)
+// 6. Retorna URL de checkout ou QR Code PIX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── Pricing Table (fonte da verdade: plan-features.ts) ────────────────────────
+const PRICING: Record<string, Record<string, number>> = {
+  gratuito: { pix: 0, cartao: 0 },
+  lite: { pix: 197, cartao: 247 },
+  pro: { pix: 397, cartao: 397 },
+  max: { pix: 797, cartao: 797 },
+  parceiro: { pix: 247, cartao: 247 },
+};
+
+// ── Gateway Payload Builder ───────────────────────────────────────────────────
+
+interface CheckoutSessionPayload {
+  // Dados do cliente
+  customer: {
+    name: string;
+    email: string;
+    phone: string;
+    document?: string;
+  };
+  // Dados da propriedade
+  property: {
+    name: string;
+    niche: 'pousada' | 'airbnb';
+  };
+  // Dados do plano
+  plan: {
+    tier: PlanTier;
+    amount: number;
+    currency: string;
+    interval: 'monthly';
+    paymentMethod: 'pix' | 'cartao';
+  };
+  // Referência interna
+  internalRef: {
+    subscriptionId: string;
+    tenantId: string;
+    checkoutSignature: string;
+  };
+  // Timestamps
+  createdAt: string;
+  expiresAt: string;
+}
+
+function buildCheckoutPayload(params: {
+  name: string;
+  email: string;
+  phone: string;
+  propertyName: string;
+  niche: 'pousada' | 'airbnb';
+  planType: PlanTier;
+  paymentMethod: 'pix' | 'cartao';
+  amount: number;
+  subscriptionId: string;
+  tenantId: string;
+}): CheckoutSessionPayload {
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + 30 * 60 * 1000); // 30 min expiry
+
+  return {
+    customer: {
+      name: params.name,
+      email: params.email,
+      phone: params.phone,
+      // document será preenchido pelo frontend no futuro (CPF/CNPJ)
+    },
+    property: {
+      name: params.propertyName || 'Minha Propriedade',
+      niche: params.niche,
+    },
+    plan: {
+      tier: params.planType,
+      amount: params.amount,
+      currency: 'BRL',
+      interval: 'monthly',
+      paymentMethod: params.paymentMethod,
+    },
+    internalRef: {
+      subscriptionId: params.subscriptionId,
+      tenantId: params.tenantId,
+      checkoutSignature: crypto
+        .createHmac('sha256', process.env.NEXTAUTH_SECRET || 'zehla-dev-secret')
+        .update(`${params.subscriptionId}:${params.tenantId}:${params.amount}`)
+        .digest('hex'),
+    },
+    createdAt: now.toISOString(),
+    expiresAt: expiresAt.toISOString(),
+  };
+}
+
+// ── Main Handler ──────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, planType, paymentMethod } = body;
+    const {
+      name,
+      email,
+      phone,
+      propertyName,
+      niche,
+      planType,
+      paymentMethod,
+    } = body;
 
-    if (!name || !planType || !paymentMethod) {
-      return createError(400, 'MISSING_FIELDS', 'Campos obrigatórios ausentes');
+    // ── Step 1: Validação de campos obrigatórios ────────────────────────────
+    if (!name || !email || !planType || !paymentMethod || !niche) {
+      return createError(400, 'MISSING_FIELDS', 'Campos obrigatórios ausentes: name, email, planType, paymentMethod, niche.');
     }
 
-    const validPlans = ['gratuito', 'lite', 'pro', 'max', 'parceiro'];
+    const validPlans: PlanTier[] = ['gratuito', 'lite', 'pro', 'max', 'parceiro'];
     if (!validPlans.includes(planType)) {
-      return createError(400, 'INVALID_PLAN', 'Plano inválido');
+      return createError(400, 'INVALID_PLAN', `Plano inválido. Planos válidos: ${validPlans.join(', ')}`);
     }
 
+    const validMethods = ['pix', 'cartao'];
+    if (!validMethods.includes(paymentMethod)) {
+      return createError(400, 'INVALID_PAYMENT_METHOD', 'Método de pagamento inválido. Use: pix ou cartao.');
+    }
+
+    const validNiches = ['pousada', 'airbnb'];
+    if (!validNiches.includes(niche)) {
+      return createError(400, 'INVALID_NICHE', 'Nicho inválido. Use: pousada ou airbnb.');
+    }
+
+    // PRO/MAX só aceitam cartão
     if ((planType === 'pro' || planType === 'max') && paymentMethod === 'pix') {
       return createError(400, 'INVALID_PAYMENT_METHOD', 'Os planos PRO e MAX só aceitam pagamento via Cartão de Crédito.');
     }
 
-    const pricing = {
-      gratuito: 0,
-      lite: paymentMethod === 'pix' ? 197 : 247,
-      pro: 397,
-      max: 797,
-      parceiro: 247,
-    };
+    const amount = PRICING[planType]?.[paymentMethod];
+    if (amount === undefined) {
+      return createError(400, 'INVALID_PRICING', 'Combinação plano/método inválida.');
+    }
 
-    const amount = pricing[planType as keyof typeof pricing];
-
+    // ── Step 2: Resolução do Tenant ─────────────────────────────────────────
     let tenantId = '';
+    let isNewCustomer = false;
+
+    // Tenta autenticação por test token (para testes E2E)
     const authHeader = request.headers.get('Authorization');
     const testToken = process.env.ZEHLA_TEST_TOKEN || 'local_flow_test_token_2026';
 
-    if (authHeader === `Bearer ${testToken}` && body.email) {
-      const tenant = await db.tenant.findUnique({ where: { email: body.email } });
+    if (authHeader === `Bearer ${testToken}` && email) {
+      const tenant = await db.tenant.findUnique({ where: { email } });
       if (tenant) tenantId = tenant.id;
     } else {
-      const session = await getServerSession(authOptions);
-      if (session?.user?.tenantId) {
-        tenantId = session.user.tenantId;
+      // Tenta sessão NextAuth
+      try {
+        const session = await getServerSession(authOptions);
+        if (session?.user?.tenantId) {
+          tenantId = session.user.tenantId as string;
+        }
+      } catch {
+        // Sessão inválida — continuar como guest
       }
     }
 
-    if (!tenantId) return createError(401, 'UNAUTHORIZED', 'Faça login primeiro');
+    // Se não encontrou tenant existente, cria um novo (guest checkout)
+    if (!tenantId) {
+      // Verifica se já existe tenant com esse email
+      const existingTenant = await db.tenant.findUnique({ where: { email } });
+      if (existingTenant) {
+        tenantId = existingTenant.id;
+      } else {
+        // Cria o Tenant para o novo cliente
+        isNewCustomer = true;
+        const newTenant = await db.tenant.create({
+          data: {
+            name: propertyName || name,
+            email: email,
+            phone: phone || null,
+            niche: niche,
+            plan: 'gratuito', // Será atualizado pelo webhook quando pagamento confirmar
+            status: 'active',
+            role: 'owner',
+            trialStart: new Date(),
+            trialEnd: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 dias trial
+          },
+        });
+        tenantId = newTenant.id;
+
+        // Cria Property associada se o nome foi informado
+        if (propertyName) {
+          const slug = propertyName
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '') + '-' + tenantId.slice(-6);
+
+          await db.property.create({
+            data: {
+              tenantId: newTenant.id,
+              name: propertyName,
+              type: niche === 'airbnb' ? 'airbnb' : 'pousada',
+              slug,
+            },
+          });
+        }
+      }
+    }
+
+    // Rate limiting por tenant
     const { success: allowed } = await authRatelimit.limit(tenantId);
-    if (!allowed) return createError(429, 'RATE_LIMITED', 'Muitas requisições');
+    if (!allowed) {
+      return createError(429, 'RATE_LIMITED', 'Muitas requisições. Aguarde um momento.');
+    }
 
-    const tenant = await db.tenant.findUnique({ where: { id: tenantId } });
-    if (!tenant) return createError(404, 'TENANT_NOT_FOUND', 'Conta não encontrada');
-    const email = tenant.email;
-
+    // ── Step 3: Criação da Subscription ─────────────────────────────────────
     const subscription = await db.subscription.create({
       data: {
-        tenantId: tenant.id, planType, status: 'pending',
-        paymentMethod, amount, paymentStatus: 'pending',
+        tenantId,
+        planType,
+        status: 'pending',
+        paymentMethod,
+        amount,
+        paymentStatus: 'pending',
         trialStart: planType === 'gratuito' ? new Date() : null,
         trialEnd: planType === 'gratuito' ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) : null,
       },
     });
 
+    // ── Plano Gratuito: ativação imediata ───────────────────────────────────
     if (planType === 'gratuito') {
       await db.subscription.update({
         where: { id: subscription.id },
         data: { status: 'active', paymentStatus: 'approved' },
       });
       await db.tenant.update({
-        where: { id: tenant.id },
+        where: { id: tenantId },
         data: { plan: 'gratuito', subscriptionAt: new Date() },
       });
-      return NextResponse.json({ success: true, subscriptionId: subscription.id, redirectUrl: '/ddc', message: 'Trial iniciado com sucesso!' });
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          subscriptionId: subscription.id,
+          redirectUrl: '/ddc',
+          planType: 'gratuito',
+          amount: 0,
+          message: 'Trial iniciado com sucesso!',
+        },
+      });
     }
 
+    // ── Step 4: Build do Payload Padronizado ────────────────────────────────
+    const checkoutPayload = buildCheckoutPayload({
+      name,
+      email,
+      phone: phone || '',
+      propertyName: propertyName || '',
+      niche,
+      planType,
+      paymentMethod,
+      amount,
+      subscriptionId: subscription.id,
+      tenantId,
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // 🟢 MERCADO PAGO SDK — INICIALIZAÇÃO
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Quando as chaves de API do Mercado Pago forem configuradas (MP_ACCESS_TOKEN),
+    // este bloco será ativado automaticamente.
+    //
+    // SDK Init:
+    //   import { MercadoPagoConfig, Payment, Preference } from 'mercadopago';
+    //   const mpClient = new MercadoPagoConfig({ accessToken: MP_ACCESS_TOKEN });
+    //
+    // Para PIX:
+    //   const payment = new Payment(mpClient);
+    //   const result = await payment.create({ body: { ... } });
+    //
+    // Para Cartão (Checkout Pro):
+    //   const preference = new Preference(mpClient);
+    //   const result = await preference.create({ body: { ... } });
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // ── Mercado Pago PIX (LITE e PARCEIRO) ─────────────────────────────────
     if (paymentMethod === 'pix' && process.env.MP_ACCESS_TOKEN) {
       try {
         const { createPixPayment } = await import('@/lib/mercadopago');
         const mpResult = await createPixPayment({
-          amount, email: email ?? '',
-          firstName: name.split(' ')[0] || name,
-          lastName: name.split(' ').slice(1).join(' ') || '',
+          amount,
+          email: checkoutPayload.customer.email,
+          firstName: checkoutPayload.customer.name.split(' ')[0] || name,
+          lastName: checkoutPayload.customer.name.split(' ').slice(1).join(' ') || '',
           description: `ZEHLA SmartHotel - Plano ${planType.toUpperCase()}`,
           externalRef: subscription.id,
         });
 
+        // Registra a transação no banco
         await db.paymentTransaction.create({
           data: {
-            subscriptionId: subscription.id, amount, status: 'pending',
-            paymentMethod: 'pix', externalId: String(mpResult.id),
-            metadata: JSON.stringify({ point_of_interaction: mpResult.point_of_interaction }),
+            subscriptionId: subscription.id,
+            amount,
+            status: 'pending',
+            paymentMethod: 'pix',
+            externalId: String(mpResult.id),
+            metadata: JSON.stringify({
+              point_of_interaction: mpResult.point_of_interaction,
+              gatewayPayload: checkoutPayload,
+            }),
           },
         });
 
+        // Atualiza subscription com checkout URL
         const ticketUrl = mpResult.point_of_interaction?.transaction_data?.ticket_url;
         if (ticketUrl) {
           await db.subscription.update({
@@ -104,15 +339,118 @@ export async function POST(request: NextRequest) {
         }
 
         const pixData = mpResult.point_of_interaction?.transaction_data;
-        return NextResponse.json({ success: true, subscriptionId: subscription.id, checkoutUrl: ticketUrl || `/checkout/success?subscription_id=${subscription.id}`, amount, paymentMethod, planType, pix: pixData ? { qrCode: pixData.qr_code, qrCodeBase64: pixData.qr_code_base64, ticketUrl: pixData.ticket_url } : null, message: 'QR Code PIX gerado com sucesso!' });
+        return NextResponse.json({
+          success: true,
+          data: {
+            subscriptionId: subscription.id,
+            checkoutUrl: ticketUrl || `/checkout/success?subscription_id=${subscription.id}`,
+            amount,
+            paymentMethod: 'pix',
+            planType,
+            pix: pixData ? {
+              qrCode: pixData.qr_code,
+              qrCodeBase64: pixData.qr_code_base64,
+              ticketUrl: pixData.ticket_url,
+            } : null,
+            gatewayPayload: checkoutPayload,
+            message: 'QR Code PIX gerado com sucesso!',
+          },
+        });
       } catch (mpError) {
-        console.error('Mercado Pago error, falling back to mock:', mpError);
+        console.error('[checkout/create] Mercado Pago PIX error, falling back to mock:', mpError);
+        // Fall through to mock response
       }
     }
 
-    return NextResponse.json({ success: true, subscriptionId: subscription.id, checkoutUrl: `/checkout/success?subscription_id=${subscription.id}`, amount, paymentMethod, planType, message: 'Checkout criado com sucesso!' });
+    // ═══════════════════════════════════════════════════════════════════════════
+    // 🟢 STRIPE SDK — INICIALIZAÇÃO (FUTURO)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Quando as chaves de API do Stripe forem configuradas (STRIPE_SECRET_KEY),
+    // este bloco será ativado para criar Checkout Sessions.
+    //
+    // SDK Init:
+    //   import Stripe from 'stripe';
+    //   const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
+    //
+    // Para Cartão (Checkout Session):
+    //   const session = await stripe.checkout.sessions.create({
+    //     mode: 'subscription',
+    //     payment_method_types: ['card'],
+    //     customer_email: checkoutPayload.customer.email,
+    //     line_items: [{
+    //       price: STRIPE_PRICE_IDS[planType],
+    //       quantity: 1,
+    //     }],
+    //     success_url: `${BASE_URL}/api/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    //     cancel_url: `${BASE_URL}/api/checkout/cancel`,
+    //     metadata: {
+    //       tenantId: checkoutPayload.internalRef.tenantId,
+    //       subscriptionId: checkoutPayload.internalRef.subscriptionId,
+    //       niche: checkoutPayload.property.niche,
+    //       planType: checkoutPayload.plan.tier,
+    //     },
+    //   });
+    //   return session.url;
+    //
+    // Para PIX via Stripe:
+    //   const session = await stripe.checkout.sessions.create({
+    //     mode: 'payment',
+    //     payment_method_types: ['pix'],
+    //     ...
+    //   });
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // ── Mercado Pago Checkout Pro (Cartão — PRO/MAX) ────────────────────────
+    if (paymentMethod === 'cartao' && process.env.MP_ACCESS_TOKEN) {
+      try {
+        // ═════════════════════════════════════════════════════════════════════
+        // 🟢 MP CHECKOUT PRO — INICIALIZAÇÃO (CARTÃO)
+        // ═════════════════════════════════════════════════════════════════════
+        // import { Preference } from 'mercadopago';
+        // const preference = new Preference(mpClient);
+        // const result = await preference.create({
+        //   body: {
+        //     items: [{
+        //       title: `ZEHLA SmartHotel - Plano ${planType.toUpperCase()}`,
+        //       quantity: 1,
+        //       unit_price: amount,
+        //       currency_id: 'BRL',
+        //     }],
+        //     payer: { name, email },
+        //     back_urls: {
+        //       success: `${BASE_URL}/api/checkout/success`,
+        //       failure: `${BASE_URL}/api/checkout/cancel`,
+        //       pending: `${BASE_URL}/api/checkout/success`,
+        //     },
+        //     auto_return: 'approved',
+        //     external_reference: subscription.id,
+        //     notification_url: `${BASE_URL}/api/webhooks/payment`,
+        //   },
+        // });
+        // ═════════════════════════════════════════════════════════════════════
+        console.warn('[checkout/create] MP Checkout Pro not yet implemented — using mock mode');
+      } catch (mpError) {
+        console.error('[checkout/create] MP Checkout Pro error:', mpError);
+      }
+    }
+
+    // ── Mock Mode: retorna payload sem gateway real ─────────────────────────
+    console.log(`[checkout/create] Mock mode — planType=${planType}, amount=${amount}, niche=${niche}, newCustomer=${isNewCustomer}`);
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        subscriptionId: subscription.id,
+        checkoutUrl: `/checkout/success?subscription_id=${subscription.id}&sig=${checkoutPayload.internalRef.checkoutSignature}`,
+        amount,
+        paymentMethod,
+        planType,
+        gatewayPayload: checkoutPayload,
+        message: 'Checkout criado com sucesso! (Mock Mode — Gateway real será conectado com as chaves de API)',
+      },
+    });
   } catch (error) {
-    console.error('Checkout creation error:', error);
-    return createError(500, 'CREATE_FAILED', 'Falha ao criar checkout');
+    console.error('[checkout/create] Error:', error);
+    return createError(500, 'CREATE_FAILED', 'Falha ao criar sessão de checkout. Tente novamente.');
   }
 }

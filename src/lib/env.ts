@@ -24,6 +24,11 @@ export const NEXTAUTH_SECRET = (() => {
 export const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN ?? '';
 export const MP_WEBHOOK_URL = process.env.MP_WEBHOOK_URL ?? '';
 
+// Payment Gateway (Unified — MP + Stripe)
+export const PAYMENT_WEBHOOK_SECRET = process.env.PAYMENT_WEBHOOK_SECRET ?? process.env.MP_WEBHOOK_SECRET ?? '';
+export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY ?? '';
+export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET ?? '';
+
 // AI Providers
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? '';
 export const GROQ_API_KEY = process.env.GROQ_API_KEY ?? '';
