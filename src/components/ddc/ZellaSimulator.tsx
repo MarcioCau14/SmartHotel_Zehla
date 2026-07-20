@@ -218,13 +218,16 @@ export function ZellaSimulator({ niche, propertyData }: ZellaSimulatorProps) {
   }, [propertyData, niche, fireTelemetry]);
 
   // Handle message send with bundling logic
+  // KEY FIX: Messages are ALWAYS added to the chat and the bundling queue,
+  // even during isProcessing. Only the API call is deferred.
+  // This prevents the "silent drop" bug where rapid messages were lost.
   const handleSend = useCallback(() => {
     const trimmed = input.trim();
-    if (!trimmed || isProcessing) return;
+    if (!trimmed) return;
 
-    // Add guest message immediately
+    // Add guest message immediately (ALWAYS — never block the visual)
     const guestMsg: SimulatorMessage = {
-      id: `guest-${Date.now()}`,
+      id: `guest-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       role: 'guest',
       content: trimmed,
       timestamp: new Date(),
@@ -232,12 +235,34 @@ export function ZellaSimulator({ niche, propertyData }: ZellaSimulatorProps) {
     setMessages(prev => [...prev, guestMsg]);
     setInput('');
 
-    // Add to pending messages for bundling
+    // Add to pending messages for bundling (ALWAYS — even during processing)
     pendingMessagesRef.current.push(trimmed);
 
-    // If this is the first pending message, show bundling indicator
-    if (pendingMessagesRef.current.length >= 2 && !isBundling) {
+    // If we have 2+ pending messages, show bundling indicator
+    if (pendingMessagesRef.current.length >= 2) {
       setIsBundling(true);
+    }
+
+    // If AI is currently processing, don't start a new timer —
+    // the processing completion will handle the queue.
+    // But we DO add the message to pendingMessagesRef above so it
+    // gets included in the next bundling cycle.
+    if (isProcessing) {
+      // Extend the existing timer if we have one, so more messages can join
+      if (bundlingTimerRef.current) {
+        clearTimeout(bundlingTimerRef.current);
+      }
+      bundlingTimerRef.current = setTimeout(() => {
+        const toProcess = [...pendingMessagesRef.current];
+        pendingMessagesRef.current = [];
+        if (toProcess.length >= 2) {
+          setIsBundling(true);
+          setTimeout(() => processMessages(toProcess), 1000);
+        } else if (toProcess.length === 1) {
+          processMessages(toProcess);
+        }
+      }, BUNDLING_WINDOW_MS);
+      return;
     }
 
     // Clear existing timer
@@ -262,7 +287,7 @@ export function ZellaSimulator({ niche, propertyData }: ZellaSimulatorProps) {
         processMessages(toProcess);
       }
     }, BUNDLING_WINDOW_MS);
-  }, [input, isProcessing, isBundling, processMessages]);
+  }, [input, isProcessing, processMessages]);
 
   // Handle Enter key
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -489,13 +514,13 @@ export function ZellaSimulator({ niche, propertyData }: ZellaSimulatorProps) {
                     </div>
                     <div>
                       <p className="text-xs font-bold text-white">
-                        Economia de Tráfego
+                        ⚡ One-Shot Resolution
                       </p>
                       <p className="text-[11px] text-white/80 mt-0.5">
                         O hóspede enviou <strong>{economyBadge.messagesCount}</strong> mensagens.
                         O Zélla agrupou e utilizou apenas{' '}
-                        <strong>{economyBadge.tariffsUsed}</strong> tarifa Meta
-                        (US$ {economyBadge.metaCostPerTariff.toFixed(4)}).
+                        <strong>{economyBadge.tariffsUsed}</strong> requisição Meta.
+                        Você economizou <strong>{economyBadge.economyPercent}%</strong> em tarifas.
                       </p>
                       <div className="flex items-center gap-2 mt-1.5">
                         <Badge className="bg-white/20 text-white text-[9px] border-0 px-1.5 py-0.5">
@@ -522,13 +547,12 @@ export function ZellaSimulator({ niche, propertyData }: ZellaSimulatorProps) {
                 value={input}
                 onChange={(e) => setInput(e.target.value.slice(0, 500))}
                 onKeyDown={handleKeyDown}
-                placeholder="Digite como um hóspede..."
-                disabled={isProcessing}
-                className="flex-1 bg-transparent text-white text-sm placeholder:text-white/30 outline-none disabled:opacity-50"
+                placeholder={isProcessing ? "Continue digitando... (agrupamento ativo)" : "Digite como um hóspede..."}
+                className="flex-1 bg-transparent text-white text-sm placeholder:text-white/30 outline-none"
               />
               <Button
                 onClick={handleSend}
-                disabled={!input.trim() || isProcessing}
+                disabled={!input.trim()}
                 className={`h-8 w-8 p-0 ${theme.accentBg} hover:opacity-90 text-white rounded-lg flex-shrink-0`}
               >
                 {isProcessing ? (
