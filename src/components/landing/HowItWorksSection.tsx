@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { motion, AnimatePresence, useInView, useScroll, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, useInView, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import {
   UserPlus,
   MessageSquare,
@@ -82,10 +82,12 @@ function ParallaxStepCard({
   step,
   index,
   scrollYProgress,
+  reducedMotion,
 }: {
   step: StepData;
   index: number;
   scrollYProgress: ReturnType<typeof useScroll>['scrollYProgress'];
+  reducedMotion: boolean;
 }) {
   const c = colorMap[step.color];
   const IconComponent = iconMap[step.icon];
@@ -96,16 +98,16 @@ function ParallaxStepCard({
   const rangeMid = rangeStart + 0.15;
   const rangeEnd = rangeMid + 0.1;
 
-  const opacity = useTransform(scrollYProgress, [rangeStart, rangeMid, rangeEnd], [0, 1, 1]);
+  const opacity = useTransform(scrollYProgress, [rangeStart, rangeMid, rangeEnd], reducedMotion ? [1, 1, 1] : [0, 1, 1]);
   const y = useTransform(
     scrollYProgress,
     [rangeStart, rangeMid],
-    [80, 0]
+    reducedMotion ? [0, 0] : [80, 0]
   );
   const scale = useTransform(
     scrollYProgress,
     [rangeStart, rangeMid],
-    [0.92, 1]
+    reducedMotion ? [1, 1] : [0.92, 1]
   );
 
   return (
@@ -122,7 +124,7 @@ function ParallaxStepCard({
         </div>
       )}
 
-      <div className={`relative p-8 sm:p-10 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.14] transition-all duration-500 h-full`}>
+      <div className={`relative p-8 sm:p-10 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.14] transition-all duration-500 h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black`}>
         {/* Hover glow */}
         <div className={`absolute -top-16 -right-16 w-32 h-32 rounded-full ${c.accent} blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none`} />
 
@@ -189,6 +191,7 @@ export function HowItWorksSection() {
   const isInView = useInView(sectionRef, { once: true, margin: '-80px' });
   const { niche, isPousada, isAirbnb } = useNiche();
   const content = getNicheContent(niche);
+  const prefersReducedMotion = useReducedMotion();
 
   // Scroll-linked progress for the entire section
   const { scrollYProgress } = useScroll({
@@ -197,8 +200,8 @@ export function HowItWorksSection() {
   });
 
   // Title stays fixed while steps animate in
-  const titleOpacity = useTransform(scrollYProgress, [0, 0.1, 0.8, 0.95], [1, 1, 1, 0]);
-  const titleY = useTransform(scrollYProgress, [0, 0.1, 0.8, 0.95], [0, 0, -20, -60]);
+  const titleOpacity = useTransform(scrollYProgress, [0, 0.1, 0.8, 0.95], prefersReducedMotion ? [1, 1, 1, 1] : [1, 1, 1, 0]);
+  const titleY = useTransform(scrollYProgress, [0, 0.1, 0.8, 0.95], prefersReducedMotion ? [0, 0, 0, 0] : [0, 0, -20, -60]);
 
   // Niche-aware header text
   const headerTitle = isPousada
@@ -210,7 +213,7 @@ export function HowItWorksSection() {
     : 'Da URL do anúncio ao primeiro check-in virtual automaticamente. Sem precisar de técnico ou conhecimento técnico.';
 
   return (
-    <section ref={sectionRef} id="como-funciona" className="relative overflow-hidden" style={{ minHeight: '250vh' }}>
+    <section ref={sectionRef} id="como-funciona" className="relative overflow-hidden" style={{ minHeight: '180vh' }}>
       {/* Background grid pattern */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
         style={{
@@ -273,6 +276,7 @@ export function HowItWorksSection() {
                     step={step}
                     index={i}
                     scrollYProgress={scrollYProgress}
+                    reducedMotion={prefersReducedMotion}
                   />
                 ))}
               </div>
@@ -335,9 +339,9 @@ export function HowItWorksSection() {
                   const el = document.querySelector('#precos');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className={`group inline-flex items-center gap-2 px-8 py-4 rounded-xl ${isAirbnb ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 shadow-blue-500/25 hover:shadow-blue-500/40' : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 shadow-emerald-500/25 hover:shadow-emerald-500/40'} text-white font-bold transition-all duration-300 shadow-lg cursor-pointer`}
+                className={`group inline-flex items-center gap-2 px-8 py-4 rounded-xl ${isAirbnb ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 shadow-blue-500/25 hover:shadow-blue-500/40' : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 shadow-emerald-500/25 hover:shadow-emerald-500/40'} text-white font-bold transition-all duration-300 shadow-lg cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black`}
               >
-                Começar agora — grátis por 7 dias
+                Começar agora - grátis por 7 dias
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
             </motion.div>

@@ -61,7 +61,7 @@ export function FinalCTASection() {
                 const el = document.querySelector('#precos');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="group px-10 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-xl hover:from-emerald-400 hover:to-emerald-500 transition-all duration-300 shadow-xl shadow-emerald-500/30 hover:shadow-emerald-500/50 cursor-pointer text-lg"
+              className="group px-10 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-xl hover:from-emerald-400 hover:to-emerald-500 transition-all duration-300 shadow-xl shadow-emerald-500/30 hover:shadow-emerald-500/50 cursor-pointer text-lg active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             >
               <span className="flex items-center gap-2">
                 {'Grátis por 7 dias'}
@@ -71,7 +71,7 @@ export function FinalCTASection() {
             {(
               <button
                 onClick={() => router.push('/parceiro')}
-                className="px-8 py-4 rounded-xl border border-amber-500/20 bg-amber-500/5 text-amber-300 font-semibold hover:bg-amber-500/10 hover:border-amber-500/30 transition-all duration-300 cursor-pointer"
+                className="px-8 py-4 rounded-xl border border-amber-500/20 bg-amber-500/5 text-amber-300 font-semibold hover:bg-amber-500/10 hover:border-amber-500/30 transition-all duration-300 cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 Quero ser Parceiro
               </button>

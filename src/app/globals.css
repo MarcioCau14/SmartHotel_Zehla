@@ -871,3 +871,29 @@ html {
   pointer-events: none;
   z-index: 100;
 }
+
+/* ========================================
+   ACCESSIBILITY: prefers-reduced-motion
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Keep opacity-only fades for reduced-motion users */
+  .reduced-motion-fade {
+    transition: opacity 0.2s ease !important;
+  }
+}
+
+/* Focus-visible ring for accessibility */
+.focus-ring:focus-visible {
+  outline: 2px solid rgba(16, 185, 129, 0.6);
+  outline-offset: 2px;
+  border-radius: inherit;
+}

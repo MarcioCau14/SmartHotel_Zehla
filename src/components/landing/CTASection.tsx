@@ -36,7 +36,7 @@ export function CTASection({ onNavigate }: CTASectionProps) {
               <button
                 type="button"
                 onClick={onNavigate}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-emerald-500/25 text-lg cursor-pointer"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-emerald-500/25 text-lg cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 <Zap className="w-5 h-5" />
                 Testar Grátis por 7 Dias

@@ -207,6 +207,52 @@ Stage Summary:
 - Production: All routes responding correctly ✅
 
 ---
+Task ID: 5
+Agent: full-stack-developer
+Task: Apply UI/UX Pro Max skill enhancements to landing page
+
+Work Log:
+- Read worklog.md for context (4 previous task groups documented)
+- Read all landing page components: HeroSection, PainPointsSection, HowItWorksSection, CTASection, FinalCTASection, Footer
+- Added prefers-reduced-motion CSS media query to globals.css: disables all animations/transitions, keeps opacity fades via .reduced-motion-fade class
+- Added .focus-ring:focus-visible utility class for accessibility (emerald outline ring)
+- Enhanced HeroSection.tsx:
+  - Added useReducedMotion from framer-motion
+  - Implemented staggered entrance animation (staggerContainer + staggerItem variants): Badge → Headline → Subtitle → Niche Toggle → Social Proof → CTA
+  - Added floating Y-axis oscillation to ambient glow orbs (8s/10s infinite ease-in-out)
+  - Added gradient shimmer effect on CTA buttons (animated background-position with 200% size)
+  - Improved rotating phrase transition: increased duration from 0.4→0.5s, disabled y-movement for reduced-motion
+  - CTA buttons now use active:scale-[0.98] and focus-ring class
+- Fixed PainPointsSection.tsx:
+  - Reduced minHeight from 200vh → 150vh to eliminate excessive empty scrolling
+  - Added useReducedMotion support: disabled parallax bubble movement, kept opacity 1 for reduced-motion users
+  - Passed reducedMotion prop to ParallaxChatBubbles and OpportunityCard
+  - Added accent border glow on hover for OpportunityCards (inset box-shadow matching card color)
+  - Added focus-ring to card containers
+- Fixed HowItWorksSection.tsx:
+  - Reduced minHeight from 250vh → 180vh to eliminate excessive empty scrolling
+  - Added useReducedMotion support: disabled scroll-linked opacity/y/scale transforms, title stays fixed
+  - Passed reducedMotion prop to ParallaxStepCard
+  - Step cards now visible immediately for reduced-motion users (opacity=1, y=0, scale=1)
+  - Added focus-ring to step card containers and CTA button
+  - CTA button now has active:scale-[0.98]
+- Enhanced CTASection.tsx: Added active:scale-[0.98] and focus-ring to CTA button
+- Enhanced FinalCTASection.tsx: Added active:scale-[0.98] and focus-ring to both CTA buttons (primary + parceiro)
+- Enhanced Footer.tsx: Increased social link touch target from w-8 h-8 → w-9 h-9 (36px), added focus-ring
+- Verified footer sticky behavior: page.tsx already has min-h-screen flex flex-col + footer has mt-auto ✅
+- Ran lint: 0 errors in modified src files (5 errors remain in test/stress files, pre-existing)
+- Verified dev server: page returns HTTP 200, no new parsing errors
+
+Stage Summary:
+- Accessibility: Full prefers-reduced-motion support via CSS media query + framer-motion useReducedMotion hook across all landing components
+- Hero: Staggered entrance sequence, floating glow orbs, shimmer CTA, smoother rotation
+- PainPoints: Reduced 200vh→150vh, accent border glow on hover, reduced-motion safe
+- HowItWorks: Reduced 250vh→180vh, scroll-linked transforms disabled for reduced-motion, focus-ring
+- Micro-interactions: active:scale-[0.98] on all interactive buttons, focus-ring on focusable elements, 36px social touch targets
+- Footer: Sticky verified working, improved touch targets, focus-ring added
+- No new lint errors, page renders successfully
+
+---
 Task ID: 21-23
 Agent: Main Agent
 Task: Payment Infrastructure — Checkout Session Creator + Webhook Provisioning + ZCC Telemetry

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { motion, AnimatePresence, useInView, useScroll, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, useInView, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import {
   Clock,
   MessageSquare,
@@ -112,10 +112,14 @@ const chatBubbles = [
   { text: 'Sim! Aceitamos pets até 15kg com taxa de R$ 50/diária. Incluso caminha e potinho!', from: 'zella', delay: 0.7 },
 ];
 
-function ParallaxChatBubbles({ scrollYProgress }: { scrollYProgress: ReturnType<typeof useScroll>['scrollYProgress'] }) {
+function ParallaxChatBubbles({ scrollYProgress, reducedMotion }: { scrollYProgress: ReturnType<typeof useScroll>['scrollYProgress']; reducedMotion: boolean }) {
   // Each bubble moves at different speed for depth effect
   // Mobile: reduce movement range by 60%
-  const getRange = (base: number) => typeof window !== 'undefined' && window.innerWidth < 768 ? base * 0.4 : base;
+  // Reduced motion: disable parallax, just show bubbles statically
+  const getRange = (base: number) => {
+    if (reducedMotion) return 0;
+    return typeof window !== 'undefined' && window.innerWidth < 768 ? base * 0.4 : base;
+  };
 
   const y0 = useTransform(scrollYProgress, [0.1, 0.9], [getRange(120), getRange(-80)]);
   const y1 = useTransform(scrollYProgress, [0.1, 0.9], [getRange(80), getRange(-120)]);
@@ -125,7 +129,7 @@ function ParallaxChatBubbles({ scrollYProgress }: { scrollYProgress: ReturnType<
   const y5 = useTransform(scrollYProgress, [0.1, 0.9], [getRange(40), getRange(-140)]);
   const yValues = [y0, y1, y2, y3, y4, y5];
 
-  const opacity = useTransform(scrollYProgress, [0.05, 0.2, 0.8, 0.95], [0, 1, 1, 0]);
+  const opacity = useTransform(scrollYProgress, [0.05, 0.2, 0.8, 0.95], reducedMotion ? [1, 1, 1, 1] : [0, 1, 1, 0]);
 
   return (
     <motion.div style={{ opacity }} className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -162,22 +166,24 @@ function ParallaxChatBubbles({ scrollYProgress }: { scrollYProgress: ReturnType<
 }
 
 /* ─────────── SINGLE OPPORTUNITY CARD ─────────── */
-function OpportunityCard({ item, index, isInView }: { item: PainCard; index: number; isInView: boolean }) {
+function OpportunityCard({ item, index, isInView, reducedMotion }: { item: PainCard; index: number; isInView: boolean; reducedMotion: boolean }) {
   const c = colorMap[item.color];
   const isLarge = item.size === 'lg';
   const IconComponent = iconMap[item.icon];
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 30 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay: index * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className={`group relative p-7 sm:p-9 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.12] hover:bg-white/[0.04] transition-all duration-500 cursor-default overflow-hidden ${
+      transition={{ duration: reducedMotion ? 0.2 : 0.6, delay: reducedMotion ? 0 : index * 0.08, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
+      className={`group relative p-7 sm:p-9 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.12] hover:bg-white/[0.04] transition-all duration-500 cursor-default overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
         isLarge ? 'lg:col-span-1' : ''
       }`}
     >
       {/* Hover glow effect */}
       <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full ${c.accent} blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none`} />
+      {/* Accent border glow on hover */}
+      <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`} style={{ boxShadow: `inset 0 0 0 1px ${item.color === 'emerald' ? 'rgba(16,185,129,0.2)' : item.color === 'blue' ? 'rgba(59,130,246,0.2)' : item.color === 'amber' ? 'rgba(245,158,11,0.2)' : item.color === 'violet' ? 'rgba(139,92,246,0.2)' : item.color === 'pink' ? 'rgba(236,72,153,0.2)' : item.color === 'rose' ? 'rgba(244,63,94,0.2)' : item.color === 'sky' ? 'rgba(14,165,233,0.2)' : 'rgba(255,255,255,0.1)'}` }} />
 
       {/* Icon */}
       <div className={`w-11 h-11 rounded-xl ${c.accent} border ${c.ring} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
@@ -219,6 +225,7 @@ export function PainPointsSection() {
   const isInView = useInView(sectionRef, { once: true, margin: '-80px' });
   const { niche, isPousada } = useNiche();
   const content = getNicheContent(niche);
+  const prefersReducedMotion = useReducedMotion();
 
   // Scroll-linked parallax for the ENTIRE sticky section
   const { scrollYProgress } = useScroll({
@@ -236,12 +243,12 @@ export function PainPointsSection() {
     : 'Veja como o Zélla transforma o WhatsApp dos seus imóveis em uma máquina de reservas — sem complicação e no seu tom de voz.';
 
   return (
-    <section ref={sectionRef} className="relative bg-[#060608] overflow-hidden" style={{ minHeight: '200vh' }}>
+    <section ref={sectionRef} className="relative bg-[#060608] overflow-hidden" style={{ minHeight: '150vh' }}>
       {/* ── Sticky inner container ── */}
       <div className="sticky top-0 h-screen overflow-y-auto flex items-center">
         <div className="relative w-full py-20 sm:py-28">
           {/* Parallax chat bubbles (background layer) */}
-          <ParallaxChatBubbles scrollYProgress={scrollYProgress} />
+          <ParallaxChatBubbles scrollYProgress={scrollYProgress} reducedMotion={prefersReducedMotion} />
 
           {/* Subtle background orbs */}
           <div className="absolute top-20 -left-40 w-[400px] h-[400px] rounded-full bg-emerald-500/[0.03] blur-[120px] pointer-events-none" />
@@ -313,7 +320,7 @@ export function PainPointsSection() {
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6"
               >
                 {content.painCards.map((item, i) => (
-                  <OpportunityCard key={`${niche}-${item.title}`} item={item} index={i} isInView={isInView} />
+                  <OpportunityCard key={`${niche}-${item.title}`} item={item} index={i} isInView={isInView} reducedMotion={prefersReducedMotion} />
                 ))}
               </motion.div>
             </AnimatePresence>
