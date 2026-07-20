@@ -481,3 +481,32 @@ Stage Summary:
 - Accessibility: prefers-reduced-motion, focus-visible rings
 - Performance: reduced excessive scroll heights (200vh→150vh, 250vh→180vh)
 - Deployed successfully to production
+
+---
+Task ID: 7
+Agent: main
+Task: Fix terrible visual section below "Conhecer Planos" button - remove broken sticky/parallax behavior from PainPointsSection and HowItWorksSection
+
+Work Log:
+- Identified root cause: PainPointsSection had minHeight: '150vh' with sticky top-0 container and parallax chat bubbles creating a massive dark void below hero
+- Same issue with HowItWorksSection: minHeight: '180vh' with sticky container
+- Completely rewrote PainPointsSection:
+  - Removed sticky/parallax container structure
+  - Removed ParallaxChatBubbles component (floating chat bubbles that looked confusing)
+  - Changed to clean py-24 sm:py-32 section layout
+  - Kept all content: header, StatsMarquee, OpportunityCards grid, trust strip
+  - Used standard useInView animations instead of scroll-linked parallax
+- Completely rewrote HowItWorksSection:
+  - Removed sticky/parallax container structure and scroll-linked step cards
+  - Changed to clean py-24 sm:py-32 section layout
+  - Replaced ParallaxStepCard with simple StepCard using useInView animations
+  - Kept all content: header, step cards, promise strip, CTA button
+- Verified with Agent Browser: page flows naturally from hero to pain points to how it works
+- Verified "Conhecer Planos" button scrolls to pricing section correctly
+- All 13 sections rendering properly
+
+Stage Summary:
+- PainPointsSection: removed broken sticky+parallax, now clean section with proper animations
+- HowItWorksSection: removed broken sticky+parallax, now clean section with proper animations
+- No more dark void or confusing floating chat bubbles below hero CTA
+- Page content flows naturally and professionally
