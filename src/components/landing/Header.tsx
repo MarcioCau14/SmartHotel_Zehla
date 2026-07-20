@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ArrowRight } from 'lucide-react';
+import { Menu, X, ArrowRight, LayoutDashboard, Shield } from 'lucide-react';
 import { ZellaLogo } from '@/components/brand/ZellaLogo';
 
 export function Header() {
@@ -28,6 +28,11 @@ export function Header() {
     { name: 'Calculadora', href: '#calculadora', lgOnly: true },
     { name: 'Preços', href: '#precos', lgOnly: false },
     { name: 'FAQ', href: '#faq', lgOnly: true },
+  ];
+
+  const appLinks = [
+    { name: 'DDC', href: '/ddc', icon: LayoutDashboard, color: 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10' },
+    { name: 'ZCC', href: '/zcc', icon: Shield, color: 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10' },
   ];
 
   return (
@@ -58,7 +63,24 @@ export function Header() {
         </nav>
 
         {/* CTA Buttons (Desktop) */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-2">
+          {/* DDC + ZCC App Links */}
+          {appLinks.map((link) => {
+            const Icon = link.icon;
+            return (
+              <Link
+                key={link.name}
+                href={link.href}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold tracking-wider rounded-lg border transition-all duration-200 ${link.color} border-white/[0.08] active:scale-95`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {link.name}
+              </Link>
+            );
+          })}
+
+          <div className="w-px h-5 bg-white/[0.08] mx-1" />
+
           <Link
             href="/login"
             className="text-xs font-semibold text-white/80 hover:text-white px-4 py-2 transition-all active:scale-95 duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-lg"
@@ -105,6 +127,24 @@ export function Header() {
                 </Link>
               ))}
               <div className="h-px bg-white/[0.06] my-2" />
+              {/* DDC + ZCC Mobile Links */}
+              <div className="flex gap-3">
+                {appLinks.map((link) => {
+                  const Icon = link.icon;
+                  return (
+                    <Link
+                      key={link.name}
+                      href={link.href}
+                      onClick={() => setIsOpen(false)}
+                      className={`flex-1 inline-flex items-center justify-center gap-2 text-sm font-bold py-2.5 rounded-xl border transition-all ${link.color} border-white/[0.08]`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {link.name}
+                    </Link>
+                  );
+                })}
+              </div>
+              <div className="h-px bg-white/[0.06] my-1" />
               <div className="flex flex-col gap-3">
                 <Link
                   href="/login"
