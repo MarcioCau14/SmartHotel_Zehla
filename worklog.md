@@ -205,3 +205,76 @@ Stage Summary:
 - CI/CD: GitHub Actions pipeline created with 3 gates ✅
 - Vercel: Production deploy successful, env vars configured ✅
 - Production: All routes responding correctly ✅
+
+---
+Task ID: 21-23
+Agent: Main Agent
+Task: Payment Infrastructure — Checkout Session Creator + Webhook Provisioning + ZCC Telemetry
+
+Work Log:
+
+PASSO 1 — CHECKOUT SESSION CREATOR (/api/checkout/create):
+- Rewrote route from simple subscription creator to gateway-agnostic payload generator
+- Accepts full form data: name, email, phone, propertyName, niche, planType, paymentMethod
+- Builds standardized CheckoutSessionPayload with customer, property, plan, internalRef sections
+- Guest checkout flow: creates Tenant + Property for new customers without login
+- HMAC checkout signature (sha256) for tamper-proof redirect URLs
+- 30-minute session expiry timestamp
+- Mercado Pago PIX integration preserved with enhanced error handling
+- SDK placeholder comments for MP Checkout Pro (cartão) and Stripe Checkout Sessions
+- Rate limiting per tenant with authRatelimit
+- Validations: plan/niche/paymentMethod, PRO/MAX PIX restriction
+
+PASSO 2 — WEBHOOK DE PROVISIONAMENTO (/api/webhooks/payment):
+- Created new gateway-agnostic webhook endpoint
+- HMAC signature validation with 3 format parsers:
+  1. Stripe-style (t=TIMESTAMP,v1=HMAC_HEX)
+  2. Mercado Pago-style (ts=TIMESTAMP,v1=HMAC_HEX)
+  3. Simple HMAC-SHA256 (sha256=HEX)
+- Replay protection: rejects signatures older than 5 minutes
+- timingSafeEqual for all comparisons (anti-timing-attack)
+- Zero Trust: production blocks invalid signatures, dev allows with warning
+- Magic Provisioning Engine on payment.created/invoice.paid:
+  * Creates Tenant with multi-tenant isolation (niche + plan)
+  * Creates admin User linked to tenant
+  * Creates Property when propertyName in metadata
+  * Creates Subscription (active, approved, with period dates)
+  * Creates PaymentTransaction record
+- Amount-to-tier resolver (fallback when planType not in metadata)
+- Status update handling (payment.updated → approved/rejected)
+- Cancellation handling (subscription.canceled → tenant suspended)
+- Health check GET endpoint with version and supported events
+
+PASSO 3 — ZCC NOTIFIER (LGPD COMPLIANT):
+- Integrated into webhook: fires silent telemetry after successful provisioning
+- LGPD compliance: only sends owner initials (ex: "J.S."), region, and package value
+- Never sends: full name, email, phone, CPF
+- MRR contribution tracking via /api/zcc/burn-rate
+- Fire-and-forget pattern (never blocks main flow)
+
+ENV VARS:
+- Added PAYMENT_WEBHOOK_SECRET (fallback from MP_WEBHOOK_SECRET)
+- Added STRIPE_SECRET_KEY
+- Added STRIPE_WEBHOOK_SECRET
+
+CHECKOUT MODAL:
+- Updated response handling for nested data format (json.data || json)
+
+VERIFICATION:
+- /api/webhooks/payment GET → health check: 200 ✅
+- /api/webhooks/payment POST (invoice.paid) → provisioned tenant with plan PRO: 200 ✅
+- /api/webhooks/payment POST with HMAC sig → signature verified, provisioned tenant with plan MAX: 200 ✅
+- /api/checkout/create POST (lite, pix, airbnb) → created session with full gatewayPayload: 200 ✅
+- Database: Tenant, User, Subscription, PaymentTransaction all created correctly ✅
+- CheckoutModal: Landing page renders, pricing CTAs visible ✅
+- Lint: 0 errors in modified files ✅
+- Commit: 23f03e4b
+- Push: GitHub main branch ✅
+- Deploy: Vercel production (smart-hotel-zehla.vercel.app) ✅
+
+Stage Summary:
+- Checkout Session Creator: Gateway-agnostic payload generator ready for MP/Stripe SDKs
+- Webhook de Provisionamento: Full magic provisioning (Tenant+User+Property+Subscription) on payment events
+- ZCC Telemetry: LGPD-compliant MRR tracking after each conversion
+- Security: HMAC-SHA256 mandatory in production, 5min replay protection, timing-safe comparison
+- Deployed: https://smart-hotel-zehla.vercel.app ✅
