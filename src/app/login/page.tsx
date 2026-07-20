@@ -73,7 +73,7 @@ function LoginContent() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('signin');
-  const [showCredentials, setShowCredentials] = useState(false);
+  const [showCredentials, setShowCredentials] = useState(isZCC); // Auto-expand for ZCC
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -464,14 +464,28 @@ function LoginContent() {
                 </p>
               </motion.div>
 
-              {/* Dev bypass */}
+              {/* Dev bypass — more prominent for ZCC */}
               <motion.div variants={fadeUp} className="w-full">
-                <div className="bg-[#0d1117] border border-white/[0.04] rounded-lg p-3 flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-zinc-700 shrink-0" />
-                  <p className="text-[10px] text-zinc-700">
-                    Dev: <span className="text-zinc-500 font-mono">123</span> / <span className="text-zinc-500 font-mono">123</span>
-                  </p>
-                </div>
+                {isZCC ? (
+                  <div className="bg-amber-500/[0.08] border border-amber-500/20 rounded-lg p-4 flex items-center gap-3">
+                    <ShieldCheck className="h-5 w-5 text-amber-400 shrink-0" />
+                    <div>
+                      <p className="text-[11px] text-amber-300 font-bold uppercase tracking-wide">
+                        Login Provisório para Testes
+                      </p>
+                      <p className="text-[11px] text-amber-400/70 mt-0.5">
+                        Login: <span className="text-amber-300 font-mono font-bold">123</span> · Senha: <span className="text-amber-300 font-mono font-bold">123</span>
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-[#0d1117] border border-white/[0.04] rounded-lg p-3 flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-zinc-700 shrink-0" />
+                    <p className="text-[10px] text-zinc-700">
+                      Dev: <span className="text-zinc-500 font-mono">123</span> / <span className="text-zinc-500 font-mono">123</span>
+                    </p>
+                  </div>
+                )}
               </motion.div>
             </motion.div>
           )}

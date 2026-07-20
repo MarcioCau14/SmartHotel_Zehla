@@ -16,6 +16,7 @@ const DEMO_USER = {
   tenantId: 'demo-tenant-id',
   plan: 'pro' as const,
   niche: 'pousada' as const,
+  isDemoUser: true, // Flag para middleware permitir acesso ZCC temporário
 };
 
 /** Check if we're running on Vercel (serverless — no persistent SQLite) */
@@ -66,6 +67,7 @@ export const authOptions: NextAuthOptions = {
                   tenantId: firstTenant.id,
                   plan: firstTenant.plan || 'pro',
                   niche: (firstTenant as any).niche || 'pousada',
+                  isDemoUser: true, // Flag para middleware permitir acesso ZCC temporário
                 };
               }
             }
@@ -226,6 +228,10 @@ export const authOptions: NextAuthOptions = {
         token.role = (user as any).role;
         token.plan = (user as any).plan;
         token.niche = (user as any).niche;
+        // Flag para acesso ZCC temporário (login 123/123)
+        if ((user as any).isDemoUser) {
+          (token as any).isDemoUser = true;
+        }
 
         // For OAuth users, look up tenant info
         if (account?.provider === 'google') {

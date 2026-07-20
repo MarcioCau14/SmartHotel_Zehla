@@ -7,6 +7,8 @@ declare module "next-auth" {
       tenantId: string;
       role: string;
       plan: string;
+      niche?: string;
+      isDemoUser?: boolean;
     } & DefaultSession["user"];
   }
 
@@ -14,6 +16,8 @@ declare module "next-auth" {
     tenantId: string;
     role: string;
     plan: string;
+    niche?: string;
+    isDemoUser?: boolean;
   }
 }
 
@@ -22,5 +26,7 @@ declare module "next-auth/jwt" {
     tenantId: string;
     role: string;
     plan: string;
+    niche?: string;
+    isDemoUser?: boolean;
   }
 }

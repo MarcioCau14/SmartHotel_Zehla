@@ -149,7 +149,7 @@ function getClientIP(request: NextRequest): string {
     || 'unknown';
 }
 
-/** Rejeição silenciosa — sempre redireciona para /login sem revelar motivo */
+/** Rejeição silenciosa — redireciona para /login com callbackUrl sem revelar motivo */
 function silentReject(
   request: NextRequest,
   ip: string,
@@ -165,7 +165,9 @@ function silentReject(
   });
 
   // Redirecionamento genérico — não revela se ZCC existe ou por que foi negado
+  // Inclui callbackUrl para que o login redirecione de volta ao /zcc após autenticação
   const loginUrl = new URL('/login', request.url);
+  loginUrl.searchParams.set('callbackUrl', request.nextUrl.pathname);
   return NextResponse.redirect(loginUrl);
 }
 
@@ -252,15 +254,16 @@ export async function middleware(request: NextRequest) {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // ZCC GOD MODE ACCESS — Blindagem Modo Deus V2
+  // ZCC GOD MODE ACCESS — Blindagem Modo Deus V3
   // ═══════════════════════════════════════════════════════════════
   // Camadas de acesso ao ZCC (ordem de prioridade):
   // 1. Rate Limiting (proteção contra brute force)
   // 2. Master Key Header (acesso API/programático)
   // 3. Godmode Param (acesso via URL com token)
   // 4. Godmode Cookie com nonce rotation (acesso contínuo)
-  // 5. NextAuth Admin Email (acesso via sessão autenticada)
-  // 6. Rejeição silenciosa (todas as falhas → /login)
+  // 5. NextAuth Demo User provisório (login 123/123 — remover após testes)
+  // 6. NextAuth Admin Email (acesso via sessão autenticada)
+  // 7. Rejeição silenciosa (todas as falhas → /login)
   // ═══════════════════════════════════════════════════════════════
 
   if (pathname === '/zcc' || pathname.startsWith('/zcc/')) {
@@ -355,12 +358,29 @@ export async function middleware(request: NextRequest) {
       // Cookie inválido ou nonce expirado — falha silenciosa (continua para próximas checagens)
     }
 
-    // ── 5. NextAuth Admin Email ──
+    // ── 5. NextAuth Demo User Provisório (123/123) ──
+    // Login temporário para testes: email "123" / senha "123"
+    // PERMITIDO SOMENTE ATÉ CONCLUIRMOS OS TESTES — remover depois
+    try {
+      const token = await getToken({
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET || 'zehla-demo-secret-2026-prod',
+      });
+      // Verifica flag isDemoUser no JWT (setada pelo bypass 123/123)
+      if (token && (token as any).isDemoUser === true) {
+        auditZCCAccess({ ip, userAgent, method: 'session', success: true, path: pathname });
+        return NextResponse.next();
+      }
+    } catch {
+      // Falha ao decodificar token — continua para próximas checagens
+    }
+
+    // ── 6. NextAuth Admin Email ──
     // Verifica se a sessão NextAuth existe e o email está na lista de admins
     try {
       const token = await getToken({
         req: request,
-        secret: process.env.NEXTAUTH_SECRET,
+        secret: process.env.NEXTAUTH_SECRET || 'zehla-demo-secret-2026-prod',
       });
       if (token?.email) {
         const adminEmails = (process.env.ZCC_ADMIN_EMAILS || '')
@@ -376,7 +396,7 @@ export async function middleware(request: NextRequest) {
       // Falha ao decodificar token — nega silenciosamente (não revela erro)
     }
 
-    // ── 6. Rejeição Silenciosa ──
+    // ── 7. Rejeição Silenciosa ──
     // Nenhuma camada de acesso teve sucesso — redirect genérico para /login
     // NÃO revela se ZCC existe, qual camada falhou, ou se rate limiting está ativo
     return silentReject(request, ip, userAgent, 'denied');
@@ -395,7 +415,7 @@ export async function middleware(request: NextRequest) {
     try {
       const token = await getToken({
         req: request,
-        secret: process.env.NEXTAUTH_SECRET,
+        secret: process.env.NEXTAUTH_SECRET || 'zehla-demo-secret-2026-prod',
       });
 
       const niche = (token as any)?.niche || 'pousada';
