@@ -22,12 +22,6 @@ export function Footer() {
     { label: 'Contato', href: '#contato' },
   ];
 
-  const platformLinks = [
-    { label: 'DDC — Painel do Cliente', href: '/ddc', highlight: true },
-    { label: 'ZCC — Central Control', href: '/zcc', highlight: true },
-    { label: 'Entrar', href: '/login', highlight: false },
-  ];
-
   const legalLinks = [
     { label: 'Central de Privacidade', href: '/legal/privacidade-central' },
     { label: 'Termos de Uso', href: '/legal/termos-uso' },
@@ -54,8 +48,8 @@ export function Footer() {
         {/* Main Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-16">
           
-          {/* Brand Column (spans 3) */}
-          <div className="lg:col-span-3 space-y-6">
+          {/* Brand Column */}
+          <div className="lg:col-span-4 space-y-6">
             {/* Brand Logo */}
           <div className="flex items-center gap-3">
             <ZellaLogoStatic />
@@ -97,29 +91,6 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Platform Links — DDC & ZCC */}
-          <div className="lg:col-span-2">
-            <h3 className="text-xs font-bold text-neutral-300 uppercase tracking-widest mb-5">
-              Plataforma
-            </h3>
-            <ul className="space-y-3">
-              {platformLinks.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className={`text-xs transition-colors duration-200 block py-0.5 ${
-                      link.highlight
-                        ? 'text-emerald-400 hover:text-emerald-300 font-semibold'
-                        : 'text-neutral-500 hover:text-emerald-400'
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
           {/* Navigation Links */}
           <div className="lg:col-span-3">
             <h3 className="text-xs font-bold text-neutral-300 uppercase tracking-widest mb-5">
@@ -139,54 +110,54 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Legal + Trust Combined */}
-          <div className="lg:col-span-4 space-y-6">
-            <div>
-              <h3 className="text-xs font-bold text-neutral-300 uppercase tracking-widest mb-5">
-                Jurídico
-              </h3>
-              <ul className="space-y-3">
-                {legalLinks.map((link) => (
-                  <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-neutral-500 hover:text-emerald-400 text-xs transition-colors duration-200 block py-0.5"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-xs font-bold text-neutral-300 uppercase tracking-widest mb-5">
-                Confiança
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-neutral-500 text-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                  <span>Ativação em 5 minutos</span>
-                </div>
-                <div className="flex items-center gap-2 text-neutral-500 text-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                  <span>Sem fidelidade — cancele quando quiser</span>
-                </div>
-                <div className="flex items-center gap-2 text-neutral-500 text-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                  <span>7 dias grátis sem cartão</span>
-                </div>
-                <div className="flex items-center gap-2 text-neutral-500 text-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                  <span>Suporte PT-BR via WhatsApp</span>
-                </div>
-                <div className="flex items-center gap-2 text-neutral-500 text-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                  <span>Dados criptografados (LGPD)</span>
-                </div>
-                <div className="flex items-center gap-2 text-neutral-500 text-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                  <span>SLA 99.9% no plano MAX</span>
-                </div>
+          {/* Legal Links */}
+          <div className="lg:col-span-2">
+            <h3 className="text-xs font-bold text-neutral-300 uppercase tracking-widest mb-5">
+              Jurídico
+            </h3>
+            <ul className="space-y-3">
+              {legalLinks.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    href={link.href}
+                    className="text-neutral-500 hover:text-emerald-400 text-xs transition-colors duration-200 block py-0.5"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Trust Column */}
+          <div className="lg:col-span-3">
+            <h3 className="text-xs font-bold text-neutral-300 uppercase tracking-widest mb-5">
+              Confiança
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-neutral-500 text-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                <span>Ativação em 5 minutos</span>
+              </div>
+              <div className="flex items-center gap-2 text-neutral-500 text-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                <span>Sem fidelidade — cancele quando quiser</span>
+              </div>
+              <div className="flex items-center gap-2 text-neutral-500 text-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                <span>7 dias grátis sem cartão</span>
+              </div>
+              <div className="flex items-center gap-2 text-neutral-500 text-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                <span>Suporte PT-BR via WhatsApp</span>
+              </div>
+              <div className="flex items-center gap-2 text-neutral-500 text-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                <span>Dados criptografados (LGPD)</span>
+              </div>
+              <div className="flex items-center gap-2 text-neutral-500 text-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                <span>SLA 99.9% no plano MAX</span>
               </div>
             </div>
           </div>

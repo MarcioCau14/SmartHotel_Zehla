@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ArrowRight, LayoutDashboard, Shield, Building2, Command } from 'lucide-react';
+import { Menu, X, ArrowRight } from 'lucide-react';
 import { ZellaLogo } from '@/components/brand/ZellaLogo';
 
 export function Header() {
@@ -28,31 +28,6 @@ export function Header() {
     { name: 'Calculadora', href: '#calculadora', lgOnly: true },
     { name: 'Preços', href: '#precos', lgOnly: false },
     { name: 'FAQ', href: '#faq', lgOnly: true },
-  ];
-
-  const appLinks = [
-    {
-      name: 'DDC',
-      href: '/ddc',
-      icon: LayoutDashboard,
-      color: 'text-emerald-400 hover:text-emerald-300',
-      bgHover: 'hover:bg-emerald-500/10',
-      borderColor: 'border-emerald-500/20 hover:border-emerald-500/40',
-      bgActive: 'bg-emerald-500/8',
-      badge: 'Pousada & Airbnb',
-      badgeColor: 'bg-emerald-500/15 text-emerald-400',
-    },
-    {
-      name: 'ZCC',
-      href: '/zcc',
-      icon: Shield,
-      color: 'text-amber-400 hover:text-amber-300',
-      bgHover: 'hover:bg-amber-500/10',
-      borderColor: 'border-amber-500/20 hover:border-amber-500/40',
-      bgActive: 'bg-amber-500/8',
-      badge: 'Central Control',
-      badgeColor: 'bg-amber-500/15 text-amber-400',
-    },
   ];
 
   return (
@@ -82,30 +57,8 @@ export function Header() {
           ))}
         </nav>
 
-        {/* CTA Buttons (Desktop) */}
+        {/* CTA Buttons (Desktop) — Sales page only: Entrar + Testar */}
         <div className="hidden md:flex items-center gap-2">
-          {/* DDC + ZCC App Links — Clearly Separated */}
-          {appLinks.map((link) => {
-            const Icon = link.icon;
-            return (
-              <Link
-                key={link.name}
-                href={link.href}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold tracking-wider rounded-lg border transition-all duration-200 ${link.color} ${link.bgHover} ${link.borderColor} active:scale-95`}
-                title={link.badge}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{link.name}</span>
-                <span className={`hidden xl:inline-flex items-center text-[8px] font-semibold px-1.5 py-0.5 rounded-full ${link.badgeColor}`}>
-                  {link.name === 'DDC' ? <Building2 className="w-2.5 h-2.5 mr-0.5" /> : <Command className="w-2.5 h-2.5 mr-0.5" />}
-                  {link.badge}
-                </span>
-              </Link>
-            );
-          })}
-
-          <div className="w-px h-5 bg-white/[0.08] mx-1" />
-
           <Link
             href="/login"
             className="text-xs font-semibold text-white/80 hover:text-white px-4 py-2 transition-all active:scale-95 duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-lg"
@@ -151,29 +104,6 @@ export function Header() {
                   {link.name}
                 </Link>
               ))}
-              <div className="h-px bg-white/[0.06] my-2" />
-              {/* DDC + ZCC Mobile Links — Clearly Labeled */}
-              <div className="flex flex-col gap-3">
-                {appLinks.map((link) => {
-                  const Icon = link.icon;
-                  return (
-                    <Link
-                      key={link.name}
-                      href={link.href}
-                      onClick={() => setIsOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${link.color} ${link.bgHover} ${link.borderColor}`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      <div className="flex flex-col">
-                        <span className="text-sm font-bold">{link.name}</span>
-                        <span className={`text-[9px] font-semibold mt-0.5 px-1.5 py-0.5 rounded-full inline-block w-fit ${link.badgeColor}`}>
-                          {link.badge}
-                        </span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
               <div className="h-px bg-white/[0.06] my-1" />
               <div className="flex flex-col gap-3">
                 <Link
