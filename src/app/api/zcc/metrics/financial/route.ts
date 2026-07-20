@@ -97,9 +97,8 @@ export async function GET(request: NextRequest) {
       if (tenant.airbSubscriptions.length > 0) {
         planPrice = tenant.airbSubscriptions[0].amount;
       }
-      const activeSub = tenant.subscriptions.find(s => s.status === 'active');
-      if (activeSub) {
-        planPrice = activeSub.amount;
+      if (tenant.subscriptions.length > 0) {
+        planPrice = tenant.subscriptions[0].amount;
       }
 
       // Map plan to breakdown key
