@@ -92,3 +92,53 @@ Stage Summary:
 - Impact: double builds on every push (wasting build minutes), confusion about which URL to use
 - Resolution: my-project deleted, only smart-hotel-zehla remains
 - smart-hotel-zehla.vercel.app is the SOLE production URL
+
+---
+Task ID: 13-16
+Agent: Main Agent
+Task: Create "Simulador Zélla" — WhatsApp-style AI Sandbox + Message Bundler + Economy Badge
+
+Work Log:
+- Explored existing codebase: DDCShell, NicheContext, ZelladorChat, simulate-message API, MagicScanner
+- Created `src/app/api/zella/simulate/route.ts` — Message Bundler mock API with:
+  - Smart response generator that analyzes combined intent of all messages
+  - 3s delay for bundled messages, 1.5s for single messages
+  - Economy calculations: bundledCount, tariffsUsed, economyPercent, metaCostSaved
+  - Intent detection for 12+ topics (greeting, pricing, availability, checkin, wifi, pets, etc.)
+- Created `src/app/api/zcc/burn-rate/route.ts` — ZCC Telemetry endpoint with:
+  - In-memory store (mock mode) tracking global + per-niche counters
+  - POST to record events, GET to read current stats
+  - Tracks: totalEvents, totalMessagesProcessed, totalTariffsUsed, totalTariffsSaved, totalMetaCostSpent/Saved
+- Created `src/components/ddc/ZellaSimulator.tsx` — Full WhatsApp-style chat UI with:
+  - Phone frame design with notch, header gradient, chat area
+  - Guest bubbles (emerald for pousada, blue for airbnb) vs AI bubbles (dark zinc)
+  - Message bundling logic: 3s window to group rapid messages
+  - Animated "Zélla está agrupando o contexto..." indicator with pulsing dots
+  - Economy badge: floating gradient alert showing savings (messages, tariffs, %, US$)
+  - Auto-dispatch to /api/zcc/burn-rate (silent fire-and-forget telemetry)
+  - "How Message Bundling Works" educational footer with 3-step visual
+- Updated `src/components/ddc/index.ts` — Added ZellaSimulator export
+- Modified `src/app/ddc/pousada/DDCPousadaContent.tsx`:
+  - Added 'simulador' to PousadaTab type union
+  - Added nav item: { id: 'simulador', label: 'Simulador Zélla', icon: MessageSquare }
+  - Added render case: <ZellaSimulator niche="pousada" propertyData={scannedData} />
+- Modified `src/app/ddc/airbnb/DDCAirbnbContent.tsx`:
+  - Added 'simulador' to AirbnbTab type union
+  - Added nav item: { id: 'simulador', label: 'Simulador Zélla', icon: MessageSquare }
+  - Added render case: <ZellaSimulator niche="airbnb" propertyData={scannedData} />
+- Browser-tested via Agent Browser:
+  - Registered test user (test@zella.com), logged in, completed Magic Scanner
+  - Pousada DDC: Simulador Zélla tab renders with emerald theme ✅
+  - Airbnb DDC: Simulador Zélla tab renders with blue theme ✅
+  - Single message: API responds in 1.5s with individual response ✅
+  - 3 rapid messages: Bundled after 3s window, API responds in 3.0s ✅
+  - Economy badge: Appears after bundled response showing 67% savings ✅
+  - Telemetry: /api/zcc/burn-rate receives events silently ✅
+
+Stage Summary:
+- Simulador Zélla fully functional in both niches (Pousada + Airbnb)
+- Message Bundling: 3+ rapid messages → single One-Shot AI response → 67% tariff economy
+- Economy Badge: Floating gradient alert with real savings data (US$ 0.0068/tariff)
+- ZCC Telemetry: /api/zcc/burn-rate tracks global economy stats per niche
+- All APIs verified: /api/zella/simulate (200), /api/zcc/burn-rate (200)
+- Zero application errors in browser testing

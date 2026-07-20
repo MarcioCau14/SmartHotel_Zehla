@@ -16,6 +16,7 @@ import {
 } from 'recharts';
 import { DDCShell, type NavItem } from '@/components/ddc/DDCShell';
 import { MagicScanner, type MagicScanResult } from '@/components/ddc/MagicScanner';
+import { ZellaSimulator } from '@/components/ddc/ZellaSimulator';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,7 +75,7 @@ import {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type PousadaTab = 'financeiro' | 'hospedes' | 'cerebro' | 'config';
+type PousadaTab = 'financeiro' | 'hospedes' | 'cerebro' | 'simulador' | 'config';
 
 interface GuestCardData {
   id: string;
@@ -257,6 +258,7 @@ const pousadaNavItems: NavItem[] = [
   { id: 'financeiro', label: 'Visão Financeira', icon: <LayoutDashboard className="size-4" /> },
   { id: 'hospedes', label: 'Controle de Hóspedes', icon: <Users className="size-4" /> },
   { id: 'cerebro', label: 'Cérebro da Pousada', icon: <Brain className="size-4" /> },
+  { id: 'simulador', label: 'Simulador Zélla', icon: <MessageSquare className="size-4" /> },
   { id: 'config', label: 'Configurações', icon: <Settings className="size-4" /> },
 ];
 
@@ -963,6 +965,11 @@ export default function DDCPousadaContent() {
         {activeTab === 'financeiro' && <div key="financeiro">{renderFinanceiro()}</div>}
         {activeTab === 'hospedes' && <div key="hospedes">{renderHospedes()}</div>}
         {activeTab === 'cerebro' && <div key="cerebro">{renderCerebro()}</div>}
+        {activeTab === 'simulador' && (
+          <div key="simulador">
+            <ZellaSimulator niche="pousada" propertyData={scannedData} />
+          </div>
+        )}
         {activeTab === 'config' && <div key="config">{renderConfig()}</div>}
       </AnimatePresence>
     </DDCShell>

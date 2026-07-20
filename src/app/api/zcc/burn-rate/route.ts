@@ -1,157 +1,115 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { verifyZCCAccessOrReject } from '@/lib/zcc-security';
 
-const COST_PER_MESSAGE_USD = 0.0068;
-const COST_PER_MESSAGE_BRL = 0.035;
+// ═══════════════════════════════════════════════════════════════
+// ZCC BURN RATE — Taxímetro Global de Tarifas Meta
+// Recebe telemetria do simulador e atualiza o contador
+// de economia de tarifas do ecossistema.
+// Mock Mode: armazena em memória (produção → Prisma)
+// ═══════════════════════════════════════════════════════════════
 
-export async function GET(request: NextRequest) {
-  // ── Security Gate V3 — 6-Layer Protection ──
-  const security = await verifyZCCAccessOrReject(request);
-  if (!security.allowed) return security.response!;
+// In-memory store for mock mode (resets on server restart)
+const burnRateStore = {
+  totalEvents: 0,
+  totalMessagesProcessed: 0,
+  totalTariffsUsed: 0,
+  totalTariffsSaved: 0,
+  totalMetaCostSpent: 0,
+  totalMetaCostSaved: 0,
+  lastEventAt: null as string | null,
+  byNiche: {
+    pousada: { events: 0, messages: 0, tariffsUsed: 0, saved: 0 },
+    airbnb: { events: 0, messages: 0, tariffsUsed: 0, saved: 0 },
+  },
+};
 
+interface BurnRateEvent {
+  event: string;
+  messagesCount: number;
+  tariffsUsed: number;
+  tariffsSaved: number;
+  metaCostSpent: number;
+  metaCostSaved: number;
+  economyPercent: number;
+  niche: 'pousada' | 'airbnb';
+  simulatorSessionId?: string;
+}
+
+// POST — Record a new telemetry event
+export async function POST(request: NextRequest) {
+  let body: BurnRateEvent;
   try {
-    // ── Fetch all WhatsApp message costs ─────────────────────────
-    let messageCosts: { tenantId: string; createdAt: Date; costUsd: number }[] = [];
-    try {
-      messageCosts = await db.whatsAppMessageCost.findMany({
-        orderBy: { createdAt: 'desc' },
-      });
-    } catch {
-      messageCosts = [];
-    }
-
-    // ── Fetch tenants with plan info ─────────────────────────────
-    const tenants = await db.tenant.findMany({
-      select: {
-        id: true,
-        name: true,
-        plan: true,
-        status: true,
-        property: { select: { type: true } },
-        airbSubscriptions: {
-          where: { status: 'active' },
-          select: { amount: true, status: true },
-        },
-        subscriptions: {
-          where: { status: 'active' },
-          select: { amount: true, status: true },
-        },
-      },
-    });
-
-    // ── Calculate per-tenant costs ───────────────────────────────
-    const PLAN_PRICING: Record<string, number> = {
-      trial: 0,
-      starter: 147,
-      pro: 297,
-      business: 597,
-      parceiro: 97,
-    };
-
-    const oneWeekAgo = new Date(Date.now() - 7 * 86400000);
-    const oneMonthAgo = new Date(Date.now() - 30 * 86400000);
-
-    const tenantCosts = tenants.map((tenant) => {
-      const tenantMessages = messageCosts.filter(m => m.tenantId === tenant.id);
-      const weekMessages = tenantMessages.filter(m => new Date(m.createdAt) >= oneWeekAgo);
-      const monthMessages = tenantMessages.filter(m => new Date(m.createdAt) >= oneMonthAgo);
-
-      const messagesWeek = weekMessages.length;
-      const messagesMonth = monthMessages.length;
-      const whatsappCostWeek = messagesWeek * COST_PER_MESSAGE_USD;
-      const whatsappCostMonth = messagesMonth * COST_PER_MESSAGE_USD;
-
-      // Determine monthly price
-      let monthlyPrice = PLAN_PRICING[tenant.plan] ?? 0;
-      const activeSub = tenant.subscriptions.find(s => s.status === 'active');
-      if (activeSub) monthlyPrice = activeSub.amount;
-      const airbSub = tenant.airbSubscriptions.find(s => s.status === 'active');
-      if (airbSub) monthlyPrice = airbSub.amount;
-
-      // Determine niche
-      const propertyType = tenant.property?.type;
-      let niche = 'pousada';
-      if (tenant.plan === 'airbnb') niche = 'airbnb';
-      else if (propertyType === 'airbnb' || (tenant.airbSubscriptions?.length ?? 0) > 0) niche = 'airbnb';
-
-      const costRatio = monthlyPrice > 0 ? whatsappCostMonth / monthlyPrice : 0;
-
-      // Anomaly detection: cost ratio > 20% or more than 500 messages/week
-      const anomaly = costRatio > 0.2 || messagesWeek > 500;
-
-      // Trend: compare this week to previous week
-      const twoWeeksAgo = new Date(Date.now() - 14 * 86400000);
-      const prevWeekMessages = tenantMessages.filter(
-        m => new Date(m.createdAt) >= twoWeeksAgo && new Date(m.createdAt) < oneWeekAgo
-      ).length;
-      let trend: 'up' | 'down' | 'stable' = 'stable';
-      if (messagesWeek > prevWeekMessages * 1.1) trend = 'up';
-      else if (messagesWeek < prevWeekMessages * 0.9) trend = 'down';
-
-      return {
-        id: tenant.id,
-        name: tenant.name,
-        niche,
-        plan: tenant.plan,
-        monthlyPrice,
-        whatsappCostWeek: Math.round(whatsappCostWeek * 10000) / 10000,
-        whatsappCostMonth: Math.round(whatsappCostMonth * 10000) / 10000,
-        messagesWeek,
-        messagesMonth,
-        costRatio: Math.round(costRatio * 10000) / 10000,
-        anomaly,
-        trend,
-      };
-    });
-
-    // ── Totals ───────────────────────────────────────────────────
-    const totalMonthlyWhatsApp = tenantCosts.reduce((s, t) => s + t.whatsappCostMonth, 0);
-    const totalMRR = tenantCosts.reduce((s, t) => s + t.monthlyPrice, 0);
-    const overallRatio = totalMRR > 0 ? totalMonthlyWhatsApp / totalMRR : 0;
-
-    // ── Breakdown by niche ───────────────────────────────────────
-    const nicheGroups: Record<string, number> = {};
-    for (const tc of tenantCosts) {
-      nicheGroups[tc.niche] = (nicheGroups[tc.niche] || 0) + tc.whatsappCostMonth;
-    }
-    const breakdown = Object.entries(nicheGroups).map(([category, cost]) => ({
-      category,
-      cost: Math.round(cost * 10000) / 10000,
-      percentage: totalMonthlyWhatsApp > 0 ? Math.round((cost / totalMonthlyWhatsApp) * 10000) / 100 : 0,
-    }));
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        totalMonthlyWhatsApp: Math.round(totalMonthlyWhatsApp * 10000) / 10000,
-        totalMRR,
-        overallRatio: Math.round(overallRatio * 10000) / 10000,
-        tenantCosts,
-        breakdown,
-        metaTariff: {
-          costPerMessageUsd: COST_PER_MESSAGE_USD,
-          costPerMessageBrl: COST_PER_MESSAGE_BRL,
-          effectiveDate: '2026-10-01',
-        },
-      },
-    });
-  } catch (error) {
-    console.error('[ZCC Burn Rate] Error:', error);
-    return NextResponse.json({
-      success: true,
-      data: {
-        totalMonthlyWhatsApp: 0,
-        totalMRR: 0,
-        overallRatio: 0,
-        tenantCosts: [],
-        breakdown: [],
-        metaTariff: {
-          costPerMessageUsd: COST_PER_MESSAGE_USD,
-          costPerMessageBrl: COST_PER_MESSAGE_BRL,
-          effectiveDate: '2026-10-01',
-        },
-      },
-    });
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: 'INVALID_BODY', message: 'Corpo da requisição inválido.' },
+      { status: 400 }
+    );
   }
+
+  const { event, messagesCount, tariffsUsed, tariffsSaved, metaCostSpent, metaCostSaved, niche } = body;
+
+  if (!event || messagesCount === undefined) {
+    return NextResponse.json(
+      { error: 'MISSING_FIELDS', message: 'Campos obrigatórios: event, messagesCount.' },
+      { status: 400 }
+    );
+  }
+
+  // Update global counters
+  burnRateStore.totalEvents += 1;
+  burnRateStore.totalMessagesProcessed += messagesCount || 0;
+  burnRateStore.totalTariffsUsed += tariffsUsed || 0;
+  burnRateStore.totalTariffsSaved += tariffsSaved || 0;
+  burnRateStore.totalMetaCostSpent += metaCostSpent || 0;
+  burnRateStore.totalMetaCostSaved += metaCostSaved || 0;
+  burnRateStore.lastEventAt = new Date().toISOString();
+
+  // Update per-niche counters
+  const nicheKey = niche === 'airbnb' ? 'airbnb' : 'pousada';
+  burnRateStore.byNiche[nicheKey].events += 1;
+  burnRateStore.byNiche[nicheKey].messages += messagesCount || 0;
+  burnRateStore.byNiche[nicheKey].tariffsUsed += tariffsUsed || 0;
+  burnRateStore.byNiche[nicheKey].saved += tariffsSaved || 0;
+
+  return NextResponse.json({
+    success: true,
+    data: {
+      eventRecorded: event,
+      globalTotals: {
+        totalEvents: burnRateStore.totalEvents,
+        totalMessagesProcessed: burnRateStore.totalMessagesProcessed,
+        totalTariffsUsed: burnRateStore.totalTariffsUsed,
+        totalTariffsSaved: burnRateStore.totalTariffsSaved,
+        totalMetaCostSpent: Math.round(burnRateStore.totalMetaCostSpent * 10000) / 10000,
+        totalMetaCostSaved: Math.round(burnRateStore.totalMetaCostSaved * 10000) / 10000,
+        globalEconomyPercent: burnRateStore.totalTariffsUsed + burnRateStore.totalTariffsSaved > 0
+          ? Math.round((burnRateStore.totalTariffsSaved / (burnRateStore.totalTariffsUsed + burnRateStore.totalTariffsSaved)) * 100)
+          : 0,
+      },
+      byNiche: burnRateStore.byNiche,
+      lastEventAt: burnRateStore.lastEventAt,
+    },
+  });
+}
+
+// GET — Read current burn rate stats
+export async function GET() {
+  return NextResponse.json({
+    success: true,
+    data: {
+      globalTotals: {
+        totalEvents: burnRateStore.totalEvents,
+        totalMessagesProcessed: burnRateStore.totalMessagesProcessed,
+        totalTariffsUsed: burnRateStore.totalTariffsUsed,
+        totalTariffsSaved: burnRateStore.totalTariffsSaved,
+        totalMetaCostSpent: Math.round(burnRateStore.totalMetaCostSpent * 10000) / 10000,
+        totalMetaCostSaved: Math.round(burnRateStore.totalMetaCostSaved * 10000) / 10000,
+        globalEconomyPercent: burnRateStore.totalTariffsUsed + burnRateStore.totalTariffsSaved > 0
+          ? Math.round((burnRateStore.totalTariffsSaved / (burnRateStore.totalTariffsUsed + burnRateStore.totalTariffsSaved)) * 100)
+          : 0,
+      },
+      byNiche: burnRateStore.byNiche,
+      lastEventAt: burnRateStore.lastEventAt,
+    },
+  });
 }

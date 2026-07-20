@@ -29,5 +29,8 @@ export { AIStatusBadge, AIStatusDot, AIStatusCard } from './AIStatusBadge';
 export { MagicScanner } from './MagicScanner';
 export type { MagicScanResult } from './MagicScanner';
 
+// Zella Simulator (Sandbox)
+export { ZellaSimulator } from './ZellaSimulator';
+
 // AirB
 export { ZellaAirBTab } from './ZellaAirBTab';
