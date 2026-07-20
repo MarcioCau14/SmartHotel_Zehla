@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ArrowRight, LayoutDashboard, Shield } from 'lucide-react';
+import { Menu, X, ArrowRight, LayoutDashboard, Shield, Building2, Command } from 'lucide-react';
 import { ZellaLogo } from '@/components/brand/ZellaLogo';
 
 export function Header() {
@@ -31,8 +31,28 @@ export function Header() {
   ];
 
   const appLinks = [
-    { name: 'DDC', href: '/ddc', icon: LayoutDashboard, color: 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10' },
-    { name: 'ZCC', href: '/zcc', icon: Shield, color: 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10' },
+    {
+      name: 'DDC',
+      href: '/ddc',
+      icon: LayoutDashboard,
+      color: 'text-emerald-400 hover:text-emerald-300',
+      bgHover: 'hover:bg-emerald-500/10',
+      borderColor: 'border-emerald-500/20 hover:border-emerald-500/40',
+      bgActive: 'bg-emerald-500/8',
+      badge: 'Pousada & Airbnb',
+      badgeColor: 'bg-emerald-500/15 text-emerald-400',
+    },
+    {
+      name: 'ZCC',
+      href: '/zcc',
+      icon: Shield,
+      color: 'text-amber-400 hover:text-amber-300',
+      bgHover: 'hover:bg-amber-500/10',
+      borderColor: 'border-amber-500/20 hover:border-amber-500/40',
+      bgActive: 'bg-amber-500/8',
+      badge: 'Central Control',
+      badgeColor: 'bg-amber-500/15 text-amber-400',
+    },
   ];
 
   return (
@@ -64,17 +84,22 @@ export function Header() {
 
         {/* CTA Buttons (Desktop) */}
         <div className="hidden md:flex items-center gap-2">
-          {/* DDC + ZCC App Links */}
+          {/* DDC + ZCC App Links — Clearly Separated */}
           {appLinks.map((link) => {
             const Icon = link.icon;
             return (
               <Link
                 key={link.name}
                 href={link.href}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold tracking-wider rounded-lg border transition-all duration-200 ${link.color} border-white/[0.08] active:scale-95`}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold tracking-wider rounded-lg border transition-all duration-200 ${link.color} ${link.bgHover} ${link.borderColor} active:scale-95`}
+                title={link.badge}
               >
                 <Icon className="w-3.5 h-3.5" />
-                {link.name}
+                <span>{link.name}</span>
+                <span className={`hidden xl:inline-flex items-center text-[8px] font-semibold px-1.5 py-0.5 rounded-full ${link.badgeColor}`}>
+                  {link.name === 'DDC' ? <Building2 className="w-2.5 h-2.5 mr-0.5" /> : <Command className="w-2.5 h-2.5 mr-0.5" />}
+                  {link.badge}
+                </span>
               </Link>
             );
           })}
@@ -127,8 +152,8 @@ export function Header() {
                 </Link>
               ))}
               <div className="h-px bg-white/[0.06] my-2" />
-              {/* DDC + ZCC Mobile Links */}
-              <div className="flex gap-3">
+              {/* DDC + ZCC Mobile Links — Clearly Labeled */}
+              <div className="flex flex-col gap-3">
                 {appLinks.map((link) => {
                   const Icon = link.icon;
                   return (
@@ -136,10 +161,15 @@ export function Header() {
                       key={link.name}
                       href={link.href}
                       onClick={() => setIsOpen(false)}
-                      className={`flex-1 inline-flex items-center justify-center gap-2 text-sm font-bold py-2.5 rounded-xl border transition-all ${link.color} border-white/[0.08]`}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${link.color} ${link.bgHover} ${link.borderColor}`}
                     >
                       <Icon className="w-4 h-4" />
-                      {link.name}
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold">{link.name}</span>
+                        <span className={`text-[9px] font-semibold mt-0.5 px-1.5 py-0.5 rounded-full inline-block w-fit ${link.badgeColor}`}>
+                          {link.badge}
+                        </span>
+                      </div>
                     </Link>
                   );
                 })}
