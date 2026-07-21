@@ -27,6 +27,13 @@ interface QuickActionsBarProps {
   onQuickActionClick?: (actionId: string) => void;
   activeAction?: string;
   currentPlan?: PlanTier;
+  /** Dynamic counts — replaces hardcoded values */
+  dynamicCounts?: {
+    messages?: number;
+    guests?: number;
+    bookings?: number;
+    notifications?: number;
+  };
 }
 
 interface ActionItem {
@@ -37,15 +44,15 @@ interface ActionItem {
   minTier: PlanTier;
 }
 
-export function QuickActionsBar({ onActionClick, onQuickActionClick, activeAction, currentPlan = 'gratuito' }: QuickActionsBarProps) {
+export function QuickActionsBar({ onActionClick, onQuickActionClick, activeAction, currentPlan = 'gratuito', dynamicCounts }: QuickActionsBarProps) {
   const actions: ActionItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, minTier: 'gratuito' },
-    { id: 'messages', label: 'Mensagens', icon: MessageCircle, count: 12, minTier: 'gratuito' },
-    { id: 'guests', label: 'Hóspedes', icon: Users, count: 45, minTier: 'pro' },
+    { id: 'messages', label: 'Mensagens', icon: MessageCircle, count: dynamicCounts?.messages ?? 12, minTier: 'gratuito' },
+    { id: 'guests', label: 'Hóspedes', icon: Users, count: dynamicCounts?.guests ?? 45, minTier: 'pro' },
     { id: 'training', label: 'Treinamento', icon: GraduationCap, minTier: 'pro' },
-    { id: 'bookings', label: 'Reservas', icon: Calendar, count: 3, minTier: 'lite' },
+    { id: 'bookings', label: 'Reservas', icon: Calendar, count: dynamicCounts?.bookings ?? 3, minTier: 'lite' },
     { id: 'analytics', label: 'Analytics', icon: TrendingUp, minTier: 'pro' },
-    { id: 'notifications', label: 'Notificações', icon: Bell, count: 5, minTier: 'gratuito' },
+    { id: 'notifications', label: 'Notificações', icon: Bell, count: dynamicCounts?.notifications ?? 5, minTier: 'gratuito' },
     { id: 'settings', label: 'Configurações', icon: Settings, minTier: 'gratuito' },
     { id: 'airb', label: 'Zélla AirB', icon: Home, minTier: 'pro' },
   ];

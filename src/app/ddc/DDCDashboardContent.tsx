@@ -14,6 +14,7 @@ import { useDDCMetrics } from '@/lib/ddc/use-ddc-metrics';
 import { useAILiveFeed } from '@/lib/ddc/use-ai-live-feed';
 import { useGuestPipeline } from '@/lib/ddc/use-guest-pipeline';
 import { useDDCNotifications } from '@/lib/ddc/use-ddc-notifications';
+import { useDDCDeliveries } from '@/lib/ddc/use-ddc-deliveries';
 import { mockRevenueMetrics } from '@/lib/ddc/mock-data';
 import { adaptRevenueMetrics } from '@/lib/ddc/ddc-mapper';
 import type { AIStatus } from '@/types/ddc';
@@ -95,6 +96,7 @@ export default function DDCDashboardContent() {
 
   // Custom hooks
   const { metrics, aiStatus, isLoading } = useDDCMetrics('today', true);
+  const { deliveries } = useDDCDeliveries('month', true);
   const { conversations, selectedConversation, selectConversation, sendMessage, escalateConversation } = useAILiveFeed();
   const { allGuests } = useGuestPipeline();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useDDCNotifications(true);
@@ -703,7 +705,14 @@ export default function DDCDashboardContent() {
             {/* RIGHT PANEL — 2/3 width */}
             <div className="lg:col-span-2 space-y-5">
               <motion.div variants={fadeIn} initial="hidden" animate="visible">
-                <RevenueMetrics metrics={adaptRevenueMetrics(metrics) || mockRevenueMetrics} />
+                <RevenueMetrics
+                  metrics={adaptRevenueMetrics(metrics) || mockRevenueMetrics}
+                  deliveriesData={deliveries}
+                  aiStatusData={aiStatus}
+                  occupancyRate={metrics?.today ? undefined : undefined}
+                  aiAutonomy={deliveries?.oneShotResolution?.oneShotRate}
+                  guestSatisfaction={undefined}
+                />
               </motion.div>
               <motion.div variants={fadeIn} initial="hidden" animate="visible">
                 <AILiveFeed
@@ -1684,6 +1693,8 @@ export default function DDCDashboardContent() {
         notificationCount={unreadCount}
         onOpenNotifications={handleNotificationClick}
         currentPlan={currentPlan}
+        attendedToday={metrics?.today?.aiAttended ?? undefined}
+        conversionRate={metrics?.today?.conversionRate ?? undefined}
       />
 
       {/* Plan Upgrade Banner (LITE sees PRO nudge, PRO sees MAX nudge) */}
@@ -1753,6 +1764,12 @@ export default function DDCDashboardContent() {
               onQuickActionClick={handleQuickActionClick} 
               activeAction={activeTab} 
               currentPlan={currentPlan}
+              dynamicCounts={{
+                messages: conversations?.length ?? undefined,
+                guests: allGuests?.length ?? undefined,
+                bookings: deliveries?.planLimits?.messagesUsed ?? undefined,
+                notifications: unreadCount ?? undefined,
+              }}
             />
           </motion.div>
         )}

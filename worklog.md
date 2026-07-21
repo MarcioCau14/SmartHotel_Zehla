@@ -448,3 +448,33 @@ Stage Summary:
 - Message Bundling: REAL batching now (waits 3s, concatenates guest messages, ONE AI call)
 - PerformanceSnapshot: Multi-tenant capable
 - Zero new lint errors, dev server running clean
+
+---
+Task ID: 2
+Agent: Code Agent
+Task: Fix Zehla Tools — Rewrite to delegate to Phase 2 tool-calling.ts
+
+Work Log:
+- Read worklog.md for context on prior tasks
+- Read src/lib/brain/zehla-tools.ts — confirmed all 5 tools query the wrong `lead` table
+- Read src/lib/ai/tool-calling.ts — confirmed Phase 2 tools correctly query Property, Room, Booking, KnowledgeEntry
+- Checked import graph: zehla-tools.ts is ONLY imported by src/lib/brain/agent-orchestrator.ts (also dead Phase 1 code, not imported by anything)
+- Added `executeSingleTool()` export to tool-calling.ts — a utility that dispatches a single tool by name using the TOOL_EXECUTORS table
+- Completely rewrote zehla-tools.ts as a thin compatibility wrapper:
+  - Added large DEPRECATED header comment block pointing to Phase 2
+  - Kept the same export interface: `executeTool(toolName, args)` and `ZEHLA_TOOLS` array
+  - Added `resolveTenantId()` helper that maps legacy `pousada_id` to tenantId (tries as tenantId first, then as propertyId)
+  - Tool mapping:
+    - zehla_analisar_ocupacao → get_occupancy (includes date range compat fields)
+    - zehla_sugerir_preco → check_availability (maps data_checkin/data_checkout, defaults guestCount to 1)
+    - zehla_analisar_reviews → get_policies (closest match; notes that old tool queried wrong table)
+    - zehla_gerar_relatorio_diario → get_occupancy + get_room_details + get_policies (combined via Promise.all)
+    - zehla_buscar_dados_property → get_room_details
+  - Each handler wraps the Phase 2 result with backward-compatible field names
+  - ZEHLA_TOOLS definitions kept with [DEPRECATED] prefix in descriptions
+  - All responses include `fonte: 'zehla_tools_compat → <phase2_tool>'` for traceability
+- Lint results: zero new errors, only pre-existing warnings (no-explicit-any in backward-compat interface, unused import in tool-calling.ts)
+
+Files Modified:
+- src/lib/ai/tool-calling.ts — added `executeSingleTool()` export
+- src/lib/brain/zehla-tools.ts — complete rewrite as Phase 2 compatibility wrapper

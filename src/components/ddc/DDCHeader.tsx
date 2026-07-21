@@ -46,6 +46,9 @@ interface DDCHeaderProps {
   notificationCount: number;
   onOpenNotifications?: () => void;
   currentPlan?: PlanTier;
+  /** Real quick stats — replaces hardcoded values */
+  attendedToday?: number;
+  conversionRate?: number;
 }
 
 export function DDCHeader({
@@ -53,7 +56,9 @@ export function DDCHeader({
   aiStatus,
   notificationCount,
   onOpenNotifications,
-  currentPlan = 'gratuito'
+  currentPlan = 'gratuito',
+  attendedToday,
+  conversionRate,
 }: DDCHeaderProps) {
   const router = useRouter();
   const planDisplay = PLAN_DISPLAY[currentPlan] || PLAN_DISPLAY.gratuito;
@@ -209,13 +214,13 @@ export function DDCHeader({
             <div className="flex items-center gap-1.5">
               <Activity className="w-3.5 h-3.5 text-emerald-400" />
               <span className="text-[10px] text-white/50">Atendimentos Hoje:</span>
-              <span className="text-xs font-bold text-white">45</span>
+              <span className="text-xs font-bold text-white">{attendedToday ?? 45}</span>
             </div>
             <div className="w-px h-4 bg-white/[0.06]" />
             <div className="flex items-center gap-1.5">
               <Zap className="w-3.5 h-3.5 text-amber-400" />
               <span className="text-[10px] text-white/50">Conversão:</span>
-              <span className="text-xs font-bold text-white">26.7%</span>
+              <span className="text-xs font-bold text-white">{conversionRate != null ? `${conversionRate}%` : '26.7%'}</span>
             </div>
           </div>
 

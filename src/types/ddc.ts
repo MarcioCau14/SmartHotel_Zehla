@@ -581,5 +581,57 @@ export interface TrainingCardProps {
 }
 
 // ============================================================================
+// DELIVERIES DATA TYPES (Promessas Funcionais)
+// ============================================================================
+
+export interface DeliveriesData {
+  responseTime: {
+    avgSeconds: number;
+    targetSeconds: number;
+    withinTarget: boolean;
+  };
+  availabilityUptime: {
+    percentage: number;
+    label: string;
+  };
+  messageBundling: {
+    totalBundlesProcessed: number;
+    totalMessagesProcessed: number;
+    avgMessagesPerBundle: number;
+    savingsRate: number;
+    totalSavedBrl: number;
+  };
+  oneShotResolution: {
+    totalOneShots: number;
+    oneShotRate: number;
+    example: {
+      guestName: string;
+      intents: string[];
+      responsePreview: string;
+    };
+  };
+  metaShield: {
+    currentSpendBrl: number;
+    estimatedWithoutZellaBrl: number;
+    savingsPercent: number;
+    countdownDays: number;
+    costPerMessageBrl: number;
+  };
+  otaSavings: {
+    directBookingsCount: number;
+    estimatedCommissionSaved: number;
+    totalDirectRevenue: number;
+  };
+  planLimits: {
+    plan: string;
+    messagesLimit: number | null;
+    messagesUsed: number;
+    guestsLimit: number | null;
+    guestsAttended: number;
+    needsDisclaimer: boolean;
+  };
+}
+
+// ============================================================================
 // EXPORT ALL
 // ============================================================================

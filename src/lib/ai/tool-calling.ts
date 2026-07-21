@@ -454,6 +454,35 @@ const TOOL_EXECUTORS: Record<string, (tenantId: string, args: Record<string, unk
     executeGetOccupancy(tenantId),  
 };
 
+// ── Executa uma única ferramenta pelo nome ────────────────────────────
+
+/**
+ * Executa uma única ferramenta pelo nome, usando o dispatch TABLE TOOL_EXECUTORS.
+ * Útil para wrappers de compatibilidade (ex: zehla-tools.ts) que precisam
+ * chamar ferramentas Phase 2 individualmente sem o loop completo.
+ *
+ * @param toolName  Nome da ferramenta (ex: 'check_availability')
+ * @param tenantId  ID do tenant
+ * @param args      Argumentos da ferramenta
+ * @returns Resultado da execução
+ */
+export async function executeSingleTool(
+  toolName: string,
+  tenantId: string,
+  args: Record<string, unknown> = {},
+): Promise<ToolResult> {
+  const executor = TOOL_EXECUTORS[toolName];
+  if (!executor) {
+    return {
+      toolName,
+      success: false,
+      data: { error: `Ferramenta "${toolName}" não existe. Disponíveis: ${Object.keys(TOOL_EXECUTORS).join(', ')}` },
+      executionTimeMs: 0,
+    };
+  }
+  return executor(tenantId, args);
+}
+
 // ── Conversão de formatos ────────────────────────────────────────────
 
 /** Converte ToolDefinition (ZÉLLA) para AdapterToolDef (formato OpenAI-compatible) */

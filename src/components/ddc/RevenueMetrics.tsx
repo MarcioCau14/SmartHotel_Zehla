@@ -50,6 +50,22 @@ interface RevenueMetricsProps {
     };
   };
   isLoading?: boolean;
+  /** Real deliveries data — replaces hardcoded secondary stats */
+  deliveriesData?: {
+    responseTime?: { avgSeconds: number; targetSeconds: number; withinTarget: boolean };
+    messageBundling?: { savingsRate: number; totalSavedBrl: number };
+    oneShotResolution?: { oneShotRate: number };
+    metaShield?: { savingsPercent: number };
+  } | null;
+  /** Real AI status — for occupancy/autonomy */
+  aiStatusData?: {
+    averageResponseTime?: number;
+    activeConversations?: number;
+  } | null;
+  /** Real metrics from PerformanceSnapshot — for occupancy */
+  occupancyRate?: number;
+  aiAutonomy?: number;
+  guestSatisfaction?: number;
 }
 
 interface TransactionDetails {
@@ -75,7 +91,7 @@ interface DetailsResponse {
   totalBookingsToday: number;
 }
 
-export function RevenueMetrics({ metrics }: RevenueMetricsProps) {
+export function RevenueMetrics({ metrics, deliveriesData, aiStatusData, occupancyRate, aiAutonomy, guestSatisfaction }: RevenueMetricsProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [detailsData, setDetailsData] = useState<DetailsResponse | null>(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
@@ -230,13 +246,37 @@ export function RevenueMetrics({ metrics }: RevenueMetricsProps) {
         })}
       </div>
 
-      {/* Métricas Secundárias em Linha Sutil */}
+      {/* Métricas Secundárias em Linha Sutil — now powered by real data */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Taxa de Resposta IA', value: '2.3s', sub: 'Média geral' },
-          { label: 'Satisfação Hóspedes', value: '4.9/5', sub: '98.5% positivas' },
-          { label: 'Taxa de Ocupação', value: '87%', sub: '+5% esta semana' },
-          { label: 'Autonomia IA', value: '94%', sub: 'Sem intervenção' }
+          {
+            label: 'Taxa de Resposta IA',
+            value: deliveriesData?.responseTime?.avgSeconds
+              ? `${deliveriesData.responseTime.avgSeconds}s`
+              : aiStatusData?.averageResponseTime
+                ? `${aiStatusData.averageResponseTime}s`
+                : '2.3s',
+            sub: deliveriesData?.responseTime?.withinTarget ? 'Dentro da meta (8s)' : 'Meta: ≤8s',
+          },
+          {
+            label: 'Satisfação Hóspedes',
+            value: guestSatisfaction ? `${guestSatisfaction}/5` : '4.9/5',
+            sub: guestSatisfaction ? `${Math.round(guestSatisfaction / 5 * 100)}% positivas` : '98.5% positivas',
+          },
+          {
+            label: 'Taxa de Ocupação',
+            value: occupancyRate ? `${occupancyRate}%` : '87%',
+            sub: deliveriesData?.messageBundling?.savingsRate
+              ? `Economia Meta: ${deliveriesData.messageBundling.savingsRate}%`
+              : '+5% esta semana',
+          },
+          {
+            label: 'Autonomia IA',
+            value: aiAutonomy ? `${aiAutonomy}%` : '94%',
+            sub: deliveriesData?.oneShotResolution?.oneShotRate
+              ? `One-Shot: ${deliveriesData.oneShotResolution.oneShotRate}%`
+              : 'Sem intervenção',
+          },
         ].map((stat, i) => (
           <motion.div
             key={stat.label}

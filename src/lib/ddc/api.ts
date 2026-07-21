@@ -14,6 +14,7 @@ import type {
   ConversationFilters,
   BookingFilters,
   LearningStatsResponse,
+  DeliveriesData,
 } from '@/types/ddc';
 
 const API_BASE = '/api/ddc';
@@ -295,6 +296,15 @@ export function connectToLiveFeed(onMessage: (envelope: { type: 'initial' | 'upd
   });
 
   return eventSource;
+}
+
+// ============================================================================
+// DELIVERIES API (Promessas Funcionais)
+// ============================================================================
+
+export async function fetchDeliveries(period: string = 'month'): Promise<ApiResponse<DeliveriesData>> {
+  const response = await fetch(`${API_BASE}/deliveries?period=${period}`);
+  return handleResponse<DeliveriesData>(response);
 }
 
 // ============================================================================
