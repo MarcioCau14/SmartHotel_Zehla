@@ -164,26 +164,35 @@ export function HeroSection() {
               key={`cta-${niche}`}
               className="mt-7"
             >
-              {niche === 'airbnb' ? (
-                <a
-                  href="/parceiro"
-                  className="group inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 text-white font-semibold rounded-lg hover:from-amber-400 hover:to-amber-500 transition-all duration-200 shadow-2xl shadow-amber-500/30 hover:shadow-amber-500/50 text-sm active:scale-[0.98] hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#09090b]"
-                  style={shimmerStyle}
-                >
-                  Quero ser parceiro
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
-                </a>
+              {niche === 'pousada' ? (
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <button
+                    onClick={() => {
+                      const el = document.querySelector('#precos');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="group inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-600 text-white font-semibold rounded-lg hover:from-emerald-400 hover:to-emerald-500 transition-all duration-200 shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 text-sm active:scale-[0.98] hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#09090b]"
+                    style={shimmerStyle}
+                  >
+                    Conhecer planos
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+                  </button>
+                  <a
+                    href="/parceiro"
+                    className="group inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 text-white font-semibold rounded-lg hover:from-amber-400 hover:to-amber-500 transition-all duration-200 shadow-2xl shadow-amber-500/30 hover:shadow-amber-500/50 text-sm active:scale-[0.98] hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#09090b]"
+                    style={shimmerStyle}
+                  >
+                    Quero ser parceiro
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+                  </a>
+                </div>
               ) : (
                 <button
                   onClick={() => {
                     const el = document.querySelector('#precos');
                     if (el) el.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className={`group inline-flex items-center justify-center gap-2 px-8 py-3.5 font-semibold rounded-lg transition-all duration-200 shadow-2xl text-sm active:scale-[0.98] hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#09090b] ${
-                    niche === 'pousada'
-                      ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-600 text-white hover:from-emerald-400 hover:to-emerald-500 shadow-emerald-500/30 hover:shadow-emerald-500/50'
-                      : 'bg-gradient-to-r from-blue-500 via-blue-400 to-blue-600 text-white hover:from-blue-400 hover:to-blue-500 shadow-blue-500/30 hover:shadow-blue-500/50'
-                  }`}
+                  className="group inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-gradient-to-r from-blue-500 via-blue-400 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-400 hover:to-blue-500 transition-all duration-200 shadow-2xl shadow-blue-500/30 hover:shadow-blue-500/50 text-sm active:scale-[0.98] hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#09090b]"
                   style={shimmerStyle}
                 >
                   Conhecer planos

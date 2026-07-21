@@ -231,7 +231,21 @@ function formatCompactBRL(value: number): string {
 export default function DDCAirbnbContent() {
   const [activeTab, setActiveTab] = useState<AirbnbTab>('propriedades');
   const [calendarDays] = useState<CalendarDay[]>(generateCalendarDays);
-  const [scannedData, setScannedData] = useState<MagicScanResult | null>(null);
+  const [scannedData, setScannedData] = useState<MagicScanResult | null>({
+    propertyName: 'Apartamento Vista Mar — Copacabana',
+    amenities: ['Wi-Fi', 'Ar-condicionado', 'Cozinha completa', 'Vista mar', 'Estacionamento', 'Smart TV'],
+    checkInTime: '15:00',
+    checkOutTime: '11:00',
+    aiVoiceTone: 'Moderno e direto',
+    source: 'airbnb',
+    location: 'Copacabana, Rio de Janeiro',
+    rating: 4.96,
+    totalRooms: 2,
+    description: 'Apartamento com vista panorâmica para o mar em Copacabana. Perfeito para casais e famílias pequenas.',
+    priceRange: 'R$ 280 - R$ 550',
+    policies: 'Cancelamento flexível. Proibido festa. Check-in: 15h, Check-out: 11h.',
+    highlights: ['Vista mar panorâmica', '2 quartos', 'Copacabana', 'Metro próximo'],
+  });
 
   // Notification toggles (must be declared before any early return)
   const [notifNewReservation, setNotifNewReservation] = useState(true);

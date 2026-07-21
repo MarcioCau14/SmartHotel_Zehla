@@ -271,7 +271,21 @@ export default function DDCPousadaContent() {
   const [activeTab, setActiveTab] = useState<PousadaTab>('financeiro');
   const [trainingUrl, setTrainingUrl] = useState('');
   const [isTraining, setIsTraining] = useState(false);
-  const [scannedData, setScannedData] = useState<MagicScanResult | null>(null);
+  const [scannedData, setScannedData] = useState<MagicScanResult | null>({
+    propertyName: 'Pousada Serenity Paraty',
+    amenities: ['Wi-Fi', 'Café da manhã', 'Piscina', 'Estacionamento', 'Ar-condicionado', 'Vista mar'],
+    checkInTime: '14:00',
+    checkOutTime: '12:00',
+    aiVoiceTone: 'Acolhedor e profissional',
+    source: 'airbnb',
+    location: 'Paraty, RJ',
+    rating: 4.9,
+    totalRooms: 12,
+    description: 'Pousada encantadora no centro histórico de Paraty com vista para a baía.',
+    priceRange: 'R$ 280 - R$ 590',
+    policies: 'Cancelamento gratuito até 48h antes. Check-in: 14h, Check-out: 12h.',
+    highlights: ['Centro histórico', 'Vista baía', 'Café artesanal', 'Piscina natural'],
+  });
 
   // Computed metrics (declared before any early return — Rules of Hooks)
   const totalMRR = useMemo(() => {
