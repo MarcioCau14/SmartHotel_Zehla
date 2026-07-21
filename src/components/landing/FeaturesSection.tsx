@@ -20,6 +20,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { LinkInBioDemo } from './LinkInBioDemo';
+import { AirbnbImportMockup } from './AirbnbImportMockup';
 import { useNiche } from '@/contexts/NicheContext';
 import { getNicheContent } from '@/data/niche-content';
 
@@ -221,6 +222,11 @@ function FeatureMockup({ type }: { type: string }) {
 
   if (type === 'whatsapp') {
     return <WhatsAppMockup />;
+  }
+
+  // Airbnb Import — exclusive to Airbnb (Magic Onboarding)
+  if (type === 'airbnb-import') {
+    return <AirbnbImportMockup />;
   }
 
   // Link-in-Bio is EXCLUSIVE to Pousadas — never render for Airbnb

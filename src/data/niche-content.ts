@@ -33,7 +33,7 @@ export interface FeatureData {
   stats: { val: string; label: string; sublabel?: string; icon: string }[];
   pills: { text: string; accent?: boolean }[];
   bottomLine: string;
-  mockup: 'whatsapp' | 'linkinbio';
+  mockup: 'whatsapp' | 'linkinbio' | 'airbnb-import';
   reverse: boolean;
 }
 
@@ -444,7 +444,7 @@ const airbnbContent: NicheContent = {
         { text: 'Informações de vizinhança incluídas' },
       ],
       bottomLine: 'Sem configuração manual. A IA aprende com o seu anúncio. (PRO e MAX)',
-      mockup: 'whatsapp',
+      mockup: 'airbnb-import',
       reverse: true,
     },
   ],
