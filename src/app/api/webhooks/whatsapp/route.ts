@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { db } from '@/lib/db';
 import { META_VERIFY_TOKEN, META_APP_SECRET } from '@/lib/env';
+import { processIncomingMessage } from '@/lib/whatsapp-ai-responder';
+import { bufferMessage } from '@/lib/message-bundler';
+import { sendWhatsAppMessage } from '@/lib/whatsapp-send';
 
 /* eslint-disable @typescript-eslint/no-unused-vars -- Meta payload types kept as documentation */
 
@@ -549,10 +552,106 @@ export async function POST(request: NextRequest) {
       ` | text: ${msg.textContent ? `"${msg.textContent.substring(0, 80)}${msg.textContent.length > 80 ? '...' : ''}"` : '(non-text)'}`
     );
 
-    // TODO (Future): Enqueue message for AI processing
-    // - Create/lookup ConversationLog + ConversationMessage
-    // - Trigger Zélla AI response via Message Bundler
-    // - Send response back via Meta Send API
+    // ── Route message through AI pipeline (async, fire-and-forget) ──
+    // Never await AI processing in the webhook handler — Meta requires
+    // a fast HTTP 200 response and will retry if we block.
+    const tenantId = lookup.tenantId!; // Guaranteed non-null after checks above
+
+    if (msg.type === 'text' && msg.textContent) {
+      // ── Text message → buffer, process through AI, send response ──
+      const guestPhone = msg.from;
+      const guestName = msg.contactName || undefined;
+      const messageContent = msg.textContent;
+
+      bufferMessage(
+        {
+          tenantId,
+          guestPhone,
+          guestName,
+          messageContent,
+          messageFrom: 'whatsapp',
+        },
+        async (payload) => {
+          const result = await processIncomingMessage({
+            tenantId: payload.tenantId,
+            guestPhone: payload.guestPhone,
+            guestName: payload.guestName,
+            messageContent: payload.messageContent,
+            messageFrom: payload.messageFrom,
+          });
+
+          if (result.aiResponse) {
+            const sendResult = await sendWhatsAppMessage(guestPhone, result.aiResponse);
+            if (!sendResult.success) {
+              console.error(
+                `[WhatsApp Webhook] ❌ Failed to send AI response to ${guestPhone}: ${sendResult.error}`
+              );
+            }
+          }
+        }
+      ).catch((err) => {
+        console.error(
+          `[WhatsApp Webhook] ❌ Error in AI pipeline for tenant ${tenantId}, guest ${guestPhone}:`,
+          err
+        );
+      });
+    } else {
+      // ── Non-text message → log and record media entry, no AI processing ──
+      const mediaNote = `[Mídia recebida: ${msg.type}]`;
+      console.log(
+        `[WhatsApp Webhook] 📎 Non-text message from ${msg.from} (type: ${msg.type}) — recording media entry`
+      );
+
+      // Fire-and-forget: resolve guest, find/create conversation, save message
+      (async () => {
+        try {
+          const { resolveGuest } = await import('@/lib/bsuid-resolver');
+          const guest = await resolveGuest(tenantId, {
+            phone: msg.from,
+            profileName: msg.contactName || undefined,
+          });
+
+          let conversation = await db.conversationLog.findFirst({
+            where: {
+              tenantId,
+              guestId: guest.id,
+              status: 'active',
+            },
+          });
+
+          if (!conversation) {
+            conversation = await db.conversationLog.create({
+              data: {
+                tenantId,
+                guestId: guest.id,
+                guestName: guest.name,
+                guestPhone: msg.from,
+                status: 'active',
+                aiConfidence: 0,
+                metadata: '{}',
+              },
+            });
+          }
+
+          await db.conversationMessage.create({
+            data: {
+              conversationId: conversation.id,
+              from: 'guest',
+              content: mediaNote,
+              metadata: JSON.stringify({
+                mediaType: msg.type,
+                originalMessageId: msg.messageId,
+              }),
+            },
+          });
+        } catch (err) {
+          console.error(
+            `[WhatsApp Webhook] ❌ Error recording non-text message from ${msg.from}:`,
+            err
+          );
+        }
+      })();
+    }
 
     processingResults.push({
       messageId: msg.messageId,

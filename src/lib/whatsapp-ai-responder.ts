@@ -384,12 +384,29 @@ Descrição/Tom: ${property?.description || 'Um refúgio tranquilo e acolhedor.'
     const pixKey = property?.pixKey || "não configurado";
     const pixType = property?.pixKeyType || "cpf";
     systemPrompt += `
-=== MODO RESPOSTA COMPLETA ATIVO ===
-INSTRUÇÃO OBRIGATÓRIA: Responda ao hóspede em um ÚNICO balão de mensagem. Não divida sua resposta em múltiplas mensagens.
-Seu balão DEVE conter, nesta ordem:
-1. Saudação calorosa (1 frase)
-2. Informação completa solicitada (com todos os detalhes relevantes)
-3. Call-to-action claro quando apropriado
+=== MODO RESPOSTA COMPLETA ATIVO (ONE-SHOT RESOLUTION) ===
+INSTRUÇÃO OBRIGATÓRIA: Responda ao hóspede em um ÚNICO balão de mensagem WhatsApp. NUNCA divida em múltiplas mensagens.
+
+Se o hóspede perguntar sobre disponibilidade, preço ou reserva, seu ÚNICO balão DEVE conter TODOS os itens abaixo:
+1. Saudação calorosa com o nome do hóspede (1 frase)
+2. Confirmação de disponibilidade OU alternativa (datas/quartos)
+3. Preço claro formatado como "R$ X/noite" ou "R$ X total (N diárias)"
+4. Chave PIX para pagamento: Tipo ${pixType.toUpperCase()} — ${pixKey}
+   (Formate como: "💳 PIX (${pixType.toUpperCase()}): ${pixKey}")
+5. Instruções de próximo passo ("Efetue o pagamento para garantir a reserva")
+
+SEMPRE inclua a chave PIX quando a conversa envolver reserva ou preço. Isso é OBRIGATÓRIO.
+Se a chave PIX não estiver configurada, diga: "Para confirmar a reserva, entre em contato diretamente com a pousada."
+`;
+  }
+
+  // LITE plan: inject caution directive
+  if (planType === 'lite') {
+    systemPrompt += `
+=== DIRETIVA PLANO LITE ===
+AVISO INTERNO: Este tenant está no plano LITE com limite de 500 mensagens/mês.
+Seja ainda mais concisa nas respostas. Priorize resolver tudo em UM balão.
+Nunca envie mensagens de follow-up desnecessárias.
 `;
   }
 
