@@ -22,7 +22,6 @@ import { LinkInBioConfig } from '@/components/linkinbio/LinkInBioConfig';
 import { LinkInBioDDC } from '@/components/linkinbio/LinkInBioDDC';
 import { PlanGate, PlanUpgradeBanner } from '@/components/ddc/PlanGate';
 import { ZellaAirBTab } from '@/components/ddc/ZellaAirBTab';
-import { EntregasZellaTab } from '@/components/ddc/EntregasZellaTab';
 import { type PlanTier, DDC_TABS, hasAccess, getNextTier, PLAN_DISPLAY } from '@/lib/plan-features';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -820,15 +819,6 @@ export default function DDCDashboardContent() {
             </div>
           </div>
         </div>
-      );
-    }
-
-    // ── ENTREGAS (Promessas Entregues) ──────────────────────────
-    if (activeTab === 'entregas') {
-      return (
-        <motion.div variants={fadeIn} initial="hidden" animate="visible" className="space-y-4">
-          <EntregasZellaTab currentPlan={currentPlan} />
-        </motion.div>
       );
     }
 

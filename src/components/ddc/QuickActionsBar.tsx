@@ -18,8 +18,7 @@ import {
   Lock,
   Smartphone,
   Sparkles,
-  Home,
-  ShieldCheck
+  Home
 } from 'lucide-react';
 import { type PlanTier, hasAccess } from '@/lib/plan-features';
 
@@ -41,7 +40,6 @@ interface ActionItem {
 export function QuickActionsBar({ onActionClick, onQuickActionClick, activeAction, currentPlan = 'gratuito' }: QuickActionsBarProps) {
   const actions: ActionItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, minTier: 'gratuito' },
-    { id: 'entregas', label: 'Promessas', icon: ShieldCheck, minTier: 'gratuito' },
     { id: 'messages', label: 'Mensagens', icon: MessageCircle, count: 12, minTier: 'gratuito' },
     { id: 'guests', label: 'Hóspedes', icon: Users, count: 45, minTier: 'pro' },
     { id: 'training', label: 'Treinamento', icon: GraduationCap, minTier: 'pro' },

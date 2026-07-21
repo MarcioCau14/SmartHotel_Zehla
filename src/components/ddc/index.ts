@@ -34,6 +34,3 @@ export { ZellaSimulator } from './ZellaSimulator';
 
 // AirB
 export { ZellaAirBTab } from './ZellaAirBTab';
-
-// Entregas Zélla (Promessas Entregues)
-export { EntregasZellaTab } from './EntregasZellaTab';
