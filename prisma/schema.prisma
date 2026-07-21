@@ -1065,7 +1065,7 @@ model Notification {
 model PerformanceSnapshot {
   id                String @id @default(cuid())
   tenantId          String
-  date              String @unique // YYYY-MM-DD
+  date              String // YYYY-MM-DD
   aiResponseTime    Float // avg seconds
   conversionRate    Float // percentage
   guestSatisfaction Float // 0-5
@@ -1080,6 +1080,7 @@ model PerformanceSnapshot {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([tenantId, date])
   @@index([tenantId, date])
   @@map("performance_snapshots")
 }

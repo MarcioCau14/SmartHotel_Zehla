@@ -6,6 +6,7 @@ import { getEffectivePlan } from './plan-resolver';
 import { recordMetaCost, checkMetaBudget, classifyMessageType, isWithinServiceWindow, getServiceWindowRemaining } from './meta-cost-guard';
 import { resolveGuest } from './bsuid-resolver';
 import { loadLearnedPatternsForPrompt, learnFromConversation, loadAntiPatternsForPrompt } from './brain/conversation-learner';
+import { WhatsappPersonaLearner } from './brain/whatsapp-persona-learner';
 
 /**
  * Global helper to notify active SSE DDC connections about new message events.
@@ -447,6 +448,23 @@ Isso ajuda a capturar um telefone de contingência.
     }
   }
 
+  // 5.1.5. Inject learned persona (PRO+ plans only)
+  if (planType === 'pro' || planType === 'max') {
+    try {
+      const persona = await WhatsappPersonaLearner.getPersona(property?.id || tenantId);
+      systemPrompt += `
+=== PERSONA APRENDIDA ===
+Tom de voz: ${persona.tone}
+Expressões comuns: ${persona.commonExpressions.join(', ')}
+Regras de comunicação:
+${persona.rules.map((r: string) => `- ${r}`).join('\n')}
+Use estas expressões e tom naturalmente. NÃO mencione que isso foi aprendido.
+`;
+    } catch (err) {
+      console.error('[processIncomingMessage] Error loading persona (non-fatal):', err);
+    }
+  }
+
   // 5.2. Inject learned patterns (Recognize → Capture → Reuse loop)
   const learnedPatternsBlock = await loadLearnedPatternsForPrompt(tenantId);
   if (learnedPatternsBlock) {
@@ -469,6 +487,7 @@ Isso ajuda a capturar um telefone de contingência.
       tenantId,
       sessionId: conversationId,
       systemPrompt,
+      preClassifiedIntent: intentResult,
     });
     aiResponseText = cognitiveRes.response;
   } catch (err) {
@@ -576,9 +595,11 @@ Isso ajuda a capturar um telefone de contingência.
   // 10. Notify DDC about the AI's response
   await broadcastConversationUpdate(tenantId, conversationId);
 
-  // 11. Background Learning: analyze escalated conversations (non-blocking)
-  // (resolved conversations are learned when the owner marks them in the DDC)
-  if (nextStatus === 'escalated') {
+  // 11. Background Learning: analyze conversations (non-blocking)
+  // Escalated conversations: always learn (identify what went wrong → anti-patterns)
+  // Active conversations with 3+ messages: learn patterns (identify what worked → patterns)
+  const shouldLearn = nextStatus === 'escalated' || recentMessages.length >= 3;
+  if (shouldLearn) {
     learnFromConversation(tenantId, conversationId).catch(err =>
       console.error('[processIncomingMessage] Background learning failed:', err)
     );

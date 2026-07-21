@@ -292,3 +292,159 @@ Stage Summary:
   6. "Escudo Meta 2026" → meta-cost-guard tracking with budget enforcement
   7. "Zero OTA Commission" → Direct booking tracking with 15% savings calculation
   8. LITE plan disclaimer → Automatic in EntregasZellaTab + AI prompt directive
+
+---
+Task ID: 5
+Agent: Code Agent
+Task: Fix the Message Bundler to Actually Batch Messages
+Date: 2026-03-05
+
+## Problem
+The `bufferMessage()` function in `src/lib/message-bundler.ts` was calling `addMessageToBundle()` for cost tracking but then immediately calling `processor(payload)` — it never actually waited for the bundle window to close before processing. This meant every single message was processed separately by the AI, defeating the purpose of the bundler.
+
+## Changes Made
+
+### File Modified: `src/lib/message-bundler.ts` (lines 266–369)
+
+Replaced the "Compatibility Wrapper — bufferMessage" section (old lines 266–307) with "Compatibility Wrapper — bufferMessage (REAL BATCHING)" (new lines 266–369):
+
+1. **New `GuestPendingBuffer` interface** — stores per-guest message arrays, timer, and processor reference, keyed by `tenantId:guestPhone` instead of just `tenantId`. This ensures messages from different guests are never mixed.
+
+2. **New `guestBuffers` Map** — `Map<string, GuestPendingBuffer>` that tracks per-guest pending buffers separately from the cost-tracking `pendingBundles` Map.
+
+3. **New `flushAllGuestBuffers()` function** — force-clears all pending guest buffers (for testing or shutdown), cancelling their timers.
+
+4. **Rewritten `bufferMessage()` function** with real batching logic:
+   - First message from a guest: starts a 3s timer, stores the message in the guest buffer
+   - Subsequent messages from the same guest within 3s: added to the existing buffer (timer NOT reset)
+   - When the 3s timer fires: all buffered messages are concatenated with `\n` into a single `messageContent`, then the processor is called ONCE with the combined payload
+   - The first message's metadata (tenantId, guestPhone, guestName, messageFrom) is preserved, only messageContent is replaced with the concatenation
+   - Cost tracking via `addMessageToBundle()` is still called for each individual message for accurate stats
+
+## Impact
+- Multiple rapid-fire messages from the same guest within 3 seconds now produce ONE AI response instead of N separate responses
+- Meta tariff cost: 1 outbound instead of N outbound (real savings)
+- One-Shot Resolution is now actually achievable: the AI sees all the guest's questions at once and generates a comprehensive single response
+- Messages from different guests are never bundled together (keyed by tenantId:guestPhone)
+- Cost-tracking stats remain accurate (each inbound message is still recorded individually via `addMessageToBundle`)
+- Lint: zero new errors for message-bundler.ts
+
+---
+Task ID: 3
+Agent: Code Agent
+Task: Two Critical Cérebro Zélla Fixes (Persona + Learning + Intent Dedup)
+Date: 2026-03-05
+
+## Problems Fixed
+
+### Fix 1: WhatsappPersonaLearner was dead code in production
+`WhatsappPersonaLearner` was only connected to the Phase 1 `PromptBuilder` (dead code). The active Phase 2 pipeline in `whatsapp-ai-responder.ts` built the system prompt inline and NEVER called `WhatsappPersonaLearner`. Persona learning was completely inactive.
+
+### Fix 2: Learning only triggered on escalated conversations
+`learnFromConversation` was ONLY triggered when `nextStatus === 'escalated'`. The AI only learned from failures, never from successes. The Recognize→Capture→Reuse loop was broken.
+
+### Fix 3: Duplicate intent classification wasting tokens
+Intent was classified at line 348 in `whatsapp-ai-responder.ts` via `classifyIntent()`, then `executeCognitivePipeline` classified it AGAIN internally at line 79 of `cognitive-router.ts`. This wasted tokens and could produce inconsistent results.
+
+## Changes Made
+
+### File Modified: `src/lib/whatsapp-ai-responder.ts`
+
+1. **Added import** (line 9): `import { WhatsappPersonaLearner } from './brain/whatsapp-persona-learner';`
+
+2. **Added persona injection block** (lines 451-466): After training prompts block and before learned patterns injection, added section 5.1.5 that:
+   - Only activates for PRO and MAX plans
+   - Calls `WhatsappPersonaLearner.getPersona()` with property ID or tenant ID
+   - Injects learned persona (tone, common expressions, rules) into system prompt
+   - Instructs AI to use expressions and tone naturally without revealing they were learned
+   - Errors are non-fatal (logged but don't break the pipeline)
+
+3. **Changed learning trigger** (lines 597-605): Replaced `nextStatus === 'escalated'` with `nextStatus === 'escalated' || recentMessages.length >= 3`. Now:
+   - Escalated conversations: always learn (identify what went wrong → anti-patterns)
+   - Active conversations with 3+ messages: learn patterns (identify what worked → patterns)
+
+4. **Pass pre-classified intent to pipeline** (line 490): Added `preClassifiedIntent: intentResult` to the `executeCognitivePipeline` call, passing the intent already classified at line 348.
+
+### File Modified: `src/lib/ai/cognitive-router.ts`
+
+1. **Extended `CognitivePipelineRequest` interface** (line 22): Added `preClassifiedIntent?: IntentResult` optional field.
+
+2. **Skip double classification** (line 80): Changed `const intentResult = await classifyIntent(guardResult.sanitizedContent)` to `const intentResult = request.preClassifiedIntent || await classifyIntent(guardResult.sanitizedContent)`. Uses pre-classified intent if provided by caller, falls back to classifying internally.
+
+## Verification
+- Lint check: zero new errors or warnings in modified files (479 pre-existing issues in unrelated files)
+- Dev server: running normally, no compilation errors
+
+---
+Task ID: 4
+Agent: Code Agent
+Task: Add PIX Key and Availability Tools to the Active Tool Registry
+Date: 2026-03-05
+
+## Changes Made
+
+### File Modified: `src/lib/ai/tool-calling.ts`
+
+1. **Added `get_pix_info` tool definition** to `AVAILABLE_TOOLS` array (lines 119-127):
+   - Name: `get_pix_info`
+   - Description: "Retorna a chave PIX da pousada para pagamento de reservas. Use esta ferramenta quando o hóspede pedir informações de pagamento ou quando for enviar dados de reserva."
+   - No parameters required
+
+2. **Added `get_occupancy` tool definition** to `AVAILABLE_TOOLS` array (lines 128-136):
+   - Name: `get_occupancy`
+   - Description: "Retorna a taxa de ocupação atual da pousada: total de quartos, quartos ocupados, quartos disponíveis, e taxa de ocupação em %."
+   - No parameters required
+
+3. **Added `executeGetPixInfo` executor function** (lines 328-386):
+   - Queries `db.property.findFirst` with `select: { name, pixKey, pixKeyType, document }`
+   - Returns `{ hasPix: false, message }` if no PIX key configured
+   - Returns `{ hasPix: true, pixKey, pixKeyType, beneficiary, document }` if configured
+   - Returns error if property not found or on exception
+
+4. **Added `executeGetOccupancy` executor function** (lines 388-440):
+   - Queries `db.property.findFirst` with `include: { rooms: true }`
+   - Counts occupied rooms (status === 'ocupado' || 'reservado')
+   - Counts maintenance rooms (status === 'manutencao')
+   - Calculates available rooms and occupancy rate (%)
+   - Returns `{ property, totalRooms, occupiedRooms, availableRooms, maintenanceRooms, occupancyRate }`
+   - Returns error if no rooms found or on exception
+
+5. **Registered both tools in `TOOL_EXECUTORS` dispatch** (lines 451-454):
+   - `get_pix_info: async (tenantId) => executeGetPixInfo(tenantId)`
+   - `get_occupancy: async (tenantId) => executeGetOccupancy(tenantId)`
+
+6. **Updated doc comment** (lines 22-23): Already listed both new tools (was pre-populated by previous agent)
+
+### No Changes Needed: `src/lib/ai/cognitive-router.ts`
+
+The existing routing logic is correct — `cotacao_reserva` and `reserva_direta` intents already route to the tool calling pipeline with `AVAILABLE_TOOLS`, so both new tools are automatically available when those intents are triggered. No router changes required.
+
+## Verification
+- Lint: Only pre-existing warning (`AdapterToolCallDef` unused, line 32) — zero new errors or warnings
+- Both tools now part of `AVAILABLE_TOOLS` export, available to the cognitive router and AI pipeline
+
+---
+Task ID: 6
+Agent: Main Agent
+Task: Remove "Promessas Entregues" tab + Analyze Cérebro Zélla + Implement functional promises
+
+Work Log:
+- REMOVED "Promessas Entregues" (EntregasZellaTab) completely:
+  - Deleted src/components/ddc/EntregasZellaTab.tsx
+  - Removed from DDCDashboardContent.tsx, DDCPousadaContent.tsx, DDCAirbnbContent.tsx, QuickActionsBar.tsx, index.ts, plan-features.ts
+  - Confirmed NOT pushed to GitHub (was local only)
+- Deep analysis of Cérebro Zélla (15+ files) — discovered it's FRAGMENTED into 3 brains, not centralized
+- Fix 1: Reconnected WhatsappPersonaLearner to Phase 2 pipeline (whatsapp-ai-responder.ts)
+- Fix 2: Enabled learning on active conversations (not just escalated) — Recognize→Capture→Reuse loop now works
+- Fix 3: Eliminated duplicate intent classification — preClassifiedIntent passed to cognitive-router
+- Fix 4: Added get_pix_info and get_occupancy tools to tool-calling.ts (real Property/Room/Booking queries)
+- Fix 5: Message Bundler now actually batches messages per guest within 3s window (real One-Shot Resolution)
+- Fix 6: PerformanceSnapshot schema migrated to multi-tenant (@@unique([tenantId, date]))
+- Fix 7: metrics-snapshot cron now iterates ALL active tenants, not just the first one
+
+Stage Summary:
+- Cérebro Zélla unified: Persona Learner connected, Learning loop fixed, Intent deduplication
+- Tools: 5 tools now available (check_availability, get_room_details, get_policies, get_pix_info, get_occupancy)
+- Message Bundling: REAL batching now (waits 3s, concatenates guest messages, ONE AI call)
+- PerformanceSnapshot: Multi-tenant capable
+- Zero new lint errors, dev server running clean

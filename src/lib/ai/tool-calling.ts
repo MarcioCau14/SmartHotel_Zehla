@@ -19,6 +19,8 @@
  *   - check_availability: Consulta disponibilidade real de quartos  
  *   - get_room_details: Detalhes de todos os quartos  
  *   - get_policies: Políticas da pousada  
+ *   - get_pix_info: Chave PIX para pagamento de reservas  
+ *   - get_occupancy: Taxa de ocupação atual da pousada  
  *  
  * Arquitetura: o loop de tool calling é ORTOGONAL ao ZaosNeuroRouter.  
  * O router seleciona o provider; o tool calling loop gerencia a execução.  
@@ -114,6 +116,24 @@ export const AVAILABLE_TOOLS: ToolDefinition[] = [
       required: [],  
     },  
   },  
+  {
+    name: 'get_pix_info',
+    description: 'Retorna a chave PIX da pousada para pagamento de reservas. Use esta ferramenta quando o hóspede pedir informações de pagamento ou quando for enviar dados de reserva.',
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: 'get_occupancy',
+    description: 'Retorna a taxa de ocupação atual da pousada: total de quartos, quartos ocupados, quartos disponíveis, e taxa de ocupação em %.',
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+  },
 ];
 
 // ── Executores de ferramentas ────────────────────────────────────────
@@ -305,6 +325,120 @@ async function executeGetPolicies(tenantId: string): Promise<ToolResult> {
   }  
 }
 
+/**  
+ * Executa a ferramenta `get_pix_info`.  
+ */  
+async function executeGetPixInfo(tenantId: string): Promise<ToolResult> {  
+  const startTime = Date.now();
+
+  try {  
+    const property = await db.property.findFirst({  
+      where: { tenantId },  
+      select: {  
+        name: true,  
+        pixKey: true,  
+        pixKeyType: true,  
+        document: true,  
+      },  
+    });
+
+    if (!property) {  
+      return {  
+        toolName: 'get_pix_info',  
+        success: false,  
+        data: { error: 'Propriedade não encontrada.' },  
+        executionTimeMs: Date.now() - startTime,  
+      };  
+    }
+
+    if (!property.pixKey) {  
+      return {  
+        toolName: 'get_pix_info',  
+        success: true,  
+        data: {  
+          hasPix: false,  
+          message: 'Chave PIX não configurada. O hóspede deve entrar em contato diretamente com a pousada para pagamento.',  
+        },  
+        executionTimeMs: Date.now() - startTime,  
+      };  
+    }
+
+    return {  
+      toolName: 'get_pix_info',  
+      success: true,  
+      data: {  
+        hasPix: true,  
+        pixKey: property.pixKey,  
+        pixKeyType: property.pixKeyType || 'cpf',  
+        beneficiary: property.name,  
+        document: property.document || undefined,  
+      },  
+      executionTimeMs: Date.now() - startTime,  
+    };  
+  } catch (error) {  
+    return {  
+      toolName: 'get_pix_info',  
+      success: false,  
+      data: { error: `Erro: ${error instanceof Error ? error.message : 'desconhecido'}` },  
+      executionTimeMs: Date.now() - startTime,  
+    };  
+  }  
+}
+
+/**  
+ * Executa a ferramenta `get_occupancy`.  
+ */  
+async function executeGetOccupancy(tenantId: string): Promise<ToolResult> {  
+  const startTime = Date.now();
+
+  try {  
+    const property = await db.property.findFirst({  
+      where: { tenantId },  
+      include: { rooms: true },  
+    });
+
+    if (!property || property.rooms.length === 0) {  
+      return {  
+        toolName: 'get_occupancy',  
+        success: false,  
+        data: { error: 'Nenhum quarto cadastrado.' },  
+        executionTimeMs: Date.now() - startTime,  
+      };  
+    }
+
+    const totalRooms = property.rooms.length;  
+    const occupiedRooms = property.rooms.filter(  
+      r => r.status === 'ocupado' || r.status === 'reservado'  
+    ).length;  
+    const maintenanceRooms = property.rooms.filter(  
+      r => r.status === 'manutencao'  
+    ).length;  
+    const availableRooms = totalRooms - occupiedRooms - maintenanceRooms;  
+    const occupancyRate = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
+
+    return {  
+      toolName: 'get_occupancy',  
+      success: true,  
+      data: {  
+        property: property.name,  
+        totalRooms,  
+        occupiedRooms,  
+        availableRooms,  
+        maintenanceRooms,  
+        occupancyRate,  
+      },  
+      executionTimeMs: Date.now() - startTime,  
+    };  
+  } catch (error) {  
+    return {  
+      toolName: 'get_occupancy',  
+      success: false,  
+      data: { error: `Erro: ${error instanceof Error ? error.message : 'desconhecido'}` },  
+      executionTimeMs: Date.now() - startTime,  
+    };  
+  }  
+}
+
 // ── Dispatch de ferramentas ──────────────────────────────────────────
 
 const TOOL_EXECUTORS: Record<string, (tenantId: string, args: Record<string, unknown>) => Promise<ToolResult>> = {  
@@ -314,6 +448,10 @@ const TOOL_EXECUTORS: Record<string, (tenantId: string, args: Record<string, unk
     executeGetRoomDetails(tenantId),  
   get_policies: async (tenantId) =>  
     executeGetPolicies(tenantId),  
+  get_pix_info: async (tenantId) =>  
+    executeGetPixInfo(tenantId),  
+  get_occupancy: async (tenantId) =>  
+    executeGetOccupancy(tenantId),  
 };
 
 // ── Conversão de formatos ────────────────────────────────────────────

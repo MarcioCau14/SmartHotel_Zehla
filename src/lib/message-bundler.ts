@@ -264,12 +264,13 @@ export function flushAllBundles(): BundledMessage[] {
 }
 
 // =============================================================================
-// Compatibility Wrapper — bufferMessage
+// Compatibility Wrapper — bufferMessage (REAL BATCHING)
 // =============================================================================
-// Used by /api/webhook-whatsapp/route.ts
-// Buffers an incoming message and processes it after the bundle window closes.
-// If multiple messages arrive for the same tenant within 3 seconds, they are
-// bundled together and only 1 Meta tariff is charged.
+// Used by /api/webhooks/whatsapp/route.ts and /api/webhook-whatsapp/route.ts
+// Buffers incoming messages per guest, waits for the bundle window,
+// then processes ALL buffered messages as ONE concatenated payload.
+// This makes the bundler actually save Meta tariffs by generating
+// ONE AI response instead of N.
 // =============================================================================
 
 interface BufferMessagePayload {
@@ -282,25 +283,87 @@ interface BufferMessagePayload {
 
 type MessageProcessor = (payload: BufferMessagePayload) => Promise<unknown>;
 
+// Per-guest pending buffers (keyed by tenantId:guestPhone)
+interface GuestPendingBuffer {
+  messages: BufferMessagePayload[];
+  timer: ReturnType<typeof setTimeout>;
+  processor: MessageProcessor;
+}
+
+const guestBuffers = new Map<string, GuestPendingBuffer>();
+
 /**
- * Buffer a message for the bundler, then process it after the window closes.
- * This is the compatibility wrapper used by the WhatsApp webhook.
+ * Force-flush all pending guest buffers (for testing or shutdown).
+ */
+export function flushAllGuestBuffers(): void {
+  for (const [key, buffer] of guestBuffers) {
+    clearTimeout(buffer.timer);
+    guestBuffers.delete(key);
+  }
+}
+
+/**
+ * Buffer a message for the bundler. When multiple messages arrive from the
+ * same guest within the bundle window (3s), they are concatenated into a
+ * single payload and processed ONCE by the AI.
+ *
+ * This is the REAL batching — the AI sees all the guest's rapid-fire messages
+ * as ONE input and generates ONE comprehensive response (One-Shot Resolution).
  */
 export async function bufferMessage(
   payload: BufferMessagePayload,
   processor: MessageProcessor
 ): Promise<BundledMessage> {
-  const result = await addMessageToBundle(payload.tenantId, 'inbound', {
+  const bufferKey = `${payload.tenantId}:${payload.guestPhone}`;
+
+  const existing = guestBuffers.get(bufferKey);
+
+  if (existing) {
+    // Same guest sent another message within 3s — add to buffer
+    existing.messages.push(payload);
+
+    // Also record in the cost-tracking bundler
+    const costResult = await addMessageToBundle(payload.tenantId, 'inbound', {
+      intent: payload.messageContent?.slice(0, 50),
+    });
+
+    return costResult;
+  }
+
+  // First message from this guest — start 3s window
+  const messages: BufferMessagePayload[] = [payload];
+
+  const timer = setTimeout(async () => {
+    const buffer = guestBuffers.get(bufferKey);
+    if (!buffer) return;
+
+    guestBuffers.delete(bufferKey);
+
+    // Concatenate all buffered messages into one
+    const allMessages = buffer.messages;
+    const concatenatedContent = allMessages
+      .map(m => m.messageContent)
+      .join('\n');
+
+    // Use the first message's metadata, but with concatenated content
+    const batchPayload: BufferMessagePayload = {
+      ...allMessages[0],
+      messageContent: concatenatedContent,
+    };
+
+    try {
+      await buffer.processor(batchPayload);
+    } catch (err) {
+      console.error('[MessageBundler] Error processing batched message:', err);
+    }
+  }, BUNDLE_WINDOW_MS);
+
+  guestBuffers.set(bufferKey, { messages, timer, processor });
+
+  // Also record in the cost-tracking bundler
+  const costResult = await addMessageToBundle(payload.tenantId, 'inbound', {
     intent: payload.messageContent?.slice(0, 50),
   });
 
-  // Process the message after the bundle window closes
-  // The bundler already handles the timing via the internal timer
-  try {
-    await processor(payload);
-  } catch (err) {
-    console.error('[MessageBundler] Error processing bundled message:', err);
-  }
-
-  return result;
+  return costResult;
 }

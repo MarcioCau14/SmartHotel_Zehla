@@ -18,7 +18,8 @@ export interface CognitivePipelineRequest {
   message: string;  
   tenantId: string;  
   sessionId?: string;  
-  systemPrompt: string;  
+  systemPrompt: string;
+  preClassifiedIntent?: IntentResult; // Pass pre-classified intent to avoid double classification
 }
 
 export interface CognitivePipelineResult {  
@@ -75,8 +76,8 @@ export async function executeCognitivePipeline(
     };  
   }
 
-  // Etapa 2: Intent Classification  
-  const intentResult = await classifyIntent(guardResult.sanitizedContent);  
+  // Etapa 2: Intent Classification (skip if already classified by caller)
+  const intentResult = request.preClassifiedIntent || await classifyIntent(guardResult.sanitizedContent);  
   if (intentResult.intent === 'human_handover') {  
     const randomIndex = Math.floor(Math.random() * HUMAN_HANDOVER_RESPONSES.length);  
     return {  
