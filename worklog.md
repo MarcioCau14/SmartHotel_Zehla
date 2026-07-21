@@ -54,3 +54,29 @@ Stage Summary:
 - New AirbnbImportMockup component shows realistic iPhone 16 animation of the Airbnb import flow
 - POUSADA side completely unchanged
 - Deployed to Vercel: https://my-project-sigma-inky.vercel.app
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: 4 fixes — Remove PARCEIRO button from Airbnb, Create Airbnb Calculator, Fix DDC Dashboards, Deploy
+
+Work Log:
+- Fixed HeroSection.tsx: "Quero ser parceiro" button was showing for AIRBNB (inverted logic). Now shows ONLY for Pousada. Airbnb shows only "Conhecer planos" (blue).
+- Created smart Airbnb Calculator in SavingsCalculator.tsx with:
+  - Plan selector (PRO R$197/mês and MAX R$397/mês)
+  - 5 Airbnb-specific inputs: número de imóveis, diária média, ocupação mensal, comissão Airbnb (%), contatos WhatsApp
+  - Results: reservas diretas, ganho extra, comissão economizada, ROI anual
+  - Side-by-side comparison: "Só pelo Airbnb" vs "Com o Zélla" showing commission savings
+  - Detailed breakdown (expandable) with all calculation math
+  - Key insight card: "A conta que importa" — shows commission vs Zélla cost
+  - Methodology section with all assumptions explained
+- Pousada calculator kept intact (original 2-input calculator)
+- Fixed DDC dashboards: both /ddc/pousada and /ddc/airbnb were stuck on MagicScanner because scannedData initialized as null. Now initialized with default MagicScanResult mock data so dashboards open directly.
+- All 3 changes browser-verified with Agent Browser
+- Committed, pushed to GitHub, deployed to Vercel production
+
+Stage Summary:
+- "Quero ser parceiro" button exclusive to Pousada (removed from Airbnb hero)
+- Smart Airbnb calculator with commission savings, direct booking ROI, plan selector
+- DDC dashboards now open directly without Magic Scanner blocking
+- Deployed to Vercel: https://my-project-sigma-inky.vercel.app
