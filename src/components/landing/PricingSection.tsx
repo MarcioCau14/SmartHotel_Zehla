@@ -1,7 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRef, useState, useMemo } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import {
   Check,
@@ -17,6 +16,8 @@ import {
   Gift,
   Loader2,
   Building2,
+  CalendarCheck2,
+  KeyRound,
 } from 'lucide-react';
 import { useNiche } from '@/contexts/NicheContext';
 import { getNicheContent } from '@/data/niche-content';
@@ -34,7 +35,9 @@ interface Plan {
   name: string;
   nameShort: string;
   badge: string;
+  badgeAirbnb?: string;
   badgeColor: string;
+  badgeColorAirbnb?: string;
   icon: typeof Zap;
   iconBg: string;
   iconColor: string;
@@ -46,14 +49,21 @@ interface Plan {
   descAirbnb?: string;
   cta: string;
   ctaStyle: string;
+  ctaStyleAirbnb?: string;
   popular: boolean;
+  popularAirbnb?: boolean;
   idealParaPousada?: string;
   idealParaAirbnb?: string;
   features: PlanFeature[];
   featuresAirbnb?: PlanFeature[];
+  /** Which niches see this plan */
+  niches: Array<'pousada' | 'airbnb'>;
+  /** Show 7-day free trial badge (Airbnb PRO & MAX) */
+  showTrialBadge?: boolean;
 }
 
 const plans: Plan[] = [
+  // ─── GRATUITO — Pousada only ────────────────────────────────
   {
     id: 'gratuito',
     name: 'Gratuito',
@@ -67,23 +77,24 @@ const plans: Plan[] = [
     priceCartao: 0,
     priceLabel: 'Grátis',
     desc: 'Comece a testar o Zélla na sua pousada sem custo nenhum. Veja a IA atendendo seus hóspedes por 7 dias.',
-    descAirbnb: 'Comece a testar o Zélla AirB no seu imóvel sem custo nenhum. Veja a IA atendendo seus hóspedes por 7 dias.',
     cta: 'Começar Trial Grátis',
     ctaStyle: 'border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.06]',
     popular: false,
     idealParaPousada: '1 pousada',
-    idealParaAirbnb: '1 imóvel',
+    niches: ['pousada'],
     features: [
       { text: '5 atendimentos dentro dos 7 dias', included: true },
-      { text: 'Link-in-bio basico', included: true },
+      { text: 'Link-in-bio básico', included: true },
       { text: '100 mensagens nos 7 dias', included: true },
-      { text: '7 dias de teste gratis', included: true },
-      { text: 'Dashboard basico', included: true },
-      { text: 'Marca d\'agua ZELLA obrigatoria', included: true },
+      { text: '7 dias de teste grátis', included: true },
+      { text: 'Dashboard básico', included: true },
+      { text: 'Marca d\'água ZÉLLA obrigatória', included: true },
       { text: 'Atendimento 24h nos 7 dias', included: true },
       { text: 'IA respondendo automaticamente 24h', included: true },
     ],
   },
+
+  // ─── LITE — Pousada only ────────────────────────────────────
   {
     id: 'lite',
     name: 'LITE',
@@ -97,24 +108,12 @@ const plans: Plan[] = [
     priceCartao: 247,
     priceLabel: 'R$197',
     desc: 'Tudo que sua pousada precisa para vender mais pelo WhatsApp. IA 24/7, PIX integrado e dashboard completo.',
-    descAirbnb: 'Tudo que seu imóvel precisa para atender hóspedes pelo WhatsApp. IA 24/7, check-in virtual e dashboard completo.',
     cta: 'Assinar LITE via PIX',
     ctaStyle: 'border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.06]',
     popular: false,
     idealParaPousada: '1–2 pousadas',
-    idealParaAirbnb: '1–2 imóveis',
+    niches: ['pousada'],
     features: [
-      { text: '50 hospedes atendidos por mes', included: true },
-      { text: '500 mensagens mensais', included: true },
-      { text: 'Recarga de 250 mensagens por R$97 (se precisar)', included: true },
-      { text: 'WhatsApp IA 24/7 com tom personalizado', included: true },
-      { text: 'Checkout PIX integrado (Mercado Pago)', included: true },
-      { text: 'Dashboard de metricas completo', included: true },
-      { text: 'Relatorios semanais por e-mail', included: true },
-      { text: 'Sem marca d\'agua ZELLA', included: true },
-      { text: 'Respostas otimizadas para economia', included: true },
-    ],
-    featuresAirbnb: [
       { text: '50 hóspedes atendidos por mês', included: true },
       { text: '500 mensagens mensais', included: true },
       { text: 'Recarga de 250 mensagens por R$97 (se precisar)', included: true },
@@ -126,12 +125,16 @@ const plans: Plan[] = [
       { text: 'Respostas otimizadas para economia', included: true },
     ],
   },
+
+  // ─── PRO — Both niches ──────────────────────────────────────
   {
     id: 'pro',
     name: 'PRO',
     nameShort: 'Pro',
     badge: 'Mais Popular',
+    badgeAirbnb: '7 Dias Grátis',
     badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+    badgeColorAirbnb: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
     icon: Star,
     iconBg: 'from-emerald-500/20 to-emerald-900/10',
     iconColor: 'text-emerald-400',
@@ -143,23 +146,14 @@ const plans: Plan[] = [
     descAirbnb: 'Para anfitriões que querem escalar sem limites. Mensagens ilimitadas, Magic Onboarding e suporte prioritário.',
     cta: 'Assinar PRO via Cartão',
     ctaStyle: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-400 hover:to-emerald-500 shadow-lg shadow-emerald-500/25',
+    ctaStyleAirbnb: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-400 hover:to-blue-500 shadow-lg shadow-blue-500/25',
     popular: true,
+    popularAirbnb: true,
     idealParaPousada: '3–5 pousadas',
     idealParaAirbnb: '3–5 imóveis',
+    niches: ['pousada', 'airbnb'],
+    showTrialBadge: true,
     features: [
-      { text: 'Hóspedes ilimitados', included: true },
-      { text: 'Link-in-bio profissional liberado', included: true },
-      { text: 'Mensagens ilimitadas (sem recargas)', included: true },
-      { text: 'WhatsApp IA com tom 100% personalizado', included: true },
-      { text: 'Checkout Cartão integrado', included: true },
-      { text: 'Dashboard completo', included: true },
-      { text: 'Sugestoes de precos inteligentes', included: true },
-      { text: 'Campanhas automatizadas', included: true },
-      { text: 'Analise de sentimento', included: true },
-      { text: 'Suporte prioritario', included: true },
-      { text: 'Economia inteligente nas mensagens', included: true },
-    ],
-    featuresAirbnb: [
       { text: 'Hóspedes ilimitados', included: true },
       { text: 'Link-in-bio profissional liberado', included: true },
       { text: 'Mensagens ilimitadas (sem recargas)', included: true },
@@ -172,13 +166,31 @@ const plans: Plan[] = [
       { text: 'Suporte prioritário', included: true },
       { text: 'Economia inteligente nas mensagens', included: true },
     ],
+    featuresAirbnb: [
+      { text: 'Hóspedes ilimitados', included: true },
+      { text: 'Mensagens ilimitadas (sem recargas)', included: true },
+      { text: 'WhatsApp IA com tom 100% personalizado', included: true },
+      { text: 'Magic Onboarding — resposta automática a novas reservas', included: true },
+      { text: 'Checkout Cartão integrado', included: true },
+      { text: 'Dashboard completo', included: true },
+      { text: 'Sugestões de preços inteligentes', included: true },
+      { text: 'Campanhas automatizadas', included: true },
+      { text: 'Análise de sentimento', included: true },
+      { text: 'Suporte prioritário', included: true },
+      { text: 'Economia inteligente nas mensagens', included: true },
+      { text: '7 dias grátis para testar', included: true },
+    ],
   },
+
+  // ─── MAX — Both niches ──────────────────────────────────────
   {
     id: 'max',
     name: 'MAX',
     nameShort: 'Max',
     badge: 'High End',
+    badgeAirbnb: '7 Dias Grátis',
     badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+    badgeColorAirbnb: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
     icon: Crown,
     iconBg: 'from-amber-500/20 to-amber-900/10',
     iconColor: 'text-amber-400',
@@ -190,9 +202,13 @@ const plans: Plan[] = [
     descAirbnb: 'Para portfólios grandes e imóveis de alto padrão. Suporte VIP, Calendar Sync e recursos exclusivos.',
     cta: 'Assinar MAX via Cartão',
     ctaStyle: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/25',
+    ctaStyleAirbnb: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-500 hover:to-blue-600 shadow-lg shadow-blue-500/25',
     popular: false,
+    popularAirbnb: false,
     idealParaPousada: '6+ pousadas',
     idealParaAirbnb: '6+ imóveis',
+    niches: ['pousada', 'airbnb'],
+    showTrialBadge: true,
     features: [
       { text: 'Tudo do plano PRO', included: true },
       { text: 'Link-in-bio profissional liberado', included: true },
@@ -208,7 +224,24 @@ const plans: Plan[] = [
       { text: 'SLA garantido 99.9%', included: true },
       { text: 'Treinamento mensal com equipe', included: true },
     ],
+    featuresAirbnb: [
+      { text: 'Tudo do plano PRO', included: true },
+      { text: 'Mensagens ilimitadas (sem recargas)', included: true },
+      { text: 'Calendar Sync — sincronização multi-plataforma', included: true },
+      { text: 'Ajuste de preços inteligente avançado', included: true },
+      { text: 'Dashboard completo', included: true },
+      { text: 'Split de pagamentos automático', included: true },
+      { text: 'Atendimentos 24 por 7', included: true },
+      { text: 'Integrações customizadas (Airbnb, Booking, Vrbo)', included: true },
+      { text: 'Gerente de conta IA Dedicado para Treinamento', included: true },
+      { text: 'Consultoria mensal com a equipe', included: true },
+      { text: 'Onboarding personalizado', included: true },
+      { text: 'SLA garantido 99.9%', included: true },
+      { text: '7 dias grátis para testar', included: true },
+    ],
   },
+
+  // ─── PARCEIRO ZÉLLA — Pousada only (Link-in-Bio exclusivo) ──
   {
     id: 'parceiro',
     name: 'PARCEIRO ZÉLLA',
@@ -223,12 +256,11 @@ const plans: Plan[] = [
     priceLabel: 'R$247',
     onlyCard: false,
     desc: 'Plano PRO completo por R$247/mês — preço congelado por 24 meses + selo exclusivo de Parceiro Zélla no seu perfil Link-in-Bio. Atendimento e mensagens ilimitados.',
-    descAirbnb: 'Plano PRO completo por R$247/mês — preço congelado por 24 meses + selo exclusivo de Parceiro Zélla no seu perfil Link-in-Bio. Atendimento e mensagens ilimitados.',
     cta: 'Garantir Vaga de Parceiro',
     ctaStyle: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/30',
     popular: true,
     idealParaPousada: '1–5 pousadas',
-    idealParaAirbnb: '1–5 imóveis',
+    niches: ['pousada'],
     features: [
       { text: 'Plano PRO completo — R$247/mês', included: true },
       { text: 'Preço congelado por 24 meses', included: true },
@@ -254,7 +286,7 @@ export function PricingSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const [paymentMode, setPaymentMode] = useState<PaymentMode>('pix');
-  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [loadingPlan] = useState<string | null>(null);
   const [checkoutModal, setCheckoutModal] = useState<{
     open: boolean;
     planId: string;
@@ -262,9 +294,23 @@ export function PricingSection() {
     price: number;
     paymentMethod: 'pix' | 'cartao';
   }>({ open: false, planId: '', planName: '', price: 0, paymentMethod: 'pix' });
-  const router = useRouter();
   const { niche, isPousada, isAirbnb } = useNiche();
   const content = getNicheContent(niche);
+
+  // Filter plans by current niche
+  const visiblePlans = useMemo(
+    () => plans.filter(p => p.niches.includes(niche)),
+    [niche]
+  );
+
+  // Dynamic grid cols based on plan count
+  const gridCols = useMemo(() => {
+    const count = visiblePlans.length;
+    if (count <= 2) return 'grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto';
+    if (count === 3) return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto';
+    if (count === 4) return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto';
+    return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5';
+  }, [visiblePlans.length]);
 
   const handleSubscribe = (planId: string, forcedPaymentMethod?: string) => {
     const plan = plans.find(p => p.id === planId);
@@ -290,19 +336,28 @@ export function PricingSection() {
           transition={{ duration: 0.7 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6">
-            <CreditCard className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-emerald-400 text-xs font-medium">Planos & Preços</span>
+          <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border mb-6 ${
+            isPousada
+              ? 'bg-emerald-500/10 border-emerald-500/20'
+              : 'bg-blue-500/10 border-blue-500/20'
+          }`}>
+            <CreditCard className={`w-3.5 h-3.5 ${isPousada ? 'text-emerald-400' : 'text-blue-400'}`} />
+            <span className={`text-xs font-medium ${isPousada ? 'text-emerald-400' : 'text-blue-400'}`}>
+              Planos & Preços
+            </span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6">
             Escolha o plano ideal
             <br />
-            <span className="text-emerald-400 font-bold">
-              {niche === 'pousada' ? 'para sua pousada' : 'para seus imóveis'}
+            <span className={`font-bold ${isPousada ? 'text-emerald-400' : 'text-blue-400'}`}>
+              {isPousada ? 'para sua pousada' : 'para seus imóveis'}
             </span>
           </h2>
           <p className="text-neutral-400 text-lg max-w-xl mx-auto mb-4">
-            Comece grátis por 7 dias. Sem cartão de crédito, sem compromisso. Cancele quando quiser.
+            {isAirbnb
+              ? 'Teste grátis por 7 dias. Sem cartão de crédito, sem compromisso. Cancele quando quiser.'
+              : 'Comece grátis por 7 dias. Sem cartão de crédito, sem compromisso. Cancele quando quiser.'
+            }
           </p>
 
           {/* Pricing Focus */}
@@ -313,207 +368,269 @@ export function PricingSection() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.4, ease: easeOut }}
-              className="text-emerald-400/80 text-sm max-w-lg mx-auto mb-10 flex items-center justify-center gap-1.5"
+              className={`text-sm max-w-lg mx-auto mb-10 flex items-center justify-center gap-1.5 ${
+                isPousada ? 'text-emerald-400/80' : 'text-blue-400/80'
+              }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>
-                Foco em <strong className="text-emerald-400">{content.pricing.focusLabel}</strong> — {content.pricing.focusDesc}
+                Foco em <strong className={isPousada ? 'text-emerald-400' : 'text-blue-400'}>{content.pricing.focusLabel}</strong> — {content.pricing.focusDesc}
               </span>
             </motion.p>
           </AnimatePresence>
 
-          {/* Payment Toggle */}
-          <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-white/[0.04] border border-white/[0.06]">
-            <button
-              onClick={() => setPaymentMode('pix')}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 cursor-pointer ${
-                paymentMode === 'pix'
-                  ? 'toggle-pix-active shadow-lg shadow-emerald-500/20'
-                  : 'text-neutral-400 hover:text-neutral-200'
-              }`}
-            >
-              <QrCode className="w-4 h-4" />
-              PIX
-              <span className="text-[10px] opacity-70">Economize</span>
-            </button>
-            <button
-              onClick={() => setPaymentMode('cartao')}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 cursor-pointer ${
-                paymentMode === 'cartao'
-                  ? 'toggle-card-active shadow-lg'
-                  : 'text-neutral-400 hover:text-neutral-200'
-              }`}
-            >
-              <CreditCard className="w-4 h-4" />
-              Cartão
-            </button>
-          </div>
+          {/* Payment Toggle — hidden for Airbnb (all plans are card-only) */}
+          {isPousada && (
+            <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+              <button
+                onClick={() => setPaymentMode('pix')}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 cursor-pointer ${
+                  paymentMode === 'pix'
+                    ? 'toggle-pix-active shadow-lg shadow-emerald-500/20'
+                    : 'text-neutral-400 hover:text-neutral-200'
+                }`}
+              >
+                <QrCode className="w-4 h-4" />
+                PIX
+                <span className="text-[10px] opacity-70">Economize</span>
+              </button>
+              <button
+                onClick={() => setPaymentMode('cartao')}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 cursor-pointer ${
+                  paymentMode === 'cartao'
+                    ? 'toggle-card-active shadow-lg'
+                    : 'text-neutral-400 hover:text-neutral-200'
+                }`}
+              >
+                <CreditCard className="w-4 h-4" />
+                Cartão
+              </button>
+            </div>
+          )}
         </motion.div>
 
+        {/* Airbnb 7-day trial banner */}
+        <AnimatePresence mode="wait">
+          {isAirbnb && (
+            <motion.div
+              key="airbnb-trial-banner"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.5 }}
+              className="max-w-2xl mx-auto mb-12 px-5 py-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center gap-3"
+            >
+              <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center shrink-0">
+                <KeyRound className="w-5 h-5 text-blue-400" />
+              </div>
+              <div>
+                <p className="text-white font-semibold text-sm">7 dias grátis em todos os planos</p>
+                <p className="text-blue-300/70 text-xs mt-0.5">Teste sem compromisso. Sem cartão de crédito. Cancele quando quiser.</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Pricing Cards Grid */}
-        <div className={`pricing-grid grid gap-6 mb-20 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5`}>
-          {plans.map((plan, i) => {
-            const activePaymentMethod = plan.onlyCard ? 'cartao' : paymentMode;
-            const price = activePaymentMethod === 'pix' ? plan.pricePix : plan.priceCartao;
-            const savings = plan.priceCartao > 0 && !plan.onlyCard ? plan.priceCartao - plan.pricePix : 0;
-            const Icon = plan.icon;
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={niche}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className={`pricing-grid grid gap-6 mb-20 ${gridCols}`}
+          >
+            {visiblePlans.map((plan, i) => {
+              const activePaymentMethod = plan.onlyCard ? 'cartao' : paymentMode;
+              const price = activePaymentMethod === 'pix' ? plan.pricePix : plan.priceCartao;
+              const savings = plan.priceCartao > 0 && !plan.onlyCard ? plan.priceCartao - plan.pricePix : 0;
+              const Icon = plan.icon;
+              const isPopular = isAirbnb ? (plan.popularAirbnb ?? plan.popular) : plan.popular;
+              const activeCtaStyle = isAirbnb && plan.ctaStyleAirbnb ? plan.ctaStyleAirbnb : plan.ctaStyle;
+              const activeBadge = isAirbnb && plan.badgeAirbnb ? plan.badgeAirbnb : plan.badge;
+              const activeBadgeColor = isAirbnb && plan.badgeColorAirbnb ? plan.badgeColorAirbnb : plan.badgeColor;
 
-            return (
-              <motion.div
-                key={plan.id}
-                initial={{ opacity: 0, y: 40 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: i * 0.12 }}
-                className={`relative rounded-2xl p-[1px] transition-all duration-300 ${
-                  plan.popular
-                    ? 'pricing-glow-emerald'
-                    : plan.id === 'max'
-                    ? 'pricing-glow-amber'
-                    : ''
-                }`}
-                style={{
-                  background: plan.popular
-                    ? 'linear-gradient(135deg, #10B981, #8B5CF6, #10B981)'
-                    : plan.id === 'max'
-                    ? 'linear-gradient(135deg, #F59E0B, #EF4444, #F59E0B)'
-                    : plan.id === 'parceiro'
-                    ? 'linear-gradient(135deg, #F59E0B, #D97706, #F59E0B)'
-                    : 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
-                }}
-              >
-                <div className="relative rounded-2xl bg-[#0a0a0a] p-7 h-full flex flex-col">
-                  {/* Popular badge */}
-                  {plan.popular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-bold shadow-lg shadow-emerald-500/30">
-                      Mais Popular
-                    </div>
-                  )}
+              return (
+                <motion.div
+                  key={plan.id}
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.6, delay: i * 0.12 }}
+                  className={`relative rounded-2xl p-[1px] transition-all duration-300 ${
+                    isPopular
+                      ? isPousada
+                        ? 'pricing-glow-emerald'
+                        : 'pricing-glow-blue'
+                      : plan.id === 'max'
+                      ? isPousada
+                        ? 'pricing-glow-amber'
+                        : 'pricing-glow-blue'
+                      : ''
+                  }`}
+                  style={{
+                    background: isPopular
+                      ? isPousada
+                        ? 'linear-gradient(135deg, #10B981, #8B5CF6, #10B981)'
+                        : 'linear-gradient(135deg, #3B82F6, #8B5CF6, #3B82F6)'
+                      : plan.id === 'max'
+                      ? isPousada
+                        ? 'linear-gradient(135deg, #F59E0B, #EF4444, #F59E0B)'
+                        : 'linear-gradient(135deg, #2563EB, #7C3AED, #2563EB)'
+                      : plan.id === 'parceiro'
+                      ? 'linear-gradient(135deg, #F59E0B, #D97706, #F59E0B)'
+                      : 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+                  }}
+                >
+                  <div className="relative rounded-2xl bg-[#0a0a0a] p-7 h-full flex flex-col">
+                    {/* Popular / Trial badge */}
+                    {isPopular && (
+                      <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-white text-xs font-bold shadow-lg ${
+                        isPousada
+                          ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-500/30'
+                          : 'bg-gradient-to-r from-blue-500 to-blue-600 shadow-blue-500/30'
+                      }`}>
+                        {isAirbnb ? '7 Dias Grátis' : 'Mais Popular'}
+                      </div>
+                    )}
 
-                  {/* Plan Header */}
-                  <div className="flex items-center justify-between mb-5">
-                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${plan.iconBg} flex items-center justify-center`}>
-                      <Icon className={`w-5 h-5 ${plan.iconColor}`} />
-                    </div>
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${plan.badgeColor}`}>
-                      {plan.badge}
-                    </span>
-                  </div>
-
-                  {/* Plan Details */}
-                  <h3 className="text-white font-bold text-xl mb-2">{plan.name}</h3>
-                  <p className="text-neutral-400 text-xs mb-2 leading-relaxed">
-                    {isAirbnb && plan.descAirbnb
-                      ? plan.descAirbnb
-                      : plan.desc}
-                  </p>
-
-                  {/* Ideal para badge */}
-                  <div className="flex items-center gap-1.5 mb-4">
-                    {isPousada && plan.idealParaPousada && (
-                      <span className="text-[10px] font-semibold text-emerald-300 bg-emerald-500/15 border border-emerald-500/25 px-2 py-0.5 rounded-full">
-                        Ideal para {plan.idealParaPousada}
+                    {/* Plan Header */}
+                    <div className="flex items-center justify-between mb-5">
+                      <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${plan.iconBg} flex items-center justify-center`}>
+                        <Icon className={`w-5 h-5 ${plan.iconColor}`} />
+                      </div>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${activeBadgeColor}`}>
+                        {activeBadge}
                       </span>
-                    )}
-                    {isAirbnb && plan.idealParaAirbnb && (
-                      <>
-                        <Building2 className="w-3 h-3 text-blue-400" />
-                        <span className="text-[10px] font-semibold text-blue-300 bg-blue-500/15 border border-blue-500/25 px-2 py-0.5 rounded-full">
-                          Ideal para {plan.idealParaAirbnb}
-                        </span>
-                      </>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Price */}
-                  <div className="mb-6">
-                    {price === 0 ? (
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-4xl font-extrabold text-white">Grátis</span>
-                      </div>
-                    ) : (
-                      <div>
+                    {/* Plan Details */}
+                    <h3 className="text-white font-bold text-xl mb-2">{plan.name}</h3>
+                    <p className="text-neutral-400 text-xs mb-2 leading-relaxed">
+                      {isAirbnb && plan.descAirbnb
+                        ? plan.descAirbnb
+                        : plan.desc}
+                    </p>
+
+                    {/* Ideal para badge */}
+                    <div className="flex items-center gap-1.5 mb-4">
+                      {isPousada && plan.idealParaPousada && (
+                        <span className="text-[10px] font-semibold text-emerald-300 bg-emerald-500/15 border border-emerald-500/25 px-2 py-0.5 rounded-full">
+                          Ideal para {plan.idealParaPousada}
+                        </span>
+                      )}
+                      {isAirbnb && plan.idealParaAirbnb && (
+                        <>
+                          <Building2 className="w-3 h-3 text-blue-400" />
+                          <span className="text-[10px] font-semibold text-blue-300 bg-blue-500/15 border border-blue-500/25 px-2 py-0.5 rounded-full">
+                            Ideal para {plan.idealParaAirbnb}
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Price */}
+                    <div className="mb-6">
+                      {price === 0 ? (
                         <div className="flex items-baseline gap-1">
-                          <span className="text-sm text-neutral-400">R$</span>
-                          <span className="text-4xl font-extrabold text-white">{price}</span>
-                          <span className="text-neutral-500 text-sm">/mês</span>
+                          <span className="text-4xl font-extrabold text-white">Grátis</span>
                         </div>
-                        {plan.id === 'parceiro' && (
-                          <div className="flex flex-col gap-0.5 mt-1">
-                            <span className="text-amber-400 text-xs font-semibold">
-                              Congelado por 24 meses
-                            </span>
-                            <span className="text-amber-400/70 text-[10px]">
-                              Selo de Parceiro no Link-in-Bio • Fixe no Instagram
-                            </span>
+                      ) : (
+                        <div>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-sm text-neutral-400">R$</span>
+                            <span className="text-4xl font-extrabold text-white">{price}</span>
+                            <span className="text-neutral-500 text-sm">/mês</span>
                           </div>
-                        )}
-                        {plan.id !== 'parceiro' && activePaymentMethod === 'pix' && savings > 0 && (
-                          <div className="flex items-center gap-1 mt-1">
-                            <span className="text-neutral-600 text-xs line-through">R${plan.priceCartao}/mês</span>
-                            <span className="text-emerald-400 text-xs font-medium">
-                              Economia de R${savings}/mês
-                            </span>
-                          </div>
-                        )}
-                        {plan.onlyCard && (
-                          <div className="flex items-center gap-1 mt-1">
-                            <span className="text-amber-400/80 text-[9px] font-semibold uppercase tracking-wider bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
-                              Exclusivo no Cartão
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                          {/* Airbnb trial badge under price */}
+                          {isAirbnb && plan.showTrialBadge && (
+                            <div className="flex items-center gap-1.5 mt-1.5">
+                              <CalendarCheck2 className="w-3.5 h-3.5 text-blue-400" />
+                              <span className="text-blue-400 text-xs font-semibold">
+                                7 dias grátis — cancele quando quiser
+                              </span>
+                            </div>
+                          )}
+                          {plan.id === 'parceiro' && (
+                            <div className="flex flex-col gap-0.5 mt-1">
+                              <span className="text-amber-400 text-xs font-semibold">
+                                Congelado por 24 meses
+                              </span>
+                              <span className="text-amber-400/70 text-[10px]">
+                                Selo de Parceiro no Link-in-Bio • Fixe no Instagram
+                              </span>
+                            </div>
+                          )}
+                          {plan.id !== 'parceiro' && activePaymentMethod === 'pix' && savings > 0 && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <span className="text-neutral-600 text-xs line-through">R${plan.priceCartao}/mês</span>
+                              <span className="text-emerald-400 text-xs font-medium">
+                                Economia de R${savings}/mês
+                              </span>
+                            </div>
+                          )}
+                          {plan.onlyCard && isPousada && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <span className="text-amber-400/80 text-[9px] font-semibold uppercase tracking-wider bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                                Exclusivo no Cartão
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* CTA */}
+                    <button
+                      onClick={() => handleSubscribe(plan.id, activePaymentMethod)}
+                      disabled={loadingPlan === plan.id}
+                      className={`w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 ${activeCtaStyle} ${loadingPlan === plan.id ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    >
+                      {loadingPlan === plan.id ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Processando...
+                        </>
+                      ) : price === 0 ? (
+                        'Começar Trial Grátis'
+                      ) : isAirbnb ? (
+                        `Experimentar ${plan.nameShort} — 7 Dias Grátis`
+                      ) : (
+                        `Assinar ${plan.nameShort} via ${activePaymentMethod === 'pix' ? 'PIX' : 'Cartão'}`
+                      )}
+                    </button>
+
+                    {/* Divider */}
+                    <div className="h-px bg-white/[0.06] my-6" />
+
+                    {/* Features */}
+                    <div className="flex-1 space-y-3">
+                      {(isAirbnb && plan.featuresAirbnb
+                        ? plan.featuresAirbnb
+                        : plan.features
+                      ).map((feature) => (
+                        <div key={feature.text} className="flex items-start gap-2">
+                          {feature.included ? (
+                            <Check className={`w-4 h-4 shrink-0 mt-0.5 ${isAirbnb ? 'text-blue-400' : 'text-emerald-400'}`} />
+                          ) : (
+                            <X className="w-4 h-4 text-neutral-700 shrink-0 mt-0.5" />
+                          )}
+                          <span
+                            className={`text-xs leading-relaxed ${
+                              feature.included ? 'text-neutral-300' : 'text-neutral-600'
+                            }`}
+                          >
+                            {feature.text}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-
-                  {/* CTA */}
-                  <button
-                    onClick={() => handleSubscribe(plan.id, activePaymentMethod)}
-                    disabled={loadingPlan === plan.id}
-                    className={`w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 ${plan.ctaStyle} ${loadingPlan === plan.id ? 'opacity-70 cursor-not-allowed' : ''}`}
-                  >
-                    {loadingPlan === plan.id ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Processando...
-                      </>
-                    ) : price === 0 ? (
-                      'Começar Trial Grátis'
-                    ) : (
-                      `Assinar ${plan.nameShort} via ${activePaymentMethod === 'pix' ? 'PIX' : 'Cartão'}`
-                    )}
-                  </button>
-
-                  {/* Divider */}
-                  <div className="h-px bg-white/[0.06] my-6" />
-
-                  {/* Features */}
-                  <div className="flex-1 space-y-3">
-                    {(isAirbnb && plan.featuresAirbnb
-                      ? plan.featuresAirbnb
-                      : plan.features
-                    ).map((feature) => (
-                      <div key={feature.text} className="flex items-start gap-2">
-                        {feature.included ? (
-                          <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                        ) : (
-                          <X className="w-4 h-4 text-neutral-700 shrink-0 mt-0.5" />
-                        )}
-                        <span
-                          className={`text-xs leading-relaxed ${
-                            feature.included ? 'text-neutral-300' : 'text-neutral-600'
-                          }`}
-                        >
-                          {feature.text}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </AnimatePresence>
 
         {/* Payment methods info */}
         <motion.div
@@ -523,7 +640,7 @@ export function PricingSection() {
           className="flex flex-wrap items-center justify-center gap-6 text-neutral-500 text-xs"
         >
           <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-emerald-500/50" />
+            <Shield className={`w-4 h-4 ${isPousada ? 'text-emerald-500/50' : 'text-blue-500/50'}`} />
             <span>Gateway: Mercado Pago (PIX 0,99%)</span>
           </div>
           <div className="flex items-center gap-2">

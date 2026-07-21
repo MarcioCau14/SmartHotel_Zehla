@@ -13,9 +13,7 @@ import {
   Clock,
   Star,
   TrendingUp,
-  Globe,
   Sparkles,
-  ArrowRight,
   Crown,
   BarChart3,
   DollarSign,
@@ -219,11 +217,15 @@ function WhatsAppMockup() {
 }
 
 function FeatureMockup({ type }: { type: string }) {
+  const { isAirbnb } = useNiche();
+
   if (type === 'whatsapp') {
     return <WhatsAppMockup />;
   }
 
+  // Link-in-Bio is EXCLUSIVE to Pousadas — never render for Airbnb
   if (type === 'linkinbio') {
+    if (isAirbnb) return <WhatsAppMockup />;
     return <LinkInBioDemo />;
   }
 
@@ -281,7 +283,6 @@ export function FeaturesSection() {
           >
             {features.map((feature, i) => {
               const IconComponent = featureIconMap[feature.icon] || MessageSquare;
-              const accentColor = isPousada ? 'emerald' : isAirbnb ? 'blue' : 'amber';
 
               return (
                 <motion.div

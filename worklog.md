@@ -653,3 +653,32 @@ Stage Summary:
 - Typography: font-bold (700) instead of font-extrabold (800) for editorial air
 - Backgrounds unified to #09090b (Linear canvas standard)
 - Consistent rounded-xl cards, rounded-lg buttons across all sections
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix "Para Anfitriões" (Airbnb) pricing section - show only PRO and MAX plans with 7-day free trial, remove Link-in-Bio from all Airbnb contexts, fix niche mixing across all landing page sections
+
+Work Log:
+- Read and analyzed PricingSection.tsx, NicheContext.tsx, niche-content.ts, NicheToggle.tsx
+- Rewrote PricingSection.tsx with niche-filtered plans: Pousada shows 5 plans (Gratuito, LITE, PRO, MAX, PARCEIRO), Airbnb shows only PRO and MAX
+- Added `niches` field to each plan definition for clean filtering
+- Created Airbnb-specific features for PRO and MAX plans (no Link-in-Bio references)
+- Added Airbnb-specific CTAs ("Experimentar PRO — 7 Dias Grátis"), badges ("7 Dias Grátis"), and styling (blue gradient)
+- Added 7-day free trial banner for Airbnb pricing section
+- Added blue glow CSS class (pricing-glow-blue) to globals.css
+- Changed niche-content.ts: Airbnb "Magic Onboarding" feature mockup from 'linkinbio' to 'whatsapp'
+- Added niche guard in FeaturesSection.tsx FeatureMockup: LinkInBioDemo never renders for Airbnb
+- Fixed SavingsCalculator.tsx: replaced "recepcionista" with "automação noturna" for Airbnb, added blue theming
+- Fixed FinalCTASection.tsx: added blue theming for Airbnb, replaced Pousada-only copy with Airbnb-specific text, hid "Quero ser Parceiro" button for Airbnb
+- Fixed CTASection.tsx: added blue theming for Airbnb, dynamic accent colors
+- Removed unused variables/imports across all modified files
+- Verified lint passes with no errors in modified files
+- Server compiles and serves 200 status
+
+Stage Summary:
+- "Para Anfitriões" now shows ONLY PRO and MAX plans with 7-day free trial
+- Link-in-Bio completely removed from all Airbnb contexts (PricingSection, FeaturesSection, niche-content)
+- All landing page sections now properly use niche-aware theming (emerald for Pousada, blue for Airbnb)
+- PARCEIRO ZÉLLA plan is Pousada-only
+- GRATUITO and LITE plans are Pousada-only
+- Pending: deploy to Vercel

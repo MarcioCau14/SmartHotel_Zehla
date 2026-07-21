@@ -22,14 +22,15 @@ import { useNiche } from '@/contexts/NicheContext';
 const CONVERSAO_SEM_ZELLA = 0.20;   // 20% — resposta lenta, horário comercial só
 const CONVERSAO_COM_ZELLA = 0.35;   // 35% — resposta instantânea 24/7 + PIX na hora
 const ESTADIA_MEDIA_HOSPEDAGEM = 2.5; // noites por reserva (média pousadas/anfitriões BR)
-const ECONOMIA_RECEPCIONISTA = 1200;  // R$/mês economizados cobrindo madrugada/fim de semana
+const ECONOMIA_RECEPCIONISTA = 1200;  // R$/mês economizados cobrindo madrugada/fim de semana (pousada)
+const ECONOMIA_AUTOMACAO = 1200;      // R$/mês economizados com automação noturna/fim de semana (airbnb)
 const CUSTO_ZELLA_PRO = 397;          // R$/mês plano PRO (referência para cálculo)
-const CUSTO_ZELLA_PARCEIRO = 247;     // R$/mês plano Parceiro Zélla
+// CUSTO_ZELLA_PARCEIRO = 247;     // R$/mês plano Parceiro Zélla (reserved for future use)
 
 export function SavingsCalculator() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  const { isPousada, isAirbnb } = useNiche();
+  const { isPousada } = useNiche();
 
   const [contatosMes, setContatosMes] = useState(80);
   const [valorMedio, setValorMedio] = useState(350);
@@ -39,6 +40,7 @@ export function SavingsCalculator() {
   // --------------------------------------------------------------------------
   const custoZellaMensal = CUSTO_ZELLA_PRO;
   const estadiaMedia = ESTADIA_MEDIA_HOSPEDAGEM;
+  const economiaMensal = isPousada ? ECONOMIA_RECEPCIONISTA : ECONOMIA_AUTOMACAO;
 
   const calc = useMemo(() => {
     // Conversões
@@ -53,11 +55,11 @@ export function SavingsCalculator() {
     const receitaExtraAnual = receitaExtraMensal * 12;
 
     // Custo-benefício
-    const economiaRecepcionistaAnual = ECONOMIA_RECEPCIONISTA * 12;
+    const economiaAnual = economiaMensal * 12;
     const custoZellaAnual = custoZellaMensal * 12;
-    const lucroLiquidoAnual = receitaExtraAnual + economiaRecepcionistaAnual - custoZellaAnual;
+    const lucroLiquidoAnual = receitaExtraAnual + economiaAnual - custoZellaAnual;
     const roiPercent = custoZellaAnual > 0
-      ? Math.round(((receitaExtraAnual + economiaRecepcionistaAnual - custoZellaAnual) / custoZellaAnual) * 100)
+      ? Math.round(((receitaExtraAnual + economiaAnual - custoZellaAnual) / custoZellaAnual) * 100)
       : 0;
 
     return {
@@ -68,12 +70,12 @@ export function SavingsCalculator() {
       receitaCom,
       receitaExtraMensal,
       receitaExtraAnual,
-      economiaRecepcionistaAnual,
+      economiaAnual,
       custoZellaAnual,
       lucroLiquidoAnual,
       roiPercent,
     };
-  }, [contatosMes, valorMedio, estadiaMedia, custoZellaMensal]);
+  }, [contatosMes, valorMedio, estadiaMedia, custoZellaMensal, economiaMensal]);
 
   // --------------------------------------------------------------------------
   // Helpers de formatação
@@ -96,13 +98,19 @@ export function SavingsCalculator() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6">
-            <Calculator className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-emerald-400 text-xs font-medium">Simulador de Resultados</span>
+          <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border mb-6 ${
+            isPousada
+              ? 'bg-emerald-500/10 border-emerald-500/20'
+              : 'bg-blue-500/10 border-blue-500/20'
+          }`}>
+            <Calculator className={`w-3.5 h-3.5 ${isPousada ? 'text-emerald-400' : 'text-blue-400'}`} />
+            <span className={`text-xs font-medium ${isPousada ? 'text-emerald-400' : 'text-blue-400'}`}>
+              Simulador de Resultados
+            </span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6 tracking-tight">
             {isPousada ? 'Quanto sua pousada' : 'Quanto seus imóveis'}{' '}
-            <span className="text-emerald-400 font-bold">ganha com o Zélla?</span>
+            <span className={`font-bold ${isPousada ? 'text-emerald-400' : 'text-blue-400'}`}>ganha com o Zélla?</span>
           </h2>
           <p className="text-neutral-400 text-lg sm:text-xl max-w-2xl mx-auto">
             Insira os dados reais da sua operação e veja o impacto no seu faturamento
@@ -117,7 +125,9 @@ export function SavingsCalculator() {
           className="relative rounded-3xl bg-[#111] border border-white/[0.06] p-10 sm:p-14 overflow-hidden"
         >
           {/* Background glows */}
-          <div className="absolute top-0 right-0 w-72 h-72 bg-emerald-500/[0.07] rounded-full blur-[100px]" />
+          <div className={`absolute top-0 right-0 w-72 h-72 rounded-full blur-[100px] ${
+            isPousada ? 'bg-emerald-500/[0.07]' : 'bg-blue-500/[0.07]'
+          }`} />
           <div className="absolute bottom-0 left-0 w-56 h-56 bg-blue-500/[0.05] rounded-full blur-[80px]" />
 
           <div className="relative z-10">
@@ -185,11 +195,19 @@ export function SavingsCalculator() {
             {/* ===== RESULTADOS PRINCIPAIS ===== */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
               {/* Reservas a mais */}
-              <div className="text-center p-6 rounded-2xl bg-emerald-500/[0.06] border border-emerald-500/15">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center mx-auto mb-3">
-                  <Users className="w-5 h-5 text-emerald-400" />
+              <div className={`text-center p-6 rounded-2xl border ${
+                isPousada
+                  ? 'bg-emerald-500/[0.06] border-emerald-500/15'
+                  : 'bg-blue-500/[0.06] border-blue-500/15'
+              }`}>
+                <div className={`w-10 h-10 rounded-xl border flex items-center justify-center mx-auto mb-3 ${
+                  isPousada
+                    ? 'bg-emerald-500/15 border-emerald-500/20'
+                    : 'bg-blue-500/15 border-blue-500/20'
+                }`}>
+                  <Users className={`w-5 h-5 ${isPousada ? 'text-emerald-400' : 'text-blue-400'}`} />
                 </div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-emerald-400">
+                <div className={`text-2xl sm:text-3xl font-extrabold ${isPousada ? 'text-emerald-400' : 'text-blue-400'}`}>
                   +{calc.conversoesAMais}
                 </div>
                 <div className="text-neutral-500 text-xs mt-1">reservas/mês</div>
@@ -263,31 +281,47 @@ export function SavingsCalculator() {
               </div>
 
               {/* Com Zélla */}
-              <div className="p-6 rounded-2xl bg-emerald-500/[0.04] border border-emerald-500/15">
+              <div className={`p-6 rounded-2xl border ${
+                isPousada
+                  ? 'bg-emerald-500/[0.04] border-emerald-500/15'
+                  : 'bg-blue-500/[0.04] border-blue-500/15'
+              }`}>
                 <div className="flex items-center gap-2 mb-3">
-                  <CheckCircle className="w-4 h-4 text-emerald-400" />
-                  <span className="text-emerald-400 text-sm font-semibold">Com o Zélla</span>
-                  <span className="ml-auto text-[10px] text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold">
+                  <CheckCircle className={`w-4 h-4 ${isPousada ? 'text-emerald-400' : 'text-blue-400'}`} />
+                  <span className={`text-sm font-semibold ${isPousada ? 'text-emerald-400' : 'text-blue-400'}`}>Com o Zélla</span>
+                  <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    isPousada
+                      ? 'text-emerald-500 bg-emerald-500/10 border border-emerald-500/20'
+                      : 'text-blue-500 bg-blue-500/10 border border-blue-500/20'
+                  }`}>
                     35% conversão
                   </span>
                 </div>
                 <div className="space-y-2 text-xs">
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Reservas/mês</span>
-                    <span className="text-emerald-300 font-bold">{calc.conversoesCom} <span className="text-emerald-500">(+{calc.conversoesAMais})</span></span>
+                    <span className={`font-bold ${isPousada ? 'text-emerald-300' : 'text-blue-300'}`}>
+                      {calc.conversoesCom} <span className={isPousada ? 'text-emerald-500' : 'text-blue-500'}>(+{calc.conversoesAMais})</span>
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Receita/mês</span>
-                    <span className="text-emerald-300 font-bold">{fmt(calc.receitaCom)}</span>
+                    <span className={`font-bold ${isPousada ? 'text-emerald-300' : 'text-blue-300'}`}>{fmt(calc.receitaCom)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Resposta instantânea 24/7</span>
-                    <span className="text-emerald-400 font-medium">Sua chave PIX na hora</span>
+                    <span className={`font-medium ${isPousada ? 'text-emerald-400' : 'text-blue-400'}`}>
+                      {isPousada ? 'Sua chave PIX na hora' : 'Atendimento automático na hora'}
+                    </span>
                   </div>
                 </div>
                 <div className="mt-3 h-2.5 rounded-full bg-white/[0.04] overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500"
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      isPousada
+                        ? 'bg-gradient-to-r from-emerald-500 to-emerald-400'
+                        : 'bg-gradient-to-r from-blue-500 to-blue-400'
+                    }`}
                     style={{ width: '100%' }}
                   />
                 </div>
@@ -296,14 +330,16 @@ export function SavingsCalculator() {
 
             {/* ===== DETALHAMENTO FINANCEIRO ===== */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
-              {/* Economia recepcionista / automação */}
+              {/* Economia automação/recepcionista */}
               <div className="flex items-center gap-4 p-5 rounded-xl bg-white/[0.02] border border-white/[0.06]">
                 <div className="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
                   <Moon className="w-5 h-5 text-indigo-400" />
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-white">{fmt(ECONOMIA_RECEPCIONISTA)}/mês</div>
-                  <div className="text-[11px] text-neutral-500">Economia recepcionista noturno</div>
+                  <div className="text-sm font-bold text-white">{fmt(economiaMensal)}/mês</div>
+                  <div className="text-[11px] text-neutral-500">
+                    {isPousada ? 'Economia recepcionista noturno' : 'Economia automação noturna'}
+                  </div>
                 </div>
               </div>
 
@@ -319,12 +355,22 @@ export function SavingsCalculator() {
               </div>
 
               {/* Lucro líquido anual */}
-              <div className="flex items-center gap-4 p-5 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/15">
-                <div className="w-10 h-10 rounded-lg bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                  <TrendingUp className="w-5 h-5 text-emerald-400" />
+              <div className={`flex items-center gap-4 p-5 rounded-xl border ${
+                isPousada
+                  ? 'bg-emerald-500/[0.06] border-emerald-500/15'
+                  : 'bg-blue-500/[0.06] border-blue-500/15'
+              }`}>
+                <div className={`w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 ${
+                  isPousada
+                    ? 'bg-emerald-500/15 border-emerald-500/20'
+                    : 'bg-blue-500/15 border-blue-500/20'
+                }`}>
+                  <TrendingUp className={`w-5 h-5 ${isPousada ? 'text-emerald-400' : 'text-blue-400'}`} />
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-emerald-400">{fmt(calc.lucroLiquidoAnual)}/ano</div>
+                  <div className={`text-sm font-bold ${isPousada ? 'text-emerald-400' : 'text-blue-400'}`}>
+                    {fmt(calc.lucroLiquidoAnual)}/ano
+                  </div>
                   <div className="text-[11px] text-neutral-500">Lucro líquido (receita + economia - custo)</div>
                 </div>
               </div>
@@ -337,12 +383,12 @@ export function SavingsCalculator() {
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-[11px] text-neutral-500 leading-relaxed">
                 <div className="flex items-start gap-2">
-                  <span className="w-1 h-1 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                  <span className={`w-1 h-1 rounded-full mt-1.5 shrink-0 ${isPousada ? 'bg-emerald-500' : 'bg-blue-500'}`} />
                   <span>Sem Zélla: <strong className="text-neutral-400">20% de conversão</strong> — resposta demorada perde hóspedes para concorrentes</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="w-1 h-1 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
-                  <span>Com Zélla: <strong className="text-emerald-400">35% de conversão</strong> — resposta instantânea + sua chave PIX na hora convertem mais</span>
+                  <span className={`w-1 h-1 rounded-full mt-1.5 shrink-0 ${isPousada ? 'bg-emerald-500' : 'bg-blue-500'}`} />
+                  <span>Com Zélla: <strong className={isPousada ? 'text-emerald-400' : 'text-blue-400'}>35% de conversão</strong> — resposta instantânea + {isPousada ? 'sua chave PIX na hora' : 'atendimento automático'} convertem mais</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="w-1 h-1 rounded-full bg-blue-500 mt-1.5 shrink-0" />
@@ -350,7 +396,7 @@ export function SavingsCalculator() {
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="w-1 h-1 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-                  <span>Economia recepcionista: <strong className="text-neutral-400">R$ 1.200/mês</strong> cobrindo madrugadas e fins de semana</span>
+                  <span>{isPousada ? 'Economia recepcionista' : 'Economia automação'}: <strong className="text-neutral-400">R$ 1.200/mês</strong> {isPousada ? 'cobrindo madrugadas e fins de semana' : 'atendendo automaticamente madrugadas e fins de semana'}</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="w-1 h-1 rounded-full bg-purple-500 mt-1.5 shrink-0" />
@@ -358,7 +404,7 @@ export function SavingsCalculator() {
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="w-1 h-1 rounded-full bg-purple-500 mt-1.5 shrink-0" />
-                  <span>ROI = ((receita extra + economia recepcionista - custo Zélla) / custo Zélla) x 100</span>
+                  <span>ROI = ((receita extra + {isPousada ? 'economia recepcionista' : 'economia automação'} - custo Zélla) / custo Zélla) x 100</span>
                 </div>
               </div>
             </div>
@@ -373,7 +419,11 @@ export function SavingsCalculator() {
                   const el = document.querySelector('#precos');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-xl hover:from-emerald-400 hover:to-emerald-500 transition-all duration-200 shadow-xl shadow-emerald-500/30 cursor-pointer"
+                className={`inline-flex items-center gap-2 px-8 py-3.5 text-white font-bold rounded-xl transition-all duration-200 shadow-xl cursor-pointer ${
+                  isPousada
+                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 shadow-emerald-500/30'
+                    : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 shadow-blue-500/30'
+                }`}
               >
                 Começar meu teste grátis
                 <ArrowRight className="w-4 h-4" />

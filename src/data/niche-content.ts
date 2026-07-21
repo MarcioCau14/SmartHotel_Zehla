@@ -444,7 +444,7 @@ const airbnbContent: NicheContent = {
         { text: 'Informações de vizinhança incluídas' },
       ],
       bottomLine: 'Sem configuração manual. A IA aprende com o seu anúncio. (PRO e MAX)',
-      mockup: 'linkinbio',
+      mockup: 'whatsapp',
       reverse: true,
     },
   ],
