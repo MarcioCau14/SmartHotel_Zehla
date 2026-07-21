@@ -11,6 +11,7 @@ import {
   Globe,
   Mail,
   Smartphone,
+  Sparkles,
 } from 'lucide-react';
 import { useNiche } from '@/contexts/NicheContext';
 
@@ -56,6 +57,15 @@ function getIntegrations(niche: 'pousada' | 'airbnb') {
       description: 'Página profissional com galeria, reservas e avaliações — pronta para Instagram.',
       status: 'Ativo',
       statusColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+      nicheOnly: 'pousada' as const,
+    },
+    {
+      icon: Sparkles,
+      name: 'Magic Onboarding Airbnb',
+      description: 'Cole a URL do seu anúncio e o Zélla importa tudo: fotos, regras, preços e localização automaticamente.',
+      status: 'Ativo',
+      statusColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+      nicheOnly: 'airbnb' as const,
     },
     {
       icon: Mail,
@@ -86,7 +96,9 @@ export function IntegrationsSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const { isPousada, isAirbnb } = useNiche();
   const niche: 'pousada' | 'airbnb' = isPousada ? 'pousada' : 'airbnb';
-  const integrations = getIntegrations(niche);
+  const integrations = getIntegrations(niche).filter(
+    (item) => !('nicheOnly' in item && item.nicheOnly && item.nicheOnly !== niche)
+  );
 
   return (
     <section ref={ref} id="integracoes" className="relative py-28 sm:py-36 lg:py-44 bg-[#060608] overflow-hidden">

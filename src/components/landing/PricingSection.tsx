@@ -18,6 +18,7 @@ import {
   Building2,
   CalendarCheck2,
   KeyRound,
+  DollarSign,
 } from 'lucide-react';
 import { useNiche } from '@/contexts/NicheContext';
 import { getNicheContent } from '@/data/niche-content';
@@ -44,6 +45,10 @@ interface Plan {
   pricePix: number;
   priceCartao: number;
   priceLabel: string;
+  /** Airbnb-specific pricing (overrides pricePix/priceCartao when niche=airbnb) */
+  pricePixAirbnb?: number;
+  priceCartaoAirbnb?: number;
+  priceLabelAirbnb?: string;
   onlyCard?: boolean;
   desc: string;
   descAirbnb?: string;
@@ -60,6 +65,8 @@ interface Plan {
   niches: Array<'pousada' | 'airbnb'>;
   /** Show 7-day free trial badge (Airbnb PRO & MAX) */
   showTrialBadge?: boolean;
+  /** Airbnb-specific ROI line shown under the price */
+  roiAirbnb?: string;
 }
 
 const plans: Plan[] = [
@@ -132,7 +139,7 @@ const plans: Plan[] = [
     name: 'PRO',
     nameShort: 'Pro',
     badge: 'Mais Popular',
-    badgeAirbnb: '7 Dias Grátis',
+    badgeAirbnb: 'Mais Escolhido',
     badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
     badgeColorAirbnb: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
     icon: Star,
@@ -141,18 +148,22 @@ const plans: Plan[] = [
     pricePix: 397,
     priceCartao: 397,
     priceLabel: 'R$397',
+    pricePixAirbnb: 197,
+    priceCartaoAirbnb: 197,
+    priceLabelAirbnb: 'R$197',
     onlyCard: true,
     desc: 'Para pousadas que querem crescer sem limites. Mensagens ilimitadas, campanhas automatizadas e suporte prioritário.',
-    descAirbnb: 'Para anfitriões que querem escalar sem limites. Mensagens ilimitadas, Magic Onboarding e suporte prioritário.',
+    descAirbnb: 'Seu primeiro imóvel que reserva direto pelo WhatsApp já paga o plano. IA atende 24/7, Magic Onboarding e check-in virtual automático — você nem precisa pegar no celular.',
     cta: 'Assinar PRO via Cartão',
     ctaStyle: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-400 hover:to-emerald-500 shadow-lg shadow-emerald-500/25',
     ctaStyleAirbnb: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-400 hover:to-blue-500 shadow-lg shadow-blue-500/25',
     popular: true,
     popularAirbnb: true,
     idealParaPousada: '3–5 pousadas',
-    idealParaAirbnb: '3–5 imóveis',
+    idealParaAirbnb: '1–4 imóveis',
     niches: ['pousada', 'airbnb'],
     showTrialBadge: true,
+    roiAirbnb: '1 reserva direta/mês já paga o plano*',
     features: [
       { text: 'Hóspedes ilimitados', included: true },
       { text: 'Link-in-bio profissional liberado', included: true },
@@ -167,18 +178,19 @@ const plans: Plan[] = [
       { text: 'Economia inteligente nas mensagens', included: true },
     ],
     featuresAirbnb: [
-      { text: 'Hóspedes ilimitados', included: true },
+      { text: 'Zélla AirB IA 24/7 no WhatsApp — responde por você', included: true },
+      { text: 'Magic Onboarding — cole a URL do anúncio e pronto (5 min)', included: true },
+      { text: 'Até 4 imóveis cadastrados', included: true },
       { text: 'Mensagens ilimitadas (sem recargas)', included: true },
-      { text: 'WhatsApp IA com tom 100% personalizado', included: true },
-      { text: 'Magic Onboarding — resposta automática a novas reservas', included: true },
-      { text: 'Checkout Cartão integrado', included: true },
-      { text: 'Dashboard completo', included: true },
-      { text: 'Sugestões de preços inteligentes', included: true },
-      { text: 'Campanhas automatizadas', included: true },
-      { text: 'Análise de sentimento', included: true },
+      { text: 'Check-in virtual automático (código da fechadura via WhatsApp)', included: true },
+      { text: 'PIX Gatekeeper — bloqueia PIX p/ hóspedes Airbnb (anti-banimento)', included: true },
+      { text: 'Lifecycle Hooks automáticos (regras, check-in, avaliação)', included: true },
+      { text: 'Respostas sobre vizinhança incluídas (restaurantes, praias, etc.)', included: true },
+      { text: 'Dashboard com portfólio completo (ocupação, receita, avaliações)', included: true },
+      { text: 'Campanhas de reengajamento para hóspedes recorrentes', included: true },
+      { text: 'Análise de sentimento dos hóspedes', included: true },
       { text: 'Suporte prioritário', included: true },
-      { text: 'Economia inteligente nas mensagens', included: true },
-      { text: '7 dias grátis para testar', included: true },
+      { text: '7 dias grátis para testar — sem cartão de crédito', included: true },
     ],
   },
 
@@ -188,27 +200,31 @@ const plans: Plan[] = [
     name: 'MAX',
     nameShort: 'Max',
     badge: 'High End',
-    badgeAirbnb: '7 Dias Grátis',
+    badgeAirbnb: 'Máximo Valor',
     badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-    badgeColorAirbnb: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+    badgeColorAirbnb: 'bg-sky-500/20 text-sky-300 border-sky-500/30',
     icon: Crown,
     iconBg: 'from-amber-500/20 to-amber-900/10',
     iconColor: 'text-amber-400',
     pricePix: 797,
     priceCartao: 797,
     priceLabel: 'R$797',
+    pricePixAirbnb: 397,
+    priceCartaoAirbnb: 397,
+    priceLabelAirbnb: 'R$397',
     onlyCard: true,
     desc: 'Para redes e pousadas de alto padrão. Suporte VIP, consultoria personalizada e recursos exclusivos.',
-    descAirbnb: 'Para portfólios grandes e imóveis de alto padrão. Suporte VIP, Calendar Sync e recursos exclusivos.',
+    descAirbnb: 'Para quem tem 5+ imóveis e quer maximizar receita. Calendar Sync, IA treinada para seu portfólio e consultoria mensal — cada reserva direta economiza 15% de comissão Airbnb.',
     cta: 'Assinar MAX via Cartão',
     ctaStyle: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/25',
-    ctaStyleAirbnb: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-500 hover:to-blue-600 shadow-lg shadow-blue-500/25',
+    ctaStyleAirbnb: 'bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:from-sky-400 hover:to-blue-500 shadow-lg shadow-sky-500/25',
     popular: false,
     popularAirbnb: false,
     idealParaPousada: '6+ pousadas',
-    idealParaAirbnb: '6+ imóveis',
+    idealParaAirbnb: '5–12 imóveis',
     niches: ['pousada', 'airbnb'],
     showTrialBadge: true,
+    roiAirbnb: '2 reservas diretas/mês = R$600+ economizados em comissão*',
     features: [
       { text: 'Tudo do plano PRO', included: true },
       { text: 'Link-in-bio profissional liberado', included: true },
@@ -225,19 +241,18 @@ const plans: Plan[] = [
       { text: 'Treinamento mensal com equipe', included: true },
     ],
     featuresAirbnb: [
-      { text: 'Tudo do plano PRO', included: true },
-      { text: 'Mensagens ilimitadas (sem recargas)', included: true },
-      { text: 'Calendar Sync — sincronização multi-plataforma', included: true },
-      { text: 'Ajuste de preços inteligente avançado', included: true },
-      { text: 'Dashboard completo', included: true },
-      { text: 'Split de pagamentos automático', included: true },
-      { text: 'Atendimentos 24 por 7', included: true },
+      { text: 'Tudo do plano PRO (4 imóveis inclusos)', included: true },
+      { text: 'Até 12 imóveis cadastrados', included: true },
+      { text: 'Calendar Sync — sincronização Airbnb, Booking, Vrbo (iCal)', included: true },
+      { text: 'Zélla AI personalizada — treinamento dedicado p/ seu portfólio', included: true },
       { text: 'Integrações customizadas (Airbnb, Booking, Vrbo)', included: true },
-      { text: 'Gerente de conta IA Dedicado para Treinamento', included: true },
-      { text: 'Consultoria mensal com a equipe', included: true },
-      { text: 'Onboarding personalizado', included: true },
+      { text: 'Onboarding personalizado com nossa equipe', included: true },
+      { text: 'Consultoria mensal de otimização de portfólio', included: true },
+      { text: 'Relatórios avançados (PDF/XLSX) para gestão financeira', included: true },
+      { text: 'Split de pagamentos automático', included: true },
+      { text: 'Suporte VIP prioritário', included: true },
       { text: 'SLA garantido 99.9%', included: true },
-      { text: '7 dias grátis para testar', included: true },
+      { text: '7 dias grátis para testar — sem cartão de crédito', included: true },
     ],
   },
 
@@ -316,7 +331,9 @@ export function PricingSection() {
     const plan = plans.find(p => p.id === planId);
     if (!plan) return;
     const method = forcedPaymentMethod || paymentMode;
-    const price = method === 'pix' ? plan.pricePix : plan.priceCartao;
+    const effectivePricePix = isAirbnb && plan.pricePixAirbnb != null ? plan.pricePixAirbnb : plan.pricePix;
+    const effectivePriceCartao = isAirbnb && plan.priceCartaoAirbnb != null ? plan.priceCartaoAirbnb : plan.priceCartao;
+    const price = method === 'pix' ? effectivePricePix : effectivePriceCartao;
     setCheckoutModal({
       open: true,
       planId,
@@ -443,8 +460,12 @@ export function PricingSection() {
           >
             {visiblePlans.map((plan, i) => {
               const activePaymentMethod = plan.onlyCard ? 'cartao' : paymentMode;
-              const price = activePaymentMethod === 'pix' ? plan.pricePix : plan.priceCartao;
-              const savings = plan.priceCartao > 0 && !plan.onlyCard ? plan.priceCartao - plan.pricePix : 0;
+              // Use Airbnb-specific pricing when available
+              const effectivePricePix = isAirbnb && plan.pricePixAirbnb != null ? plan.pricePixAirbnb : plan.pricePix;
+              const effectivePriceCartao = isAirbnb && plan.priceCartaoAirbnb != null ? plan.priceCartaoAirbnb : plan.priceCartao;
+              const effectivePriceLabel = isAirbnb && plan.priceLabelAirbnb ? plan.priceLabelAirbnb : plan.priceLabel;
+              const price = activePaymentMethod === 'pix' ? effectivePricePix : effectivePriceCartao;
+              const savings = effectivePriceCartao > 0 && !plan.onlyCard ? effectivePriceCartao - effectivePricePix : 0;
               const Icon = plan.icon;
               const isPopular = isAirbnb ? (plan.popularAirbnb ?? plan.popular) : plan.popular;
               const activeCtaStyle = isAirbnb && plan.ctaStyleAirbnb ? plan.ctaStyleAirbnb : plan.ctaStyle;
@@ -551,6 +572,15 @@ export function PricingSection() {
                               </span>
                             </div>
                           )}
+                          {/* Airbnb ROI line */}
+                          {isAirbnb && plan.roiAirbnb && (
+                            <div className="flex items-center gap-1.5 mt-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                              <Sparkles className="w-3 h-3 text-emerald-400 shrink-0" />
+                              <span className="text-emerald-400 text-[11px] font-semibold leading-tight">
+                                {plan.roiAirbnb}
+                              </span>
+                            </div>
+                          )}
                           {plan.id === 'parceiro' && (
                             <div className="flex flex-col gap-0.5 mt-1">
                               <span className="text-amber-400 text-xs font-semibold">
@@ -630,6 +660,53 @@ export function PricingSection() {
               );
             })}
           </motion.div>
+        </AnimatePresence>
+
+        {/* Airbnb ROI Value Calculator */}
+        <AnimatePresence mode="wait">
+          {isAirbnb && (
+            <motion.div
+              key="airbnb-roi-section"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              className="max-w-3xl mx-auto mb-16 mt-4"
+            >
+              <div className="rounded-2xl border border-blue-500/20 bg-blue-500/[0.04] p-6 sm:p-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <DollarSign className="w-5 h-5 text-blue-400" />
+                  <h4 className="text-white font-bold text-base">Faça a conta: o Zélla se paga sozinho</h4>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                  <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 text-center">
+                    <p className="text-neutral-400 text-[10px] uppercase tracking-wider mb-1">Comissão Airbnb</p>
+                    <p className="text-2xl font-extrabold text-white">15%</p>
+                    <p className="text-neutral-500 text-[10px]">por cada reserva</p>
+                  </div>
+                  <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 text-center">
+                    <p className="text-neutral-400 text-[10px] uppercase tracking-wider mb-1">Reserva direta média</p>
+                    <p className="text-2xl font-extrabold text-emerald-400">R$450</p>
+                    <p className="text-neutral-500 text-[10px]">economia em comissão</p>
+                  </div>
+                  <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 text-center">
+                    <p className="text-neutral-400 text-[10px] uppercase tracking-wider mb-1">PRO R$197/mês</p>
+                    <p className="text-2xl font-extrabold text-blue-400">1 reserva</p>
+                    <p className="text-neutral-500 text-[10px]">direta já paga o plano</p>
+                  </div>
+                </div>
+                <p className="text-neutral-400 text-xs leading-relaxed">
+                  <span className="text-white font-semibold">Exemplo real:</span> Com 3 imóveis a R$300/noite e ocupação de 70%, você fatura ~R$18.900/mês. 
+                  A comissão Airbnb leva <span className="text-rose-400 font-semibold">R$2.835/mês</span>. 
+                  Se o Zélla converter apenas 2 reservas/mês para direto, você economiza <span className="text-emerald-400 font-semibold">R$900</span> — 
+                  o plano PRO sai de graça e ainda sobra <span className="text-emerald-400 font-semibold">R$703 de lucro</span>. 
+                  No MAX, são 4 reservas diretas = <span className="text-emerald-400 font-semibold">R$1.800</span> economizados — 
+                  o plano custa R$397 e você ganha <span className="text-emerald-400 font-semibold">R$1.403 líquidos</span>.
+                </p>
+                <p className="text-neutral-600 text-[10px] mt-3">*Estimativa baseada em ocupação média de 70% e diária de R$300. Resultados variam por região e portfólio.</p>
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
 
         {/* Payment methods info */}
