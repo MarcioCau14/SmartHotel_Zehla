@@ -74,10 +74,11 @@ import {
   Bot,
   Smartphone,
 } from 'lucide-react';
+import { EntregasZellaTab } from '@/components/ddc/EntregasZellaTab';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type PousadaTab = 'financeiro' | 'hospedes' | 'cerebro' | 'simulador' | 'whatsapp' | 'config';
+type PousadaTab = 'financeiro' | 'hospedes' | 'cerebro' | 'simulador' | 'whatsapp' | 'config' | 'entregas';
 
 interface GuestCardData {
   id: string;
@@ -258,6 +259,7 @@ function getTrainingStatusIcon(status: string) {
 
 const pousadaNavItems: NavItem[] = [
   { id: 'financeiro', label: 'Visão Financeira', icon: <LayoutDashboard className="size-4" /> },
+  { id: 'entregas', label: 'Promessas Entregues', icon: <ShieldCheck className="size-4" /> },
   { id: 'hospedes', label: 'Controle de Hóspedes', icon: <Users className="size-4" /> },
   { id: 'cerebro', label: 'Cérebro da Pousada', icon: <Brain className="size-4" /> },
   { id: 'simulador', label: 'Simulador Zélla', icon: <MessageSquare className="size-4" /> },
@@ -993,6 +995,11 @@ export default function DDCPousadaContent() {
           </div>
         )}
         {activeTab === 'config' && <div key="config">{renderConfig()}</div>}
+        {activeTab === 'entregas' && (
+          <div key="entregas">
+            <EntregasZellaTab currentPlan="lite" />
+          </div>
+        )}
       </AnimatePresence>
     </DDCShell>
   );

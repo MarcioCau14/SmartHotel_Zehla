@@ -57,10 +57,11 @@ import {
   Wifi,
   Smartphone,
 } from 'lucide-react';
+import { EntregasZellaTab } from '@/components/ddc/EntregasZellaTab';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type AirbnbTab = 'propriedades' | 'sincronizacao' | 'automacao' | 'simulador' | 'whatsapp' | 'config';
+type AirbnbTab = 'propriedades' | 'sincronizacao' | 'automacao' | 'simulador' | 'whatsapp' | 'config' | 'entregas';
 
 interface PropertyData {
   id: string;
@@ -206,6 +207,7 @@ const staggerItem = {
 
 const airbnbNavItems: NavItem[] = [
   { id: 'propriedades', label: 'Painel de Propriedades', icon: <Home className="size-4" /> },
+  { id: 'entregas', label: 'Promessas Entregues', icon: <ShieldCheck className="size-4" /> },
   { id: 'sincronizacao', label: 'Sincronização', icon: <CalendarDays className="size-4" /> },
   { id: 'automacao', label: 'Automação', icon: <Bot className="size-4" /> },
   { id: 'simulador', label: 'Simulador Zélla', icon: <MessageSquare className="size-4" /> },
@@ -1092,6 +1094,8 @@ export default function DDCAirbnbContent() {
         return <WhatsAppDeviceManager niche="airbnb" propertyName={scannedData.propertyName} />;
       case 'config':
         return <TabConfig />;
+      case 'entregas':
+        return <EntregasZellaTab currentPlan="lite" />;
     }
   };
 

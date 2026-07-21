@@ -111,6 +111,15 @@ export const DDC_TABS: TabDef[] = [
     lockedFeatures: ['Métricas de receita', 'Status da IA', 'Atendimentos do dia', 'Simular mensagem'],
   },
   {
+    id: 'entregas',
+    label: 'Promessas Entregues',
+    minTier: 'gratuito',
+    upgradeTarget: 'lite',
+    lockedLabel: 'Promessas Entregues',
+    lockedDescription: 'Cada promessa da landing page, comprovada com dados reais do seu painel.',
+    lockedFeatures: ['Tempo de resposta IA', 'Message Bundling', 'One-Shot Resolution', 'Escudo Meta 2026', 'Economia OTA'],
+  },
+  {
     id: 'messages',
     label: 'Mensagens',
     minTier: 'gratuito',
@@ -262,6 +271,7 @@ export interface QuickActionDef {
 
 export const QUICK_ACTIONS: QuickActionDef[] = [
   { id: 'dashboard', label: 'Dashboard', minTier: 'gratuito', upgradeTarget: 'lite' },
+  { id: 'entregas', label: 'Promessas Entregues', minTier: 'gratuito', upgradeTarget: 'lite' },
   { id: 'messages', label: 'Mensagens', minTier: 'gratuito', upgradeTarget: 'lite' },
   { id: 'guests', label: 'Hóspedes', minTier: 'pro', upgradeTarget: 'pro' },
   { id: 'training', label: 'Treinamento', minTier: 'pro', upgradeTarget: 'pro' },
