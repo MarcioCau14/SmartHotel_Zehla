@@ -17,6 +17,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { verifyWhatsAppWebhook, validateWebhookTenant } from '@/lib/security/webhook-verify';
 import { sanitizeObject } from '@/lib/security/input-sanitizer';
+import crypto from 'crypto';
 import { processWithPINNsClifford, extractTelemetry as extractPINNsTelemetry } from '@/lib/pinns-clifford';
 import { extractBIMVision, extractTelemetry as extractBIMTelemetry } from '@/lib/bim-vision';
 import { bridgeToWebGL, extractTelemetry as extractWebGLTelemetry } from '@/lib/webgl-bridge';
@@ -78,7 +79,6 @@ describe('E2E Integration Pipeline: Webhook -> PINNs -> BIM Vision -> WebGL Brid
       const startTime = performance.now();
 
       // In mock mode, generate a valid HMAC for testing
-      const crypto = require('crypto');
       const mockBody = JSON.stringify({
         entry: [{ changes: [{ value: { contacts: [{ wa_id: MOCK_PHONE }] } }] }],
       });
