@@ -249,7 +249,7 @@ export function HowItWorksSection() {
                 step={step}
                 index={i}
                 isInView={isInView}
-                reducedMotion={prefersReducedMotion}
+                reducedMotion={!!prefersReducedMotion}
               />
             ))}
           </div>

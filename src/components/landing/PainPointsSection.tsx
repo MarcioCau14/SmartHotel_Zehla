@@ -243,7 +243,7 @@ export function PainPointsSection() {
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
           >
             {content.painCards.map((item, i) => (
-              <OpportunityCard key={`${niche}-${item.title}`} item={item} index={i} isInView={isInView} reducedMotion={prefersReducedMotion} />
+              <OpportunityCard key={`${niche}-${item.title}`} item={item} index={i} isInView={isInView} reducedMotion={!!prefersReducedMotion} />
             ))}
           </motion.div>
         </AnimatePresence>
