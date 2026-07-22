@@ -1,0 +1,13 @@
+# CodeRabbit Configuration File
+language: "pt-BR"
+
+review:
+  path_filters:
+    - "!**/.agents/**"
+    - "!**/.antigravity/**"
+    - "!**/.next/**"
+    - "!**/.docs/**"
+    - "!**_.agents/**"
+    - "!**_.antigravity/**"
+    - "!**_.next/**"
+    - "!**_.docs/**"

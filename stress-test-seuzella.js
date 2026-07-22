@@ -8,8 +8,8 @@
 // Uso:  node stress-test-seuzella.js [--url http://localhost:3000] [--tenants 10] [--duration 30]
 // ==============================================================================
 
-const http = require('http');
-const https = require('https');
+import http from 'http';
+import https from 'https';
 
 // ── Configuração ──────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);

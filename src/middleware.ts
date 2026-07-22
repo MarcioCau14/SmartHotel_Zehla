@@ -30,7 +30,7 @@ const PROTECTED_PAGE_PATHS = ['/ddc', '/zcc', '/dashboard', '/config', '/tenants
 const SMART_ROUTER_PATHS = ['/ddc', '/ddc/'];
 
 /** ZCC God Mode access token — permite preview do /zcc sem login NextAuth */
-const ZCC_GODMODE_TOKEN = 'zella-ctrl-2026';
+const ZCC_GODMODE_TOKEN = process.env.ZCC_GODMODE_TOKEN || 'zella-ctrl-2026';
 const ZCC_GODMODE_COOKIE = 'zcc_godmode';
 
 /** API routes that require auth in production */
