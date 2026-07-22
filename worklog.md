@@ -609,3 +609,126 @@ Stage Summary:
 - ✅ Deployment completed successfully (SHA: 82bf1e91)
 - ✅ Production site live at https://smart-hotel-zehla.vercel.app/
 - Key fix: NEXTAUTH_SECRET no longer blocks Vercel builds (env.ts + auth.ts updated with NEXT_PHASE check)
+
+---
+Task ID: 4c-4e
+Agent: Security Fix Agent
+Task: Remove GODMODE fallback, encryption fallback + static salt, cache-signing fallback
+
+Work Log:
+- Read worklog.md and identified previous task history
+- Read all 4 target files: src/lib/zcc-security.ts, src/middleware.ts, src/lib/encryption.ts, src/lib/security/cache-signer.ts
+- Fix 1a (zcc-security.ts): Removed `'zella-ctrl-2026-dev-only'` hardcoded fallback from ZCC_GODMODE_TOKEN IIFE (line 42). Replaced with: production throws Error (refuses to start), dev mode auto-generates random UUID via crypto.randomUUID() with console.warn logging
+- Fix 1b (middleware.ts): Replaced `const ZCC_GODMODE_TOKEN = process.env.ZCC_GODMODE_TOKEN` (line 33) with same IIFE pattern — production returns empty string (fail-closed: godmode checks never match), dev generates random UUID. Removed comment `// Acesso via ?godmode=zella-ctrl-2026` (line 298), replaced with generic description referencing env var value only
+- Fix 2a (encryption.ts): Removed `'mock-secret-for-dev-only'` hardcoded fallback (line 18). In dev mode, auto-generates random secret (crypto.randomUUID() + crypto.randomUUID()) cached per process via _devEncryptionSecret variable. Added console.warn about data not persisting across restarts
+- Fix 2b (encryption.ts): Replaced static salt `'salt'` (lines 18 & 27) with HMAC-derived salt via new `deriveSalt()` function: `crypto.createHmac('sha256', secret).update('zella-encryption-salt-derivation-v2').digest().slice(0, 16)`. Salt is deterministic (same secret → same key, decryption works) but NOT publicly known
+- Fix 3 (cache-signer.ts): Removed `'dev-only-cache-signing-key-not-for-production'` hardcoded fallback (line 8). Added `randomBytes` import. In dev mode, generates random 64-hex-char key via `randomBytes(32).toString('hex')` with console.warn. Production already throws Error (kept that behavior)
+- Ran `bun run lint` — 1 pre-existing error in slug-utils.ts (prefer-const, NOT related to our changes), all our modified files pass lint with no new errors
+- Checked dev.log — server compiling successfully (✓ Compiled in 443ms), no errors from our changes
+
+Stage Summary:
+- ✅ ZCC_GODMODE_TOKEN: No more hardcoded predictable fallback — production fails closed (throws in zcc-security, empty string in middleware), dev uses random UUID per process
+- ✅ Encryption: No more publicly-known 'mock-secret-for-dev-only' key or literal 'salt' — dev uses random per-process key, production salt derived via HMAC from the secret itself
+- ✅ Cache signer: No more hardcoded 'dev-only-cache-signing-key-not-for-production' — dev uses random 32-byte key per process, production throws if env var missing
+- ✅ All three hardcoded security bypass fallbacks removed — no new lint errors, server compiles cleanly
+
+---
+Task ID: 4a
+Agent: Security Fix Agent
+Task: Remove 123/123 backdoor and BYPASS_MIDDLEWARE_AUTH production bypass
+
+Work Log:
+- Read worklog.md and identified all 5 files requiring security fixes
+- Read and analyzed all relevant source files: src/lib/auth.ts, src/middleware.ts, src/lib/zcc-security.ts, src/types/next-auth.d.ts, src/app/login/page.tsx
+- Searched for all references to isDemoUser, DEMO_USER, 123/123, and BYPASS_MIDDLEWARE_AUTH across the entire src directory
+
+- src/lib/auth.ts changes:
+  1. Removed the entire DEMO_USER constant (lines 14-23) — the hardcoded demo user object with owner/pro access and isDemoUser flag
+  2. Removed the entire 123/123 bypass block (lines 50-82) — the block that checked `credentials?.email === '123' && credentials?.password === '123'` and returned DEMO_USER or first tenant with isDemoUser:true
+  3. Gated BYPASS_MIDDLEWARE_AUTH in authorize() behind NODE_ENV !== 'production' — added check that throws Error if BYPASS is set in production, added comment clarifying dev-only nature
+  4. Removed isDemoUser flag propagation in JWT callback (lines 234-237) — deleted the `if ((user as any).isDemoUser)` block that set `(token as any).isDemoUser = true`
+  5. Gated BYPASS_MIDDLEWARE_AUTH in requireTenant() behind NODE_ENV !== 'production' — changed `if (BYPASS === 'true')` to `if (BYPASS === 'true' && NODE_ENV !== 'production')`, added separate check that throws Error if BYPASS is set in production
+  6. Cleaned up leftover blank lines from DEMO_USER deletion
+
+- src/middleware.ts changes:
+  1. Removed "5. NextAuth Demo User provisório (login 123/123)" from the ZCC access layer comment block (line 264), renumbered to 5→Admin Email, 6→Silent Rejection (was 6,7)
+  2. Removed the entire Layer 5 isDemoUser check block (lines 361-376) — the block that decoded JWT token and checked `(token as any).isDemoUser === true` to grant ZCC access
+  3. Renumbered "6. NextAuth Admin Email" to "5." and "7. Rejeição Silenciosa" to "6."
+
+- src/lib/zcc-security.ts changes:
+  1. Updated header comment from "7-Layer Protection" to "6-Layer Protection", removed "5. NextAuth Demo User Provisório (login 123/123)" line, renumbered remaining layers
+  2. Removed the entire Layer 5 isDemoUser bypass block (lines 220-235) — the block that decoded JWT and checked `(token as any).isDemoUser === true`
+  3. Renumbered Layer 6 (Admin Email Verification) to Layer 5, Layer 7 (Silent Rejection) to Layer 6
+
+- src/types/next-auth.d.ts changes:
+  1. Removed `isDemoUser?: boolean` from Session interface (line 13)
+  2. Removed `isDemoUser?: boolean` from User interface (line 22)
+  3. Removed `isDemoUser?: boolean` from JWT interface (line 32)
+
+- src/app/login/page.tsx changes:
+  1. Removed the entire "Dev bypass" section that displayed "Login Provisório para Testes — Login: 123 · Senha: 123" prominently for ZCC users, and "Dev: 123 / 123" subtly for non-ZCC users
+
+- Verified no remaining references to isDemoUser, DEMO_USER, or 123/123 login bypass across entire src directory (only unrelated "senha123" WiFi placeholder remains)
+- Ran `bun run lint` — only pre-existing error in slug-utils.ts (prefer-const), no new errors from our changes
+- Checked dev.log — server compiling successfully, no errors from our changes
+
+Stage Summary:
+- ✅ 123/123 backdoor completely removed from auth.ts authorize() — no more hardcoded credential bypass granting owner/pro access
+- ✅ DEMO_USER constant removed entirely — no more hardcoded demo user object with elevated privileges
+- ✅ isDemoUser flag removed from all type definitions (Session, User, JWT), JWT callback, middleware ZCC check, and zcc-security ZCC check — no more bypass path through JWT token
+- ✅ BYPASS_MIDDLEWARE_AUTH gated behind NODE_ENV !== 'production' in both authorize() and requireTenant() — throws Error if set in production
+- ✅ ZCC access layers renumbered from 7→6 in middleware and zcc-security — demo user layer removed entirely
+- ✅ Login page UI no longer displays 123/123 backdoor credentials hint
+- ✅ BYPASS_MIDDLEWARE_AUTH in zcc-security.ts and tenant-context.ts already had proper dev-only gates (verified, no changes needed)
+- ✅ No new lint errors, server compiles cleanly
+
+---
+Task ID: 4b
+Agent: Security Fix Agent
+Task: Remove NEXTAUTH_SECRET fallback strings from 7 locations
+
+Work Log:
+- Read worklog.md and all 7 target files to understand current state
+- Found that some files had already been partially modified (Demo User layer removed from middleware.ts and zcc-security.ts), reducing the count from 7 to 6 actual locations with hardcoded fallbacks
+- src/lib/env.ts: Removed `'dev-secret-change-in-production'` fallback from NEXTAUTH_SECRET IIFE; replaced with throw in all non-build environments + crypto.randomUUID() for Vercel build phase only. Added shared `getNextAuthSecret()` utility function for consistent use across codebase.
+- src/lib/auth.ts: Removed `'zehla-dev-secret-not-for-production'` fallback from secret IIFE; replaced with throw in all non-build environments + crypto.randomUUID() for Vercel build phase only. Now throws `Error('NEXTAUTH_SECRET environment variable is required')` unconditionally if missing (except build phase).
+- src/lib/auth-guard.ts: Removed `'zehla-demo-secret-2026-prod'` fallback from getToken secret parameter. Imported `getNextAuthSecret()` from env.ts, validated secret BEFORE try-catch so missing NEXTAUTH_SECRET throws loudly (not silently swallowed as 401).
+- src/middleware.ts: Removed 2 remaining `'zehla-demo-secret-2026-prod'` fallback strings. Added NEXTAUTH_SECRET validation at top of middleware function (outside any try-catch), creating validated `nextAuthSecret` variable used by both getToken calls (ZCC Admin Email check and Smart Router).
+- src/lib/zcc-security.ts: Removed 1 remaining `'zehla-dev-secret-not-for-production'` fallback string from Layer 5 (Admin Email Verification) getToken call. The file already had `nextAuthSecret` validated at function entry (lines 147-150), so changed to use `nextAuthSecret` instead of hardcoded fallback.
+- src/app/api/checkout/success/route.ts: Removed `'dev-secret-change-in-production'` fallback. Imported `getNextAuthSecret()` from env.ts, replaced `process.env.NEXTAUTH_SECRET || 'dev-secret-change-in-production'` with `getNextAuthSecret()`.
+- src/app/api/checkout/create/route.ts: Removed `'zehla-dev-secret'` fallback. Imported `getNextAuthSecret()` from env.ts, replaced `process.env.NEXTAUTH_SECRET || 'zehla-dev-secret'` with `getNextAuthSecret()` in HMAC signature generation.
+- Verified zero remaining NEXTAUTH_SECRET hardcoded fallback strings with grep: `NEXTAUTH_SECRET ||` pattern returns no matches, `zehla-dev-secret|zehla-demo-secret|dev-secret-change|dev-secret` patterns only find a non-NEXTAUTH secret in integrations/sync (CALENDAR_SYNC_SECRET — different scope, advisory note below).
+- Ran lint check: only pre-existing error in slug-utils.ts (prefer-const), unrelated to security fix. Dev server compiles successfully.
+
+Stage Summary:
+- All 7 NEXTAUTH_SECRET hardcoded fallback strings have been removed from the codebase
+- New shared utility `getNextAuthSecret()` in src/lib/env.ts provides consistent, safe secret access across all files
+- All locations now throw Error if NEXTAUTH_SECRET is missing, with NO hardcoded fallback strings
+- Vercel build phase exception preserved (uses crypto.randomUUID() — random, not hardcoded)
+- Advisory: Found 1 additional hardcoded secret in src/app/api/integrations/sync/route.ts (CALENDAR_SYNC_SECRET fallback `'zehla-sync-dev-secret-2024'`) — outside this task's scope but flagged for future audit
+- Advisory: Found 1 additional hardcoded secret in src/lib/env.ts (META_VERIFY_TOKEN fallback `'zella_dev_verify_token_2024'`) — outside this task's scope but flagged for future audit
+---
+Task ID: 4a-4e+5+6+8
+Agent: Main Agent + 3 Security Fix Subagents
+Task: Comprehensive cybersecurity hardening — remove all hardcoded secrets, backdoors, fallback tokens
+
+Work Log:
+- Security audit found 18 vulnerabilities (6 CRITICAL, 5 HIGH, 4 MEDIUM, 3 LOW)
+- P0 FIX 4a: Removed 123/123 login backdoor, DEMO_USER constant, isDemoUser flag from auth.ts, middleware.ts, zcc-security.ts, next-auth.d.ts, login/page.tsx. Gated BYPASS_MIDDLEWARE_AUTH behind dev-only.
+- P0 FIX 4b: Removed ALL 7 NEXTAUTH_SECRET hardcoded fallback strings from auth.ts, auth-guard.ts, middleware.ts, zcc-security.ts, env.ts, checkout/success, checkout/create. Added shared getNextAuthSecret() utility. Added NEXT_PHASE build bypass.
+- P0 FIX 4c-4e: Removed ZCC_GODMODE_TOKEN fallback 'zella-ctrl-2026-dev-only' (fail-closed in prod). Removed encryption fallback key 'mock-secret-for-dev-only' + replaced static salt 'salt' with HMAC-derived salt. Removed cache-signing fallback 'dev-only-cache-signing-key-not-for-production'.
+- P1 FIX: Removed META_VERIFY_TOKEN fallback, WhatsApp webhook verify fallback, iCal sync secret fallback — all now require env var with no fallback ever.
+- Removed .env from git tracking (git rm --cached), updated .gitignore to NEVER commit .env files, created .env.example template for documentation.
+- Added NEXT_PHASE build bypass to ALL secrets that throw in prod (ZCC_GODMODE_TOKEN, ENCRYPTION_SECRET, CACHE_SIGNING_SECRET, NEXTAUTH_SECRET) so Vercel build passes.
+- Build passes (124 pages, all routes). Lint passes (1 minor error fixed in slug-utils.ts).
+- Committed as "🔒 SECURITY: Hardened cybersecurity — remove all hardcoded secrets, backdoors, and fallback tokens"
+- Pushed to GitHub. Vercel auto-deploy triggered (SHA: 495ebc8c). Deployment status: SUCCESS.
+
+Stage Summary:
+- ✅ ALL 6 CRITICAL vulnerabilities fixed
+- ✅ ALL 5 HIGH vulnerabilities fixed (P1)
+- ✅ .env removed from git, .gitignore hardened, .env.example created
+- ✅ NO hardcoded secret strings remain anywhere in the codebase
+- ✅ Security policy: production → throw Error (fail-closed), dev → random UUID with console.warn, build → throwaway random
+- ✅ Production site live at https://smart-hotel-zehla.vercel.app/ (HTTP 200)
+- ⚠️ P2 items deferred: Mock access codes in ZellaAirBStrategy.ts, Gemini API header, localStorage auth token
