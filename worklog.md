@@ -576,3 +576,36 @@ Stage Summary:
 - Guia Digital Hóspede: FULL backend (auto-generation from AirBProperty data + public HTML page + QR Code + Cérebro Zélla tool) — generates guide with Wi-Fi, rules, restaurants, emergency contacts
 - Landing page positioning updated: "Organiza E lucra mais + gaste menos" vs Pilota's "organiza"
 - 2 new Cérebro Zélla tools: calculate_dynamic_price + send_guest_guide
+---
+Task ID: deploy-1
+Agent: Main Agent
+Task: Build, commit, push to GitHub, and deploy to Vercel (smart-hotel-zehla.vercel.app)
+
+Work Log:
+- Checked project state: git ahead by 6 commits, working tree clean
+- Ran lint: 1 error (test file require import), many warnings (unused vars, any types) — not blocking
+- First build attempt failed: NEXTAUTH_SECRET required in production
+- Fixed NEXTAUTH_SECRET issue: modified auth.ts and env.ts to not throw during build phase (NEXT_PHASE check)
+- Build succeeded without NEXTAUTH_SECRET ✅ (124 pages generated)
+- Git pull --rebase: had 6 conflict files (dev.pid, 5 PNG screenshots, zehla-tools.ts, use-ddc-deliveries.ts)
+- Resolved all conflicts:
+  - dev.pid: accepted newer PID value
+  - 5 PNG files: accepted deletion (these were unauthorized screenshots from previous session)
+  - zehla-tools.ts: resolved 4 conflict markers, kept result.data without `as any` cast
+  - use-ddc-deliveries.ts: both versions identical, accepted either
+- Rebase completed successfully: 3 commits rebased onto 8bcfccbe
+- Committed NEXTAUTH_SECRET build-safe fix as separate commit
+- Pushed to GitHub: 4 commits total (3 rebased + 1 new fix)
+- Could not authenticate with Vercel CLI (no credentials found)
+- Discovered GitHub-Vercel integration via vercel[bot] deployments
+- Latest deployment SHA 82bf1e91 matches our push — deployment status: SUCCESS
+- Verified production site: https://smart-hotel-zehla.vercel.app/ returns HTTP 200
+- Confirmed landing page renders with latest content: "Organize, lucre mais e gaste menos no WhatsApp"
+
+Stage Summary:
+- ✅ Build passes locally without NEXTAUTH_SECRET (Vercel-compatible)
+- ✅ Pushed 4 commits to GitHub (MarcioCau14/SmartHotel_Zehla)
+- ✅ Vercel auto-deploy triggered via GitHub integration (vercel[bot])
+- ✅ Deployment completed successfully (SHA: 82bf1e91)
+- ✅ Production site live at https://smart-hotel-zehla.vercel.app/
+- Key fix: NEXTAUTH_SECRET no longer blocks Vercel builds (env.ts + auth.ts updated with NEXT_PHASE check)
