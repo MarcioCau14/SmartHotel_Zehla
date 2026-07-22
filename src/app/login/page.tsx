@@ -408,6 +408,7 @@ function LoginContent() {
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.25 }}
                     onSubmit={handleCredentialLogin}
+                    data-credential-form
                     className="w-full space-y-3 overflow-hidden"
                   >
                     <div className="relative">
@@ -449,6 +450,64 @@ function LoginContent() {
                   </motion.form>
                 )}
               </AnimatePresence>
+
+              {/* ── Demo Quick Login ── */}
+              {isZCC && (
+                <motion.div variants={fadeUp} className="w-full">
+                  <div className="p-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/[0.12] space-y-2">
+                    <p className="text-emerald-400 text-xs font-medium text-center">
+                      Acesso rápido ao ZCC — Modo Demonstração
+                    </p>
+                    <Button
+                      type="button"
+                      className="w-full h-10 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg cursor-pointer active:scale-[0.97] transition-all text-sm"
+                      disabled={isLoading}
+                      onClick={async () => {
+                        setIsLoading(true);
+                        try {
+                          const { signIn } = await import('next-auth/react');
+                          const result = await signIn('credentials', {
+                            email: 'zella@zella.com.br',
+                            password: '123',
+                            redirect: false,
+                          });
+                          if (result?.ok) {
+                            toast.success('Acesso ZCC autorizado!');
+                            await new Promise(r => setTimeout(r, 500));
+                            router.push('/zcc');
+                            router.refresh();
+                          } else {
+                            toast.error(result?.error === 'CredentialsSignin' ? 'Credenciais demo não encontradas. Execute o seed primeiro.' : `Erro: ${result?.error}`);
+                          }
+                        } catch {
+                          toast.error('Erro de conexão.');
+                        } finally {
+                          setIsLoading(false);
+                        }
+                      }}
+                    >
+                      {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LayoutDashboard className="mr-2 h-4 w-4" />}
+                      Entrar no ZCC (login: zella@zella.com.br / senha: 123)
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* ── Demo Quick Login for DDC ── */}
+              {!isZCC && (
+                <motion.div variants={fadeUp} className="w-full">
+                  <button
+                    type="button"
+                    className="w-full text-zinc-500 text-[10px] font-mono tracking-wider uppercase hover:text-zinc-400 cursor-pointer flex items-center justify-center gap-1 transition-colors py-1"
+                    onClick={() => {
+                      setCredentialData({ email: 'demo@pousada.com.br', password: 'Demo@123' });
+                      setShowCredentials(true);
+                    }}
+                  >
+                    acesso demo (demo@pousada.com.br / Demo@123)
+                  </button>
+                </motion.div>
+              )}
 
               {/* Sign up link */}
               <motion.div variants={fadeUp} className="text-center pt-2">

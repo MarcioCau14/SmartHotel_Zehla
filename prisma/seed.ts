@@ -630,6 +630,37 @@ async function main() {
   // Seeding credentials requested by user
   console.log('\n🔐 Criando contas de demonstração NextAuth...');
 
+  // ── ZCC Admin Demo (login 123 / senha 123) ──
+  const zccAdminEmail = 'zella@zella.com.br';
+  const zccAdminPassword = await bcrypt.hash('123', 12);
+  const zccAdmin = await prisma.tenant.upsert({
+    where: { email: zccAdminEmail },
+    update: { passwordHash: zccAdminPassword, role: 'admin' },
+    create: {
+      id: 'zcc-admin-id',
+      name: 'Zélla Central Control',
+      email: zccAdminEmail,
+      passwordHash: zccAdminPassword,
+      phone: '11999999999',
+      role: 'admin',
+      plan: 'business',
+      niche: 'pousada',
+      status: 'active',
+    },
+  });
+  console.log(`   ZCC Admin Demo criado: ${zccAdmin.email} (senha: 123) ← Acesso rápido ao ZCC`);
+
+  await prisma.property.upsert({
+    where: { tenantId: zccAdmin.id },
+    update: {},
+    create: {
+      tenantId: zccAdmin.id,
+      name: 'Zélla Headquarters',
+      slug: 'zellahq',
+      type: 'pousada',
+    },
+  });
+
   const admin1Email = 'admin@zehla.ai';
   const admin1Password = await bcrypt.hash('zehla2024', 12);
   const admin1 = await prisma.tenant.upsert({
