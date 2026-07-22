@@ -30,7 +30,7 @@ const PROTECTED_PAGE_PATHS = ['/ddc', '/zcc', '/dashboard', '/config', '/tenants
 const SMART_ROUTER_PATHS = ['/ddc', '/ddc/'];
 
 /** ZCC God Mode access token — permite preview do /zcc sem login NextAuth */
-const ZCC_GODMODE_TOKEN = process.env.ZCC_GODMODE_TOKEN || 'zella-ctrl-2026';
+const ZCC_GODMODE_TOKEN = process.env.ZCC_GODMODE_TOKEN;
 const ZCC_GODMODE_COOKIE = 'zcc_godmode';
 
 /** API routes that require auth in production */
@@ -173,12 +173,12 @@ function silentReject(
 
 // ── Funções auxiliares gerais ──
 
-function shouldSkipLog(pathname: string): boolean {  
-  return SKIP_LOG_PATHS.some((p) => pathname.startsWith(p)) || pathname.startsWith('/_next');  
+function shouldSkipLog(pathname: string): boolean {
+  return SKIP_LOG_PATHS.some((p) => pathname.startsWith(p)) || pathname.startsWith('/_next');
 }
 
-function isProtectedPage(pathname: string): boolean {  
-  return PROTECTED_PAGE_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'));  
+function isProtectedPage(pathname: string): boolean {
+  return PROTECTED_PAGE_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'));
 }
 
 function isProtectedApi(pathname: string): boolean {
@@ -204,15 +204,15 @@ function isPublicApi(pathname: string): boolean {
 // MIDDLEWARE PRINCIPAL
 // ═══════════════════════════════════════════════════════════════
 
-export async function middleware(request: NextRequest) {  
-  const { pathname } = request.nextUrl;  
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
   const response = NextResponse.next();
 
   // ── Security Headers (todas as respostas) ──
-  response.headers.set('X-Content-Type-Options', 'nosniff');  
-  response.headers.set('X-XSS-Protection', '1; mode=block');  
-  response.headers.set('X-Frame-Options', 'DENY');  
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');  
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(self), geolocation=(), payment=()');
   response.headers.set('X-Security-Shield', 'zero-trust-v3');
 
@@ -222,35 +222,35 @@ export async function middleware(request: NextRequest) {
   }
 
   // ── Content Security Policy (produção apenas — hardened) ──
-  if (process.env.NODE_ENV === 'production') {  
-    response.headers.set('Content-Security-Policy', [  
-      "default-src 'self'",  
+  if (process.env.NODE_ENV === 'production') {
+    response.headers.set('Content-Security-Policy', [
+      "default-src 'self'",
       "script-src 'self' 'unsafe-inline'",  // unsafe-eval REMOVIDO
-      "style-src 'self' 'unsafe-inline'",  
+      "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https://*.mercadopago.com https://*.cloudinary.com",
-      "font-src 'self' data:",  
+      "font-src 'self' data:",
       // wss://* REMOVIDO — restrito a domínios conhecidos
       "connect-src 'self' https://*.mercadopago.com wss://smart-hotel-zehla.vercel.app https://*.railway.app",
-      "frame-ancestors 'none'",  
+      "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self' https://*.mercadopago.com",
-    ].join('; '));  
+    ].join('; '));
   }
 
   // ── Request ID ──
-  const requestId = request.headers.get('x-request-id') || request.headers.get('x-vercel-id') || `mid-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;  
+  const requestId = request.headers.get('x-request-id') || request.headers.get('x-vercel-id') || `mid-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   response.headers.set('X-Request-ID', requestId);
 
   // ── Request Logging (pula paths barulhentos) ──
-  if (!shouldSkipLog(pathname)) {  
-    const isApi = pathname.startsWith('/api/');  
-    console.log(JSON.stringify({  
-      timestamp: new Date().toISOString(),  
-      type: isApi ? 'api-request' : 'page-request',  
-      method: request.method, path: pathname, requestId,  
-      userAgent: request.headers.get('user-agent')?.slice(0, 100),  
-      ip: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown',  
-    }));  
+  if (!shouldSkipLog(pathname)) {
+    const isApi = pathname.startsWith('/api/');
+    console.log(JSON.stringify({
+      timestamp: new Date().toISOString(),
+      type: isApi ? 'api-request' : 'page-request',
+      method: request.method, path: pathname, requestId,
+      userAgent: request.headers.get('user-agent')?.slice(0, 100),
+      ip: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown',
+    }));
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -483,9 +483,9 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return response;  
+  return response;
 }
 
-export const config = {  
-  matcher: ['/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2)$).*)'],  
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2)$).*)'],
 };
