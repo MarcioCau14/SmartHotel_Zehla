@@ -1,11 +1,22 @@
-import { createHmac, timingSafeEqual } from 'crypto';
+import { createHmac, timingSafeEqual, randomBytes } from 'crypto';
 
 const SECRET = (() => {
   const secret = process.env.CACHE_SIGNING_SECRET;
-  if (!secret && process.env.NODE_ENV === 'production') {
-    throw new Error('CACHE_SIGNING_SECRET is required in production');
+  if (!secret) {
+    // During Vercel build phase, use a throwaway random value (not used at runtime)
+    if (process.env.NEXT_PHASE?.includes('build')) {
+      return randomBytes(32).toString('hex');
+    }
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('CACHE_SIGNING_SECRET is required in production');
+    }
+    // Dev mode: auto-generate a random signing key per process session
+    // NOT a predictable hardcoded string
+    const generated = randomBytes(32).toString('hex');
+    console.warn('[CACHE-SIGNER] CACHE_SIGNING_SECRET not set — generated random key for dev mode. Signed cache data will NOT persist across server restarts. Set CACHE_SIGNING_SECRET env var for persistence.');
+    return generated;
   }
-  return secret || 'dev-only-cache-signing-key-not-for-production';
+  return secret;
 })();
 
 interface SignedPayload<T> {

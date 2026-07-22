@@ -15,11 +15,28 @@ export const NEXTAUTH_URL = getEnv('NEXTAUTH_URL', 'http://localhost:3000');
 export const NEXTAUTH_SECRET = (() => {
   const secret = process.env.NEXTAUTH_SECRET;
   // Don't throw during Vercel build phase — runtime will still need it
-  if (!secret && process.env.NODE_ENV === 'production' && !process.env.NEXT_PHASE?.includes('build')) {
-    throw new Error('NEXTAUTH_SECRET is required in production — set a cryptographically random value (≥32 chars)');
+  if (!secret) {
+    if (process.env.NEXT_PHASE?.includes('build')) {
+      // Build phase: use a throwaway random value (never used at runtime)
+      return crypto.randomUUID();
+    }
+    throw new Error('NEXTAUTH_SECRET environment variable is required — set a cryptographically random value (≥32 chars)');
   }
-  return secret || 'dev-secret-change-in-production';
+  return secret;
 })();
+
+/**
+ * Shared utility: get NEXTAUTH_SECRET or throw.
+ * NO hardcoded fallback strings — missing secret always throws.
+ * Use this in all files that need the secret for getToken() or HMAC signing.
+ */
+export function getNextAuthSecret(): string {
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    throw new Error('NEXTAUTH_SECRET environment variable is required');
+  }
+  return secret;
+}
 
 // Mercado Pago
 export const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN ?? '';
@@ -62,8 +79,8 @@ export const ZEHLA_LOOP_API_KEY = process.env.ZEHLA_LOOP_API_KEY ?? '';
 export const META_COST_GUARD_ENABLED = process.env.META_COST_GUARD_ENABLED ?? 'false';
 export const META_COST_LIMIT_PER_MESSAGE = Number(process.env.META_COST_LIMIT_PER_MESSAGE ?? '0.10');
 
-// Meta WhatsApp Business API
-export const META_VERIFY_TOKEN = process.env.META_VERIFY_TOKEN ?? 'zella_dev_verify_token_2024';
+// Meta WhatsApp Business API — NO fallback tokens (security)
+export const META_VERIFY_TOKEN = process.env.META_VERIFY_TOKEN ?? '';
 export const META_APP_SECRET = process.env.META_APP_SECRET ?? '';
 export const META_ACCESS_TOKEN = process.env.META_ACCESS_TOKEN ?? '';
 export const META_PHONE_NUMBER_ID = process.env.META_PHONE_NUMBER_ID ?? '';

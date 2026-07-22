@@ -7,15 +7,35 @@ const AUTH_TAG_LENGTH = 16;
 /**
  * Retorna o secret garantindo que tenha 32 bytes.
  */
+// Dev-mode fallback secret — generated once per process, NOT a predictable hardcoded string
+let _devEncryptionSecret: string | null = null;
+
+/**
+ * Derives a proper salt from the encryption secret using HMAC,
+ * instead of the insecure hardcoded literal string 'salt'.
+ * The salt is deterministic (same secret → same key) so decryption works,
+ * but is NOT publicly known — requires the secret to compute.
+ */
+function deriveSalt(secret: string): Buffer {
+  return crypto.createHmac('sha256', secret).update('zella-encryption-salt-derivation-v2').digest().slice(0, 16);
+}
+
 function getEncryptionSecret(): Buffer {
   const secret = process.env.ENCRYPTION_SECRET;
   if (!secret) {
-    // Em MODO MOCK, se não houver secret, usa um fallback estático apenas para o ambiente de dev
-    // Em produção, isso DEVE estar configurado
+    // During Vercel build phase, use a throwaway random value (not used at runtime)
+    if (process.env.NEXT_PHASE?.includes('build')) {
+      return crypto.scryptSync(crypto.randomUUID(), deriveSalt(crypto.randomUUID()), 32);
+    }
     if (process.env.NODE_ENV === 'production') {
       throw new Error('ENCRYPTION_SECRET is not set in environment variables.');
     }
-    return crypto.scryptSync('mock-secret-for-dev-only', 'salt', 32);
+    // Dev mode: auto-generate a random secret per process (NOT a predictable hardcoded string)
+    if (!_devEncryptionSecret) {
+      _devEncryptionSecret = crypto.randomUUID() + crypto.randomUUID();
+      console.warn('[ENCRYPTION] ENCRYPTION_SECRET not set — generated random key for dev mode. Encrypted data will NOT persist across server restarts. Set ENCRYPTION_SECRET env var for persistence.');
+    }
+    return crypto.scryptSync(_devEncryptionSecret, deriveSalt(_devEncryptionSecret), 32);
   }
 
   // Se o secret for hex (64 chars)
@@ -23,8 +43,8 @@ function getEncryptionSecret(): Buffer {
     return Buffer.from(secret, 'hex');
   }
 
-  // Se for uma string de texto, faz hash para 32 bytes para garantir o tamanho
-  return crypto.scryptSync(secret, 'salt', 32);
+  // Se for uma string de texto, faz hash para 32 bytes usando HMAC-derived salt
+  return crypto.scryptSync(secret, deriveSalt(secret), 32);
 }
 
 /**

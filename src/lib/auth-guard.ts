@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { getNextAuthSecret } from '@/lib/env';
 
 export interface AuthSession {
   tenantId: string;
@@ -10,10 +11,12 @@ export interface AuthSession {
 export async function getAuthSession(
   request: NextRequest
 ): Promise<{ session: AuthSession | null; errorResponse: NextResponse | null }> {
+  // Validate secret BEFORE try-catch so missing NEXTAUTH_SECRET throws loudly
+  const secret = getNextAuthSecret();
   try {
     const token = await getToken({
       req: request,
-      secret: process.env.NEXTAUTH_SECRET || 'zehla-demo-secret-2026-prod',
+      secret,
     });
     if (!token?.tenantId) {
       return {

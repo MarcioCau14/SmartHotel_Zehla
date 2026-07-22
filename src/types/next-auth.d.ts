@@ -10,7 +10,6 @@ declare module "next-auth" {
       role: string;
       plan: PlanTier;
       niche: NicheType;
-      isDemoUser?: boolean;
     } & DefaultSession["user"];
   }
 
@@ -19,7 +18,6 @@ declare module "next-auth" {
     role: string;
     plan: PlanTier;
     niche: NicheType;
-    isDemoUser?: boolean;
   }
 }
 
@@ -29,6 +27,5 @@ declare module "next-auth/jwt" {
     role: string;
     plan: PlanTier;
     niche: NicheType;
-    isDemoUser?: boolean;
   }
 }

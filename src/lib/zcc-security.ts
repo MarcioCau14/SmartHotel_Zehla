@@ -1,14 +1,13 @@
 // =============================================================================
 // ZÉLLA Central Control — Security Gate V3 Shared Utility
 // =============================================================================
-// 7-Layer Protection for all /api/zcc/* routes:
+// 6-Layer Protection for all /api/zcc/* routes:
 // 1. Rate Limiting (5 req/IP per 15min window)
 // 2. Master Key Header (X-ZCC-Master-Key)
 // 3. Godmode Param (via URL ?godmode=)
 // 4. Godmode Cookie with Nonce Rotation (anti-replay)
-// 5. NextAuth Demo User Provisório (login 123/123 — remover após testes)
-// 6. NextAuth Admin Email Verification
-// 7. Silent Rejection (never reveal route exists)
+// 5. NextAuth Admin Email Verification
+// 6. Silent Rejection (never reveal route exists)
 // =============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -36,10 +35,21 @@ export interface ZCCSecurityResult {
 
 const ZCC_GODMODE_TOKEN = (() => {
   const token = process.env.ZCC_GODMODE_TOKEN;
-  if (!token && process.env.NODE_ENV === 'production') {
-    console.error('[ZCC-SECURITY] ZCC_GODMODE_TOKEN env var is not set — production requires an explicit token');
+  if (!token) {
+    // During Vercel build phase, use a throwaway random value (not used at runtime)
+    if (process.env.NEXT_PHASE?.includes('build')) {
+      return crypto.randomUUID();
+    }
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[ZCC-SECURITY] ZCC_GODMODE_TOKEN env var is not set — godmode access layers are DISABLED in production (fail-closed)');
+      return ''; // Empty string ensures godmode checks never match — safe fail-closed
+    }
+    // Dev mode: auto-generate a random token per process (NOT a predictable hardcoded string)
+    const generated = crypto.randomUUID();
+    console.warn('[ZCC-SECURITY] ZCC_GODMODE_TOKEN not set — generated random dev token:', generated, '(Set env var for predictable dev access)');
+    return generated;
   }
-  return token || 'zella-ctrl-2026-dev-only';
+  return token;
 })();
 const ZCC_GODMODE_COOKIE = 'zcc_godmode';
 
@@ -139,6 +149,11 @@ export async function verifyZCCAccess(request: NextRequest): Promise<ZCCSecurity
   const userAgent = request.headers.get('user-agent')?.slice(0, 100) || 'unknown';
   const pathname = request.nextUrl?.pathname || '/api/zcc/unknown';
 
+  // ── NEXTAUTH_SECRET Validation ──
+  // NO hardcoded fallback — missing secret always throws
+  const nextAuthSecret = process.env.NEXTAUTH_SECRET;
+  if (!nextAuthSecret) throw new Error('NEXTAUTH_SECRET environment variable is required');
+
   // ── Dev bypass: allow unauthenticated access in development ──
   if (process.env.BYPASS_MIDDLEWARE_AUTH === 'true' && process.env.NODE_ENV !== 'production') {
     return { allowed: true, ip };
@@ -217,28 +232,11 @@ export async function verifyZCCAccess(request: NextRequest): Promise<ZCCSecurity
     // Invalid cookie or expired nonce — continue to next check
   }
 
-  // ── Layer 5: NextAuth Demo User Provisório (login 123/123) ──
-  // Login temporário para testes: email "123" / senha "123"
-  // PERMITIDO SOMENTE ATÉ CONCLUIRMOS OS TESTES — remover depois
+  // ── Layer 5: NextAuth Admin Email Verification ──
   try {
     const token = await getToken({
       req: request,
-      secret: process.env.NEXTAUTH_SECRET || 'zehla-dev-secret-not-for-production',
-    });
-    // Verifica flag isDemoUser no JWT (setada pelo bypass 123/123)
-    if (token && (token as any).isDemoUser === true) {
-      addAuditEntry({ ip, userAgent, method: 'session', success: true, path: pathname });
-      return { allowed: true, ip };
-    }
-  } catch {
-    // Token decode failure — continue to next check
-  }
-
-  // ── Layer 6: NextAuth Admin Email Verification ──
-  try {
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET || 'zehla-dev-secret-not-for-production',
+      secret: nextAuthSecret,
     });
     if (token?.email) {
       const adminEmails = (process.env.ZCC_ADMIN_EMAILS || '')
@@ -254,7 +252,7 @@ export async function verifyZCCAccess(request: NextRequest): Promise<ZCCSecurity
     // Token decode failure — deny silently
   }
 
-  // ── Layer 7: Silent Rejection ──
+  // ── Layer 6: Silent Rejection ──
   // Never reveal the route exists — return 404 instead of 401
   addAuditEntry({ ip, userAgent, method: 'denied', success: false, path: pathname });
 

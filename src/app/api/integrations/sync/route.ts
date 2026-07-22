@@ -14,19 +14,18 @@ export async function POST(request: NextRequest) {
   try {
     const syncSecretHeader = request.headers.get('x-sync-secret');
 
-    // SECURITY: Get configured secret — in production, no hardcoded fallback
+    // SECURITY: Always require env var. No hardcoded fallback ever.
     const configuredSecret = process.env.CALENDAR_SYNC_SECRET;
-    if (!configuredSecret && process.env.NODE_ENV === 'production') {
-      console.error('[sync-api] CRITICAL: CALENDAR_SYNC_SECRET not set in production');
+    if (!configuredSecret) {
+      console.error('[sync-api] CRITICAL: CALENDAR_SYNC_SECRET not set');
       return NextResponse.json(
         { error: 'SERVICE_NOT_CONFIGURED' },
         { status: 503, headers: { 'X-Security-Shield': 'zero-trust-v1' } }
       );
     }
 
-    // Dev fallback (only in non-production)
-    const expectedSecret = configuredSecret
-      || (process.env.NODE_ENV !== 'production' ? 'zehla-sync-dev-secret-2024' : '');
+    // Use env var directly (no fallback)
+    const expectedSecret = configuredSecret;
 
     // Auth Path 1: Timing-safe secret comparison
     if (syncSecretHeader && expectedSecret) {

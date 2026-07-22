@@ -10,18 +10,6 @@ import type { PlanTier } from '@/lib/plan-features';
 import type { NicheType } from '@/contexts/NicheContext';
 import { migratePlanLegacy } from '@/lib/plan-features';
 
-/** Safe demo user returned when DB is unavailable (e.g. Vercel serverless without SQLite) */
-const DEMO_USER = {
-  id: 'demo-tenant-id',
-  email: 'demo@zehla.com',
-  name: 'Demo Zélla',
-  role: 'owner' as const,
-  tenantId: 'demo-tenant-id',
-  plan: 'pro' as PlanTier,
-  niche: 'pousada' as NicheType,
-  isDemoUser: true, // Flag para middleware permitir acesso ZCC temporário
-};
-
 /** Check if we're running on Vercel (serverless — no persistent SQLite) */
 function isVercelServerless(): boolean {
   return !!(process.env.VERCEL || process.env.VERCEL_ENV);
@@ -47,43 +35,15 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         console.log('[auth] authorize() called — email:', credentials?.email, '| vercel:', isVercelServerless());
 
-        // === BYPASS 123/123 — Dev & Demo Quick Access ===
-        if (credentials?.email === '123' && credentials?.password === '123') {
-          console.log('[auth] 123/123 bypass activated');
-          // On Vercel serverless, skip DB entirely — SQLite file doesn't exist there
-          if (isVercelServerless()) {
-            console.log('[auth] Vercel serverless — returning DEMO_USER');
-            return DEMO_USER;
-          }
-          try {
-            const dbOk = await isDatabaseAvailable();
-            console.log('[auth] DB available:', dbOk);
-            if (dbOk) {
-              const firstTenant = await db.tenant.findFirst();
-              if (firstTenant) {
-                console.log('[auth] Found tenant:', firstTenant.id, firstTenant.name);
-                return {
-                  id: firstTenant.id,
-                  email: firstTenant.email,
-                  name: firstTenant.name,
-                  role: firstTenant.role || 'owner',
-                  tenantId: firstTenant.id,
-                  plan: migratePlanLegacy(firstTenant.plan || 'gratuito'),
-                  niche: (firstTenant as any).niche || 'pousada',
-                  isDemoUser: true, // Flag para middleware permitir acesso ZCC temporário
-                };
-              }
-            }
-          } catch (err) {
-            console.error('[auth] DB error on 123/123 bypass:', err);
-          }
-          console.log('[auth] No DB tenant found — returning DEMO_USER');
-          return DEMO_USER;
-        }
-
-        // === BYPASS_MIDDLEWARE_AUTH mode (dev/staging) ===
+        // === BYPASS_MIDDLEWARE_AUTH mode (DEVELOPMENT ONLY) ===
+        // This bypass is ONLY allowed in non-production environments.
+        // If BYPASS_MIDDLEWARE_AUTH is set in production, throw an error.
         if (process.env.BYPASS_MIDDLEWARE_AUTH === 'true') {
-          console.log('[auth] BYPASS_MIDDLEWARE_AUTH=true — accepting any credentials');
+          if (process.env.NODE_ENV === 'production') {
+            console.error('[auth] SECURITY: BYPASS_MIDDLEWARE_AUTH is set in production — this is forbidden');
+            throw new Error('BYPASS_MIDDLEWARE_AUTH is not allowed in production. Remove this env variable immediately.');
+          }
+          console.log('[auth] BYPASS_MIDDLEWARE_AUTH=true (dev-only) — accepting any credentials');
           if (isVercelServerless()) {
             return {
               id: 'mock-tenant-id',
@@ -231,11 +191,6 @@ export const authOptions: NextAuthOptions = {
         token.role = (user as any).role;
         token.plan = (user as any).plan;
         token.niche = (user as any).niche;
-        // Flag para acesso ZCC temporário (login 123/123)
-        if ((user as any).isDemoUser) {
-          (token as any).isDemoUser = true;
-        }
-
         // For OAuth users, look up tenant info
         if (account?.provider === 'google') {
           try {
@@ -283,10 +238,14 @@ export const authOptions: NextAuthOptions = {
   secret: (() => {
     const secret = process.env.NEXTAUTH_SECRET;
     // Don't throw during Vercel build phase — runtime will still need it
-    if (!secret && process.env.NODE_ENV === 'production' && !process.env.NEXT_PHASE?.includes('build')) {
-      throw new Error('NEXTAUTH_SECRET environment variable is required in production');
+    if (!secret) {
+      if (process.env.NEXT_PHASE?.includes('build')) {
+        // Build phase: use a throwaway random value (never used at runtime)
+        return crypto.randomUUID();
+      }
+      throw new Error('NEXTAUTH_SECRET environment variable is required');
     }
-    return secret || 'zehla-dev-secret-not-for-production';
+    return secret;
   })(),
   debug: process.env.NODE_ENV === 'development',
 };
@@ -302,7 +261,8 @@ export async function requireTenant() {
     return session?.user?.tenantId || 'demo-tenant-id';
   }
 
-  if (process.env.BYPASS_MIDDLEWARE_AUTH === 'true') {
+  // BYPASS_MIDDLEWARE_AUTH is ONLY allowed in development, never in production.
+  if (process.env.BYPASS_MIDDLEWARE_AUTH === 'true' && process.env.NODE_ENV !== 'production') {
     try {
       const dbOk = await isDatabaseAvailable();
       if (dbOk) {
@@ -315,6 +275,12 @@ export async function requireTenant() {
       // DB not available
     }
     return 'mock-tenant-id';
+  }
+
+  // If BYPASS_MIDDLEWARE_AUTH is set in production, throw an error
+  if (process.env.BYPASS_MIDDLEWARE_AUTH === 'true' && process.env.NODE_ENV === 'production') {
+    console.error('[auth] SECURITY: BYPASS_MIDDLEWARE_AUTH in requireTenant() is set in production — forbidden');
+    throw new Error('BYPASS_MIDDLEWARE_AUTH is not allowed in production. Remove this env variable immediately.');
   }
 
   const session = await getServerSession(authOptions);

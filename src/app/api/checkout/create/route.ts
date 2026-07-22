@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/auth';
 import { createError } from '@/lib/error-handler';
 import { authRatelimit } from '@/lib/rate-limit';
 import { type PlanTier } from '@/lib/plan-features';
+import { getNextAuthSecret } from '@/lib/env';
 import crypto from 'crypto';
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -103,7 +104,7 @@ function buildCheckoutPayload(params: {
       subscriptionId: params.subscriptionId,
       tenantId: params.tenantId,
       checkoutSignature: crypto
-        .createHmac('sha256', process.env.NEXTAUTH_SECRET || 'zehla-dev-secret')
+        .createHmac('sha256', getNextAuthSecret())
         .update(`${params.subscriptionId}:${params.tenantId}:${params.amount}`)
         .digest('hex'),
     },

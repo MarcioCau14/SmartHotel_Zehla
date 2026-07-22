@@ -29,8 +29,21 @@ const PROTECTED_PAGE_PATHS = ['/ddc', '/zcc', '/dashboard', '/config', '/tenants
 /** Routes that trigger niche-based smart routing */
 const SMART_ROUTER_PATHS = ['/ddc', '/ddc/'];
 
-/** ZCC God Mode access token — permite preview do /zcc sem login NextAuth */
-const ZCC_GODMODE_TOKEN = process.env.ZCC_GODMODE_TOKEN;
+/** ZCC God Mode access token — requires explicit env var, no hardcoded fallback */
+const ZCC_GODMODE_TOKEN = (() => {
+  const token = process.env.ZCC_GODMODE_TOKEN;
+  if (!token) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[ZCC-MIDDLEWARE] ZCC_GODMODE_TOKEN env var is not set — godmode access layers are DISABLED in production (fail-closed)');
+      return ''; // Empty string ensures godmode checks never match — safe fail-closed
+    }
+    // Dev mode: auto-generate a random token per process (NOT a predictable hardcoded string)
+    const generated = crypto.randomUUID();
+    console.warn('[ZCC-MIDDLEWARE] ZCC_GODMODE_TOKEN not set — generated random dev token:', generated, '(Set env var for predictable dev access)');
+    return generated;
+  }
+  return token;
+})();
 const ZCC_GODMODE_COOKIE = 'zcc_godmode';
 
 /** API routes that require auth in production */
@@ -208,6 +221,11 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const response = NextResponse.next();
 
+  // ── NEXTAUTH_SECRET Validation ──
+  // NO hardcoded fallback — missing secret always throws
+  const nextAuthSecret = process.env.NEXTAUTH_SECRET;
+  if (!nextAuthSecret) throw new Error('NEXTAUTH_SECRET environment variable is required');
+
   // ── Security Headers (todas as respostas) ──
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('X-XSS-Protection', '1; mode=block');
@@ -261,9 +279,8 @@ export async function middleware(request: NextRequest) {
   // 2. Master Key Header (acesso API/programático)
   // 3. Godmode Param (acesso via URL com token)
   // 4. Godmode Cookie com nonce rotation (acesso contínuo)
-  // 5. NextAuth Demo User provisório (login 123/123 — remover após testes)
-  // 6. NextAuth Admin Email (acesso via sessão autenticada)
-  // 7. Rejeição silenciosa (todas as falhas → /login)
+  // 5. NextAuth Admin Email (acesso via sessão autenticada)
+  // 6. Rejeição silenciosa (todas as falhas → /login)
   // ═══════════════════════════════════════════════════════════════
 
   if (pathname === '/zcc' || pathname.startsWith('/zcc/')) {
@@ -295,7 +312,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // ── 3. Godmode Param (via URL) ──
-    // Acesso via ?godmode=zella-ctrl-2026 — gera novo nonce para o cookie
+    // Access via ?godmode=<ZCC_GODMODE_TOKEN env var value> — generates nonce for cookie rotation
     const godmodeParam = request.nextUrl.searchParams.get('godmode');
     if (godmodeParam === ZCC_GODMODE_TOKEN) {
       // Limpa nonces expirados antes de adicionar novo
@@ -358,29 +375,12 @@ export async function middleware(request: NextRequest) {
       // Cookie inválido ou nonce expirado — falha silenciosa (continua para próximas checagens)
     }
 
-    // ── 5. NextAuth Demo User Provisório (123/123) ──
-    // Login temporário para testes: email "123" / senha "123"
-    // PERMITIDO SOMENTE ATÉ CONCLUIRMOS OS TESTES — remover depois
-    try {
-      const token = await getToken({
-        req: request,
-        secret: process.env.NEXTAUTH_SECRET || 'zehla-demo-secret-2026-prod',
-      });
-      // Verifica flag isDemoUser no JWT (setada pelo bypass 123/123)
-      if (token && (token as any).isDemoUser === true) {
-        auditZCCAccess({ ip, userAgent, method: 'session', success: true, path: pathname });
-        return NextResponse.next();
-      }
-    } catch {
-      // Falha ao decodificar token — continua para próximas checagens
-    }
-
-    // ── 6. NextAuth Admin Email ──
+    // ── 5. NextAuth Admin Email ──
     // Verifica se a sessão NextAuth existe e o email está na lista de admins
     try {
       const token = await getToken({
         req: request,
-        secret: process.env.NEXTAUTH_SECRET || 'zehla-demo-secret-2026-prod',
+        secret: nextAuthSecret,
       });
       if (token?.email) {
         const adminEmails = (process.env.ZCC_ADMIN_EMAILS || '')
@@ -396,7 +396,7 @@ export async function middleware(request: NextRequest) {
       // Falha ao decodificar token — nega silenciosamente (não revela erro)
     }
 
-    // ── 7. Rejeição Silenciosa ──
+    // ── 6. Rejeição Silenciosa ──
     // Nenhuma camada de acesso teve sucesso — redirect genérico para /login
     // NÃO revela se ZCC existe, qual camada falhou, ou se rate limiting está ativo
     return silentReject(request, ip, userAgent, 'denied');
@@ -415,7 +415,7 @@ export async function middleware(request: NextRequest) {
     try {
       const token = await getToken({
         req: request,
-        secret: process.env.NEXTAUTH_SECRET || 'zehla-demo-secret-2026-prod',
+        secret: nextAuthSecret,
       });
 
       const niche = (token as any)?.niche || 'pousada';

@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import crypto from 'crypto';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getNextAuthSecret } from '@/lib/env';
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL('/?error=unauthorized', request.url));
     }
 
-    const secret = process.env.NEXTAUTH_SECRET || 'dev-secret-change-in-production';
+    const secret = getNextAuthSecret();
     const expectedSig = crypto
       .createHmac('sha256', secret)
       .update(subscriptionId)

@@ -30,8 +30,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files — NEVER commit secrets to git (security policy)
+.env
+.env.*
+!.env.example
 
 # vercel
 .vercel
@@ -61,4 +63,4 @@ server.log
 # DB file
 db/*.db
 # Worklog
-worklog.md.env.local
+worklog.md

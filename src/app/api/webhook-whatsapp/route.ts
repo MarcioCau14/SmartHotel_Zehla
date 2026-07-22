@@ -19,16 +19,15 @@ export async function GET(request: NextRequest) {
     const token = searchParams.get('hub.verify_token');
     const challenge = searchParams.get('hub.challenge');
 
-    // SECURITY: In production, require the env var. No hardcoded fallback.
+    // SECURITY: Always require env var. No hardcoded fallback ever.
     const configuredToken = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN;
-    if (!configuredToken && process.env.NODE_ENV === 'production') {
-      console.error('[whatsapp-webhook] CRITICAL: WHATSAPP_WEBHOOK_VERIFY_TOKEN not set in production');
+    if (!configuredToken) {
+      console.error('[whatsapp-webhook] CRITICAL: WHATSAPP_WEBHOOK_VERIFY_TOKEN not set');
       return new Response('Service Unavailable', { status: 503 });
     }
 
-    // Dev fallback (only in non-production)
-    const localVerifyToken = configuredToken
-      || (process.env.NODE_ENV !== 'production' ? 'zehla_whatsapp_verify_2024' : '');
+    // Use the env var value directly (no fallback)
+    const localVerifyToken = configuredToken;
 
     if (mode && token && localVerifyToken) {
       if (mode === 'subscribe') {
