@@ -1,13 +1,9 @@
-# CodeRabbit Configuration File
+# CodeRabbit Configuration File — SmartHotel Zehla
 language: "pt-BR"
 
-review:
+reviews:
   path_filters:
     - "!**/.agents/**"
     - "!**/.antigravity/**"
     - "!**/.next/**"
     - "!**/.docs/**"
-    - "!**_.agents/**"
-    - "!**_.antigravity/**"
-    - "!**_.next/**"
-    - "!**_.docs/**"
