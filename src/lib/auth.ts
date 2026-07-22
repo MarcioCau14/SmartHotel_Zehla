@@ -282,7 +282,8 @@ export const authOptions: NextAuthOptions = {
   },
   secret: (() => {
     const secret = process.env.NEXTAUTH_SECRET;
-    if (!secret && process.env.NODE_ENV === 'production') {
+    // Don't throw during Vercel build phase — runtime will still need it
+    if (!secret && process.env.NODE_ENV === 'production' && !process.env.NEXT_PHASE?.includes('build')) {
       throw new Error('NEXTAUTH_SECRET environment variable is required in production');
     }
     return secret || 'zehla-dev-secret-not-for-production';

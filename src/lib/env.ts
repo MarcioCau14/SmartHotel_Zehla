@@ -14,7 +14,8 @@ export const DATABASE_URL = getEnv('DATABASE_URL', 'file:./db/custom.db');
 export const NEXTAUTH_URL = getEnv('NEXTAUTH_URL', 'http://localhost:3000');
 export const NEXTAUTH_SECRET = (() => {
   const secret = process.env.NEXTAUTH_SECRET;
-  if (!secret && process.env.NODE_ENV === 'production') {
+  // Don't throw during Vercel build phase — runtime will still need it
+  if (!secret && process.env.NODE_ENV === 'production' && !process.env.NEXT_PHASE?.includes('build')) {
     throw new Error('NEXTAUTH_SECRET is required in production — set a cryptographically random value (≥32 chars)');
   }
   return secret || 'dev-secret-change-in-production';
