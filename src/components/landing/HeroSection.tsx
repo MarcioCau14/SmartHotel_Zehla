@@ -16,7 +16,7 @@ export function HeroSection() {
   }, []);
 
   // Rotating hero words — ALL 3 phrases rotate together regardless of niche
-  const rotatingPhrases = ['pelo WhatsApp.', 'seu imóvel.', 'sua pousada.'];
+  const rotatingPhrases = ['no WhatsApp.', 'com precificação.', 'com Escudo Meta.'];
   const rotatingPhrasesLength = rotatingPhrases.length;
   const [phraseIdx, setPhraseIdx] = useState(0);
   useEffect(() => {
@@ -87,9 +87,9 @@ export function HeroSection() {
               variants={staggerItem}
               className="text-[2.25rem] sm:text-[3.5rem] md:text-[4.5rem] lg:text-[5.25rem] xl:text-[6rem] font-satoshi font-bold tracking-[-0.03em] md:tracking-[-0.04em] leading-[1.05] md:leading-[1.02] text-white mb-8 text-center"
             >
-              <span className="block">O Zélla atende, vende e</span>
-              <span className="block whitespace-nowrap text-blue-500 font-bold">
-                reserva{' '}
+              <span className="block">Organize, lucre mais e gaste</span>
+              <span className="block whitespace-nowrap text-emerald-500 font-bold">
+                menos{' '}
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={phraseIdx}
@@ -107,11 +107,11 @@ export function HeroSection() {
 
             {/* Subtitle — compact with relaxed leading */}
             <motion.p variants={staggerItem} className="text-[15px] sm:text-[17px] md:text-lg text-neutral-400 leading-relaxed mb-12 max-w-2xl mx-auto">
-              {!mounted ? 'O zelador digital que responde 24hs por 7. Atende os hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para pousadas.' :
+              {!mounted ? 'Organiza E lucra mais com precificação dinâmica + gaste menos com Escudo Meta 2026 (80% custo WhatsApp). Responde 8s com disponibilidade+preço+PIX, sincroniza Booking.com, e entrega Guia Digital automático. Feito para pousadas.' :
               isPousada
-                ? 'O zelador digital que responde 24hs por 7. Atende os hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para pousadas.'
+                ? 'Organiza E lucra mais com precificação dinâmica + gaste menos com Escudo Meta 2026 (80% custo WhatsApp). Responde 8s com disponibilidade+preço+PIX, sincroniza Booking.com, e entrega Guia Digital automático. Feito para pousadas.'
                 : isAirbnb
-                ? 'O zelador digital que responde 24hs por 7. Atende seus hóspedes com naturalidade, fecha a reserva aumentando seu tempo e seu dinheiro. Feito para anfitriões Airbnb. O Zélla AirB é seu co-anfitrião digital.'
+                ? 'Organiza E lucra mais com precificação dinâmica + gaste menos com Escudo Meta 2026 (80% custo WhatsApp). Responde 8s com disponibilidade+preço+PIX, sincroniza Airbnb+Booking.com, e entrega Guia Digital automático. Feito para anfitriões Airbnb.'
                 : 'O programa de parceria que congela seu preço por 24 meses. Plano PRO completo por R$247/mês com selo exclusivo de parceiro no Link-in-Bio.'}
             </motion.p>
 

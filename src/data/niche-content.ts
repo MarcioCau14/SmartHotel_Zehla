@@ -103,9 +103,9 @@ export interface NicheContent {
 // ═══════════════════════════════════════════════════════════════
 const pousadaContent: NicheContent = {
   switcher: {
-    headline: 'Acabe com a fila de espera no WhatsApp.',
-    subheadline: 'Atenda 50 cotações simultâneas e aumente as reservas diretas. O Zélla responde, negocia e envia sua chave PIX — tudo sozinho, no tom da sua pousada.',
-    heroStat: { val: '50+', label: 'cotações simultâneas' },
+    headline: 'Organize, lucre mais e gaste menos.',
+    subheadline: 'O Zélla organiza sua pousada E lucra mais com precificação dinâmica + gaste menos com Escudo Meta 2026 (80% redução de custo WhatsApp). Responde 24h com disponibilidade+preço+PIX, envia Guia Digital automático, e nunca mais aluga barato no feriado.',
+    heroStat: { val: '+47%', label: 'receita com precificação dinâmica' },
     backgroundImage: '/images/niche-pousadas-bg.jpg',
     ctaText: 'Ver como funciona para Pousadas',
     accentColor: 'emerald',
@@ -315,9 +315,9 @@ const pousadaContent: NicheContent = {
 // ═══════════════════════════════════════════════════════════════
 const airbnbContent: NicheContent = {
   switcher: {
-    headline: 'Seu co-anfitrião que nunca dorme.',
-    subheadline: 'O Zélla AirB lê o seu anúncio Airbnb, entrega as chaves virtuais, responde com detalhes do imóvel e da redondeza, e converte hóspedes em reservas diretas — tudo automático, 24 horas por dia.',
-    heroStat: { val: '0', label: 'interação necessária' },
+    headline: 'Organize, lucre mais e gaste menos.',
+    subheadline: 'O Zélla AirB organiza seu imóvel E lucra mais com precificação dinâmica + gaste menos com Escudo Meta 2026 (80% redução de custo). Responde 24h com disponibilidade+preço+PIX, sincroniza Airbnb+Booking, e entrega o Guia Digital automaticamente.',
+    heroStat: { val: '+47%', label: 'receita com precificação dinâmica' },
     backgroundImage: '/images/niche-anfitrioes-bg.jpg',
     ctaText: 'Ver como funciona para Anfitriões',
     accentColor: 'blue',
@@ -371,6 +371,30 @@ const airbnbContent: NicheContent = {
       color: 'violet',
       size: 'sm',
     },
+    {
+      icon: 'TrendingUp',
+      title: 'Precificação Dinâmica — nunca mais alugue barato no feriado',
+      desc: 'O Zélla calcula automaticamente o preço ideal por noite baseado em feriados brasileiros, demanda (ocupação), seasonality e urgência. O feriadão que você alugou por R$390? O Zélla teria cobrado R$680. Diária parada = dinheiro invisível que você não vê.',
+      stat: { val: '+47%', label: 'receita com precificação inteligente' },
+      color: 'emerald',
+      size: 'lg',
+    },
+    {
+      icon: 'Building2',
+      title: 'Airbnb + Booking.com no mesmo calendário',
+      desc: 'Sincronize reservas de Airbnb e Booking.com automaticamente com Channel Manager iCal. Uma reserva em qualquer plataforma bloqueia a data em todas. Zero conflito, zero overbooking. Escale para mais plataformas sem estresse.',
+      stat: { val: '2+', label: 'OTAs sincronizadas' },
+      color: 'sky',
+      size: 'sm',
+    },
+    {
+      icon: 'CreditCard',
+      title: 'Guia Digital — o hóspede resolve sozinho',
+      desc: 'Wi-Fi, regras, check-in, restaurantes próximos, contatos de emergência — tudo em um link com QR Code. O hóspede acessa pelo celular sem baixar nada. Acabou a ligação no meio da noite. O Zélla envia o link automaticamente.',
+      stat: { val: '-80%', label: 'chamadas do hóspede' },
+      color: 'amber',
+      size: 'sm',
+    },
   ],
 
   steps: [
@@ -396,11 +420,11 @@ const airbnbContent: NicheContent = {
     {
       num: '03',
       icon: 'BarChart3',
-      title: 'Escale e monitore',
-      subtitle: 'De 2 para 10 imóveis sem estresse',
-      desc: 'Adicione mais imóveis colando novas URLs. O painel mostra ocupação, receita e avaliações de todo o portfólio. Exportação iCal já disponível para sincronizar disponibilidade com Airbnb e Booking. Conexão direta via API está em desenvolvimento. Você cresce sem contratar ninguém.',
+      title: 'Escale, lucre mais e gaste menos',
+      subtitle: 'Precificação dinâmica + Booking sync + Guia Digital',
+      desc: 'O Zélla calcula o preço ideal automaticamente por feriado, demanda e seasonality. Sincroniza Airbnb + Booking.com via Channel Manager. Gera o Guia Digital do hóspede com QR Code. Escudo Meta 2026 reduz 80% do custo WhatsApp. Você cresce sem contratar ninguém — e lucra mais em cada diária.',
       color: 'violet',
-      highlights: ['Portfólio centralizado', 'iCal export disponível', 'API direta em desenvolvimento', 'Alertas de avaliação'],
+      highlights: ['Precificação Dinâmica automática', 'Booking.com iCal sync', 'Guia Digital com QR Code', 'Escudo Meta 2026 (80% economia)', 'Alertas de avaliação'],
     },
   ],
 

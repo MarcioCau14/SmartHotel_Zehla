@@ -477,4 +477,102 @@ Work Log:
 
 Files Modified:
 - src/lib/ai/tool-calling.ts — added `executeSingleTool()` export
-- src/lib/brain/zehla-tools.ts — complete rewrite as Phase 2 compatibility wrapper
+
+---
+Task ID: 2
+Agent: Dynamic Pricing Agent
+Task: Implement Dynamic Pricing (Precificação Dinâmica) feature
+
+Work Log:
+- Read worklog.md and project structure (Prisma schema, existing patterns)
+- Read DynamicPricingRule and PricingCalculation models from schema — both already defined
+- Read existing patterns: api-shield.ts (withSecurity), auth-utils.ts (resolveTenantId), booking-sync/route.ts (DDC API pattern)
+- Read tool-calling.ts to understand AVAILABLE_TOOLS and TOOL_EXECUTORS patterns
+
+Files Created:
+1. **src/lib/dynamic-pricing-engine.ts** — Comprehensive dynamic pricing engine
+   - `getBrazilianHolidays(year)` → returns all national + state + municipal holidays
+     - Fixed holidays: Confraternização Universal, Tiradentes, Dia do Trabalho, Independência, Nossa Senhora Aparecida, Finados, Proclamação da República, Natal
+     - Variable holidays (Easter-based): Carnaval Monday/Tuesday, Sexta-feira Santa, Corpus Christi
+     - Easter calculated via Computus (Butcher's method) — not hardcoded arrays
+     - State holidays: SP (Jul 9), RJ (Jan 20, Apr 23), BA (Jul 2), RS (Sep 20), CE (Mar 25), PE (Jun 24), AM (Sep 5), PR (Dec 19), SC (Aug 11), AL (Sep 16), AC (Jun 15, Nov 5)
+     - Municipal holidays: São Paulo city (Jan 25)
+   - `isBrazilianHoliday(dateStr, state?)` → checks if date is a holiday, with optional state filtering
+   - `getApplicableRules(tenantId, date, occupancyRate, daysBeforeCheckIn)` → fetches active rules from DB sorted by priority
+     - Filters by: tenant, status, date range, occupancy range, days of week (JSON), minDaysBefore
+   - `applyRule(basePrice, rule)` → applies a single pricing rule
+     - Supports: multiplier, fixed, percent_increase, percent_decrease
+     - Applies minPrice floor and maxPrice cap
+   - `calculateDynamicPrice(tenantId, roomId, airbPropertyId, date, basePrice?, occupancyRate?)` → main calculation function
+     - Algorithm:
+       1. Resolve base price (from room/property/average)
+       2. Resolve occupancy rate (from DB or override)
+       3. Calculate days before check-in
+       4. Check Brazilian holiday → built-in premium (+40% national, +25% state)
+       5. Determine seasonality → built-in modifier (Alta Season +30%/+50%, Baixa Season -15%)
+       6. Day of week → built-in weekend premium (+15% for Fri/Sat)
+       7. Urgency pricing → last-minute discount (-10% ≤3 days), early-bird premium (+5% ≥30 days)
+       8. High-demand pricing → progressive modifier when occupancy >80%
+       9. Apply all tenant-specific DynamicPricingRule from DB in priority order
+       10. Cache result in PricingCalculation model (upsert)
+       11. Update rule stats (appliedCount, revenueImpact)
+   - `batchCalculatePrices(tenantId, startDate, endDate)` → calculates prices for all rooms over a period
+   - `getPricingInsights(tenantId)` → returns upcoming holidays, current season, active rules summary, recent calculations
+   - Seasonality definitions: Alta Season — Verão (Dec-Feb +30%), Carnaval (Feb-Mar +50%), Julho (Jul +25%), Reveillon (Dec-Jan +40%), Baixa Season (Mar-Jun -15%, Sep-Nov -15%)
+
+2. **src/app/api/ddc/dynamic-pricing/route.ts** — API route with withSecurity
+   - GET: fetch pricing rules + insights + recent calculations for tenant
+   - POST: create/update pricing rule (validates name, modifierValue)
+   - DELETE: delete pricing rule (by id query param, verifies tenant ownership)
+   - All handlers wrapped with `withSecurity()` from api-shield
+
+3. **src/app/api/ddc/dynamic-pricing/calculate/route.ts** — Calculate endpoint
+   - POST with `mode` parameter:
+     - `single`: calculate price for a specific date (requires date, optional roomId/airbPropertyId/basePrice)
+     - `batch`: calculate prices for all rooms over a date range (max 90 days)
+     - `holidays`: return Brazilian holidays for a given year
+   - Wrapped with `withSecurity()`
+
+Files Modified:
+4. **src/lib/ai/tool-calling.ts** — Added `calculate_dynamic_price` tool
+   - Added import: `import { calculateDynamicPrice } from '@/lib/dynamic-pricing-engine'`
+   - Added to AVAILABLE_TOOLS: `calculate_dynamic_price` with parameters (date, roomId, airbPropertyId, basePrice)
+   - Added `executeCalculateDynamicPrice()` executor function
+   - Added to TOOL_EXECUTORS dispatch table
+
+Lint Results:
+- Zero new errors introduced
+- 1 pre-existing warning (AdapterToolCallDef unused import in tool-calling.ts — not from our changes)
+- All 3 engine lint issues fixed: unused dateStr removed, unused date param prefixed with _, let→const for propertyState
+- All route lint issues fixed: unused request/ctx params prefixed with _
+
+Database: Prisma schema already in sync (DynamicPricingRule and PricingCalculation models existed before)
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Implement 3 Urgent Features: Precificação Dinâmica, Booking.com Sync, Guia Digital Hóspede
+
+Work Log:
+- Added 4 new Prisma models: DynamicPricingRule, PricingCalculation, GuestGuide, BookingSyncConfig
+- Ran db:push successfully to sync database
+- Created dynamic-pricing-engine.ts with Brazilian holiday calendar, Easter calculation, demand-based pricing, occupancy triggers, weekend/seasonality modifiers
+- Created /api/ddc/dynamic-pricing/route.ts (CRUD + pricing insights)
+- Created /api/ddc/dynamic-pricing/calculate/route.ts (single/batch/holidays calculation)
+- Added calculate_dynamic_price tool to Cérebro Zélla (tool-calling.ts)
+- Created /api/ddc/guest-guide/route.ts (CRUD + auto-generation from AirBProperty data)
+- Created /api/guide/[slug]/route.ts (public guest guide HTML page, mobile-friendly)
+- Added send_guest_guide tool to Cérebro Zélla
+- Created /api/ddc/booking-sync/route.ts (CRUD + iCal sync trigger)
+- Created /lib/ical-import-engine.ts (iCal parser + Booking.com reservation importer)
+- Created /api/ical/[syncToken]/route.ts (public iCal export feed for Booking.com)
+- Updated niche-content.ts: Airbnb hero = "Organize, lucre mais e gaste menos", 3 new pain cards (Precificação Dinâmica, Booking.com Sync, Guia Digital), updated step 03 copy
+- Updated HeroSection.tsx: new headline "Organize, lucre mais e gaste menos", rotating phrases updated, subtitle includes precificação dinâmica + Escudo Meta + Booking sync + Guia Digital
+- Verified with Agent Browser: all 3 features visible on landing page, footer sticky, no errors
+
+Stage Summary:
+- Precificação Dinâmica: FULL backend (engine + API + Cérebro Zélla tool) — calculates prices based on Brazilian holidays, occupancy, seasonality, days before check-in
+- Booking.com Sync: FULL backend (iCal import/export + API + sync trigger) — imports reservations from Booking.com iCal, exports availability as iCal feed
+- Guia Digital Hóspede: FULL backend (auto-generation from AirBProperty data + public HTML page + QR Code + Cérebro Zélla tool) — generates guide with Wi-Fi, rules, restaurants, emergency contacts
+- Landing page positioning updated: "Organiza E lucra mais + gaste menos" vs Pilota's "organiza"
+- 2 new Cérebro Zélla tools: calculate_dynamic_price + send_guest_guide

@@ -30,6 +30,7 @@ import { db } from '@/lib/db';
 import { getNeuroRouter } from './zaos-neuro-router';  
 import type { LLMResponse, LLMToolResponse } from './zaos-neuro-router';
 import type { AdapterMessage, AdapterToolDef, AdapterToolCallDef } from './llm-adapters';
+import { calculateDynamicPrice } from '@/lib/dynamic-pricing-engine';
 
 // ── Tipos ───────────────────────────────────────────────────────────
 
@@ -132,6 +133,32 @@ export const AVAILABLE_TOOLS: ToolDefinition[] = [
       type: 'object',
       properties: {},
       required: [],
+    },
+  },
+  {
+    name: 'send_guest_guide',
+    description: 'Retorna o link e QR Code do Guia Digital do Hóspede para enviar ao hóspede. O guia contém Wi-Fi, check-in, regras, restaurantes próximos e contatos de emergência.',
+    parameters: {
+      type: 'object',
+      properties: {
+        propertyId: { type: 'string', description: 'ID da Property (pousada) — opcional' },
+        airbPropertyId: { type: 'string', description: 'ID da AirBProperty (Airbnb) — opcional' },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'calculate_dynamic_price',
+    description: 'Calcula o preço dinâmico ideal para uma diária baseado em demanda, feriados, seasonality e dias antes do check-in. Retorna preço base, preço calculado e breakdown das regras aplicadas.',
+    parameters: {
+      type: 'object',
+      properties: {
+        date: { type: 'string', description: 'Data da diária no formato YYYY-MM-DD' },
+        roomId: { type: 'string', description: 'ID do quarto (opcional — se omitido, usa média da pousada)' },
+        airbPropertyId: { type: 'string', description: 'ID da propriedade Airbnb (opcional)' },
+        basePrice: { type: 'number', description: 'Preço base override (opcional — se omitido, usa preço do quarto)' },
+      },
+      required: ['date'],
     },
   },
 ];
@@ -386,6 +413,64 @@ async function executeGetPixInfo(tenantId: string): Promise<ToolResult> {
 }
 
 /**  
+ * Executa a ferramenta `calculate_dynamic_price`.  
+ * Calls the dynamic pricing engine to calculate optimal price for a daily rate.  
+ */  
+async function executeCalculateDynamicPrice(  
+  tenantId: string,  
+  args: { date: string; roomId?: string; airbPropertyId?: string; basePrice?: number },  
+): Promise<ToolResult> {  
+  const startTime = Date.now();
+
+  try {
+    const date = new Date(args.date + 'T12:00:00');
+    if (isNaN(date.getTime())) {
+      return {
+        toolName: 'calculate_dynamic_price',
+        success: false,
+        data: { error: 'Data inválida. Use o formato YYYY-MM-DD.' },
+        executionTimeMs: Date.now() - startTime,
+      };
+    }
+
+    const result = await calculateDynamicPrice(
+      tenantId,
+      args.roomId ?? null,
+      args.airbPropertyId ?? null,
+      date,
+      args.basePrice ?? null,
+    );
+
+    return {
+      toolName: 'calculate_dynamic_price',
+      success: true,
+      data: {
+        date: args.date,
+        basePrice: result.basePrice,
+        calculatedPrice: result.calculatedPrice,
+        priceChangePercent: Math.round(((result.calculatedPrice - result.basePrice) / result.basePrice) * 100),
+        modifierBreakdown: result.modifierBreakdown,
+        appliedRulesCount: result.appliedRulesCount,
+        occupancyAtCalc: result.occupancyAtCalc,
+        daysBeforeCheckIn: result.daysBeforeCheckIn,
+        isHoliday: result.isHoliday,
+        holidayName: result.holidayName,
+        seasonLabel: result.seasonLabel,
+        dayOfWeekLabel: result.dayOfWeekLabel,
+      },
+      executionTimeMs: Date.now() - startTime,
+    };
+  } catch (error) {
+    return {
+      toolName: 'calculate_dynamic_price',
+      success: false,
+      data: { error: `Erro: ${error instanceof Error ? error.message : 'desconhecido'}` },
+      executionTimeMs: Date.now() - startTime,
+    };
+  }
+}
+
+/**  
  * Executa a ferramenta `get_occupancy`.  
  */  
 async function executeGetOccupancy(tenantId: string): Promise<ToolResult> {  
@@ -439,6 +524,86 @@ async function executeGetOccupancy(tenantId: string): Promise<ToolResult> {
   }  
 }
 
+/**
+ * Executa a ferramenta `send_guest_guide`.
+ * Finds the active guest guide for the property and returns the public URL + QR code URL.
+ */
+async function executeSendGuestGuide(
+  tenantId: string,
+  args: Record<string, unknown>,
+): Promise<ToolResult> {
+  const startTime = Date.now();
+
+  try {
+    const propertyId = (args.propertyId as string) || undefined;
+    const airbPropertyId = (args.airbPropertyId as string) || undefined;
+
+    // Find the active guest guide
+    let guide;
+
+    if (airbPropertyId) {
+      guide = await db.guestGuide.findFirst({
+        where: {
+          tenantId,
+          airbPropertyId,
+          status: 'active',
+        },
+      });
+    } else if (propertyId) {
+      guide = await db.guestGuide.findFirst({
+        where: {
+          tenantId,
+          propertyId,
+          status: 'active',
+        },
+      });
+    } else {
+      // Find any active guide for the tenant
+      guide = await db.guestGuide.findFirst({
+        where: {
+          tenantId,
+          status: 'active',
+        },
+      });
+    }
+
+    if (!guide) {
+      return {
+        toolName: 'send_guest_guide',
+        success: false,
+        data: {
+          error: 'Guia Digital do Hóspede não encontrado. O anfitrião precisa criar o guia primeiro no painel DDC.',
+          hint: 'Acesse o DDC > Guia Digital para criar um guia para a propriedade.',
+        },
+        executionTimeMs: Date.now() - startTime,
+      };
+    }
+
+    const publicUrl = `https://seuzella.com/guide/${guide.slug}`;
+
+    return {
+      toolName: 'send_guest_guide',
+      success: true,
+      data: {
+        guideId: guide.id,
+        title: guide.title,
+        publicUrl,
+        qrCodeUrl: guide.qrCodeUrl,
+        slug: guide.slug,
+        message: `📱 Link do Guia Digital: ${publicUrl}\n\nO guia contém: Wi-Fi, horários de check-in/check-out, regras da casa, restaurantes próximos, supermercados, atrações, contatos de emergência e FAQ.`,
+      },
+      executionTimeMs: Date.now() - startTime,
+    };
+  } catch (error) {
+    return {
+      toolName: 'send_guest_guide',
+      success: false,
+      data: { error: `Erro: ${error instanceof Error ? error.message : 'desconhecido'}` },
+      executionTimeMs: Date.now() - startTime,
+    };
+  }
+}
+
 // ── Dispatch de ferramentas ──────────────────────────────────────────
 
 const TOOL_EXECUTORS: Record<string, (tenantId: string, args: Record<string, unknown>) => Promise<ToolResult>> = {  
@@ -452,6 +617,10 @@ const TOOL_EXECUTORS: Record<string, (tenantId: string, args: Record<string, unk
     executeGetPixInfo(tenantId),  
   get_occupancy: async (tenantId) =>  
     executeGetOccupancy(tenantId),  
+  send_guest_guide: async (tenantId, args) =>  
+    executeSendGuestGuide(tenantId, args),  
+  calculate_dynamic_price: async (tenantId, args) =>  
+    executeCalculateDynamicPrice(tenantId, args as { date: string; roomId?: string; airbPropertyId?: string; basePrice?: number }),  
 };
 
 // ── Executa uma única ferramenta pelo nome ────────────────────────────
