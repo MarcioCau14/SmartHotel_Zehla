@@ -7,15 +7,15 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Seu Zélla — IA para Pousadas e Hotéis | WhatsApp 24/7, Reservas Automáticas',
+  title: 'Seu Zélla — Assistente Inteligente para Pousadas | WhatsApp 24/7, Reservas Automáticas',
   description:
-    'Plataforma inteligente com IA que atende seus hóspedes no WhatsApp 24 horas por dia. Responde, vende e gera reservas automaticamente. Link-in-bio, PIX integrado, revenue management. Teste grátis por 7 dias.',
+    'Assistente inteligente que atende seus hóspedes no WhatsApp 24 horas por dia. Responde, vende e gera reservas automaticamente. PIX integrado, preços inteligentes, Booking.com sincronizado. Teste grátis por 7 dias.',
   keywords: [
-    'IA para pousadas', 'IA para hotéis', 'chatbot WhatsApp hotelaria', 'automacao reservas pousada',
-    'WhatsApp IA 24 horas', 'atendimento automático hóspedes', 'SmartHotel', 'Seu Zella', 'ZEHLA',
+    'assistente inteligente pousada', 'assistente inteligente hotel', 'chatbot WhatsApp hotelaria', 'automacao reservas pousada',
+    'WhatsApp atendimento 24 horas', 'atendimento automático hóspedes', 'SmartHotel', 'Seu Zella', 'ZEHLA',
     'pousada Brasil', 'reservas WhatsApp', 'link in bio pousada', 'sistema pousada',
-    'revenue management pousada', 'escudo anti-taxas Meta 2026', 'Message Bundler',
-    'cognitive OS hospitality', 'hospitalidade inteligente', 'chatbot hotel',
+    'preços inteligentes pousada', 'economia WhatsApp', 'reservas Booking.com',
+    'atendimento inteligente pousada', 'hospitalidade inteligente', 'chatbot hotel',
     'pousada Florianópolis', 'pousada Ubatuba', 'pousada litoral',
   ],
   authors: [{ name: 'Seu Zélla', url: 'https://zehla.com.br' }],
@@ -26,14 +26,14 @@ export const metadata: Metadata = {
     locale: 'pt_BR',
     url: 'https://zehla.com.br',
     siteName: 'Seu Zélla',
-    title: 'Seu Zélla — IA para Pousadas | WhatsApp 24/7 + Reservas Automáticas',
-    description: 'Atenda seus hóspedes no WhatsApp 24h com IA. Reservas, PIX, link-in-bio e revenue management. Feito para pousadas brasileiras. 7 dias grátis.',
-    images: [{ url: '/og-image.png', width: 1344, height: 768, alt: 'Seu Zélla — Plataforma Cognitiva para Hospitalidade' }],
+    title: 'Seu Zélla — Assistente Inteligente para Pousadas | WhatsApp 24/7 + Reservas Automáticas',
+    description: 'Atenda seus hóspedes no WhatsApp 24h com assistente inteligente. Reservas, PIX, preços inteligentes e Booking.com sincronizado. Feito para pousadas brasileiras. 7 dias grátis.',
+    images: [{ url: '/og-image.png', width: 1344, height: 768, alt: 'Seu Zélla — Assistente Inteligente para Pousadas' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Seu Zélla — IA para Pousadas | WhatsApp 24/7',
-    description: 'Atenda seus hóspedes no WhatsApp 24h com IA. Reservas automáticas, PIX integrado, link-in-bio. 7 dias grátis.',
+    title: 'Seu Zélla — Assistente Inteligente para Pousadas | WhatsApp 24/7',
+    description: 'Atenda seus hóspedes no WhatsApp 24h com assistente inteligente. Reservas automáticas, PIX integrado, preços inteligentes. 7 dias grátis.',
     images: ['/og-image.png'],
   },
   robots: {
@@ -51,7 +51,7 @@ const jsonLd = {
       name: 'Seu Zélla',
       applicationCategory: 'BusinessApplication',
       operatingSystem: 'Web',
-      description: 'Plataforma inteligente de automação de reservas e atendimento 24/7 com IA para pousadas e hotéis brasileiros.',
+      description: 'Assistente inteligente de automação de reservas e atendimento 24/7 para pousadas e hotéis brasileiros.',
       url: 'https://zehla.com.br',
       offers: [
         {
@@ -66,7 +66,7 @@ const jsonLd = {
           name: 'LITE',
           price: '197',
           priceCurrency: 'BRL',
-          description: 'WhatsApp IA 24/7, PIX integrado, dashboard completo',
+          description: 'WhatsApp assistente inteligente 24/7, PIX integrado, dashboard completo',
         },
         {
           '@type': 'Offer',
@@ -87,7 +87,7 @@ const jsonLd = {
           name: 'Link-in-Bio Standalone',
           price: '47',
           priceCurrency: 'BRL',
-          description: 'Link-in-Bio profissional sem Zélla IA — página seusella.com personalizada',
+          description: 'Link-in-Bio profissional sem assistente inteligente — página seusella.com personalizada',
         },
       ],
       aggregateRating: {
@@ -103,7 +103,7 @@ const jsonLd = {
       name: 'Seu Zélla',
       url: 'https://zehla.com.br',
       logo: 'https://zehla.com.br/logo.svg',
-      description: 'Cognitive OS for Hospitality — Plataforma inteligente para pousadas e hotéis brasileiros.',
+      description: 'Plataforma inteligente para pousadas e hotéis brasileiros — organiza, ajuda a lucrar mais e gastar menos.',
       contactPoint: {
         '@type': 'ContactPoint',
         contactType: 'customer support',
@@ -123,7 +123,7 @@ const jsonLd = {
           name: 'O que é o Seu Zélla?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'O Seu Zélla é uma plataforma de IA que atende seus hóspedes no WhatsApp 24 horas por dia. Ele responde perguntas, verifica disponibilidade, negocia preços e gera PIX de pagamento automaticamente.',
+            text: 'O Seu Zélla é um assistente inteligente que atende seus hóspedes no WhatsApp 24 horas por dia. Ele responde perguntas, verifica disponibilidade, negocia preços e gera PIX de pagamento automaticamente.',
           },
         },
         {
@@ -148,7 +148,7 @@ const jsonLd = {
       '@type': 'WebPage',
       '@id': 'https://zehla.com.br/#webpage',
       url: 'https://zehla.com.br',
-      name: 'Seu Zélla — IA para Pousadas e Hotéis',
+      name: 'Seu Zélla — Assistente Inteligente para Pousadas e Hotéis',
       isPartOf: { '@id': 'https://zehla.com.br/#website' },
       about: { '@id': 'https://zehla.com.br/#organization' },
     },
