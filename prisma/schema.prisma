@@ -117,6 +117,11 @@ model Tenant {
   niche      String    @default("pousada")  // pousada | airbnb
   users      User[]    @relation("UserToTenant")
 
+  // Z-LAB — Simulation & Training Harness (Passo 11+)
+  // Tenants criados pelo Z-Lab são marcados para cleanup seguro.
+  // isTestTenant=true permite identificar e remover dados de teste sem afetar produção.
+  isTestTenant Boolean @default(false)
+
   // Zélla — Precificação Dinâmica
   pricingRules      DynamicPricingRule[]
   pricingCalculations PricingCalculation[]

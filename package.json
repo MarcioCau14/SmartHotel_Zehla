@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:browser": "echo 'No Playwright tests configured yet'",
+    "test:e2e-zella": "bun run scripts/simulate-zella-e2e.ts",
     "ci": "npm run lint && npm run typecheck && npm run test",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
