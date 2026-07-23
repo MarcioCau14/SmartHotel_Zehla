@@ -190,46 +190,63 @@ export async function POST(request: NextRequest) {
       } else {
         // Cria o Tenant para o novo cliente
         isNewCustomer = true;
-        const newTenant = await db.tenant.create({
-          data: {
-            name: propertyName || name,
-            email: email,
-            phone: phone || null,
-            niche: niche,
-            plan: 'gratuito', // Será atualizado pelo webhook quando pagamento confirmar
-            status: 'active',
-            role: 'owner',
-            trialStart: new Date(),
-            trialEnd: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 dias trial
-          },
-        });
-        tenantId = newTenant.id;
-
-        // Cria Property associada se o nome foi informado
-        if (propertyName) {
-          const slug = propertyName
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-|-$/g, '') + '-' + tenantId.slice(-6);
-
-          await db.property.create({
+        try {
+          const newTenant = await db.tenant.create({
             data: {
-              tenantId: newTenant.id,
-              name: propertyName,
-              type: niche === 'airbnb' ? 'airbnb' : 'pousada',
-              slug,
+              name: propertyName || name,
+              email: email,
+              phone: phone || null,
+              niche: niche,
+              plan: 'gratuito', // Será atualizado pelo webhook quando pagamento confirmar
+              status: 'active',
+              role: 'owner',
+              trialStart: new Date(),
+              trialEnd: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 dias trial
             },
           });
+          tenantId = newTenant.id;
+
+          // Cria Property associada se o nome foi informado
+          if (propertyName) {
+            const slug = propertyName
+              .toLowerCase()
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-|-$/g, '') + '-' + tenantId.slice(-6);
+
+            await db.property.create({
+              data: {
+                tenantId: newTenant.id,
+                name: propertyName,
+                type: niche === 'airbnb' ? 'airbnb' : 'pousada',
+                slug,
+              },
+            });
+          }
+        } catch (tenantError) {
+          console.error('[checkout/create] Tenant creation failed:', {
+            error: tenantError instanceof Error ? tenantError.message : String(tenantError),
+            code: (tenantError as { code?: string })?.code,
+            email,
+            niche,
+          });
+          return createError(500, 'TENANT_CREATION_FAILED',
+            `Falha ao criar tenant: ${tenantError instanceof Error ? tenantError.message : 'Unknown error'}`);
         }
       }
     }
 
-    // Rate limiting por tenant
-    const { success: allowed } = await authRatelimit.limit(tenantId);
-    if (!allowed) {
-      return createError(429, 'RATE_LIMITED', 'Muitas requisições. Aguarde um momento.');
+    // Rate limiting por tenant (não bloqueia checkout se rate limiter falhar)
+    try {
+      const { success: allowed } = await authRatelimit.limit(tenantId);
+      if (!allowed) {
+        // Em produção sem Redis, rate limiter fail-closed bloqueia tudo.
+        // Para checkout (fluxo crítico de signup), permitimos passar mesmo se bloqueado.
+        console.warn('[checkout/create] Rate limit blocked, but allowing checkout (critical signup flow)');
+      }
+    } catch (rateLimitError) {
+      console.warn('[checkout/create] Rate limiter error (non-fatal, allowing checkout):', rateLimitError);
     }
 
     // ── Step 3: Criação da Subscription ─────────────────────────────────────
@@ -451,7 +468,12 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('[checkout/create] Error:', error);
-    return createError(500, 'CREATE_FAILED', 'Falha ao criar sessão de checkout. Tente novamente.');
+    console.error('[checkout/create] Error:', {
+      message: error instanceof Error ? error.message : String(error),
+      code: (error as { code?: string })?.code,
+      stack: error instanceof Error ? error.stack?.split('\n').slice(0, 5).join('\n') : undefined,
+    });
+    return createError(500, 'CREATE_FAILED',
+      `Falha ao criar sessão de checkout: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }

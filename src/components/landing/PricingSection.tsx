@@ -329,7 +329,10 @@ export function PricingSection() {
 
   const handleSubscribe = (planId: string, forcedPaymentMethod?: string) => {
     const plan = plans.find(p => p.id === planId);
-    if (!plan) return;
+    if (!plan) {
+      console.error('[PricingSection] Plan not found:', planId, 'Available:', plans.map(p => p.id));
+      return;
+    }
     const method = forcedPaymentMethod || paymentMode;
     const effectivePricePix = isAirbnb && plan.pricePixAirbnb != null ? plan.pricePixAirbnb : plan.pricePix;
     const effectivePriceCartao = isAirbnb && plan.priceCartaoAirbnb != null ? plan.priceCartaoAirbnb : plan.priceCartao;

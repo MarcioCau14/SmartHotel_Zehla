@@ -72,15 +72,25 @@ function isDuplicate(message: string, stack?: string): boolean {
   return false;
 }
 
-// Cleanup periodic para evitar memory leak
-setInterval(() => {
-  const now = Date.now();
-  for (const [hash, ts] of sentHashes.entries()) {
-    if (now - ts > DEDUP_WINDOW_MS * 2) {
-      sentHashes.delete(hash);
+// Cleanup periodic para evitar memory leak (apenas em Node.js runtime)
+if (typeof setInterval !== 'undefined' && typeof window === 'undefined') {
+  try {
+    const cleanupInterval = setInterval(() => {
+      const now = Date.now();
+      for (const [hash, ts] of sentHashes.entries()) {
+        if (now - ts > DEDUP_WINDOW_MS * 2) {
+          sentHashes.delete(hash);
+        }
+      }
+    }, 10 * 60_000);
+    // unref apenas existe em Node.js, não em Edge
+    if (cleanupInterval && typeof cleanupInterval.unref === 'function') {
+      cleanupInterval.unref();
     }
+  } catch {
+    // Edge Runtime não suporta setInterval — ignora
   }
-}, 10 * 60_000).unref?.();
+}
 
 // ── Sentry envelope format (simplified) ─────────────────────────────────────
 
@@ -344,24 +354,31 @@ export const errorReporter = {
  * Chamado por instrumentation.ts no boot do server.
  */
 export function registerGlobalErrorHandlers(): void {
-  if (typeof window !== 'undefined') return; // Só no server
+  // Guard: só registra handlers se estivermos em Node.js runtime (não Edge)
+  if (typeof window !== 'undefined') return;
+  if (typeof process === 'undefined' || !process.on) return;
 
-  process.on('unhandledRejection', (reason) => {
-    errorReporter.capture(reason, {
-      level: 'error',
-      module: 'process',
-      tags: { type: 'unhandledRejection' },
-      extra: { reason: String(reason) },
+  try {
+    process.on('unhandledRejection', (reason) => {
+      errorReporter.capture(reason, {
+        level: 'error',
+        module: 'process',
+        tags: { type: 'unhandledRejection' },
+        extra: { reason: String(reason) },
+      });
     });
-  });
 
-  process.on('uncaughtException', (error) => {
-    errorReporter.capture(error, {
-      level: 'error',
-      module: 'process',
-      tags: { type: 'uncaughtException' },
-      extra: { pid: process.pid },
+    process.on('uncaughtException', (error) => {
+      errorReporter.capture(error, {
+        level: 'error',
+        module: 'process',
+        tags: { type: 'uncaughtException' },
+        extra: { pid: typeof process !== 'undefined' && process.pid ? process.pid : 'unknown' },
+      });
+      // NÃO chamamos process.exit() — deixamos o Next.js decidir
     });
-    // NÃO chamamos process.exit() — deixamos o Next.js decidir
-  });
+  } catch (err) {
+    // Edge Runtime não suporta process.on — ignora silenciosamente
+    console.warn('[ErrorReporter] process.on not available (Edge Runtime?), skipping global handlers');
+  }
 }

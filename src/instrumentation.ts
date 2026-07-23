@@ -39,17 +39,20 @@ export async function register(): Promise<void> {
     console.error('[Instrumentation] Falha ao registrar error handlers (non-fatal):', error);
   }
 
-  // ── 3. Canary Detector (já existe em src/lib/security/canary-detector) ──
+  // ── 3. Canary Detector (apenas em Node.js runtime, não Edge) ──
   // O canary detector é um detector de honeypot — detecta se canary records
-  // no DB foram tocados (indica vazamento de dados). É invocado por callers
-  // quando dados são retornados do DB (detectCanary(result, model, action)).
-  // Aqui no boot apenas confirmamos que o módulo está carregável.
-  try {
-    await import('./lib/security/canary-detector');
-    await import('./lib/security/guardian-alert');
-    console.log('[Instrumentation] Canary Detector + Guardian Alert modules loaded');
-  } catch (error) {
-    console.warn('[Instrumentation] Canary Detector não disponível (non-fatal):', error);
+  // no DB foram tocados. Aqui no boot apenas confirmamos que o módulo está carregável.
+  // Em Edge Runtime, pulamos pois não há suporte a Prisma/crypto.
+  if (process.env.NEXT_RUNTIME === 'nodejs' || !process.env.NEXT_RUNTIME) {
+    try {
+      await import('./lib/security/canary-detector');
+      await import('./lib/security/guardian-alert');
+      console.log('[Instrumentation] Canary Detector + Guardian Alert modules loaded');
+    } catch (error) {
+      console.warn('[Instrumentation] Canary Detector não disponível (non-fatal):', error);
+    }
+  } else {
+    console.log('[Instrumentation] Skipping Canary Detector (Edge Runtime)');
   }
 
   // ── 4. Log de boot com info do ambiente ──

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { NicheType } from '@/contexts/NicheContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -91,6 +91,12 @@ export function CheckoutModal({
     niche: niche,
   });
   const [errors, setErrors] = useState<FormErrors>({});
+
+  // BUG #2 FIX: Sincroniza formData.niche quando a prop niche muda
+  // (useState não re-inicializa quando props mudam — useEffect é necessário)
+  useEffect(() => {
+    setFormData(prev => ({ ...prev, niche }));
+  }, [niche]);
 
   const resetState = useCallback(() => {
     setModalState('form');
