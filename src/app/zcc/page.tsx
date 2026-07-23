@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react';
 import {
   Brain, ArrowLeft, Bell, Building2, Activity,
   Users, Shield, DollarSign, Key, TrendingUp,
-  Home, Globe, Flame, Command,
+  Home, Globe, Flame, Command, Code,
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { CerebroVivoPanel } from '@/components/zcc/CerebroVivoPanel';
+import { RefactorSuggestionsPanel } from '@/components/zcc/RefactorSuggestionsPanel';
 import { FintechHub } from '@/components/zcc/FintechHub';
 import { ApiKeysPanel } from '@/components/zcc/ApiKeysPanel';
 import { SwarmOverview } from '@/components/zcc/SwarmOverview';
@@ -57,12 +58,13 @@ const parceiroMetrics = _parceiroMetrics;
 
 // ── Tab Configuration ──────────────────────────────────────────────────────────
 
-type ZCCTab = 'overview' | 'pulse' | 'cerebro' | 'financeiro' | 'airbnb' | 'burnrate' | 'tenants' | 'tokens' | 'geo' | 'financial';
+type ZCCTab = 'overview' | 'pulse' | 'cerebro' | 'refactors' | 'financeiro' | 'airbnb' | 'burnrate' | 'tenants' | 'tokens' | 'geo' | 'financial';
 
 const tabs: { id: ZCCTab; label: string; icon: React.ElementType; desc: string; group: 'core' | 'ops' | 'config' }[] = [
   { id: 'overview', label: 'Visão Geral', icon: Command, desc: 'Command Center', group: 'core' },
   { id: 'pulse', label: 'Pulse Check', icon: Activity, desc: 'Telemetria & Infra', group: 'core' },
   { id: 'cerebro', label: 'Cérebro', icon: Brain, desc: 'IA em tempo real', group: 'core' },
+  { id: 'refactors', label: 'Refactors', icon: Code, desc: 'Auto-aprendizado', group: 'core' },
   { id: 'financeiro', label: 'Financeiro', icon: DollarSign, desc: 'Receitas & Pagamentos', group: 'core' },
   { id: 'airbnb', label: 'Airbnb', icon: Home, desc: 'Anfitriões & Imóveis', group: 'ops' },
   { id: 'burnrate', label: 'Burn Rate', icon: Flame, desc: 'Custos API WhatsApp', group: 'ops' },
@@ -377,6 +379,9 @@ export default function ZCCPage() {
 
             {/* ===== TAB: CÉREBRO ZÉLLA ===== */}
             {activeTab === 'cerebro' && <CerebroVivoPanel />}
+
+            {/* ===== TAB: REFACTORS (Auto-aprendizado) ===== */}
+            {activeTab === 'refactors' && <RefactorSuggestionsPanel />}
 
             {/* ===== TAB: FINANCEIRO ===== */}
             {activeTab === 'financeiro' && <FintechHub />}

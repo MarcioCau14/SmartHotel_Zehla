@@ -711,6 +711,60 @@ export async function GET(request: NextRequest) {
     `[Cron:weekly-report] Batch complete: ${sentCount} sent, ${failedCount} failed, ${noEmailCount} no email — ${elapsedMs}ms`
   );
 
+  // ── Cérebro: roda budget forecast global para detectar tenants em risco ──
+  // Em modo mock apenas registra no DB. Em live mode + critical dispara alertas.
+  let cerebroForecast: { tenantsAtRisk: number; analysesCreated: number } | null = null;
+  try {
+    const { getGlmCerebroService } = await import('@/lib/cerebro/glm-service');
+    const { getCerebroMode } = await import('@/lib/cerebro/types');
+    type CerebroAnalysisResultType = import('@/lib/cerebro/types').CerebroAnalysisResult;
+    const service = getGlmCerebroService();
+    const forecasts = await service.forecastBudgetForAllTenants();
+
+    if (forecasts.length > 0) {
+      const mode = getCerebroMode();
+
+      for (const forecast of forecasts) {
+        const analysisResult: CerebroAnalysisResultType = {
+          analysisType: 'budget_forecast',
+          scope: `tenant:${forecast.tenantId}`,
+          summary: `[WEEKLY] Tenant ${forecast.tenantName} (${forecast.plan}) em risco: ${forecast.projectedUsagePercent.toFixed(1)}% da cota Meta projetada`,
+          details: {
+            tenantId: forecast.tenantId,
+            tenantName: forecast.tenantName,
+            plan: forecast.plan,
+            currentSpendUsd: forecast.currentSpendUsd,
+            budgetLimitUsd: forecast.budgetLimitUsd,
+            projectedSpendUsd: forecast.projectedSpendUsd,
+            projectedUsagePercent: forecast.projectedUsagePercent,
+            daysRemaining: forecast.daysRemaining,
+            source: 'weekly_report_cron',
+          },
+          severity: forecast.severity,
+          recommendedAction: forecast.projectedUsagePercent > 100
+            ? `Notificar ${forecast.tenantName} sobre estouro iminente — sugerir upgrade`
+            : `Monitorar tenant — projeção ${forecast.projectedUsagePercent.toFixed(0)}% da cota`,
+          confidence: 0.85,
+          costUsd: 0,
+          mode: forecast.mode,
+        };
+
+        await service.persistAnalysis(analysisResult);
+      }
+
+      cerebroForecast = {
+        tenantsAtRisk: forecasts.length,
+        analysesCreated: forecasts.length,
+      };
+
+      console.log(
+        `[Cron:weekly-report] Cérebro: ${forecasts.length} tenants em risco de estourar cota Meta (mode: ${mode})`
+      );
+    }
+  } catch (cerebroErr) {
+    console.warn('[Cron:weekly-report] Cérebro forecast falhou (non-fatal):', cerebroErr);
+  }
+
   return NextResponse.json({
     ok: true,
     message: 'Weekly email report batch completed',
@@ -725,6 +779,7 @@ export async function GET(request: NextRequest) {
       noEmail: noEmailCount,
       elapsedMs,
     },
+    cerebro: cerebroForecast,
     results: results.map((r) => ({
       tenantId: r.tenantId,
       tenantName: r.tenantName,

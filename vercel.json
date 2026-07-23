@@ -48,6 +48,14 @@
     {
       "path": "/api/cron/cerebro-analyze",
       "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/cerebro-budget-forecast",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/cerebro-refactor-check",
+      "schedule": "0 7 * * *"
     }
-  ]  
+  ]
 }
