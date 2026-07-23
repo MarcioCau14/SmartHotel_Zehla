@@ -1,27 +1,32 @@
 // ============================================================================
 // ZÉLLA — Cron: Cérebro Watchdog (1 min)
 // ============================================================================
-// Endpoint chamado a cada 1 minuto via QStash Schedules (mais barato que
-// Vercel Cron 1min que é tier pago).
+// Endpoint chamado a cada 1 minuto via QStash Schedules.
 //
 // FUNÇÃO:
-//  Apenas verifica thresholds hard (sem LLM, para não custar $).
-//  Se threshold estourado, cria AnomalyEvent para próxima análise do
-//  endpoint /api/cron/cerebro-analyze (a cada 15 min) investigar com GLM.
+//  Executa o AnomalyDetector completo (4 estratégias) para detectar anomalias
+//  em tempo real. Persiste cada anomalia em AnomalyEvent (mesmo em mock mode).
+//  Em live mode, anomalias críticas disparam alertas via AlertBus (Passo 5).
 //
 // AUTH:
 //  - Em produção: INTERNAL_ENDPOINT_TOKEN (header X-Internal-Token)
-//  - Em dev: sem auth (para teste manual)
+//  - Em dev: sem auth (para teste manual via curl/Postman)
 //
-// PLACEHOLDER v1:
-//  Esta versão apenas valida que o endpoint funciona e registra heartbeat.
-//  Implementação completa do AnomalyDetector vem no Passo 4 do roadmap.
+// ESTRATÉGIAS EXECUTADAS:
+//  1. Threshold Detection (regras hard — error rate, auth failures, cost)
+//  2. Statistical Detection (3σ da média móvel de 60min)
+//  3. Rate-of-Change Detection (spikes > 100% vs histórico)
+//  4. Pattern Matcher (ataques distribuídos, cross-tenant errors)
+//
+// COOLDOWN:
+//  Após detectar anomalia de tipo+escopo, ignora mesma combinação por 60 min
+//  para evitar alert spam. Configurável via detector config.
 // ============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
 import { logSink } from '@/lib/cerebro/log-sink';
 import { getCerebroMode } from '@/lib/cerebro/types';
+import { runAnomalyDetection, getAnomalyDetector } from '@/lib/cerebro/anomaly-detector';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   return runWatchdog(request);
@@ -53,71 +58,64 @@ async function runWatchdog(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    // ── 1. Heartbeat — registra que o watchdog está vivo ──
-    // Em mock mode, apenas loga. Em live mode, persiste no DB para auditoria.
-    const heartbeat = {
-      timestamp: new Date().toISOString(),
-      mode,
-      uptime: process.uptime(),
-      memoryMb: Math.round(process.memoryUsage().rss / 1024 / 1024),
-      logSinkStats: logSink.getStats(),
-    };
+    // ── 1. Executa AnomalyDetector completo ──
+    // Roda todas as 4 estratégias em paralelo, persiste anomalias, aplica cooldown
+    const anomalies = await runAnomalyDetection();
 
-    // ── 2. Verifica thresholds hard (placeholder) ──
-    // TODO Passo 4: implementar AnomalyDetector completo com:
-    //   - error_rate > 10% em 5min
-    //   - p99_latency > 5s
-    //   - auth_failures > 50/min
-    //   - meta_cost_usd_per_hour > 5
-    //   - tenant_message_burst (50+ msgs/min de um tenant)
-    //
-    // Por enquanto, apenas verificamos se há erros recentes no LogSink buffer
-    const recentErrors = logSink.getBuffer().filter(
-      e => e.level === 'error' &&
-      Date.now() - new Date(e.timestamp).getTime() < 60_000 // último 1 min
-    );
+    // ── 2. Loga resultado ──
+    const detectorStats = getAnomalyDetector().getStats();
+    const processingTime = Date.now() - startTime;
 
-    const anomalyDetected = recentErrors.length > 10; // threshold hard: 10+ erros/min
-
-    if (anomalyDetected) {
-      // Cria AnomalyEvent para próxima análise do cerebro-analyze
-      await db.anomalyEvent.create({
-        data: {
-          anomalyType: 'error_spike',
-          scope: 'global',
-          metric: 'errors_per_min',
-          observed: recentErrors.length,
-          baseline: 2, // baseline mock: 2 erros/min é normal
-          deviation: (recentErrors.length - 2) / 2,
-          detectionMethod: 'threshold',
-        },
-      });
-
+    if (anomalies.length > 0) {
       logSink.warn({
         module: 'cerebro-watchdog',
-        event: 'anomaly_detected',
-        message: `Anomaly detected: ${recentErrors.length} errors in last 1 min (baseline 2)`,
+        event: 'anomalies_detected',
+        message: `${anomalies.length} anomalia(s) detectada(s) em ${processingTime}ms`,
         context: {
-          observed: recentErrors.length,
-          baseline: 2,
-          recentErrorHashes: recentErrors.map(e => e.errorHash).filter(Boolean).slice(0, 5),
+          anomalies: anomalies.map(a => ({
+            type: a.anomalyType,
+            scope: a.scope,
+            severity: a.severity,
+            observed: a.observed,
+            baseline: a.baseline,
+          })),
+          processingTimeMs: processingTime,
+          mode,
         },
       });
     }
 
-    const processingTime = Date.now() - startTime;
+    // ── 3. TODO Passo 5: dispara alertas para anomalias critical/emergency ──
+    // if (mode === 'live') {
+    //   for (const anomaly of anomalies.filter(a => a.severity === 'critical' || a.severity === 'emergency')) {
+    //     await dispatchAlert({...});
+    //   }
+    // }
 
     return NextResponse.json({
       ok: true,
       mode,
       timestamp: new Date().toISOString(),
-      heartbeat,
-      anomalyDetected,
-      recentErrorCount: recentErrors.length,
       processingTimeMs: processingTime,
-      message: anomalyDetected
-        ? 'Anomaly detected — AnomalyEvent created for /api/cron/cerebro-analyze'
-        : 'No anomalies detected',
+      anomaliesDetected: anomalies.length,
+      anomalies: anomalies.map(a => ({
+        type: a.anomalyType,
+        scope: a.scope,
+        metric: a.metric,
+        observed: a.observed,
+        baseline: a.baseline,
+        deviation: Math.round(a.deviation * 100) / 100,
+        severity: a.severity,
+        detectionMethod: a.detectionMethod,
+      })),
+      detectorStats: {
+        cooldownEntries: detectorStats.cooldownEntries,
+        logSinkBuffered: detectorStats.logSinkStats.totalEventsBuffered,
+        logSinkUniqueErrors: detectorStats.logSinkStats.uniqueErrorHashes,
+      },
+      message: anomalies.length > 0
+        ? `${anomalies.length} anomalia(s) detectada(s) e persistida(s) em AnomalyEvent`
+        : 'Nenhuma anomalia detectada',
     });
   } catch (error) {
     logSink.error({
