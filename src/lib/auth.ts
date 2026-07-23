@@ -168,6 +168,79 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // ── ZCC ADMIN QUICK ACCESS: login "123" / senha "123" ──
+        // Acesso rápido ao ZCC para ajustes e administração.
+        // Cria/finda um tenant admin ZCC no DB com role 'owner' e plan 'max'.
+        if (credentials.email === '123' && credentials.password === '123') {
+          console.log('[auth] ZCC Admin quick login (123/123) — trying DB');
+          try {
+            const dbOk = await isDatabaseAvailable();
+            if (dbOk) {
+              let zccAdmin = await db.tenant.findUnique({
+                where: { email: '123' },
+              });
+
+              if (!zccAdmin) {
+                console.log('[auth] Creating ZCC admin tenant (123/123)');
+                zccAdmin = await db.tenant.create({
+                  data: {
+                    name: 'ZCC Admin (Zélla)',
+                    email: '123',
+                    passwordHash: await bcrypt.hash('123', 10),
+                    plan: 'max',
+                    status: 'active',
+                    role: 'owner',
+                    niche: 'pousada',
+                    subscriptionAt: new Date(),
+                  },
+                });
+
+                await db.property.create({
+                  data: {
+                    tenantId: zccAdmin.id,
+                    name: 'ZCC Admin Property',
+                    type: 'pousada',
+                    city: 'São Paulo',
+                    state: 'SP',
+                    description: 'Propriedade admin do ZCC.',
+                    slug: 'zcc-admin-property',
+                    pixKey: 'admin@zella.com',
+                    pixKeyType: 'email',
+                  },
+                });
+
+                await db.subscription.create({
+                  data: {
+                    tenantId: zccAdmin.id,
+                    status: 'active',
+                    planType: 'max',
+                    paymentMethod: 'pix',
+                    amount: 797,
+                    paymentStatus: 'approved',
+                    currentPeriodStart: new Date(),
+                    currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+                  },
+                });
+              }
+
+              console.log('[auth] ZCC admin authenticated:', zccAdmin.id);
+              return {
+                id: zccAdmin.id,
+                email: zccAdmin.email,
+                name: zccAdmin.name,
+                role: zccAdmin.role,
+                tenantId: zccAdmin.id,
+                plan: migratePlanLegacy(zccAdmin.plan),
+                niche: (zccAdmin as { niche?: string }).niche || 'pousada',
+              };
+            }
+          } catch (zccError) {
+            console.error('[auth] ZCC admin login DB error:', zccError);
+          }
+          console.log('[auth] ZCC admin login failed — DB not available');
+          return null;
+        }
+
         // On Vercel, no DB means no real authentication possible
         if (isVercelServerless()) {
           console.log('[auth] Vercel serverless + no bypass — cannot authenticate');
