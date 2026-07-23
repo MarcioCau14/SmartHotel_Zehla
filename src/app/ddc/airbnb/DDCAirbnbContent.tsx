@@ -13,6 +13,8 @@ import { DDCShell, type NavItem } from '@/components/ddc/DDCShell';
 import { MagicScanner, type MagicScanResult } from '@/components/ddc/MagicScanner';
 import { ZellaSimulator } from '@/components/ddc/ZellaSimulator';
 import { WhatsAppDeviceManager } from '@/components/ddc/WhatsAppDeviceManager';
+import { GuestGuidePanel } from '@/components/ddc/GuestGuidePanel';
+import { BookingSyncPanel } from '@/components/ddc/BookingSyncPanel';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,11 +58,12 @@ import {
   MapPin,
   Wifi,
   Smartphone,
+  QrCode,
 } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type AirbnbTab = 'propriedades' | 'sincronizacao' | 'automacao' | 'simulador' | 'whatsapp' | 'config';
+type AirbnbTab = 'propriedades' | 'sincronizacao' | 'automacao' | 'simulador' | 'whatsapp' | 'guia' | 'config';
 
 interface PropertyData {
   id: string;
@@ -210,6 +213,7 @@ const airbnbNavItems: NavItem[] = [
   { id: 'automacao', label: 'Automação', icon: <Bot className="size-4" /> },
   { id: 'simulador', label: 'Simulador Zélla', icon: <MessageSquare className="size-4" /> },
   { id: 'whatsapp', label: 'Connection Center', icon: <Smartphone className="size-4" /> },
+  { id: 'guia', label: 'Guia Digital', icon: <QrCode className="size-4" /> },
   { id: 'config', label: 'Configurações', icon: <Settings className="size-4" /> },
 ];
 
@@ -1083,13 +1087,15 @@ export default function DDCAirbnbContent() {
       case 'propriedades':
         return <TabPropriedades />;
       case 'sincronizacao':
-        return <TabSincronizacao />;
+        return <BookingSyncPanel niche="airbnb" propertyName={scannedData.propertyName} />;
       case 'automacao':
         return <TabAutomacao />;
       case 'simulador':
         return <ZellaSimulator niche="airbnb" propertyData={scannedData} />;
       case 'whatsapp':
         return <WhatsAppDeviceManager niche="airbnb" propertyName={scannedData.propertyName} />;
+      case 'guia':
+        return <GuestGuidePanel niche="airbnb" propertyName={scannedData.propertyName} />;
       case 'config':
         return <TabConfig />;
     }

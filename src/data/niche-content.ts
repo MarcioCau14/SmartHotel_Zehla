@@ -104,7 +104,7 @@ export interface NicheContent {
 const pousadaContent: NicheContent = {
   switcher: {
     headline: 'Organize, lucre mais e gaste menos.',
-    subheadline: 'O Zélla organiza sua pousada E ajuda a lucrar mais com preços inteligentes + gastar menos no WhatsApp (80% economia). Responde 24h com disponibilidade+preço+PIX, envia Guia Digital automático, e nunca mais aluga barato no feriado.',
+    subheadline: 'O Zélla organiza sua pousada e ajuda a lucrar mais com preços inteligentes + gastar menos no WhatsApp (80% economia). Responde 24h com disponibilidade e manda sua chave PIX, envia Guia Digital automático, e nunca mais aluga barato no feriado.',
     heroStat: { val: '+47%', label: 'mais receita com preços inteligentes' },
     backgroundImage: '/images/niche-pousadas-bg.jpg',
     ctaText: 'Ver como funciona para Pousadas',
@@ -316,7 +316,7 @@ const pousadaContent: NicheContent = {
 const airbnbContent: NicheContent = {
   switcher: {
     headline: 'Organize, lucre mais e gaste menos.',
-    subheadline: 'O Zélla AirB organiza seu imóvel E ajuda a lucrar mais com preços inteligentes + gastar menos no WhatsApp (80% economia). Responde 24h com disponibilidade+preço+PIX, sincroniza Airbnb+Booking, e entrega o Guia Digital automaticamente.',
+    subheadline: 'O Zélla AirB organiza seu imóvel e ajuda a lucrar mais com preços inteligentes + gastar menos no WhatsApp (80% economia). Responde 24h com disponibilidade e manda sua chave PIX, sincroniza Airbnb+Booking, e entrega o Guia Digital automaticamente.',
     heroStat: { val: '+47%', label: 'mais receita com preços inteligentes' },
     backgroundImage: '/images/niche-anfitrioes-bg.jpg',
     ctaText: 'Ver como funciona para Anfitriões',

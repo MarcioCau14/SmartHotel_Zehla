@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useNiche } from '@/contexts/NicheContext';
 import { NicheToggle } from './NicheToggle';
@@ -9,7 +9,24 @@ import { NicheToggle } from './NicheToggle';
 export function HeroSection() {
   const { niche, setNiche, isPousada, isAirbnb } = useNiche();
   const [mounted, setMounted] = useState(false);
+  const [phraseIdx, setPhraseIdx] = useState(0);
   const prefersReducedMotion = useReducedMotion();
+
+  // ── Rotating phrases for the second line of the headline ──
+  const rotatingPhrases = isPousada
+    ? ['gaste menos no WhatsApp.', 'nunca perca uma reserva.', 'tenha preços inteligentes.']
+    : isAirbnb
+    ? ['gaste menos no WhatsApp.', 'nunca perca uma reserva.', 'tenha preços inteligentes.']
+    : ['congela seu preço por 24 meses.', 'plano PRO completo.', 'selo exclusivo de parceiro.'];
+
+  // Rotate phrase every 3 seconds
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+    const interval = setInterval(() => {
+      setPhraseIdx((prev) => (prev + 1) % rotatingPhrases.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [rotatingPhrases.length, prefersReducedMotion]);
 
   useEffect(() => {
     setMounted(true);
@@ -76,16 +93,27 @@ export function HeroSection() {
               className="text-[2.25rem] sm:text-[3.5rem] md:text-[4.5rem] lg:text-[5.25rem] xl:text-[6rem] font-satoshi font-bold tracking-[-0.03em] md:tracking-[-0.04em] leading-[1.05] md:leading-[1.02] text-white mb-8 text-center"
             >
               <span className="block">Organize e lucre mais</span>
-              <span className="block whitespace-nowrap text-emerald-500 font-bold">gaste menos no WhatsApp.</span>
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={phraseIdx}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.4, ease: 'easeInOut' }}
+                  className="block whitespace-nowrap text-emerald-500 font-bold"
+                >
+                  {rotatingPhrases[phraseIdx]}
+                </motion.span>
+              </AnimatePresence>
             </motion.h1>
 
             {/* Subtitle — compact with relaxed leading */}
             <motion.p variants={staggerItem} className="text-[15px] sm:text-[17px] md:text-lg text-neutral-400 leading-relaxed mb-12 max-w-2xl mx-auto">
-              {!mounted ? 'O Zélla organiza sua pousada E ajuda a lucrar mais com preços inteligentes — e gastar menos no WhatsApp. Responde em 8 segundos com disponibilidade, preço e PIX. Sincroniza Booking.com e entrega Guia Digital automático.' :
+              {!mounted ? 'O Zélla organiza sua pousada e ajuda a lucrar mais com preços inteligentes — e gastar menos no WhatsApp. Responde em 8 segundos com disponibilidade e manda sua chave PIX. Sincroniza Booking.com e entrega Guia Digital automático.' :
               isPousada
-                ? 'O Zélla organiza sua pousada E ajuda a lucrar mais com preços inteligentes — e gastar menos no WhatsApp. Responde em 8 segundos com disponibilidade, preço e PIX. Sincroniza Booking.com e entrega Guia Digital automático.'
+                ? 'O Zélla organiza sua pousada e ajuda a lucrar mais com preços inteligentes — e gastar menos no WhatsApp. Responde em 8 segundos com disponibilidade e manda sua chave PIX. Sincroniza Booking.com e entrega Guia Digital automático.'
                 : isAirbnb
-                ? 'O Zélla organiza seu imóvel E ajuda a lucrar mais com preços inteligentes — e gastar menos no WhatsApp. Responde em 8 segundos com disponibilidade, preço e PIX. Conecta Airbnb e Booking.com e entrega Guia Digital automático.'
+                ? 'O Zélla organiza seu imóvel e ajuda a lucrar mais com preços inteligentes — e gastar menos no WhatsApp. Responde em 8 segundos com disponibilidade e manda sua chave PIX. Conecta Airbnb e Booking.com e entrega Guia Digital automático.'
                 : 'O programa de parceria que congela seu preço por 24 meses. Plano PRO completo por R$247/mês com selo exclusivo de parceiro no Link-in-Bio.'}
             </motion.p>
 

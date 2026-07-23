@@ -18,6 +18,8 @@ import { DDCShell, type NavItem } from '@/components/ddc/DDCShell';
 import { MagicScanner, type MagicScanResult } from '@/components/ddc/MagicScanner';
 import { ZellaSimulator } from '@/components/ddc/ZellaSimulator';
 import { WhatsAppDeviceManager } from '@/components/ddc/WhatsAppDeviceManager';
+import { GuestGuidePanel } from '@/components/ddc/GuestGuidePanel';
+import { BookingSyncPanel } from '@/components/ddc/BookingSyncPanel';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,7 +79,7 @@ import {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type PousadaTab = 'financeiro' | 'hospedes' | 'cerebro' | 'simulador' | 'whatsapp' | 'config';
+type PousadaTab = 'financeiro' | 'hospedes' | 'cerebro' | 'simulador' | 'whatsapp' | 'guia' | 'integracoes' | 'config';
 
 interface GuestCardData {
   id: string;
@@ -262,6 +264,8 @@ const pousadaNavItems: NavItem[] = [
   { id: 'cerebro', label: 'Cérebro da Pousada', icon: <Brain className="size-4" /> },
   { id: 'simulador', label: 'Simulador Zélla', icon: <MessageSquare className="size-4" /> },
   { id: 'whatsapp', label: 'Connection Center', icon: <Smartphone className="size-4" /> },
+  { id: 'guia', label: 'Guia Digital', icon: <QrCode className="size-4" /> },
+  { id: 'integracoes', label: 'Integrações', icon: <Globe className="size-4" /> },
   { id: 'config', label: 'Configurações', icon: <Settings className="size-4" /> },
 ];
 
@@ -990,6 +994,16 @@ export default function DDCPousadaContent() {
         {activeTab === 'whatsapp' && (
           <div key="whatsapp">
             <WhatsAppDeviceManager niche="pousada" propertyName={scannedData.propertyName} />
+          </div>
+        )}
+        {activeTab === 'guia' && (
+          <div key="guia">
+            <GuestGuidePanel niche="pousada" propertyName={scannedData.propertyName} />
+          </div>
+        )}
+        {activeTab === 'integracoes' && (
+          <div key="integracoes">
+            <BookingSyncPanel niche="pousada" propertyName={scannedData.propertyName} />
           </div>
         )}
         {activeTab === 'config' && <div key="config">{renderConfig()}</div>}

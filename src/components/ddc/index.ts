@@ -32,5 +32,11 @@ export type { MagicScanResult } from './MagicScanner';
 // Zella Simulator (Sandbox)
 export { ZellaSimulator } from './ZellaSimulator';
 
+// Guest Guide (Guia Digital)
+export { GuestGuidePanel } from './GuestGuidePanel';
+
 // AirB
 export { ZellaAirBTab } from './ZellaAirBTab';
+
+// Booking Sync
+export { BookingSyncPanel } from './BookingSyncPanel';
