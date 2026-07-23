@@ -62,7 +62,13 @@ const NONCE_MAX_AGE_MS = 8 * 60 * 60 * 1000; // 8 hours
 
 const rateLimiter = new Map<string, { count: number; windowStart: number }>();
 const activeNonces = new Map<string, number>(); // nonce → createdAt timestamp
-const auditLog: ZCCAuditEntry[] = [];
+
+// ── Audit Log: agora persistido em DB (Passo 10 Hardening) ──────────────────
+// Antes: auditLog[] em memória (perdia em cold start, limite 1000 entradas)
+// Agora: persiste em ZccAuditLog table, sobrevive entre lambdas
+// Mantemos cache in-memory para reads rápidos (last 100 entries)
+const auditLogCache: ZCCAuditEntry[] = [];
+const AUDIT_CACHE_SIZE = 100;
 
 // ── Helper Functions ───────────────────────────────────────────────────────────
 
@@ -113,18 +119,85 @@ function checkRateLimit(ip: string): boolean {
 }
 
 function addAuditEntry(entry: Omit<ZCCAuditEntry, 'timestamp'>): void {
-  auditLog.push({
+  const fullEntry: ZCCAuditEntry = {
     ...entry,
     timestamp: new Date().toISOString(),
+  };
+
+  // Cache in-memory (para reads rápidos)
+  auditLogCache.push(fullEntry);
+  if (auditLogCache.length > AUDIT_CACHE_SIZE) {
+    auditLogCache.shift();
+  }
+
+  // Persistência em DB (fire-and-forget — não bloqueia o handler)
+  // Em Vercel serverless, o DB write continua mesmo após HTTP response se
+  // ainda há event loop ativo. Para garantir, podemos usar waitUntil.
+  persistAuditEntry(fullEntry).catch((err) => {
+    // Silent fail — audit log é best-effort, não pode derrubar o request
+    console.error('[ZCC-AUDIT] Failed to persist:', err);
   });
-  if (auditLog.length > 1000) {
-    auditLog.shift();
+}
+
+/**
+ * Persiste entrada de audit log no DB.
+ * Em caso de erro de DB (ex: cold start), apenas loga — não bloqueia.
+ */
+async function persistAuditEntry(entry: ZCCAuditEntry): Promise<void> {
+  try {
+    // Lazy import para evitar circular dependency no boot
+    const { db } = await import('@/lib/db');
+    await db.zccAuditLog.create({
+      data: {
+        ip: entry.ip,
+        userAgent: entry.userAgent || '',
+        method: entry.method,
+        success: entry.success,
+        path: entry.path,
+        deploymentId: process.env.VERCEL_DEPLOYMENT_ID || process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 8) || null,
+        notes: null,
+        // timestamp é default(now()) no schema
+      },
+    });
+  } catch (err) {
+    // Em dev sem DB disponível, apenas loga
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[ZCC-AUDIT] DB write failed (dev mode, ignoring):', err);
+    } else {
+      throw err;
+    }
   }
 }
 
-/** Export audit log for API access */
-export function getZCCSecurityAuditLog(): ZCCAuditEntry[] {
-  return [...auditLog];
+/**
+ * Retorna audit log recente (cache in-memory + DB).
+ * Em produção, faz query ao DB para histórico completo.
+ */
+export async function getZCCSecurityAuditLog(limit: number = 100): Promise<ZCCAuditEntry[]> {
+  // Em produção, busca do DB (persistente)
+  if (process.env.NODE_ENV === 'production') {
+    try {
+      const { db } = await import('@/lib/db');
+      const entries = await db.zccAuditLog.findMany({
+        orderBy: { timestamp: 'desc' },
+        take: Math.min(Math.max(limit, 1), 500),
+      });
+      return entries.map(e => ({
+        timestamp: e.timestamp.toISOString(),
+        ip: e.ip,
+        userAgent: e.userAgent,
+        method: e.method as 'header' | 'param' | 'cookie' | 'session' | 'denied',
+        success: e.success,
+        path: e.path,
+      }));
+    } catch (err) {
+      console.error('[ZCC-AUDIT] DB query failed, falling back to cache:', err);
+      return [...auditLogCache];
+    }
+  }
+
+  // Em dev, retorna cache (sem DB roundtrip)
+  return [...auditLogCache];
 }
 
 /** Export rate limiter state for monitoring */
@@ -132,7 +205,7 @@ export function getZCCRateLimiterState() {
   return {
     activeIPs: rateLimiter.size,
     activeNonces: activeNonces.size,
-    auditLogEntries: auditLog.length,
+    auditLogEntries: auditLogCache.length,
   };
 }
 

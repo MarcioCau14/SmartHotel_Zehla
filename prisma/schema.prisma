@@ -1898,3 +1898,75 @@ model KnowledgeChunk {
   @@index([filePath])
   @@map("knowledge_chunks")
 }
+
+// ============================================================================
+// CÉREBRO ZÉLLA — AUDIT LOG PERSISTENTE (Passo 10 Hardening)
+// ============================================================================
+// Antes: audit log em Map em memória (perdia em cold start Vercel)
+// Agora: persistido em DB para auditoria completa e sobrevivência entre lambdas
+// ============================================================================
+
+/// Audit log do ZCC Security Gate V3 — registra toda tentativa de acesso
+/// (autorizada ou negada) às rotas /api/zcc/* para compliance e detecção
+/// de tentativas de invasão.
+model ZccAuditLog {
+  id            String   @id @default(cuid())
+  /// Timestamp ISO do evento
+  timestamp     DateTime @default(now())
+  /// IP de origem (X-Forwarded-For ou X-Real-IP)
+  ip            String
+  /// User-Agent (truncado para 200 chars)
+  userAgent     String   @default("")
+  /// Método de auth usado: "header" | "param" | "cookie" | "session" | "denied"
+  method        String
+  /// Sucesso da tentativa
+  success       Boolean
+  /// Path acessado: /api/zcc/...
+  path          String
+  /// Notas adicionais (ex: "rate_limited", "nonce_expired")
+  notes         String?
+  /// ID do deploy (Vercel) para correlação
+  deploymentId  String?
+
+  @@index([ip, timestamp])
+  @@index([success, timestamp])
+  @@index([path, timestamp])
+  @@map("zcc_audit_logs")
+}
+
+// ============================================================================
+// CÉREBRO ZÉLLA — TELEMETRY EVENTS PERSISTENTES (Passo 10 Hardening)
+// ============================================================================
+// Antes: telemetry-store.ts em ring buffer in-memory (10k eventos, perdidos em cold start)
+// Agora: persistido em DB com TTL via cron de cleanup (7 dias)
+// ============================================================================
+
+/// Eventos de telemetria persistidos para análise histórica de performance,
+/// anomalias e auditoria. Substitui o ring buffer in-memory do telemetry-store.ts.
+model CerebroTelemetryEvent {
+  id            String   @id @default(cuid())
+  /// Tipo: "request" | "error" | "anomaly" | "alert" | "llm_call" | "webhook" | "cron"
+  type          String
+  /// Nome do evento (ex: "request.duration", "llm_call.complete")
+  name          String
+  /// Módulo de origem (ex: "whatsapp-webhook", "glm-cerebro", "anomaly-detector")
+  module        String
+  /// Severity: "info" | "warn" | "error" | "critical"
+  severity      String   @default("info")
+  /// Mensagem human-readable
+  message       String
+  /// Contexto estruturado (JSON: tenantId, latencyMs, costUsd, etc)
+  context       String   @default("{}")
+  /// Tenant ID se aplicável (para correlação cross-tenant)
+  tenantId      String?
+  /// Timestamp do evento
+  timestamp     DateTime @default(now())
+  /// ID do deploy (Vercel) para correlação
+  deploymentId  String?
+
+  @@index([type, timestamp])
+  @@index([module, timestamp])
+  @@index([severity, timestamp])
+  @@index([tenantId, timestamp])
+  @@map("cerebro_telemetry_events")
+}
