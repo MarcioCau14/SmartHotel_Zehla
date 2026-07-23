@@ -9,7 +9,7 @@ import {
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { CerebroZella } from '@/components/zcc/CerebroZella';
+import { CerebroVivoPanel } from '@/components/zcc/CerebroVivoPanel';
 import { FintechHub } from '@/components/zcc/FintechHub';
 import { ApiKeysPanel } from '@/components/zcc/ApiKeysPanel';
 import { SwarmOverview } from '@/components/zcc/SwarmOverview';
@@ -376,7 +376,7 @@ export default function ZCCPage() {
             {activeTab === 'pulse' && <PulseCheck />}
 
             {/* ===== TAB: CÉREBRO ZÉLLA ===== */}
-            {activeTab === 'cerebro' && <CerebroZella />}
+            {activeTab === 'cerebro' && <CerebroVivoPanel />}
 
             {/* ===== TAB: FINANCEIRO ===== */}
             {activeTab === 'financeiro' && <FintechHub />}
