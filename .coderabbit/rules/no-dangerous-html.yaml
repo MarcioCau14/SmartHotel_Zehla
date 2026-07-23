@@ -1,0 +1,6 @@
+id: no-dangerously-set-inner-html
+message: "Atenção: Uso de dangerouslySetInnerHTML pode introduzir vulnerabilidades de XSS se os dados não forem devidamente sanitizados."
+severity: warning
+language: TypeScript
+rule:
+  pattern: dangerouslySetInnerHTML={$PROPS}

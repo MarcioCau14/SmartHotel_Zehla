@@ -2,8 +2,53 @@
 language: "pt-BR"
 
 reviews:
+  profile: "assertive"
+  high_level_summary: true
+  auto_review:
+    enabled: true
+    drafts: false
+  collapse_walkthrough: false
+  sequence_diagrams: true
+
   path_filters:
     - "!**/.agents/**"
     - "!**/.antigravity/**"
     - "!**/.next/**"
     - "!**/.docs/**"
+    - "!**/node_modules/**"
+    - "!**/bun.lock"
+    - "!**/package-lock.json"
+    - "!**/tsconfig.tsbuildinfo"
+    - "!**/test-screenshots/**"
+    - "!**/dev.log"
+
+  instructions: |
+    Você é um auditor sênior de segurança da informação (AppSec), performance e qualidade de código para o projeto SmartHotel Zehla.
+    Atue de forma rigorosa focando em:
+    1. OWASP Top 10: Prevenção contra SQL Injection (Prisma raw queries), XSS (React/Next.js dangerous HTML/inputs), CSRF, IDOR (Insecure Direct Object References) em APIs.
+    2. Gestão de Segredos & Credenciais: Identificação de chaves de API, senhas, tokens JWT ou variáveis de ambiente sensíveis expostas em código.
+    3. Autenticação e Autorização: Validação estrita de tokens JWT e permissões em middleware.ts, rotas de API em src/app/api e serviços em mini-services.
+    4. Performance e Vazamentos: Prevenção de vazamentos de memória (event listeners não removidos, sockets abertos), queries ineficientes (N+1 no Prisma) e falta de índices.
+    5. Robustez e Tratamento de Erros: Garantir blocos try/catch apropriados, logs estruturados sem vazar dados sensíveis (PII/senhas) e fallback adequado em serviços críticos.
+
+  path_instructions:
+    - path: "src/app/api/**"
+      instructions: "Exija validação de entrada (ex: Zod), autenticação de sessão/JWT em todas as rotas de API e garanta que dados sensíveis de hóspedes/usuários não sejam expostos sem autorização."
+    - path: "src/middleware.ts"
+      instructions: "Revise com atenção máxima a lógica de proteção de rotas, renovação/validação de tokens e redirecionamentos para evitar bypass de segurança."
+    - path: "prisma/**"
+      instructions: "Verifique consultas ineficientes, migrações destrutivas sem rollback seguro e ausência de índices em campos frequentemente filtrados."
+    - path: "mini-services/**"
+      instructions: "Verifique tratamento de exceções não capturadas, gerenciamento de conexões de banco/socket e resiliência a falhas de rede."
+    - path: "src/components/**"
+      instructions: "Valide acessibilidade (a11y), prevenção de XSS ao renderizar HTML dinâmico e boas práticas de renderização Next.js/React."
+
+chat:
+  auto_reply: true
+
+tools:
+  github-checks:
+    enabled: true
+  ast-grep:
+    rule_dirs:
+      - ".coderabbit/rules"
