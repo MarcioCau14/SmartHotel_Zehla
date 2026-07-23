@@ -314,7 +314,7 @@ export async function middleware(request: NextRequest) {
     // ── 3. Godmode Param (via URL) ──
     // Access via ?godmode=<ZCC_GODMODE_TOKEN env var value> — generates nonce for cookie rotation
     const godmodeParam = request.nextUrl.searchParams.get('godmode');
-    if (godmodeParam === ZCC_GODMODE_TOKEN) {
+    if (ZCC_GODMODE_TOKEN && godmodeParam === ZCC_GODMODE_TOKEN) {
       // Limpa nonces expirados antes de adicionar novo
       cleanupExpiredNonces();
 
@@ -352,7 +352,7 @@ export async function middleware(request: NextRequest) {
         const token = godmodeCookie.slice(0, colonIndex);
         const nonce = godmodeCookie.slice(colonIndex + 1);
 
-        if (token === ZCC_GODMODE_TOKEN && nonce && zccActiveNonces.has(nonce)) {
+        if (ZCC_GODMODE_TOKEN && token === ZCC_GODMODE_TOKEN && nonce && zccActiveNonces.has(nonce)) {
           // Rotação: remove nonce antigo, gera novo
           zccActiveNonces.delete(nonce);
           cleanupExpiredNonces();
