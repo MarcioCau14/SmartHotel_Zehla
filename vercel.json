@@ -56,6 +56,10 @@
     {
       "path": "/api/cron/cerebro-refactor-check",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/cerebro-cleanup",
+      "schedule": "0 3 * * *"
     }
   ]
 }

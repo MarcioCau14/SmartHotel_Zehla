@@ -475,6 +475,7 @@ export async function POST(request: NextRequest) {
               console.log(`[WhatsApp Webhook] ✅ Opt-out confirmado e enviado para ${guestPhone}`);
 
               // Registra custo Meta (messageType = service_reply, dentro da service window)
+              // PASSO 11.3: void explícito para fire-and-forget absoluto
               try {
                 // Tenta encontrar conversationLog ativo para registrar o custo
                 const conversation = await db.conversationLog.findFirst({
@@ -482,7 +483,7 @@ export async function POST(request: NextRequest) {
                   select: { id: true },
                 });
                 if (conversation) {
-                  await recordMetaCost({
+                  void recordMetaCost({
                     tenantId,
                     conversationId: conversation.id,
                     guestId: guest.id,
@@ -494,10 +495,10 @@ export async function POST(request: NextRequest) {
                       isSingleShot: true,
                       optOutMethod: 'keyword_whatsapp',
                     },
-                  });
+                  }).catch(err => console.error('[WhatsApp Webhook] recordMetaCost (opt-out) error:', err));
                 }
               } catch (costError) {
-                console.error('[WhatsApp Webhook] Erro ao registrar custo do opt-out (non-fatal):', costError);
+                console.error('[WhatsApp Webhook] Erro ao buscar conversation para opt-out cost (non-fatal):', costError);
               }
             }
           } catch (err) {
@@ -545,8 +546,9 @@ export async function POST(request: NextRequest) {
                 // NÃO registra custo Meta — mensagem não foi entregue
               } else if (sendResult.isMock) {
                 // Modo mock (sem credenciais Meta) — registra custo apenas se META_COST_RECORD_MOCK=true
+                // PASSO 11.3: void explícito para fire-and-forget absoluto
                 if (process.env.META_COST_RECORD_MOCK === 'true' && result.metaCostRecord) {
-                  await recordMetaCost({
+                  void recordMetaCost({
                     tenantId,
                     conversationId: result.conversationId,
                     guestId: result.guestId,
@@ -566,7 +568,8 @@ export async function POST(request: NextRequest) {
                 }
               } else if (result.metaCostRecord) {
                 // Envio real confirmado pela Meta — registra custo
-                await recordMetaCost({
+                // PASSO 11.3: void explícito para fire-and-forget absoluto
+                void recordMetaCost({
                   tenantId,
                   conversationId: result.conversationId,
                   guestId: result.guestId,
