@@ -1738,3 +1738,163 @@ model VerificationToken {
   @@id([identifier, token])
   @@map("verification_tokens")
 }
+
+// ============================================================================
+// CÉREBRO ZÉLLA — ENTIDADE AUTÔNOMA (GLM 5.2 SUPERVISOR)
+// ============================================================================
+// 5 models para a entidade orquestradora que supervisiona o próprio sistema.
+// Implementada em "modo mock" por padrão — integrações de IA, Redis e canais
+// externos só ativam quando env vars específicas são configuradas.
+// ============================================================================
+
+/// Análise contextual produzida pelo GlmCerebroService após examinar logs,
+/// anomalias ou contexto financeiro. Cada análise é uma invocação do GLM 5.2
+/// que retorna summary + severity + recommended_action.
+model CerebroAnalysis {
+  id            String   @id @default(cuid())
+  /// Tipo da análise: "anomaly_scan" | "budget_forecast" | "security_audit" | "refactor_suggestion" | "inadimplencia_check"
+  analysisType  String
+  /// Escopo: "global" | "tenant:<id>" | "module:<name>" | "route:<path>"
+  scope         String
+  /// Resumo de 1 frase (LLM output)
+  summary       String
+  /// JSON completo com detalhes da análise (input events, LLM response, recommended_action)
+  details       String   @default("{}")
+  /// Severidade: "info" | "warning" | "critical" | "emergency"
+  severity      String   @default("info")
+  /// Ação tomada automaticamente: "alert_sent" | "tenant_suspended" | "none"
+  actionTaken   String?
+  /// Custo LLM desta análise em USD (para FinOps do próprio Cérebro)
+  costUsd       Float    @default(0)
+  /// Modo: "mock" | "live" — indica se a análise usou LLM real ou dados sintéticos
+  mode          String   @default("mock")
+  createdAt     DateTime @default(now())
+
+  /// FK opcional para AlertDelivery (se gerou alerta)
+  alerts        AlertDelivery[]
+
+  @@index([analysisType, createdAt])
+  @@index([severity, createdAt])
+  @@index([scope, createdAt])
+  @@map("cerebro_analyses")
+}
+
+/// Evento de anomalia detectado pelo AnomalyDetector (estatístico, sem LLM).
+/// Um AnomalyEvent pode disparar uma CerebroAnalysis se for classificado como
+/// merecedor de investigação profunda pelo GLM 5.2.
+model AnomalyEvent {
+  id              String   @id @default(cuid())
+  /// Tipo: "error_spike" | "latency_degradation" | "cost_anomaly" | "auth_failure_pattern" | "tenant_under_attack" | "webhook_throughput_burst"
+  anomalyType     String
+  /// Escopo: "global" | tenant ID | route path | module name
+  scope           String
+  /// Métrica observada: "error_rate" | "p99_latency_ms" | "cost_usd_per_hour" | "auth_failures_per_min"
+  metric          String
+  /// Valor observado no momento da detecção
+  observed        Float
+  /// Valor esperado (média móvel 7 dias ou baseline estatístico)
+  baseline        Float
+  /// Desvio normalizado: (observed - baseline) / baseline. >3 = anomalia
+  deviation       Float
+  /// Detecção foi por threshold hard (regra) ou estatística (3σ)?
+  detectionMethod String   @default("statistical") // "statistical" | "threshold"
+  detectedAt      DateTime @default(now())
+  /// Foi acknowledge por humano?
+  acknowledged    Boolean  @default(false)
+  acknowledgedBy  String?
+  acknowledgedAt  DateTime?
+  /// Notas do admin (ex: "falso positivo — manutenção programada")
+  acknowledgeNotes String?
+
+  @@index([anomalyType, detectedAt])
+  @@index([scope, detectedAt])
+  @@index([acknowledged, detectedAt])
+  @@map("anomaly_events")
+}
+
+/// Sugestão de refatoração proposta pelo GLM 5.2 após detectar erro recorrente.
+/// Status "pending_review" por padrão — humano decide se aplica.
+model RefactorSuggestion {
+  id              String   @id @default(cuid())
+  /// Hash do erro recorrente que motivou a sugestão (stack trace hash)
+  sourceErrorHash  String
+  /// Caminho do arquivo: ex "src/lib/bsuid-resolver.ts"
+  filePath        String
+  /// Range de linhas: ex "45-80"
+  lineRange        String
+  /// Trecho atual do código (para diff visual)
+  currentCode      String
+  /// Código proposto pelo GLM 5.2
+  proposedCode     String
+  /// Justificativa da mudança (LLM racional)
+  rationale        String
+  /// Status do review humano
+  status          String   @default("pending_review") // "pending_review" | "approved" | "rejected" | "applied"
+  /// Confiança do LLM (0-1)
+  confidence      Float
+  /// Notas do revisor humano
+  reviewNotes      String?
+  /// Modo: "mock" | "live"
+  mode            String   @default("mock")
+  createdAt       DateTime @default(now())
+  reviewedAt      DateTime?
+  reviewedBy      String?
+
+  @@index([status, createdAt])
+  @@index([filePath])
+  @@index([sourceErrorHash])
+  @@map("refactor_suggestions")
+}
+
+/// Audit de envio de alertas pelo AlertBus. Cada alerta enviado (email, Slack,
+/// SMS, dashboard) gera uma entrada aqui para rastreabilidade.
+model AlertDelivery {
+  id            String   @id @default(cuid())
+  /// FK opcional para CerebroAnalysis que motivou o alerta
+  analysisId    String?
+  /// Canal: "email" | "slack" | "sms" | "dashboard" | "webhook"
+  channel       String
+  /// Destinatário: email, webhook URL, ou phone number
+  recipient     String
+  subject       String
+  body          String
+  /// Status: "queued" | "sent" | "failed" | "delivered"
+  status        String   @default("queued")
+  /// Modo: "mock" | "live"
+  mode          String   @default("mock")
+  sentAt        DateTime?
+  deliveredAt   DateTime?
+  errorMessage  String?
+  createdAt     DateTime @default(now())
+
+  /// Relation opcional para CerebroAnalysis
+  analysis      CerebroAnalysis? @relation(fields: [analysisId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([channel, createdAt])
+  @@map("alert_deliveries")
+}
+
+/// Base de conhecimento RAG para o RefactorSuggester. Em produção, contém
+/// embeddings de trechos de código do repo (indexados em build time).
+/// Em modo mock, apenas armazena texto sem embedding (busca por substring).
+model KnowledgeChunk {
+  id            String   @id @default(cuid())
+  /// Origem: "github" | "error_log" | "refactor_applied" | "docs"
+  source        String
+  /// Referência: commit SHA, error hash, ou doc URL
+  sourceRef     String
+  /// Caminho do arquivo (se aplicável)
+  filePath      String?
+  /// Conteúdo: trecho de código ou descrição
+  content       String
+  /// Embedding em JSON: array de floats. Em mock mode fica "[]" (vazio).
+  embedding     String   @default("[]")
+  /// Metadata JSON: { startLine, endLine, language, tags }
+  metadata      String   @default("{}")
+  createdAt     DateTime @default(now())
+
+  @@index([source, createdAt])
+  @@index([filePath])
+  @@map("knowledge_chunks")
+}

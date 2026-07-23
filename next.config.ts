@@ -25,7 +25,13 @@ const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
   serverExternalPackages: ["@prisma/client", "prisma", "bcryptjs", "sharp", "socket.io"],
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+    // Em produção, remove console.log/info/warn mas PRESERVA console.error
+    // (console.error é interceptado pelo LogSink em instrumentation.ts
+    // e é essencial para debugging em Vercel Serverless).
+    removeConsole:
+      process.env.NODE_ENV === 'production'
+        ? { exclude: ['error'] }
+        : false,
   },
   async headers() {
     return [
