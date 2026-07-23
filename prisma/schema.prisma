@@ -65,8 +65,14 @@ model Tenant {
   passwordHash   String?
   phone          String?
   phoneAlt       String? // WhatsApp atendimento ao hóspede
-  whatsappPhoneNumber String? // Número WhatsApp Business API (E.164) — para roteamento de webhook
-  whatsappBusinessId  String? // WhatsApp Business Account ID (WABA) — para isolamento multi-tenant
+  // CORREÇÃO v2 — findings 1.2 e 1.3: chaves de isolamento multi-tenant COM @unique.
+  // Sem isto, dois tenants podem ter o mesmo número e findFirst retorna arbitrariamente,
+  // causando Cross-Tenant Data Leak. Antes de aplicar a migration, rodar query de dedup:
+  //   SELECT "whatsappPhoneNumber", COUNT(*) FROM "tenants"
+  //   WHERE "whatsappPhoneNumber" IS NOT NULL
+  //   GROUP BY "whatsappPhoneNumber" HAVING COUNT(*) > 1;
+  whatsappPhoneNumber String? @unique // Número WhatsApp Business API (E.164) — roteamento de webhook
+  whatsappBusinessId  String? @unique // WhatsApp Business Account ID (WABA) — isolamento multi-tenant
   role           String    @default("owner") // owner | admin | staff
   plan           String    @default("gratuito") // gratuito | lite | pro | max | parceiro
   status         String    @default("active") // active | suspended | churned
@@ -83,6 +89,7 @@ model Tenant {
   agentConfigs  AgentConfig[]
   auditLogs     AuditLog[]
   calendarSyncs CalendarSync[]
+  consentLogs   ConsentLog[] // NOVO: cascade de LGPD logs
 
   // Relations from old Tenant
   rooms        Room[]
@@ -703,16 +710,23 @@ model Guest {
   optInAt        DateTime? // Consentimento de marketing
   optInMethod    String?   // "whatsapp_cta" | "web_form" | "manual"
   optOutAt       DateTime? // Revogação do consentimento
+  optOutMethod   String?   // NOVO v2 (finding 1.6): "keyword_whatsapp" | "web_form" | "manual" | "expiration"
 
   tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   reservations  Reservation[]
   bookings      Booking[]
   messages      GuestMessage[]
   bsuidMappings BsuidMapping[]
+  consentLogs   ConsentLog[] // NOVO: cascade de LGPD logs
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // CORREÇÃO v2 — finding 3.1: chaves únicas compostas para upsert atômico.
+  // Sem isto, findFirst+create em paralelo gera Guests duplicados (race condition).
+  // resolveGuest() agora usa upsert por estas chaves.
+  @@unique([tenantId, bsuid])
+  @@unique([tenantId, phone])
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([tenantId, source])
@@ -1191,6 +1205,10 @@ model BsuidMapping {
 }
 
 // ===== CONSENT LOG =====
+// CORREÇÃO v2 — finding 1.6: adicionadas relações com Tenant e Guest (cascade).
+// Antes: tenantId e guestId eram apenas strings soltas, sem integridade referencial.
+// Agora: Tenant deletado → ConsentLogs deletados (LGPD "direito ao esquecimento" controlado).
+//        Guest deletado → ConsentLogs deletados.
 model ConsentLog {
   id        String   @id @default(cuid())
   tenantId  String
@@ -1201,6 +1219,9 @@ model ConsentLog {
   userAgent String?
   evidence  String   @default("{}") // Payload original / texto
   createdAt DateTime @default(now())
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  guest     Guest     @relation(fields: [guestId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, guestId])
   @@index([type])

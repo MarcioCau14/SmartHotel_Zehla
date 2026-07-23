@@ -218,11 +218,25 @@ export async function checkMetaBudget(tenantId: string): Promise<{
     });
     currentSpendUsd = aggregate._sum.costUsd ?? 0;
   } catch (error) {
-    console.error("[checkMetaBudget] Failed to query spend:", error);
-    // On DB error, allow the request (fail-open)
-    const result = { allowed: true, currentSpendUsd: 0, budgetLimitUsd: 0, usagePercent: 0 };
-    budgetCache.set(cacheKey, { result, expiresAt: Date.now() + CACHE_TTL_MS });
-    return result;
+    // CORREÇÃO v2 — finding 2.5: fail-CLOSED em erro de DB.
+    // Em SaaS B2B com cobrança Meta real, fail-open permite que um tenant
+    // dispare mensagens ilimitadas enquanto o DB estiver indisponível,
+    // gerando custo real ao cliente. Melhor bloquear e alertar.
+    console.error("[checkMetaBudget] CRÍTICO: DB error — fail-closed para proteção:", error);
+    // TODO: integrar Sentry/Datadog: Sentry.captureException(error);
+    const failClosedResult = {
+      allowed: false,
+      reason: "BUDGET_CHECK_DB_ERROR_FAIL_CLOSED",
+      currentSpendUsd: 0,
+      budgetLimitUsd: 0,
+      usagePercent: 0,
+    };
+    // Cache muito curto (5s) para evitar re-bater o DB a cada mensagem
+    budgetCache.set(cacheKey, {
+      result: failClosedResult,
+      expiresAt: Date.now() + 5_000,
+    });
+    return failClosedResult;
   }
 
   // 2. Determine budget limit based on plan

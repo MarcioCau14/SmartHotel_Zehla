@@ -4,6 +4,19 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useNiche } from '@/contexts/NicheContext';
 
+/**
+ * Floating CTA Bar — aparece quando o usuário scrolla mais de 450px.
+ *
+ * CORREÇÃO v2 — finding 4.3:
+ *  Versão anterior registava `handleScroll` apenas como listener, sem
+ *  chamar manualmente no mount. Se o usuário acessasse via anchor link
+ *  (`/#precos`) ou voltasse de history com scrollY > 450, o componente
+ *  ficava hidden até o próximo evento de scroll.
+ *
+ *  V2: chama `handleScroll` imediatamente após registerListener para
+ *  reavaliar a posição atual. Também adiciona `{ passive: true }` no
+ *  listener para performance.
+ */
 export function FloatingCTA() {
   const [isVisible, setIsVisible] = useState(false);
   const { isPousada, isAirbnb } = useNiche();
@@ -11,14 +24,13 @@ export function FloatingCTA() {
   useEffect(() => {
     const handleScroll = () => {
       // Mostra a barra quando o usuário rolar mais de 450px
-      if (window.scrollY > 450) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
-      }
+      setIsVisible(window.scrollY > 450);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    // Reavalia imediatamente — cobre casos de anchor link / history navigation
+    handleScroll();
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 

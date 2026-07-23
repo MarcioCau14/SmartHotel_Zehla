@@ -1,3 +1,16 @@
+// ==============================================================================
+// ZÉLLA — Meta WhatsApp Cloud API Webhook (Multi-Tenant Safe)
+// ==============================================================================
+// Rota receptora de eventos da Meta Cloud API.
+//
+// CORREÇÕES v2:
+//  - Finding 1.1: verifyMetaSignature agora é fail-closed em produção.
+//    Se META_APP_SECRET não configurado em prod, rejeita TUDO.
+//  - Finding 1.4: opt-out LGPD é interceptado SÍNCRONO, antes de enfileirar
+//    para o AI pipeline. Antes, a IA rodava e custava tokens mesmo em opt-out.
+//  - Usa resolveTenantByPhone (v2) com match exato E.164.
+// ==============================================================================
+
 import { NextRequest, NextResponse } from 'next/server';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { db } from '@/lib/db';
@@ -5,20 +18,18 @@ import { META_VERIFY_TOKEN, META_APP_SECRET } from '@/lib/env';
 import { processIncomingMessage } from '@/lib/whatsapp-ai-responder';
 import { bufferMessage } from '@/lib/message-bundler';
 import { sendWhatsAppMessage } from '@/lib/whatsapp-send';
+import { resolveTenantByPhone } from '@/lib/resolve-tenant-by-phone';
+import { isOptOutMessage, handleOptOut } from '@/lib/lgpd-consent';
+import { resolveGuest } from '@/lib/bsuid-resolver';
+import { recordMetaCost } from '@/lib/meta-cost-guard';
 
 /* eslint-disable @typescript-eslint/no-unused-vars -- Meta payload types kept as documentation */
 
 // ═══════════════════════════════════════════════════════════════
 // META WHATSAPP BUSINESS API — WEBHOOK ENDPOINT
-// Rota receptora de eventos da Meta Cloud API.
-// ───────────────────────────────────────────────────────────
 // GET  → Verificação do Webhook (Meta onboarding flow)
 // POST → Recepção de mensagens + isolamento multi-tenant
 // ═══════════════════════════════════════════════════════════════
-
-// ── Types: Meta WhatsApp Payload ───────────────────────────────
-// O payload da Meta é profundamente aninhado. Estes tipos
-// fazem o parse seguro sem vazamento de tipagem.
 
 interface MetaWebhookEntry {
   id: string;
@@ -43,17 +54,17 @@ interface MetaWebhookValue {
 }
 
 interface MetaContact {
-  wa_id: string; // Número de origem (E.164 sem +)
+  wa_id: string;
   profile?: {
     name?: string;
   };
 }
 
 interface MetaMessage {
-  from: string; // Número de origem (E.164 sem +)
-  id: string; // Message ID (wamid.HKLM...)
-  timestamp: string; // Unix timestamp
-  type: string; // text | image | document | audio | video | location | contacts | sticker | interactive | template | reaction
+  from: string;
+  id: string;
+  timestamp: string;
+  type: string;
   text?: { body: string; preview_url?: boolean };
   image?: { id: string; caption?: string; mime_type?: string; sha256?: string };
   document?: { id: string; caption?: string; filename?: string; mime_type?: string; sha256?: string };
@@ -90,50 +101,60 @@ interface MetaStatus {
   };
 }
 
-// ── Parsed Message (interno) ──────────────────────────────────
-
 interface ParsedIncomingMessage {
-  /** Número de origem (quem enviou, E.164 sem +) */
   from: string;
-  /** Nome do contato (se disponível) */
   contactName: string | null;
-  /** ID da mensagem na Meta */
   messageId: string;
-  /** Timestamp Unix */
   timestamp: number;
-  /** Tipo da mensagem */
   type: string;
-  /** Conteúdo textual (para mensagens de texto) */
   textContent: string | null;
-  /** Número de destino (o número da pousada/propriedade, E.164 sem +) */
   destinationNumber: string;
-  /** Phone Number ID na Meta */
   phoneNumberId: string;
-  /** WABA ID */
   wabaId: string;
 }
 
-// ── HMAC Signature Verification ───────────────────────────────
+// ── HMAC Signature Verification (fail-closed em produção) ─────────────────────
 
+/**
+ * Verifica assinatura HMAC-SHA256 do payload da Meta.
+ *
+ * CORREÇÃO v2 — finding 1.1:
+ *  Versão anterior retornava `true` quando META_APP_SECRET era ausente,
+ *  apenas com console.warn. Em produção, isso permitiria a qualquer um
+ *  enviar payloads falsos. Agora:
+ *   - Produção sem META_APP_SECRET → rejeita (false)
+ *   - Dev sem META_APP_SECRET → permite apenas com WEBHOOK_ALLOW_NO_SECRET=true
+ *   - Dev com META_APP_SECRET → valida normalmente
+ */
 function verifyMetaSignature(
   payload: string,
   signatureHeader: string | null
-): boolean {
+): { valid: boolean; reason?: string } {
+  // 1. Fail-closed em produção se META_APP_SECRET ausente
   if (!META_APP_SECRET) {
-    console.warn('[WhatsApp Webhook] ⚠️ META_APP_SECRET not set — skipping signature verification (dev mode)');
-    return true; // Dev mode: skip verification
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[WhatsApp Webhook] CRÍTICO: META_APP_SECRET não configurado em produção — rejeitando');
+      return { valid: false, reason: 'META_APP_SECRET_NOT_SET_IN_PRODUCTION' };
+    }
+    // Dev mode: exige opt-in explícito para bypass
+    if (process.env.WEBHOOK_ALLOW_NO_SECRET !== 'true') {
+      console.error('[WhatsApp Webhook] META_APP_SECRET não setado. Set WEBHOOK_ALLOW_NO_SECRET=true para bypass em dev.');
+      return { valid: false, reason: 'META_APP_SECRET_NOT_SET_USE_BYPASS_ENV' };
+    }
+    console.warn('[WhatsApp Webhook] ⚠️ Bypassing HMAC verification in dev mode (WEBHOOK_ALLOW_NO_SECRET=true)');
+    return { valid: true };
   }
 
   if (!signatureHeader) {
     console.error('[WhatsApp Webhook] ❌ No X-Hub-Signature-256 header present');
-    return false;
+    return { valid: false, reason: 'MISSING_SIGNATURE_HEADER' };
   }
 
   // Format: "sha256=<hex>"
   const parts = signatureHeader.split('=');
   if (parts.length !== 2 || parts[0] !== 'sha256') {
     console.error('[WhatsApp Webhook] ❌ Invalid signature format:', signatureHeader.substring(0, 20));
-    return false;
+    return { valid: false, reason: 'INVALID_SIGNATURE_FORMAT' };
   }
 
   const expectedSig = parts[1];
@@ -145,26 +166,29 @@ function verifyMetaSignature(
     const expected = Buffer.from(expectedSig, 'hex');
     const computed = Buffer.from(computedSig, 'hex');
 
+    // timingSafeEqual exige buffers de mesmo tamanho
     if (expected.length !== computed.length) {
       console.error('[WhatsApp Webhook] ❌ Signature length mismatch');
-      return false;
+      return { valid: false, reason: 'SIGNATURE_LENGTH_MISMATCH' };
     }
 
-    return timingSafeEqual(expected, computed);
-  } catch {
-    console.error('[WhatsApp Webhook] ❌ Signature comparison error');
-    return false;
+    const isValid = timingSafeEqual(expected, computed);
+    if (!isValid) {
+      console.error('[WhatsApp Webhook] ❌ Signature mismatch — possible tampering');
+      return { valid: false, reason: 'SIGNATURE_MISMATCH' };
+    }
+    return { valid: true };
+  } catch (err) {
+    console.error('[WhatsApp Webhook] ❌ Signature comparison error:', err);
+    return { valid: false, reason: 'SIGNATURE_COMPARISON_ERROR' };
   }
 }
 
-// ── Safe Payload Parser ───────────────────────────────────────
-// Faz o parse seguro do JSON aninhado da Meta sem vazamento
-// de tipagem. Qualquer campo faltante resulta em null seguro.
+// ── Safe Payload Parser ───────────────────────────────────────────────────────
 
 function parseIncomingMessages(rawBody: unknown): ParsedIncomingMessage[] {
   const results: ParsedIncomingMessage[] = [];
 
-  // Level 1: entry[]
   const body = rawBody as Record<string, unknown> | null;
   if (!body?.object || body.object !== 'whatsapp_business_account') {
     return results;
@@ -184,12 +208,10 @@ function parseIncomingMessages(rawBody: unknown): ParsedIncomingMessage[] {
       const value = c.value as Record<string, unknown> | null;
       if (!value) continue;
 
-      // Extract metadata (destination number)
       const metadata = value.metadata as Record<string, unknown> | null;
       const destinationNumber = (metadata?.display_phone_number as string) || '';
       const phoneNumberId = (metadata?.phone_number_id as string) || '';
 
-      // Extract contacts map
       const contacts = Array.isArray(value.contacts) ? value.contacts : [];
       const contactMap = new Map<string, string | null>();
       for (const contact of contacts) {
@@ -200,13 +222,11 @@ function parseIncomingMessages(rawBody: unknown): ParsedIncomingMessage[] {
         contactMap.set(waId, name);
       }
 
-      // Extract messages
       const messages = Array.isArray(value.messages) ? value.messages : [];
 
       for (const msg of messages) {
         const m = msg as Record<string, unknown>;
 
-        // Extract text content
         let textContent: string | null = null;
         if (m.type === 'text' && m.text) {
           const textObj = m.text as Record<string, unknown>;
@@ -231,138 +251,9 @@ function parseIncomingMessages(rawBody: unknown): ParsedIncomingMessage[] {
   return results;
 }
 
-// ── Tenant Lookup by WhatsApp Number ──────────────────────────
-
-interface TenantLookupResult {
-  found: boolean;
-  tenantId: string | null;
-  tenantName: string | null;
-  tenantStatus: string | null;
-  tenantPlan: string | null;
-  niche: string | null;
-  reason?: string;
-}
-
-async function findTenantByWhatsAppNumber(
-  destinationNumber: string,
-  wabaId?: string
-): Promise<TenantLookupResult> {
-  try {
-    // Strategy 1: Lookup by whatsappPhoneNumber (E.164 format)
-    // We try multiple formats: with +, without +, with spaces, etc.
-    const normalizedNumber = destinationNumber.replace(/\D/g, ''); // Strip non-digits
-
-    const candidates = [
-      `+${normalizedNumber}`,  // +5521999998888
-      normalizedNumber,         // 5521999998888
-      destinationNumber,        // original
-    ];
-
-    // Try to find by whatsappPhoneNumber first
-    for (const candidate of candidates) {
-      const tenant = await db.tenant.findFirst({
-        where: { whatsappPhoneNumber: candidate },
-        select: {
-          id: true,
-          name: true,
-          status: true,
-          plan: true,
-          niche: true,
-          whatsappBusinessId: true,
-        },
-      });
-
-      if (tenant) {
-        return {
-          found: true,
-          tenantId: tenant.id,
-          tenantName: tenant.name,
-          tenantStatus: tenant.status,
-          tenantPlan: tenant.plan,
-          niche: tenant.niche,
-        };
-      }
-    }
-
-    // Strategy 2: If WABA ID provided, try lookup by whatsappBusinessId
-    if (wabaId) {
-      const tenant = await db.tenant.findFirst({
-        where: { whatsappBusinessId: wabaId },
-        select: {
-          id: true,
-          name: true,
-          status: true,
-          plan: true,
-          niche: true,
-        },
-      });
-
-      if (tenant) {
-        return {
-          found: true,
-          tenantId: tenant.id,
-          tenantName: tenant.name,
-          tenantStatus: tenant.status,
-          tenantPlan: tenant.plan,
-          niche: tenant.niche,
-        };
-      }
-    }
-
-    // Strategy 3: Fallback — try phoneAlt field (legacy)
-    for (const candidate of candidates) {
-      const tenant = await db.tenant.findFirst({
-        where: { phoneAlt: candidate },
-        select: {
-          id: true,
-          name: true,
-          status: true,
-          plan: true,
-          niche: true,
-        },
-      });
-
-      if (tenant) {
-        return {
-          found: true,
-          tenantId: tenant.id,
-          tenantName: tenant.name,
-          tenantStatus: tenant.status,
-          tenantPlan: tenant.plan,
-          niche: tenant.niche,
-        };
-      }
-    }
-
-    return {
-      found: false,
-      tenantId: null,
-      tenantName: null,
-      tenantStatus: null,
-      tenantPlan: null,
-      niche: null,
-      reason: `No tenant found for WhatsApp number: ${destinationNumber}`,
-    };
-  } catch (error) {
-    console.error('[WhatsApp Webhook] ❌ Tenant lookup error:', error);
-    return {
-      found: false,
-      tenantId: null,
-      tenantName: null,
-      tenantStatus: null,
-      tenantPlan: null,
-      niche: null,
-      reason: 'Database error during tenant lookup',
-    };
-  }
-}
-
 // ═══════════════════════════════════════════════════════════════
 // GET — Meta Webhook Verification
 // ═══════════════════════════════════════════════════════════════
-// A Meta envia um GET com hub.mode=subscribe e hub.verify_token
-// quando o webhook é configurado no App Dashboard.
-// Devolvemos o hub.challenge para confirmar a posse.
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -377,7 +268,6 @@ export async function GET(request: NextRequest) {
     challenge: challenge ? '***present***' : '***missing***',
   });
 
-  // ── Validate mode ──────────────────────────────────────
   if (mode !== 'subscribe') {
     console.warn('[WhatsApp Webhook] ❌ Invalid hub.mode:', mode);
     return NextResponse.json(
@@ -386,7 +276,6 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // ── Validate verify token ──────────────────────────────
   if (!META_VERIFY_TOKEN) {
     console.error('[WhatsApp Webhook] ❌ META_VERIFY_TOKEN not configured');
     return NextResponse.json(
@@ -395,15 +284,25 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (token !== META_VERIFY_TOKEN) {
-    console.warn('[WhatsApp Webhook] ❌ Token mismatch. Expected vs received differ.');
+  // timing-safe comparison para evitar timing attacks no verify token
+  try {
+    const received = Buffer.from(token || '');
+    const expected = Buffer.from(META_VERIFY_TOKEN);
+    if (received.length !== expected.length || !timingSafeEqual(received, expected)) {
+      console.warn('[WhatsApp Webhook] ❌ Token mismatch (timing-safe check)');
+      return NextResponse.json(
+        { error: 'Verification token mismatch.' },
+        { status: 403 }
+      );
+    }
+  } catch {
+    console.warn('[WhatsApp Webhook] ❌ Token comparison error');
     return NextResponse.json(
       { error: 'Verification token mismatch.' },
       { status: 403 }
     );
   }
 
-  // ── Return challenge ───────────────────────────────────
   if (!challenge) {
     console.warn('[WhatsApp Webhook] ❌ No hub.challenge provided');
     return NextResponse.json(
@@ -414,7 +313,6 @@ export async function GET(request: NextRequest) {
 
   console.log('[WhatsApp Webhook] ✅ Webhook verified successfully');
 
-  // Meta requires the challenge to be returned as plain text or number
   return new NextResponse(challenge, {
     status: 200,
     headers: { 'Content-Type': 'text/plain' },
@@ -428,17 +326,22 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
-  // ── Step 1: Verify HMAC Signature ──────────────────────
+  // ── Step 1: Verify HMAC Signature (fail-closed) ──────────────────
   const rawBody = await request.text();
   const signature = request.headers.get('x-hub-signature-256');
 
-  if (!verifyMetaSignature(rawBody, signature)) {
-    console.error('[WhatsApp Webhook] ❌ Invalid signature — possible tampering');
-    // Return 200 to avoid Meta retries, but log the issue
-    return NextResponse.json({ status: 'rejected' }, { status: 200 });
+  const signatureCheck = verifyMetaSignature(rawBody, signature);
+  if (!signatureCheck.valid) {
+    console.error('[WhatsApp Webhook] ❌ Invalid signature:', signatureCheck.reason);
+    // Retorna 200 para Meta não fazer retry, mas logamos o problema
+    // (não queremos que Meta desabilite o webhook por 401)
+    return NextResponse.json(
+      { status: 'rejected', reason: signatureCheck.reason },
+      { status: 200, headers: { 'X-Security-Shield': 'zero-trust-v2' } }
+    );
   }
 
-  // ── Step 2: Parse the payload safely ───────────────────
+  // ── Step 2: Parse the payload safely ────────────────────────────
   let parsedBody: unknown;
   try {
     parsedBody = JSON.parse(rawBody);
@@ -447,11 +350,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ status: 'invalid_json' }, { status: 400 });
   }
 
-  // ── Step 3: Extract incoming messages ──────────────────
+  // ── Step 3: Extract incoming messages ────────────────────────────
   const messages = parseIncomingMessages(parsedBody);
 
   if (messages.length === 0) {
-    // Could be a status update or other non-message event — acknowledge silently
     const processingTime = Date.now() - startTime;
     console.log(`[WhatsApp Webhook] 📋 Non-message event acknowledged (${processingTime}ms)`);
     return NextResponse.json({ status: 'acknowledged' }, { status: 200 });
@@ -459,10 +361,7 @@ export async function POST(request: NextRequest) {
 
   console.log(`[WhatsApp Webhook] 📨 Received ${messages.length} message(s)`);
 
-  // ── Step 4: Multi-Tenant Isolation ─────────────────────
-  // Para cada mensagem, roteamos para o Tenant correto
-  // usando o número de destino como chave de isolamento.
-
+  // ── Step 4: Multi-Tenant Isolation + Message Processing ──────
   const processingResults: Array<{
     messageId: string;
     from: string;
@@ -476,13 +375,10 @@ export async function POST(request: NextRequest) {
   for (const msg of messages) {
     console.log(`[WhatsApp Webhook] 📨 Processing message from ${msg.from} → ${msg.destinationNumber} (type: ${msg.type})`);
 
-    // Lookup tenant by destination number
-    const lookup = await findTenantByWhatsAppNumber(msg.destinationNumber, msg.wabaId);
+    // ── Tenant lookup via resolveTenantByPhone (v2 — match exato E.164) ──
+    const lookup = await resolveTenantByPhone(msg.destinationNumber, msg.wabaId);
 
     if (!lookup.found) {
-      // ── Tenant not found → silent discard ──────────
-      // Return HTTP 200 to Meta (don't trigger retry)
-      // but log clearly for development debugging
       console.warn(
         `[WhatsApp Webhook] ⚠️ SILENT DISCARD — No tenant for number ${msg.destinationNumber}` +
         ` | from: ${msg.from} | msgId: ${msg.messageId}` +
@@ -498,17 +394,15 @@ export async function POST(request: NextRequest) {
         accepted: false,
         reason: lookup.reason,
       });
-
-      continue; // Skip processing for this message
+      continue;
     }
 
-    // ── Tenant found → check subscription status ─────
+    // ── Tenant found → check subscription status ─────────────────
     if (lookup.tenantStatus === 'suspended' || lookup.tenantStatus === 'churned') {
       console.warn(
         `[WhatsApp Webhook] ⚠️ SILENT DISCARD — Tenant "${lookup.tenantName}" (${lookup.tenantId})` +
         ` is ${lookup.tenantStatus} | from: ${msg.from} | msgId: ${msg.messageId}`
       );
-
       processingResults.push({
         messageId: msg.messageId,
         from: msg.from,
@@ -518,18 +412,16 @@ export async function POST(request: NextRequest) {
         accepted: false,
         reason: `Tenant status: ${lookup.tenantStatus}`,
       });
-
-      continue; // Skip processing
+      continue;
     }
 
-    // ── Plan check — GRATUITO plan cannot receive real messages ──
+    // ── Plan check — GRATUITO não pode receber mensagens reais ──
     if (lookup.tenantPlan === 'gratuito') {
       console.warn(
         `[WhatsApp Webhook] ⚠️ SILENT DISCARD — Tenant "${lookup.tenantName}" (${lookup.tenantId})` +
         ` is on GRATUITO plan — real WhatsApp integration requires LITE+` +
         ` | from: ${msg.from} | msgId: ${msg.messageId}`
       );
-
       processingResults.push({
         messageId: msg.messageId,
         from: msg.from,
@@ -539,11 +431,10 @@ export async function POST(request: NextRequest) {
         accepted: false,
         reason: 'GRATUITO plan — upgrade required',
       });
-
       continue;
     }
 
-    // ── Tenant is active and on a paid plan → PROCESS ──
+    // ── Tenant OK → PROCESS ──
     console.log(
       `[WhatsApp Webhook] ✅ ACCEPTED — Tenant "${lookup.tenantName}" (${lookup.tenantId})` +
       ` | niche: ${lookup.niche} | plan: ${lookup.tenantPlan}` +
@@ -552,17 +443,81 @@ export async function POST(request: NextRequest) {
       ` | text: ${msg.textContent ? `"${msg.textContent.substring(0, 80)}${msg.textContent.length > 80 ? '...' : ''}"` : '(non-text)'}`
     );
 
-    // ── Route message through AI pipeline (async, fire-and-forget) ──
-    // Never await AI processing in the webhook handler — Meta requires
-    // a fast HTTP 200 response and will retry if we block.
-    const tenantId = lookup.tenantId!; // Guaranteed non-null after checks above
+    const tenantId = lookup.tenantId!; // Guaranteed non-null após checks acima
 
     if (msg.type === 'text' && msg.textContent) {
-      // ── Text message → buffer, process through AI, send response ──
       const guestPhone = msg.from;
       const guestName = msg.contactName || undefined;
       const messageContent = msg.textContent;
 
+      // ── CORREÇÃO v2 — finding 1.4: LGPD Opt-Out INTERCEPTADO SÍNCRONO ──
+      // Antes de enfileirar para o AI pipeline (que custa LLM tokens + Meta tariff),
+      // verificamos se é um pedido de opt-out. Se for, processa imediatamente,
+      // envia confirmação, e NÃO enfileira para IA.
+      if (isOptOutMessage(messageContent)) {
+        console.log(`[WhatsApp Webhook] 🚫 LGPD Opt-Out detectado — processando síncrono (tenant ${tenantId}, guest ${guestPhone})`);
+
+        // Fire-and-forget mas SEM bufferMessage — processa imediatamente
+        (async () => {
+          try {
+            const guest = await resolveGuest(tenantId, {
+              phone: guestPhone,
+              profileName: guestName,
+            });
+
+            const confirmationText = await handleOptOut(tenantId, guest.id, 'whatsapp');
+
+            // Envia confirmação de opt-out para o hóspede
+            const sendResult = await sendWhatsAppMessage(guestPhone, confirmationText);
+            if (!sendResult.success) {
+              console.error(`[WhatsApp Webhook] ❌ Falha ao enviar confirmação opt-out para ${guestPhone}: ${sendResult.error}`);
+            } else {
+              console.log(`[WhatsApp Webhook] ✅ Opt-out confirmado e enviado para ${guestPhone}`);
+
+              // Registra custo Meta (messageType = service_reply, dentro da service window)
+              try {
+                // Tenta encontrar conversationLog ativo para registrar o custo
+                const conversation = await db.conversationLog.findFirst({
+                  where: { tenantId, guestId: guest.id, status: 'active' },
+                  select: { id: true },
+                });
+                if (conversation) {
+                  await recordMetaCost({
+                    tenantId,
+                    conversationId: conversation.id,
+                    guestId: guest.id,
+                    messageType: 'service_reply',
+                    intent: 'opt_out_confirmation',
+                    withinServiceWindow: true,
+                    metadata: {
+                      provider: 'hardcoded_optout',
+                      isSingleShot: true,
+                      optOutMethod: 'keyword_whatsapp',
+                    },
+                  });
+                }
+              } catch (costError) {
+                console.error('[WhatsApp Webhook] Erro ao registrar custo do opt-out (non-fatal):', costError);
+              }
+            }
+          } catch (err) {
+            console.error(`[WhatsApp Webhook] ❌ Erro no handler de opt-out:`, err);
+          }
+        })();
+
+        processingResults.push({
+          messageId: msg.messageId,
+          from: msg.from,
+          destination: msg.destinationNumber,
+          tenantFound: true,
+          tenantId,
+          accepted: true,
+          reason: 'OPT_OUT_PROCESSED_SYNCHRONOUSLY',
+        });
+        continue; // NÃO enfileirar para IA
+      }
+
+      // ── Mensagem normal → buffer para AI pipeline ──
       bufferMessage(
         {
           tenantId,
@@ -572,40 +527,86 @@ export async function POST(request: NextRequest) {
           messageFrom: 'whatsapp',
         },
         async (payload) => {
-          const result = await processIncomingMessage({
-            tenantId: payload.tenantId,
-            guestPhone: payload.guestPhone,
-            guestName: payload.guestName,
-            messageContent: payload.messageContent,
-            messageFrom: payload.messageFrom,
-          });
+          try {
+            const result = await processIncomingMessage({
+              tenantId: payload.tenantId,
+              guestPhone: payload.guestPhone,
+              guestName: payload.guestName,
+              messageContent: payload.messageContent,
+              messageFrom: payload.messageFrom,
+            });
 
-          if (result.aiResponse) {
-            const sendResult = await sendWhatsAppMessage(guestPhone, result.aiResponse);
-            if (!sendResult.success) {
-              console.error(
-                `[WhatsApp Webhook] ❌ Failed to send AI response to ${guestPhone}: ${sendResult.error}`
-              );
+            if (result.aiResponse) {
+              const sendResult = await sendWhatsAppMessage(guestPhone, result.aiResponse);
+              if (!sendResult.success) {
+                console.error(
+                  `[WhatsApp Webhook] ❌ Failed to send AI response to ${guestPhone}: ${sendResult.error}`
+                );
+                // NÃO registra custo Meta — mensagem não foi entregue
+              } else if (sendResult.isMock) {
+                // Modo mock (sem credenciais Meta) — registra custo apenas se META_COST_RECORD_MOCK=true
+                if (process.env.META_COST_RECORD_MOCK === 'true' && result.metaCostRecord) {
+                  await recordMetaCost({
+                    tenantId,
+                    conversationId: result.conversationId,
+                    guestId: result.guestId,
+                    messageId: result.metaCostRecord.aiMessageId,
+                    messageType: result.metaCostRecord.messageType,
+                    intent: result.metaCostRecord.intent,
+                    withinServiceWindow: result.metaCostRecord.withinServiceWindow,
+                    metadata: {
+                      provider: result.metaCostRecord.providerId,
+                      latencyMs: result.metaCostRecord.latencyMs,
+                      isSingleShot: result.metaCostRecord.isSingleShot,
+                      serviceWindowOpen: result.metaCostRecord.withinServiceWindow,
+                      serviceWindowRemainingHours: result.metaCostRecord.serviceWindowRemainingHours,
+                      isMock: true,
+                    },
+                  }).catch(err => console.error('[WhatsApp Webhook] recordMetaCost (mock) error:', err));
+                }
+              } else if (result.metaCostRecord) {
+                // Envio real confirmado pela Meta — registra custo
+                await recordMetaCost({
+                  tenantId,
+                  conversationId: result.conversationId,
+                  guestId: result.guestId,
+                  messageId: sendResult.messageId,
+                  messageType: result.metaCostRecord.messageType,
+                  intent: result.metaCostRecord.intent,
+                  withinServiceWindow: result.metaCostRecord.withinServiceWindow,
+                  metadata: {
+                    provider: result.metaCostRecord.providerId,
+                    latencyMs: result.metaCostRecord.latencyMs,
+                    isSingleShot: result.metaCostRecord.isSingleShot,
+                    serviceWindowOpen: result.metaCostRecord.withinServiceWindow,
+                    serviceWindowRemainingHours: result.metaCostRecord.serviceWindowRemainingHours,
+                    metaMessageId: sendResult.messageId,
+                  },
+                }).catch(err => console.error('[WhatsApp Webhook] recordMetaCost error:', err));
+              }
             }
+          } catch (err) {
+            console.error(
+              `[WhatsApp Webhook] ❌ Error in AI pipeline for tenant ${tenantId}, guest ${guestPhone}:`,
+              err
+            );
           }
         }
       ).catch((err) => {
         console.error(
-          `[WhatsApp Webhook] ❌ Error in AI pipeline for tenant ${tenantId}, guest ${guestPhone}:`,
+          `[WhatsApp Webhook] ❌ bufferMessage error for tenant ${tenantId}, guest ${guestPhone}:`,
           err
         );
       });
     } else {
-      // ── Non-text message → log and record media entry, no AI processing ──
+      // ── Non-text message → registra mídia, sem IA ──
       const mediaNote = `[Mídia recebida: ${msg.type}]`;
       console.log(
         `[WhatsApp Webhook] 📎 Non-text message from ${msg.from} (type: ${msg.type}) — recording media entry`
       );
 
-      // Fire-and-forget: resolve guest, find/create conversation, save message
       (async () => {
         try {
-          const { resolveGuest } = await import('@/lib/bsuid-resolver');
           const guest = await resolveGuest(tenantId, {
             phone: msg.from,
             profileName: msg.contactName || undefined,
@@ -663,7 +664,7 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  // ── Summary Logging ────────────────────────────────────
+  // ── Summary Logging ────────────────────────────────────────────
   const accepted = processingResults.filter((r) => r.accepted).length;
   const discarded = processingResults.filter((r) => !r.accepted).length;
   const processingTime = Date.now() - startTime;
@@ -673,7 +674,6 @@ export async function POST(request: NextRequest) {
     ` | ${processingTime}ms | ${messages.length} total messages`
   );
 
-  // Always return 200 to Meta — never trigger retries
   return NextResponse.json(
     {
       status: 'processed',

@@ -65,30 +65,41 @@ export function Header() {
   }, []);
 
   // ── IntersectionObserver for active section tracking ─────────────────────
+  // CORREÇÃO v2 — finding 4.4: usa 1 único observer para todos os elementos,
+  // em vez de criar 4 observers independentes. Reduz overhead de memory e
+  // simplifica a lógica de "qual seção está mais visível".
   useEffect(() => {
     const sectionIds = NAV_LINKS.map((l) => l.href.replace('#', ''));
-    const observers: IntersectionObserver[] = [];
+    const elements: HTMLElement[] = [];
 
-    // We observe each section; when >40% visible we mark it active
-    sectionIds.forEach((id) => {
+    for (const id of sectionIds) {
       const el = document.getElementById(id);
-      if (!el) return;
+      if (el) elements.push(el);
+    }
 
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              setActiveSection(id);
-            }
-          });
-        },
-        { rootMargin: '-20% 0px -60% 0px', threshold: 0 },
-      );
-      observer.observe(el);
-      observers.push(observer);
-    });
+    if (elements.length === 0) return;
 
-    return () => observers.forEach((o) => o.disconnect());
+    // 1 único observer que observa todos os elementos
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Pega a seção mais visível (última intersecting com maior ratio)
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+        if (visible) {
+          setActiveSection(visible.target.id);
+        }
+      },
+      {
+        rootMargin: '-20% 0px -60% 0px',
+        threshold: [0, 0.25, 0.5, 0.75], // múltiplos thresholds para melhor granularidade
+      }
+    );
+
+    elements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
   }, []);
 
   // ── Smooth scroll on nav click ───────────────────────────────────────────

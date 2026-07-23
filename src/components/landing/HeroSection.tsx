@@ -33,22 +33,28 @@ export function HeroSection() {
   }, []);
 
   // Staggered entrance animation variants
+  // CORREÇÃO v2 — finding 4.1: gate com `mounted` para evitar hydration mismatch.
+  // useReducedMotion() retorna null no SSR (não acessa window.matchMedia), mas boolean
+  // no client. Sem o gate, usuários com prefers-reduced-motion ativado veriam mismatch
+  // entre HTML servido (assumindo y:20) e HTML rehydratado (assumindo sem y).
+  const effectiveReducedMotion = mounted ? prefersReducedMotion : false;
+
   const staggerContainer = {
     hidden: {},
     visible: {
-      transition: { staggerChildren: prefersReducedMotion ? 0 : 0.12, delayChildren: prefersReducedMotion ? 0 : 0.1 },
+      transition: { staggerChildren: effectiveReducedMotion ? 0 : 0.12, delayChildren: effectiveReducedMotion ? 0 : 0.1 },
     },
   };
   const staggerItem = {
-    hidden: prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 20 },
+    hidden: effectiveReducedMotion ? { opacity: 0 } : { opacity: 0, y: 20 },
     visible: {
       opacity: 1, y: 0,
-      transition: { duration: prefersReducedMotion ? 0.2 : 0.6, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] },
+      transition: { duration: effectiveReducedMotion ? 0.2 : 0.6, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] },
     },
   };
 
-  // CTA shimmer keyframe style
-  const shimmerStyle = prefersReducedMotion ? undefined : {
+  // CTA shimmer keyframe style (também gated por effectiveReducedMotion para consistência)
+  const shimmerStyle = effectiveReducedMotion ? undefined : {
     backgroundSize: '200% 100%',
     animation: 'shimmer 3s ease-in-out infinite',
   };
@@ -207,8 +213,8 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* Shimmer keyframe animation — only rendered when motion is not reduced */}
-      {!prefersReducedMotion && (
+      {/* Shimmer keyframe animation — only rendered when motion is not reduced (gated por mounted p/ evitar hydration mismatch) */}
+      {mounted && !effectiveReducedMotion && (
         <style dangerouslySetInnerHTML={{ __html: `
           @keyframes shimmer {
             0% { background-position: 200% center; }

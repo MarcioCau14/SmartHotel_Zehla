@@ -51,15 +51,31 @@ export function shouldUseSingleShot(intent: GuestIntent): boolean {
 
 // ── Heurísticas rápidas ──────────────────────────────────────────────
 
-/** Padrões que indicam claramente intenção de cotação/reserva */  
-const BOOKING_INTENT_PATTERNS: Array<{ regex: RegExp; keywords: string[]; confidence: number }> = [  
-  { regex: /\b(reserv[aei]|quero reservar|fazer reserva|agendar|dispon[ií]vel para|quarto para)\b/i, keywords: ['reserva', 'reservar', 'agendar', 'disponível'], confidence: 0.95 },  
-  { regex: /\b(pre[cç]o|valor|custo|tarifa|quanto\s*(custa|cobras?|fica))\s.*(quarto|su[ií]te|di[aá]ria|noite|hospedagem|estadia)/i, keywords: ['preço', 'valor', 'tarifa'], confidence: 0.90 },  
-  { regex: /\b(tem\s*(vaga|quarto|dispon[ií]vel|lugar)|quartos?\s*(dispon[ií]veis|livres))\b/i, keywords: ['tem vaga', 'tem quarto', 'disponível'], confidence: 0.92 },  
-  { regex: /\b(check[\s-]?in|check[\s-]?out|chegar|sair|data|di[aá]ria|noite)\b.*\b(\d{1,2}[\/\-]\d{1,2}|\d{1,2}\s*de\s*\w+|fim\s*de\s*semana|semana\s*que\s*vem|pr[oó]ximo|pr[oó]xima)/i, keywords: ['check-in', 'data', 'fim de semana'], confidence: 0.93 },  
-  { regex: /\b(quero\s*uma?\s*(su[ií]te|quarto|chal[eé])|busco\s*(hospedagem|pousada|quarto))\b/i, keywords: ['quero uma suíte', 'quero um quarto'], confidence: 0.91 },  
-  { regex: /\b(para\s*(\d|dois|tr[eê]s|quatro|cinco|seis|sete|oito|nove|dez)\s*(pessoas?|h[oó]spedes?|adultos?|camas?))\b/i, keywords: ['pessoas', 'hóspedes'], confidence: 0.88 },  
-  { regex: /\b(cota[cç][aã]o|or[cç]amento|simular|calcular)\b/i, keywords: ['cotação', 'orçamento', 'simular'], confidence: 0.94 },  
+/**
+ * Padrões que indicam claramente intenção de cotação/reserva.
+ *
+ * CORREÇÃO v2 — finding 2.3:
+ *  Versão anterior exigia "preço|valor|tarifa" + "quarto|suíte|diária|noite|hospedagem|estadia"
+ *  na mesma mensagem. Padrões comuns como "quanto fica amanhã?" não casavam,
+ *  caiam em `desconhecido` e o One-Shot Resolution não ativava — gerando
+ *  múltiplos balões WhatsApp e custos Meta desnecessários.
+ *
+ * V2 adiciona padrões curtos com data futura e "tem vaga?" isolado.
+ */
+const BOOKING_INTENT_PATTERNS: Array<{ regex: RegExp; keywords: string[]; confidence: number }> = [
+  // Pattern rigoroso original (mantém alta confiança)
+  { regex: /\b(pre[cç]o|valor|custo|tarifa|quanto\s*(custa|cobras?|fica))\s.*(quarto|su[ií]te|di[aá]ria|noite|hospedagem|estadia)/i, keywords: ['preço', 'valor', 'tarifa'], confidence: 0.95 },
+  // NOVO: pattern curto "quanto fica/sai/custa" + data futura
+  { regex: /\b(quanto\s*(fica|custa|sai)|qual\s*(o\s+)?(pre[cç]o|valor))\b.*\b(amanh[aã]|hoje|segunda|ter[cç]a|quarta|quinta|sexta|s[aá]bado|domingo|pr[oó]xim[oa]|pr[oó]xima|fim\s*de\s*semana|\d{1,2}[\/\-]\d{1,2}|\d{1,2}\s*de\s*\w+)/i, keywords: ['quanto fica', 'qual preço', 'data'], confidence: 0.85 },
+  // NOVO: "tem vaga?" / "tem quarto?" isolado — já é cotação
+  { regex: /\b(tem\s*(vaga|quarto|dispon[ií]vel|lugar|algo))\b/i, keywords: ['tem vaga', 'tem quarto'], confidence: 0.90 },
+  // Mantém patterns existentes
+  { regex: /\b(reserv[aei]|quero reservar|fazer reserva|agendar|dispon[ií]vel para|quarto para)\b/i, keywords: ['reserva', 'reservar', 'agendar', 'disponível'], confidence: 0.95 },
+  { regex: /\b(tem\s*(vaga|quarto|dispon[ií]vel|lugar)|quartos?\s*(dispon[ií]veis|livres))\b/i, keywords: ['tem vaga', 'tem quarto', 'disponível'], confidence: 0.92 },
+  { regex: /\b(check[\s-]?in|check[\s-]?out|chegar|sair|data|di[aá]ria|noite)\b.*\b(\d{1,2}[\/\-]\d{1,2}|\d{1,2}\s*de\s*\w+|fim\s*de\s*semana|semana\s*que\s*vem|pr[oó]ximo|pr[oó]xima)/i, keywords: ['check-in', 'data', 'fim de semana'], confidence: 0.93 },
+  { regex: /\b(quero\s*uma?\s*(su[ií]te|quarto|chal[eé])|busco\s*(hospedagem|pousada|quarto))\b/i, keywords: ['quero uma suíte', 'quero um quarto'], confidence: 0.91 },
+  { regex: /\b(para\s*(\d|dois|tr[eê]s|quatro|cinco|seis|sete|oito|nove|dez)\s*(pessoas?|h[oó]spedes?|adultos?|camas?))\b/i, keywords: ['pessoas', 'hóspedes'], confidence: 0.88 },
+  { regex: /\b(cota[cç][aã]o|or[cç]amento|simular|calcular)\b/i, keywords: ['cotação', 'orçamento', 'simular'], confidence: 0.94 },
 ];
 
 /** Padrões que indicam reserva direta imediata */

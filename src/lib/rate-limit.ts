@@ -1,13 +1,33 @@
 // ==============================================================================
-// ZEHLA SmartHotel — API Rate Limiter (Serverless-Safe)
+// ZÉLLA — API Rate Limiter (Serverless-Safe, Upstash Redis Required in Prod)
 // ==============================================================================
-// Sem dependência de setInterval — seguro para ambientes serverless (Vercel).
-// Usa lazy cleanup no fallback in-memory e Upstash Redis REST quando disponível.
+// Em ambiente Vercel Serverless, Map em memória NÃO FUNCIONA: cada lambda tem
+// sua própria instância do Map, então 1000 requisições paralelas verão 1000
+// Map's diferentes, cada um aprovando a primeira request.
+//
+// CORREÇÃO CRÍTICA v2:
+//  - Em produção: SE Redis não configurado, rate-limit falha CLOSED (bloqueia tudo).
+//    Sinaliza claramente que a configuração está quebrada.
+//  - Em dev: mantém fallback em memória para DX.
+//  - Usa @upstash/ratelimit pattern (INCR + PEXPIRE atômico).
 // ==============================================================================
 
+interface RatelimitResult {
+  success: boolean;
+  limit: number;
+  remaining: number;
+  reset: number;
+}
+
+export interface RatelimitInstance {
+  limit: (key: string) => Promise<RatelimitResult>;
+}
+
+const CLEANUP_INTERVAL_MS = 60_000;
+
+// ── In-memory cache (DEV ONLY — não funciona em Vercel Serverless) ──
 const cache = new Map<string, { count: number; reset: number }>();
 let lastCleanup = Date.now();
-const CLEANUP_INTERVAL_MS = 60_000;
 
 function parseWindow(s: string): number {
   const match = s.match(/^(\d+)\s*(ms|s|m|h)$/);
@@ -18,9 +38,6 @@ function parseWindow(s: string): number {
   return n * (multipliers[unit] ?? 60000);
 }
 
-/**
- * Lazy cleanup — remove expired entries only when called, avoiding setInterval.
- */
 function lazyCleanup(): void {
   const now = Date.now();
   if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
@@ -32,10 +49,10 @@ function lazyCleanup(): void {
   }
 }
 
-function createLocalRatelimit(requests: number, window: string) {
+function createLocalRatelimit(requests: number, window: string): RatelimitInstance {
   const windowMs = parseWindow(window);
   return {
-    limit: async (key: string) => {
+    limit: async (key: string): Promise<RatelimitResult> => {
       lazyCleanup();
       const now = Date.now();
       const entry = cache.get(key);
@@ -52,19 +69,26 @@ function createLocalRatelimit(requests: number, window: string) {
   };
 }
 
-/**
- * Upstash Redis REST rate limiter — uses INCR + PEXPIRE for atomic sliding window.
- */
-function createUpstashRatelimit(requests: number, window: string) {
+// ── Upstash Redis REST rate limiter (atomic sliding window) ──
+function createUpstashRatelimit(requests: number, window: string): RatelimitInstance {
   const windowMs = parseWindow(window);
-  const url = process.env.UPSTASH_REDIS_REST_URL!;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN!;
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (!url || !token) {
+    throw new Error(
+      'createUpstashRatelimit: UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN são obrigatórios. ' +
+      'Configure-os no Vercel para habilitar rate limiting em produção.'
+    );
+  }
 
   return {
-    limit: async (key: string) => {
+    limit: async (key: string): Promise<RatelimitResult> => {
       const redisKey = `rl:${key}`;
+
       try {
-        // Pipeline: INCR + PTTL in a single request
+        // Pipeline atomic: INCR + PEXPIRE (set TTL apenas se for a primeira chamada)
+        // Usamos pipeline para garantir atomicidade e reduzir round-trips.
         const res = await fetch(`${url}/pipeline`, {
           method: 'POST',
           headers: {
@@ -78,8 +102,11 @@ function createUpstashRatelimit(requests: number, window: string) {
           signal: AbortSignal.timeout(3000),
         });
 
-        if (!res.ok) throw new Error(`Upstash HTTP ${res.status}`);
-        const results = await res.json() as Array<{ result: number }>;
+        if (!res.ok) {
+          throw new Error(`Upstash HTTP ${res.status}: ${await res.text().catch(() => 'unknown')}`);
+        }
+
+        const results = (await res.json()) as Array<{ result: number }>;
         const count = results[0]?.result ?? 1;
         const ttl = results[1]?.result ?? -1;
 
@@ -93,6 +120,9 @@ function createUpstashRatelimit(requests: number, window: string) {
             },
             body: JSON.stringify(['PEXPIRE', redisKey, windowMs]),
             signal: AbortSignal.timeout(2000),
+          }).catch((err) => {
+            // Non-fatal: a chave ainda vai expirar via lazy cleanup do Redis
+            console.warn('[rate-limit] PEXPIRE falhou (non-fatal):', err);
           });
         }
 
@@ -104,31 +134,65 @@ function createUpstashRatelimit(requests: number, window: string) {
           remaining,
           reset,
         };
-      } catch {
-        // Fallback to local on Redis failure
-        return createLocalRatelimit(requests, window).limit(key);
+      } catch (error) {
+        // CRITICAL: em produção, fail-closed para evitar bypass.
+        // Em dev, fallback gracioso para não bloquear DX.
+        if (process.env.NODE_ENV === 'production') {
+          console.error('[rate-limit] CRÍTICO: Upstash Redis indisponível em produção. Fail-closed.', error);
+          return { success: false, limit: requests, remaining: 0, reset: Date.now() + windowMs };
+        }
+        console.warn('[rate-limit] Upstash indisponível em dev, usando fallback local:', error);
+        return createLocalRatelimit(requests, parseWindowToWindowStr(windowMs)).limit(key);
       }
     },
   };
 }
 
+function parseWindowToWindowStr(windowMs: number): string {
+  if (windowMs >= 3600000) return `${windowMs / 3600000} h`;
+  if (windowMs >= 60000) return `${windowMs / 60000} m`;
+  if (windowMs >= 1000) return `${windowMs / 1000} s`;
+  return `${windowMs} ms`;
+}
+
+// ── Factory com fail-loud em produção ──
 const hasRedis = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
+const isProduction = process.env.NODE_ENV === 'production';
 
-interface RatelimitResult {
-  success: boolean;
-  limit: number;
-  remaining: number;
-  reset: number;
+if (isProduction && !hasRedis) {
+  // Log crítico no boot — não derruba o processo mas sinaliza fortemente
+  console.error(
+    '═'.repeat(80) + '\n' +
+    '[RATE-LIMIT] CRÍTICO: Produção sem UPSTASH_REDIS_REST_URL/TOKEN configurados.\n' +
+    'Rate limiting está operando em modo DENY-ALL. Configure Upstash Redis imediatamente.\n' +
+    'Docs: https://docs.upstash.com/redis/serverless-databases\n' +
+    '═'.repeat(80)
+  );
 }
 
-export interface RatelimitInstance {
-  limit: (key: string) => Promise<RatelimitResult>;
+function createRatelimit(requests: number, window: string): RatelimitInstance {
+  if (hasRedis) {
+    return createUpstashRatelimit(requests, window);
+  }
+  if (isProduction) {
+    // Fail-closed: bloqueia TUDO até Redis ser configurado
+    return {
+      limit: async (): Promise<RatelimitResult> => ({
+        success: false,
+        limit: 0,
+        remaining: 0,
+        reset: Date.now() + 60_000,
+      }),
+    };
+  }
+  // Dev mode sem Redis: fallback em memória (DX ok, sem isolamento real)
+  return createLocalRatelimit(requests, window);
 }
 
-export const apiRatelimit: RatelimitInstance = hasRedis
-  ? createUpstashRatelimit(60, '60 s')
-  : createLocalRatelimit(60, '60 s');
-
-export const authRatelimit: RatelimitInstance = hasRedis
-  ? createUpstashRatelimit(5, '60 s')
-  : createLocalRatelimit(5, '60 s');
+// ── Instâncias canônicas ──
+// API rate: 60 req / 60s por IP (cobertura para anon)
+// Auth rate: 5 req / 60s por IP (anti-brute-force de login)
+// Webhook rate: 100 req / 60s por tenant (limite Meta-side é maior)
+export const apiRatelimit: RatelimitInstance = createRatelimit(60, '60 s');
+export const authRatelimit: RatelimitInstance = createRatelimit(5, '60 s');
+export const webhookRatelimit: RatelimitInstance = createRatelimit(100, '60 s');

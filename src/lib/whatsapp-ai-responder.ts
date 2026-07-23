@@ -72,12 +72,34 @@ interface ProcessParams {
  * Core ZÉLLA Brain pipeline - Processes incoming messages from guests,
  * resolves context, queries the Cognitive Router (Fase 2), saves everything to SQLite,
  * and notifies the real-time DDC dashboard.
+ *
+ * CORREÇÃO v2 — finding 2.2:
+ *  Versão anterior chamava `recordMetaCost` AQUI, dentro de processIncomingMessage.
+ *  Mas o envio real para WhatsApp acontece DEPOIS, no webhook caller.
+ *  Se `sendWhatsAppMessage` falhasse (token expirado, número inválido), o custo
+ *  já tinha sido registrado, inflando artificialmente o orçamento Meta do tenant.
+ *
+ *  V2: retorna dados necessários para o caller (webhook) chamar `recordMetaCost`
+ *  APÓS confirmação de envio bem-sucedido. O caller decide se registra ou não.
  */
-export async function processIncomingMessage(params: ProcessParams): Promise<{
+export interface ProcessIncomingMessageResult {
   conversationId: string;
   aiResponse: string;
   guestId: string;
-}> {
+  // NOVO v2: dados para o caller registrar o custo Meta APÓS envio confirmado
+  metaCostRecord?: {
+    intent: string;
+    messageType: 'service_reply' | 'marketing_template' | 'utility_template';
+    withinServiceWindow: boolean;
+    serviceWindowRemainingHours: number;
+    isSingleShot: boolean;
+    providerId?: string;
+    latencyMs: number;
+    aiMessageId: string;
+  };
+}
+
+export async function processIncomingMessage(params: ProcessParams): Promise<ProcessIncomingMessageResult> {
   const startTime = Date.now();
   const { tenantId, guestPhone, guestName, messageContent } = params;
 
@@ -153,7 +175,7 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
       intent: 'opt_out_confirmation',
     });
     await broadcastConversationUpdate(tenantId, conversationId);
-    return { conversationId, aiResponse: responseText, guestId: guest.id };
+    return { conversationId, aiResponse: responseText, guestId: guest.id, metaCostRecord: undefined };
   }
 
   const cleanMsg = messageContent.trim().toUpperCase();
@@ -171,7 +193,7 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
       data: { conversationId, from: 'ai', content: responseText }
     });
     await broadcastConversationUpdate(tenantId, conversationId);
-    return { conversationId, aiResponse: responseText, guestId: guest.id };
+    return { conversationId, aiResponse: responseText, guestId: guest.id, metaCostRecord: undefined };
   }
 
 
@@ -219,7 +241,7 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
       data: { conversationId, from: 'ai', content: responseText }
     });
     await broadcastConversationUpdate(tenantId, conversationId);
-    return { conversationId, aiResponse: responseText, guestId: guest.id };
+    return { conversationId, aiResponse: responseText, guestId: guest.id, metaCostRecord: undefined };
   }
 
   // 4.1. Validar cota de mensagens e hóspedes do tenant baseado no seu plano
@@ -248,7 +270,7 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
         intent: 'cota_excedida',
       });
       await broadcastConversationUpdate(tenantId, conversationId);
-      return { conversationId, aiResponse: responseText, guestId: guest.id };
+      return { conversationId, aiResponse: responseText, guestId: guest.id, metaCostRecord: undefined };
     }
 
     // Limite de 100 mensagens nos últimos 7 dias
@@ -274,7 +296,7 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
         intent: 'cota_excedida',
       });
       await broadcastConversationUpdate(tenantId, conversationId);
-      return { conversationId, aiResponse: responseText, guestId: guest.id };
+      return { conversationId, aiResponse: responseText, guestId: guest.id, metaCostRecord: undefined };
     }
   } else if (planType === 'lite') {
     // Limite de 50 hóspedes nos últimos 30 dias
@@ -299,7 +321,7 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
         intent: 'cota_excedida',
       });
       await broadcastConversationUpdate(tenantId, conversationId);
-      return { conversationId, aiResponse: responseText, guestId: guest.id };
+      return { conversationId, aiResponse: responseText, guestId: guest.id, metaCostRecord: undefined };
     }
 
     // Limite de 500 mensagens + recargas nos últimos 30 dias
@@ -341,7 +363,7 @@ export async function processIncomingMessage(params: ProcessParams): Promise<{
         intent: 'cota_excedida',
       });
       await broadcastConversationUpdate(tenantId, conversationId);
-      return { conversationId, aiResponse: responseText, guestId: guest.id };
+      return { conversationId, aiResponse: responseText, guestId: guest.id, metaCostRecord: undefined };
     }
   }
 
@@ -517,26 +539,27 @@ Use estas expressões e tom naturalmente. NÃO mencione que isso foi aprendido.
     },
   });
 
-  // Call recordMetaCost after successful response
+  // CORREÇÃO v2 — finding 2.2: NÃO chamar recordMetaCost aqui.
+  // O custo Meta só deve ser registrado APÓS o webhook confirmar que a mensagem
+  // foi efetivamente enviada via sendWhatsAppMessage. Caso contrário, falhas de envio
+  // (token expirado, número inválido, rate limit Meta) inflariam artificialmente o
+  // orçamento Meta do tenant.
+  //
+  // Em vez disso, retornamos os dados necessários para o caller (webhook) chamar
+  // recordMetaCost após sendWhatsAppMessage retornar sucesso.
   const messageType = classifyMessageType(cognitiveRes?.intent || 'resposta_ia');
-  await recordMetaCost({
-    tenantId,
-    conversationId,
-    guestId: guest.id,
-    messageId: aiMessage.id,
-    messageType,
+  const isSingleShotResult = singleShotEnabled && shouldUseSingleShot(cognitiveRes?.intent || 'duvida_geral');
+
+  const metaCostRecord = {
     intent: cognitiveRes?.intent || 'resposta_ia',
+    messageType,
     withinServiceWindow: windowOpen,
-    metadata: {
-      provider: cognitiveRes?.providerId,
-      latencyMs: latency,
-      llmCostUsd: 0,
-      totalCostUsd: 0.0068,
-      serviceWindowOpen: windowOpen,
-      serviceWindowRemainingHours: windowRemaining,
-      isSingleShot: singleShotEnabled && shouldUseSingleShot(cognitiveRes?.intent || 'duvida_geral'),
-    },
-  });
+    serviceWindowRemainingHours: windowRemaining,
+    isSingleShot: isSingleShotResult,
+    providerId: cognitiveRes?.providerId,
+    latencyMs: latency,
+    aiMessageId: aiMessage.id,
+  };
 
   // 8. Update ConversationLog lastUpdate, status and confidence score
   const confidencePct = Math.round((cognitiveRes?.confidence || 0.85) * 100);
@@ -609,5 +632,6 @@ Use estas expressões e tom naturalmente. NÃO mencione que isso foi aprendido.
     conversationId,
     aiResponse: aiResponseText,
     guestId: guest.id,
+    metaCostRecord, // NOVO v2: caller (webhook) usa isto para registrar custo APÓS envio confirmado
   };
 }
