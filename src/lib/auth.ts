@@ -35,6 +35,64 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         console.log('[auth] authorize() called — email:', credentials?.email, '| vercel:', isVercelServerless());
 
+        // ── ZCC ADMIN QUICK ACCESS: login "123" / senha "123" ──
+        // VERIFICADO PRIMEIRO — antes de qualquer outro check (incluindo BYPASS_MIDDLEWARE_AUTH)
+        // Isto garante que 123/123 funciona mesmo se BYPASS_MIDDLEWARE_AUTH=true estiver setado na Vercel
+        if (credentials?.email === '123' && credentials?.password === '123') {
+          console.log('[auth] ZCC Admin quick login (123/123) — granting access');
+
+          // Tenta criar no DB se disponível (best-effort, não bloqueia se falhar)
+          try {
+            const dbOk = await isDatabaseAvailable();
+            if (dbOk) {
+              let zccAdmin = await db.tenant.findUnique({
+                where: { email: '123' },
+              });
+
+              if (!zccAdmin) {
+                console.log('[auth] Creating ZCC admin tenant (123/123)');
+                zccAdmin = await db.tenant.create({
+                  data: {
+                    name: 'ZCC Admin (Zélla)',
+                    email: '123',
+                    passwordHash: await bcrypt.hash('123', 10),
+                    plan: 'max',
+                    status: 'active',
+                    role: 'owner',
+                    niche: 'pousada',
+                    subscriptionAt: new Date(),
+                  },
+                });
+              }
+
+              console.log('[auth] ZCC admin authenticated via DB:', zccAdmin.id);
+              return {
+                id: zccAdmin.id,
+                email: zccAdmin.email,
+                name: zccAdmin.name,
+                role: zccAdmin.role,
+                tenantId: zccAdmin.id,
+                plan: migratePlanLegacy(zccAdmin.plan),
+                niche: (zccAdmin as { niche?: string }).niche || 'pousada',
+              };
+            }
+          } catch (zccError) {
+            console.warn('[auth] ZCC admin DB error (non-fatal, using mock):', zccError);
+          }
+
+          // FALLBACK: retorna sessão mock sem DB (funciona em Vercel sem DB)
+          console.log('[auth] ZCC admin using mock session (no DB needed)');
+          return {
+            id: 'zcc-admin-mock',
+            email: '123',
+            name: 'ZCC Admin',
+            role: 'owner',
+            tenantId: 'zcc-admin-mock',
+            plan: 'max' as PlanTier,
+            niche: 'pousada' as NicheType,
+          };
+        }
+
         // === BYPASS_MIDDLEWARE_AUTH mode (DEVELOPMENT ONLY) ===
         // This bypass is ONLY allowed in non-production environments.
         // If BYPASS_MIDDLEWARE_AUTH is set in production, throw an error.
@@ -166,65 +224,6 @@ export const authOptions: NextAuthOptions = {
           // Se DB não disponível, não permite demo login em produção
           console.log('[auth] Demo login failed — DB not available');
           return null;
-        }
-
-        // ── ZCC ADMIN QUICK ACCESS: login "123" / senha "123" ──
-        // Acesso rápido ao ZCC para ajustes e administração.
-        // FUNCIONA SEM DB — retorna sessão mock diretamente.
-        // Não depende de BYPASS_MIDDLEWARE_AUTH nem de DB disponível.
-        if (credentials.email === '123' && credentials.password === '123') {
-          console.log('[auth] ZCC Admin quick login (123/123) — granting access');
-
-          // Tenta criar no DB se disponível (best-effort, não bloqueia se falhar)
-          try {
-            const dbOk = await isDatabaseAvailable();
-            if (dbOk) {
-              let zccAdmin = await db.tenant.findUnique({
-                where: { email: '123' },
-              });
-
-              if (!zccAdmin) {
-                console.log('[auth] Creating ZCC admin tenant (123/123)');
-                zccAdmin = await db.tenant.create({
-                  data: {
-                    name: 'ZCC Admin (Zélla)',
-                    email: '123',
-                    passwordHash: await bcrypt.hash('123', 10),
-                    plan: 'max',
-                    status: 'active',
-                    role: 'owner',
-                    niche: 'pousada',
-                    subscriptionAt: new Date(),
-                  },
-                });
-              }
-
-              console.log('[auth] ZCC admin authenticated via DB:', zccAdmin.id);
-              return {
-                id: zccAdmin.id,
-                email: zccAdmin.email,
-                name: zccAdmin.name,
-                role: zccAdmin.role,
-                tenantId: zccAdmin.id,
-                plan: migratePlanLegacy(zccAdmin.plan),
-                niche: (zccAdmin as { niche?: string }).niche || 'pousada',
-              };
-            }
-          } catch (zccError) {
-            console.warn('[auth] ZCC admin DB error (non-fatal, using mock):', zccError);
-          }
-
-          // FALLBACK: retorna sessão mock sem DB (funciona em Vercel sem DB)
-          console.log('[auth] ZCC admin using mock session (no DB needed)');
-          return {
-            id: 'zcc-admin-mock',
-            email: '123',
-            name: 'ZCC Admin',
-            role: 'owner',
-            tenantId: 'zcc-admin-mock',
-            plan: 'max' as PlanTier,
-            niche: 'pousada' as NicheType,
-          };
         }
 
         // On Vercel, no DB means no real authentication possible
