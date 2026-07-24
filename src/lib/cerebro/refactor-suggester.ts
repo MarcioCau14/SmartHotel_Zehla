@@ -290,6 +290,18 @@ REGRAS:
 6. Em PT-BR
 7. Output DEVE ser JSON válido no formato abaixo
 
+DIRETIVA PONYTAIL — CONCISÃO OBRIGATÓRIA:
+- Escreva o MENOR código possível que resolva o erro completamente
+- Elimine boilerplate desnecessário, comentários óbvios, variáveis intermediárias que não agregam
+- Prefira 1 linha bem escrita a 10 linhas verbosas
+- Se o código original tem 50 linhas e a solução cabe em 5, proponha 5
+- NUNCA adicione try/catch desnecessário — só adicione se o erro for tratável
+- NUNCA adicione validação que não previne o erro reportado
+- NUNCA adicione comentários explicando o óbvio (ex: // cria o usuário)
+- Use optional chaining (?.), nullish coalescing (??), e destructuring para reduzir linhas
+- Se uma função utilitária já existe no código, REUSE — não reescreva
+- Métrica de sucesso: proposed_code deve ser ≥30% menor que currentCode
+
 APRENDIZADO:
 ${pastSuggestions.length > 0
   ? `Você já sugeriu refatorações para este arquivo antes. Aprenda com o feedback humano:
