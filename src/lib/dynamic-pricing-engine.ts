@@ -364,7 +364,7 @@ export async function getApplicableRules(
   });
 
   // Additional filtering: daysOfWeek is stored as JSON array
-  const filtered = rules.filter(rule => {
+  const filtered = rules.filter((rule: any) => {
     try {
       const daysOfWeekArr: number[] = JSON.parse(rule.daysOfWeek);
       // Empty array means all days
@@ -835,7 +835,7 @@ export async function getPricingInsights(tenantId: string): Promise<{
 
   // Average modifier from active rules
   const averagePriceModifier = activeRules.length > 0
-    ? activeRules.reduce((sum, r) => sum + r.modifierValue, 0) / activeRules.length
+    ? activeRules.reduce((sum: number, r: any) => sum + r.modifierValue, 0) / activeRules.length
     : 1.0;
 
   // Recent calculations

@@ -128,8 +128,7 @@ async function handleAnalisarOcupacao(
   const result = await executeSingleTool('get_occupancy', tenantId);
 
   const compatResponse = {
-    ...(result.success ? result.data : {}),
-    ...(result.success ? result.data : {}),
+    ...(result.success && typeof result.data === 'object' && result.data !== null ? result.data : {}),
     pousada_id: args.pousada_id || tenantId,
     periodo: args.periodo_inicio && args.periodo_fim
       ? `${args.periodo_inicio} a ${args.periodo_fim}`
@@ -164,8 +163,7 @@ async function handleSugerirPreco(
   });
 
   const compatResponse = {
-    ...(result.success ? result.data : {}),
-    ...(result.success ? result.data : {}),
+    ...(result.success && typeof result.data === 'object' && result.data !== null ? result.data : {}),
     tipo_quarto: args.tipo_quarto || 'todos',
     data_checkin: checkInDate,
     data_checkout: checkOutDate,
@@ -191,8 +189,7 @@ async function handleAnalisarReviews(
   const result = await executeSingleTool('get_policies', tenantId);
 
   const compatResponse = {
-    ...(result.success ? result.data : {}),
-    ...(result.success ? result.data : {}),
+    ...(result.success && typeof result.data === 'object' && result.data !== null ? result.data : {}),
     pousada_id: args.pousada_id || tenantId,
     limite: args.limite || 20,
     nota: 'Políticas e regras da pousada substituem reviews (Phase 1 consultava tabela errada)',
@@ -245,8 +242,7 @@ async function handleBuscarDadosProperty(
   const result = await executeSingleTool('get_room_details', tenantId);
 
   const compatResponse = {
-    ...(result.success ? result.data : {}),
-    ...(result.success ? result.data : {}),
+    ...(result.success && typeof result.data === 'object' && result.data !== null ? result.data : {}),
     pousada_id: args.pousada_id || tenantId,
     fonte: 'zehla_tools_compat → get_room_details',
     ...(result.success ? {} : { error: result.data }),
