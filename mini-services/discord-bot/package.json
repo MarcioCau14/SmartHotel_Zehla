@@ -1,0 +1,14 @@
+{
+  "name": "seuzella-discord-bot",
+  "version": "1.0.0",
+  "description": "Bot Discord do SeuZélla — IA + Alertas do Cérebro + Comandos ZCC",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --hot index.ts",
+    "start": "bun index.ts"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.3",
+    "z-ai-web-dev-sdk": "^0.0.17"
+  }
+}
