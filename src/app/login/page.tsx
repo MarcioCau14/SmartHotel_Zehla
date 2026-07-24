@@ -59,6 +59,7 @@ type ViewMode = 'signin' | 'signup' | 'magic-sent';
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  // Se login for 123/123, redireciona para ZCC em vez de DDC
   const callbackUrl = searchParams.get('callbackUrl') || '/ddc';
   const magicLoginParam = searchParams.get('magicLogin');
   const magicEmailParam = searchParams.get('email');
@@ -203,7 +204,9 @@ function LoginContent() {
       } else if (result?.ok) {
         toast.success('Acesso autorizado!');
         await new Promise(r => setTimeout(r, 500));
-        router.push(callbackUrl);
+        // Se login for 123/123, redireciona para ZCC em vez de DDC
+        const redirectPath = credentialData.email === '123' ? '/zcc' : callbackUrl;
+        router.push(redirectPath);
         router.refresh();
       }
     } catch {
